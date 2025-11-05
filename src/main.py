@@ -27,6 +27,9 @@ from src.api.bpmn_api import router as bpmn_router
 from src.api.code_approval import router as code_approval_router
 from src.api.security_monitoring import router as security_monitoring_router
 
+# NEW: Marketplace router
+from src.api.marketplace import router as marketplace_router
+
 # MCP Server (for Cursor/VSCode integration)
 from src.ai.mcp_server import app as mcp_app
 
@@ -129,6 +132,7 @@ async def health_check():
 app.include_router(dashboard_router)
 app.include_router(monitoring_router)
 app.include_router(copilot_router)
+app.include_router(marketplace_router)
 app.include_router(code_review_router)
 app.include_router(test_generation_router)
 app.include_router(websocket_router)

@@ -9,11 +9,14 @@ from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.types import Message, FSInputFile
 from aiogram.enums import ParseMode
+import tempfile
+import os
 
 from src.ai.orchestrator import AIOrchestrator
 from src.telegram.formatters import TelegramFormatter
 from src.telegram.rate_limiter import RateLimiter
 from src.telegram.config import config
+from src.services.speech_to_text_service import get_stt_service
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -59,10 +62,12 @@ async def cmd_start(message: Message):
 💻 Генерировать BSL код
 🔗 Анализировать зависимости
 💡 Отвечать на вопросы о вашей конфигурации
+🎤 Понимать голосовые сообщения!
 
 **Попробуйте:**
 • `/search расчет НДС`
 • Или просто спросите: "Где мы работаем с документами?"
+• 🎤 Или отправьте голосовое сообщение!
 
 Полный список команд: /help
 
@@ -252,6 +257,93 @@ async def cmd_premium(message: Message):
     """Команда /premium - информация о Premium"""
     response = formatter.format_premium_info()
     await message.reply(response, parse_mode=ParseMode.MARKDOWN)
+
+
+@router.message(F.voice)
+async def handle_voice(message: Message):
+    """Обработка голосовых сообщений 🎤"""
+    
+    # Rate limiting
+    if not await check_rate_limit(message):
+        return
+    
+    voice = message.voice
+    
+    await message.answer("🎤 Распознаю голос...")
+    
+    try:
+        # Получаем сервис STT
+        stt_service = get_stt_service()
+        
+        # Скачиваем голосовое сообщение
+        voice_file = await message.bot.get_file(voice.file_id)
+        
+        # Создаем временный файл
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".ogg") as tmp_file:
+            await message.bot.download_file(voice_file.file_path, tmp_file)
+            tmp_path = tmp_file.name
+        
+        try:
+            # Распознаем речь
+            transcription = await stt_service.transcribe(
+                tmp_path,
+                language="ru",
+                prompt="1С, БСП, конфигурация, модуль, функция, процедура"
+            )
+            
+            text = transcription["text"].strip()
+            
+            if not text:
+                await message.reply(
+                    "🤔 Не удалось распознать речь. Попробуйте еще раз."
+                )
+                return
+            
+            # Показываем что распознали
+            await message.reply(
+                f"✅ Распознано:\n_\"{text}\"_\n\n🤔 Обрабатываю запрос...",
+                parse_mode=ParseMode.MARKDOWN
+            )
+            
+            # Обрабатываем как обычный текст через orchestrator
+            result = await orchestrator.process_query(
+                text,
+                context={
+                    "type": "voice_query",
+                    "user_id": message.from_user.id,
+                    "original_format": "voice"
+                }
+            )
+            
+            # Определяем тип ответа
+            if result.get("type") == "search_results":
+                response = formatter.format_search_results(result)
+            elif result.get("type") == "code":
+                response = formatter.format_generated_code(result)
+            else:
+                response = result.get("answer", "Не могу найти ответ 😔")
+            
+            await message.reply(response, parse_mode=ParseMode.MARKDOWN)
+            
+            logger.info(
+                f"Voice message processed for user {message.from_user.id}: "
+                f"{text[:50]}..."
+            )
+            
+        finally:
+            # Удаляем временный файл
+            try:
+                os.unlink(tmp_path)
+            except Exception as e:
+                logger.warning(f"Failed to delete temp file: {e}")
+        
+    except Exception as e:
+        logger.error(f"Voice handling error: {e}")
+        await message.reply(
+            "❌ Ошибка обработки голосового сообщения\n\n"
+            "Попробуйте написать текстом или /help",
+            parse_mode=ParseMode.MARKDOWN
+        )
 
 
 @router.message(F.document)

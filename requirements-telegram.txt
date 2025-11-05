@@ -14,4 +14,11 @@ python-dotenv==1.0.0
 # redis==5.0.1
 # aioredis==2.0.1
 
+# Speech recognition для голосовых сообщений
+openai>=1.0.0  # OpenAI Whisper API
+
+# Optional: Local/Offline STT (требуют дополнительных зависимостей)
+# openai-whisper  # Local Whisper (требует ffmpeg)
+# vosk  # Offline STT
+
 

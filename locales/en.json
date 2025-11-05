@@ -1,0 +1,169 @@
+{
+  "bot": {
+    "welcome": {
+      "greeting": "👋 Hello, {name}!",
+      "intro": "I'm an AI assistant for 1C developers.",
+      "capabilities": "I can:\n🔍 Search code by meaning (not just by text!)\n💻 Generate BSL code\n🔗 Analyze dependencies\n💡 Answer questions about your configuration\n🎤 Understand voice messages!",
+      "try_examples": "**Try it:**\n• `/search VAT calculation`\n• Or just ask: \"Where do we work with documents?\"\n• 🎤 Or send a voice message!",
+      "help_hint": "Full command list: /help",
+      "start_cta": "🚀 **Let's start?**"
+    },
+    "commands": {
+      "search": {
+        "description": "semantic code search",
+        "example": "/search VAT calculation",
+        "empty_query": "❓ Please specify search query\n\nExample: `/search VAT calculation`",
+        "searching": "🔍 Searching...",
+        "no_results": "🔍 Nothing found. Try another query."
+      },
+      "generate": {
+        "description": "BSL code generation",
+        "example": "/generate function to calculate discount",
+        "empty_query": "❓ Describe what to generate\n\nExample: `/generate function to calculate volume discount`",
+        "generating": "💻 Generating code...",
+        "disabled": "❌ Code generation temporarily disabled"
+      },
+      "deps": {
+        "description": "dependency analysis",
+        "example": "/deps CalculationsServer CalculateVAT",
+        "empty_query": "❓ Specify module and function\n\nExample: `/deps CalculationsServer CalculateVAT`",
+        "analyzing": "🔗 Analyzing dependencies...",
+        "disabled": "❌ Dependency analysis temporarily disabled"
+      },
+      "stats": {
+        "title": "📊 **Your Statistics**",
+        "premium_account": "⭐ **Premium account** — unlimited!",
+        "requests_today": "📈 Requests today: {count}/{limit}",
+        "remaining": "✅ Remaining: {count}",
+        "total_requests": "📊 Total requests: {count}",
+        "limit_warning": "⚠️ You've used {count}/{limit} requests!",
+        "upgrade_hint": "💎 Try Premium for unlimited requests: /premium"
+      },
+      "premium": {
+        "title": "💎 **Premium Subscription**",
+        "features": "**What's included:**\n✅ Unlimited requests\n✅ Priority processing (faster)\n✅ Code generation without limits\n✅ Advanced analysis access\n✅ API integration\n✅ Export results\n✅ 24/7 tech support",
+        "pricing": "**Pricing:**\n🎯 **$4/month** — personal account\n👥 **$40/month** — team (up to 10 people)\n🏢 **Enterprise** — custom",
+        "payment": "**Payment:**\n• Telegram Stars ⭐\n• Credit card 💳\n• Cryptocurrency 🪙",
+        "trial": "🎁 **First week free!**",
+        "activation": "To activate: @ai1c_support"
+      },
+      "help": {
+        "title": "🤖 **1C AI Assistant**",
+        "search_desc": "🔍 `/search <query>` — semantic code search",
+        "generate_desc": "💻 `/generate <description>` — BSL code generation",
+        "deps_desc": "🔗 `/deps <module> <function>` — dependency analysis",
+        "stats_desc": "📊 `/stats` — your statistics",
+        "premium_desc": "🎁 `/premium` — Premium info",
+        "help_desc": "❓ `/help` — this help",
+        "natural_queries": "**Natural language queries:**\nJust write your question and I'll try to help!",
+        "example": "Example: \"Where in the code do we work with taxes?\"",
+        "tips": "**Tips:**\n• Use specific terms\n• You can send BSL files for analysis\n• 🎤 You can send voice messages!\n• Premium gives unlimited requests",
+        "cta": "🚀 Start with `/search` or just ask a question!"
+      }
+    },
+    "voice": {
+      "recognizing": "🎤 Recognizing voice...",
+      "recognized": "✅ Recognized:\n_\"{text}\"_\n\n🤔 Processing query...",
+      "processing": "🤔 Processing query...",
+      "recognition_failed": "🤔 Failed to recognize speech. Please try again.",
+      "error": "❌ Error processing voice message\n\nTry typing your query or use /help"
+    },
+    "file": {
+      "analyzing": "📄 Analyzing file...",
+      "unsupported_format": "❌ Only supported files: .bsl, .os, .txt",
+      "received": "✅ File received!",
+      "analysis_wip": "🚧 File analysis in development...\nComing soon: code review, issue detection, refactoring"
+    },
+    "text": {
+      "thinking": "🤔 Thinking...",
+      "too_short": "❓ Please ask a more specific question or use /help",
+      "not_understood": "🤔 Didn't quite understand. Try:\n\n• `/search <what to find>`\n• `/generate <what to create>`\n• `/help` — command list",
+      "no_answer": "Can't find an answer 😔"
+    },
+    "rate_limit": {
+      "exceeded_minute": "⏸️ **Rate limit exceeded**\n\nTry again in {seconds} seconds.",
+      "exceeded_day": "🚫 **Daily limit reached**\n\nLimit: {limit} requests/day\nNew requests available tomorrow.\n\n💎 Premium: unlimited requests → /premium",
+      "premium_exceeded": "⚠️ Even Premium has reasonable limits!\n\nTry again in {seconds} seconds."
+    },
+    "results": {
+      "search_title": "✨ **Found: {count} results**",
+      "search_more": "_...and {count} more results_",
+      "search_hint": "💡 Want to see code? Use /show <number>",
+      "code_generated": "✨ **Code Generated**",
+      "function_name": "📝 Function: `{name}`",
+      "description": "💡 **Description:**",
+      "code_label": "**Code:**",
+      "code_warning": "⚠️ _Don't forget to review and test the code before using it!_",
+      "deps_title": "🔗 **Dependency Analysis**",
+      "deps_function": "📌 Function: `{name}`",
+      "deps_module": "📁 Module: `{name}`",
+      "deps_uses": "**Uses ({count}):**",
+      "deps_used_by": "**Used by ({count}):**",
+      "graph_link": "📊 [Graph visualization]({url})"
+    },
+    "errors": {
+      "generic": "❌ **Error:**\n\n{error}\n\n💡 Try rephrasing your query or use /help",
+      "api_error": "❌ API connection error. Please try later.",
+      "timeout": "⏱️ Request timeout. Try simplifying your query."
+    }
+  },
+  "common": {
+    "yes": "Yes",
+    "no": "No",
+    "cancel": "Cancel",
+    "ok": "OK",
+    "error": "Error",
+    "success": "Success",
+    "loading": "Loading...",
+    "processing": "Processing...",
+    "done": "Done",
+    "retry": "Retry",
+    "back": "Back",
+    "next": "Next",
+    "skip": "Skip",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close"
+  },
+  "api": {
+    "search": {
+      "success": "Search completed successfully",
+      "empty_results": "No results found",
+      "invalid_query": "Invalid query"
+    },
+    "generate": {
+      "success": "Code generated successfully",
+      "failed": "Failed to generate code",
+      "invalid_description": "Insufficient information for generation"
+    },
+    "deps": {
+      "success": "Dependency analysis completed",
+      "not_found": "Function not found",
+      "no_deps": "No dependencies detected"
+    }
+  },
+  "ui": {
+    "sidebar": {
+      "dashboard": "Dashboard",
+      "projects": "Projects",
+      "settings": "Settings",
+      "help": "Help",
+      "logout": "Logout"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "recent_activity": "Recent Activity",
+      "statistics": "Statistics",
+      "quick_actions": "Quick Actions"
+    }
+  },
+  "validation": {
+    "required": "Required field",
+    "invalid_email": "Invalid email",
+    "too_short": "Value too short",
+    "too_long": "Value too long",
+    "invalid_format": "Invalid format"
+  }
+}
+
