@@ -110,6 +110,17 @@ docs/FINAL_COMPREHENSIVE_SUMMARY.md
 # Cleanup temporary files
 ROOT_CLEANUP_PLAN.md
 *_CLEANUP_PLAN.md
+LICENSE_AUDIT_*.md
+
+# 1C Commercial Configurations (protection against accidental commits)
+1c_configurations/*/*.xml
+1c_configurations/*/*.epf
+1c_configurations/*/*.erf
+1c_configurations/*/config/
+1c_configurations/*/metadata/
+# Keep folder structure
+!1c_configurations/*/.gitkeep
+!1c_configurations/README.md
 
 # Node modules (если используется)
 node_modules/
