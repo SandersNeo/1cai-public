@@ -36,7 +36,7 @@ notepad .env
 **Important variables to configure:**
 - `POSTGRES_PASSWORD` - PostgreSQL database password
 - `GITHUB_TOKEN` - For Innovation Engine (optional now)
-- `NAPARNIK_API_KEY` - 1C:Напарник API key (optional now)
+- `EXTERNAL_AI_API_KEY` - External AI service API key (optional)
 
 ### Step 3: Install Python Dependencies
 
@@ -319,4 +319,7 @@ After successful setup:
 
 **Current Status:** Stage 0 complete (Week 1/30)  
 **Next:** Stage 1 - Neo4j & Qdrant integration
+
+
+
 

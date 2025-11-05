@@ -107,6 +107,10 @@ docs/ULTIMATE_SESSION_SUMMARY_*.md
 docs/TODAY_COMPLETE_WORK_SUMMARY.md
 docs/FINAL_COMPREHENSIVE_SUMMARY.md
 
+# Cleanup temporary files
+ROOT_CLEANUP_PLAN.md
+*_CLEANUP_PLAN.md
+
 # Node modules (если используется)
 node_modules/
 
