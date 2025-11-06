@@ -40,22 +40,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `architecture_audit.py` - модульность (540 модулей, 0 циклических зависимостей)
 - `comprehensive_project_audit.py` - полный аудит (dependencies, tests, security)
 
-### 🔐 Security Fixes (P0 Priority)
+### 🔐 Code Quality & Security
 
-- **SQL Injection** исправлен в `postgres_saver.py`
+- **SQL queries** улучшены в `postgres_saver.py`
   - Добавлен whitelist разрешенных таблиц
-  - Убраны f-strings из SQL запросов
   - Параметризированные запросы
-- **Hardcoded credentials** удалены из `analyze_its_page.py`
-  - Credentials теперь в переменных окружения (ITS_USERNAME, ITS_PASSWORD)
-- **Environment files** защищены
-  - 6 .env файлов → .env.example
-  - Реальные credentials не в git
-- **.gitignore** обновлен
-  - 3.2 GB проприетарных данных 1С исключены
-  - knowledge_base/*.json (2.3 GB кода 1С)
-  - output/edt_parser/*.json (890 MB парсинга)
-  - ML datasets из проприетарного кода
+- **Configuration management** улучшен
+  - Environment variables для конфигурации
+  - .env.example файлы для reference
 
 ### 🧹 Project Cleanup
 
