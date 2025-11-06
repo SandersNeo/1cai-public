@@ -227,7 +227,7 @@ docker-compose up -d
 - Neo4j Browser: http://localhost:7474
 - Grafana: http://localhost:3000
 
-[Полная инструкция →](GETTING_STARTED.md)
+[Полная инструкция →](docs/01-getting-started/README.md)
 
 ---
 
@@ -320,15 +320,14 @@ curl -X POST http://localhost:8000/generate \
 ## 📚 Документация
 
 ### Для начинающих:
-- 📗 [Getting Started](GETTING_STARTED.md) - пошаговая установка
-- ❓ [FAQ](FAQ.md) - частые вопросы  
-- 🎥 [Video Guides](docs/videos/) - видео туториалы
+- 📗 [Getting Started](docs/01-getting-started/README.md) - введение
+- ⚡ [Quick Start](docs/01-getting-started/quickstart.md) - быстрый старт
+- 📱 [Telegram Setup](docs/01-getting-started/telegram-setup.md) - настройка бота
 
 ### Для продвинутых:
 - 🏗️ [Architecture](docs/02-architecture/) - архитектура системы
+- 🏗️ [Current Architecture](docs/architecture/ARCHITECTURE_CURRENT_STATE.md) - текущее состояние
 - 🤖 [AI Agents](docs/03-ai-agents/) - работа с AI
-- 🔧 [Configuration](docs/configuration.md) - настройка
-- 🔌 [API](docs/api.md) - REST API и MCP
 
 ### Специальные темы:
 - 🎤 [Voice Queries](docs/VOICE_QUERIES.md) - голосовые запросы
@@ -336,7 +335,7 @@ curl -X POST http://localhost:8000/generate \
 - 🌍 [i18n Guide](docs/I18N_GUIDE.md) - мультиязычность Telegram бота
 - 🧠 [BSL Fine-tuning](docs/BSL_FINETUNING_GUIDE.md) - обучение модели
 
-**Полный индекс:** [DOCS_INDEX.md](DOCS_INDEX.md)
+**Полная документация:** [docs/README.md](docs/README.md)
 
 ---
 
@@ -669,17 +668,17 @@ Contributions приветствуются!
 ## 🚀 Getting Started
 
 **Новичок?** Начните здесь:
-1. [Getting Started Guide](GETTING_STARTED.md)
-2. [FAQ](FAQ.md)
-3. [Quick Start](TELEGRAM_SETUP.md)
+1. [Getting Started Guide](docs/01-getting-started/README.md)
+2. [Quick Start](docs/01-getting-started/quickstart.md)
+3. [Telegram Setup](docs/01-getting-started/telegram-setup.md)
 
 **Разработчик?** Смотрите:
 1. [Architecture](docs/02-architecture/)
 2. [Contributing](CONTRIBUTING.md)
-3. [API Docs](docs/api.md)
+3. [Current Architecture State](docs/architecture/ARCHITECTURE_CURRENT_STATE.md)
 
 **DevOps?** Читайте:
-1. [Deployment](DEPLOYMENT_INSTRUCTIONS.md)
+1. [Deployment](docs/01-getting-started/DEPLOYMENT_INSTRUCTIONS.md)
 2. [Kubernetes](k8s/)
 3. [Monitoring](monitoring/)
 
@@ -687,4 +686,4 @@ Contributions приветствуются!
 
 **⭐ Если проект полезен - поставьте звезду на GitHub!**
 
-**🚀 Ready to start?** → [GETTING_STARTED.md](GETTING_STARTED.md)
+**🚀 Ready to start?** → [docs/01-getting-started/README.md](docs/01-getting-started/README.md)
