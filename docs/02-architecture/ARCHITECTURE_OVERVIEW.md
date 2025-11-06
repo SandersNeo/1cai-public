@@ -238,7 +238,7 @@ deno run --allow-all execution-harness.ts
 ### Communication
 - Telegram Bot ✅
 - Voice (Whisper) ✅
-- OCR (Chandra) ✅
+- OCR (DeepSeek-OCR, 91%+) ✅
 
 ### ITSM (Planned)
 - Jira Service Management

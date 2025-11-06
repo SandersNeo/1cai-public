@@ -167,6 +167,28 @@ dmypy.json
 # Jupyter Notebook
 .ipynb_checkpoints
 
+# Temporary session reports and analysis files (root only)
+/*ИТОГ*.md
+/*РЕЗУЛЬТАТ*.md
+/*ПРОВЕРК*.md
+/*ФИНАЛ*.md
+/*АРХИТЕКТУР*.md
+/*ГОТОВ*.md
+/*ДОКУМЕНТАЦ*.md
+/*ДОРАБОТК*.md
+/*ИНСТРУКЦ*.md
+/*ПРОБЛЕМ*.md
+/*ПРОМАХ*.md
+/*ОТЧЕТ*.md
+/*СЕССИИ*.md
+/GIT_PUSH*.md
+/GITHUB_ISSUE*.md
+/ISSUE_*.md
+/WHAT_REALLY_WORKS.md
+/AI_RESEARCH_SUMMARY.md
+/READY_FOR_GITHUB.txt
+/РАБОТА_ЗАВЕРШЕНА*.txt
+
 # Data files
 *.csv
 *.json.bak

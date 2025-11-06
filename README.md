@@ -147,7 +147,7 @@
 
 ```
 📸 Фото договора/накладной/акта
-→ OCR через Chandra (83% точность - best in class!)
+→ OCR через DeepSeek-OCR (91%+ точность - state-of-the-art!)
 → AI извлекает структуру (номер, дата, контрагент, сумма)
 → Готовые данные для ввода в 1С
 ```
@@ -312,7 +312,7 @@ curl -X POST http://localhost:8000/generate \
 │  ├─ 8 Specialized AI Agents                         │
 │  ├─ OpenAI API (GPT-4, Whisper STT)                 │
 │  ├─ Ollama (Qwen3-Coder for BSL)                    │
-│  └─ Chandra OCR (document recognition)              │
+│  └─ DeepSeek-OCR (document recognition, 91%+)       │
 │                                                       │
 │  DATA LAYER:                                         │
 │  ├─ PostgreSQL (metadata, users, stats)             │
@@ -411,12 +411,11 @@ curl -X POST http://localhost:8000/generate \
 - **Redis 7** - кеширование
 
 ### AI/ML:
-- **DeepSeek-OCR** - OCR документов (91%+ accuracy) 🆕
+- **DeepSeek-OCR** - распознавание документов (91%+ accuracy) 🆕
 - **Qwen3-Coder** - генерация BSL (fine-tuned на SmolTalk) 🆕
 - **Kimi-Linear-48B** - анализ больших конфигураций (200K контекст) 🆕
 - **OpenAI API** (GPT-4, Whisper STT)
 - **Ollama** - локальные LLM
-- **Chandra OCR** - распознавание документов (fallback)
 - **LangChain** - AI orchestration
 - **MLflow** - ML experiments tracking
 - **ModelScan** - security scanning 🆕
@@ -631,7 +630,7 @@ Contributions приветствуются!
 - **99.9%** uptime target
 - **<2 сек** средний ответ
 - **85%+** code quality
-- **83%** OCR accuracy (Chandra)
+- **91%+** OCR accuracy (DeepSeek-OCR)
 - **95%** voice recognition (Whisper)
 
 ---
@@ -696,7 +695,7 @@ Contributions приветствуются!
 ## 🙏 Credits
 
 **Open Source проекты:**
-- [Chandra OCR](https://github.com/datalab-to/chandra) - Document OCR
+- [DeepSeek](https://github.com/deepseek-ai) - OCR и LLM модели
 - [Qwen](https://github.com/QwenLM/Qwen) - Base LLM
 - [aiogram](https://github.com/aiogram/aiogram) - Telegram framework
 - [Neo4j](https://neo4j.com/) - Graph database

@@ -44,7 +44,7 @@
 | **Qwen3-Coder** | BSL code generation | Ollama (local) | ✅ Production |
 | **GPT-4** | AI agents, analysis | OpenAI API | ✅ Production |
 | **Whisper** | Speech-to-Text | OpenAI API | ✅ Production |
-| **Chandra OCR** | Document recognition | Open-source | ✅ Beta |
+| **DeepSeek-OCR** | Document recognition (91%+) | DeepSeek API | ✅ Production |
 | **sentence-transformers** | Embeddings | HuggingFace | ✅ Production |
 | **LangChain** | AI orchestration | Open-source | ✅ Production |
 | **1С:Напарник** | Official 1C AI | 1C (integration ready) | 🚧 Planned |
