@@ -6,12 +6,15 @@ Backend для VSCode extension и других клиентов
 import os
 import logging
 from typing import Dict, List, Optional
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/copilot")
+limiter = Limiter(key_func=get_remote_address)
 
 
 class CompletionRequest(BaseModel):
@@ -188,7 +191,8 @@ async def get_completions(request: CompletionRequest):
 
 
 @router.post("/generate")
-async def generate_code(request: GenerationRequest):
+@limiter.limit("10/minute")
+async def generate_code(api_request: Request, request: GenerationRequest):
     """Code generation endpoint"""
     
     code = await copilot_service.generate_code(
@@ -214,7 +218,8 @@ async def optimize_code(request: OptimizationRequest):
 
 
 @router.post("/generate-tests")
-async def generate_tests(request: GenerationRequest):
+@limiter.limit("10/minute")
+async def generate_tests(api_request: Request, request: GenerationRequest):
     """Test generation endpoint"""
     
     tests = await copilot_service.generate_code(

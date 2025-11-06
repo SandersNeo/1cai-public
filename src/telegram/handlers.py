@@ -123,7 +123,7 @@ async def cmd_search(message: Message):
         
         await message.reply(response, parse_mode=ParseMode.MARKDOWN)
         
-        logger.info(f"Search completed for user {message.from_user.id}: {query}")
+        logger.info(f"Search completed for user {message.from_user.id}")  # PII: не логируем query
         
     except Exception as e:
         logger.error(f"Search error: {e}")
@@ -175,7 +175,7 @@ async def cmd_generate(message: Message):
         
         await message.reply(response, parse_mode=ParseMode.MARKDOWN)
         
-        logger.info(f"Code generated for user {message.from_user.id}: {description}")
+        logger.info(f"Code generated for user {message.from_user.id}")  # PII: не логируем description
         
     except Exception as e:
         logger.error(f"Generation error: {e}")

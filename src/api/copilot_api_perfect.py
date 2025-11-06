@@ -8,13 +8,16 @@ ALL TODOs CLOSED! Production-ready!
 import os
 import logging
 from typing import Dict, List, Optional
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
 import re
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/copilot", tags=["1C:Copilot"])
+limiter = Limiter(key_func=get_remote_address)
 
 
 class CompletionRequest(BaseModel):
@@ -609,7 +612,8 @@ async def get_completions(request: CompletionRequest):
 
 
 @router.post("/generate", tags=["Generation"])
-async def generate_code(request: GenerationRequest):
+@limiter.limit("10/minute")
+async def generate_code(api_request: Request, request: GenerationRequest):
     """
     Generate code from natural language description
     
@@ -655,7 +659,8 @@ async def optimize_code(request: OptimizationRequest):
 
 
 @router.post("/generate-tests", tags=["Test Generation"])
-async def generate_tests_for_code(request: GenerationRequest):
+@limiter.limit("10/minute")
+async def generate_tests_for_code(api_request: Request, request: GenerationRequest):
     """
     Generate tests for given code/function
     
