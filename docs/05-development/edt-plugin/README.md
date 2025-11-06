@@ -168,6 +168,6 @@ MIT License
 ## Support
 
 See main project documentation:
-- [START_HERE.md](../START_HERE.md)
-- [DEPLOYMENT_INSTRUCTIONS.md](../DEPLOYMENT_INSTRUCTIONS.md)
+- [START_HERE.md](../../01-getting-started/README.md)
+- [DEPLOYMENT_INSTRUCTIONS.md](../../01-getting-started/DEPLOYMENT_INSTRUCTIONS.md)
 

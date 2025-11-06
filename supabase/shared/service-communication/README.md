@@ -245,7 +245,7 @@ npm run lint
 
 ## 📚 Документация
 
-- [Полная документация](docs/service-communication.md)
+- 
 - [Примеры использования](examples.ts)
 - [API Reference](src/index.ts)
 

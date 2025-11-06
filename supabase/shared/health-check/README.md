@@ -496,7 +496,7 @@ cat supabase/shared/health-check/kubernetes/examples.yaml
 
 ### Полная документация
 
-📖 **[docs/health-checks.md](docs/health-checks.md)** - Полная документация системы
+📖 **[docs/health-checks.md](#features)** - Полная документация системы
 
 ### API Reference
 
@@ -652,14 +652,14 @@ mypy supabase/shared/health-check/
 
 ## 📄 Лицензия
 
-Этот проект лицензирован под MIT License - см. файл [LICENSE](LICENSE) для деталей.
+Этот проект лицензирован под MIT License - см. файл [LICENSE](../../../LICENSE) для деталей.
 
 ## 🆘 Поддержка
 
-- 📖 [Документация](docs/health-checks.md)
+- 📖 [Документация](#features)
 - 🐛 [Issues](https://github.com/DmitrL-dev/1cai-public/issues)
 - 💬 [Discussions](https://github.com/DmitrL-dev/1cai-public/discussions)
-- 📧 [Email](mailto:support@example.com)
+- 📧 `Email`
 
 ## 🗺️ Дорожная карта
 

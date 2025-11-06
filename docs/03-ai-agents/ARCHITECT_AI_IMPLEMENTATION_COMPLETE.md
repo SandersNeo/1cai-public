@@ -37,11 +37,11 @@
    - 6 полных примеров использования
    - Real-world use cases
 
-6. **`docs/adr/ADR_TEMPLATE.md`** (150 строк) ⭐
+6. **`../02-architecture/adr/ADR_TEMPLATE.md`** (150 строк) ⭐
    - Профессиональный шаблон ADR
    - Все секции и best practices
 
-7. **`docs/ANTI_PATTERNS_CATALOG.md`** (400 строк) ⭐
+7. **`ANTI_PATTERNS_CATALOG.md`** (400 строк) ⭐
    - 7 anti-patterns для 1С
    - Метрики детекции
    - Решения и примеры
@@ -520,13 +520,13 @@ python examples/architect_usage_examples.py
    - Real-world use cases
    - ROI расчеты
 
-2. **`docs/ANTI_PATTERNS_CATALOG.md`** (400 строк)
+2. **`ANTI_PATTERNS_CATALOG.md`** (400 строк)
    - Каталог 7 anti-patterns
    - Метрики детекции
    - Примеры на BSL
    - Решения
 
-3. **`docs/adr/ADR_TEMPLATE.md`** (150 строк)
+3. **`../02-architecture/adr/ADR_TEMPLATE.md`** (150 строк)
    - Профессиональный шаблон
    - Все секции
    - Best practices
@@ -674,10 +674,10 @@ python src/ai/mcp_server_architect.py
 
 ## 📚 См. также:
 
-- **[ARCHITECT_AI_ANALYSIS_AND_GROWTH.md](ARCHITECT_AI_ANALYSIS_AND_GROWTH.md)** - Анализ
-- **[ANTI_PATTERNS_CATALOG.md](docs/ANTI_PATTERNS_CATALOG.md)** - Каталог
-- **[ADR_TEMPLATE.md](docs/adr/ADR_TEMPLATE.md)** - Шаблон ADR
-- **[architect_usage_examples.py](examples/architect_usage_examples.py)** - Примеры
+- **** - Анализ
+- **[ANTI_PATTERNS_CATALOG.md](ANTI_PATTERNS_CATALOG.md)** - Каталог
+- **[ADR_TEMPLATE.md](../02-architecture/adr/ADR_TEMPLATE.md)** - Шаблон ADR
+- **** - Примеры
 
 ---
 

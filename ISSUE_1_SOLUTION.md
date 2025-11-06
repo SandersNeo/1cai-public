@@ -111,9 +111,9 @@ docker-compose -f docker-compose.yml \
 ## 🔗 Ссылки
 
 - [Issue #1](https://github.com/DmitrL-dev/1cai-public/issues/1)
-- [env.example](../env.example) - созданный файл
-- [README.md](../README.md) - главная документация
-- [WHAT_REALLY_WORKS.md](../WHAT_REALLY_WORKS.md) - что работает
+- [env.example](env.example) - созданный файл
+- [README.md](README.md) - главная документация
+- [WHAT_REALLY_WORKS.md](WHAT_REALLY_WORKS.md) - что работает
 
 ---
 

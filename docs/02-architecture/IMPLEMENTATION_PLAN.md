@@ -1,7 +1,7 @@
 # 🚀 IMPLEMENTATION TRACKING
 
 > ⚠️ **ВНИМАНИЕ:** Этот файл описывает состояние на **3 ноября 2025**.  
-> **Актуальная версия:** [../architecture/ARCHITECTURE_CURRENT_STATE.md](../architecture/ARCHITECTURE_CURRENT_STATE.md) (обновлено 6 ноября 2025)  
+> **Актуальная версия:** [ARCHITECTURE_OVERVIEW.md](ARCHITECTURE_OVERVIEW.md) (обновлено 6 ноября 2025)  
 > **Новые компоненты:** EDT-Parser, ML Dataset (24K+ примеров), Analysis tools, Audit suite
 
 ## Current Status: ЭТАП 0 - ПОДГОТОВКА

@@ -359,10 +359,10 @@ kubectl top pods -n microservices
 
 ## 📚 Дополнительная документация
 
-- [Complete CI/CD Documentation](../docs/cicd-pipeline.md)
-- [Deployment Strategies Guide](../docs/deployment-strategies.md)
-- [Security Best Practices](../docs/security-compliance.md)
-- [Performance Tuning](../docs/performance-tuning.md)
+- [Complete CI/CD Documentation](../docs/README.md)
+- [Deployment Strategies Guide](../docs/01-getting-started/DEPLOYMENT_INSTRUCTIONS.md)
+- [Security Best Practices](../docs/README.md)
+- [Performance Tuning](../docs/README.md)
 
 ## 📞 Поддержка
 

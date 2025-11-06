@@ -1,7 +1,7 @@
 # ADR-TEMPLATE: [Краткое название решения]
 
 > ⚠️ **ВНИМАНИЕ:** Этот файл описывает состояние на **3 ноября 2025**.  
-> **Актуальная версия:** [../../architecture/ARCHITECTURE_CURRENT_STATE.md](../../architecture/ARCHITECTURE_CURRENT_STATE.md) (обновлено 6 ноября 2025)
+> **Актуальная версия:** [../ARCHITECTURE_OVERVIEW.md](../ARCHITECTURE_OVERVIEW.md) (обновлено 6 ноября 2025)
 
 **Date:** YYYY-MM-DD  
 **Status:** proposed | accepted | deprecated | superseded  
@@ -157,8 +157,8 @@
 
 ## References
 
-- [Link 1](url)
-- [Link 2](url)
+- `Link 1`
+- `Link 2`
 - Internal docs: ...
 
 ---

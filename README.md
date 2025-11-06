@@ -720,7 +720,7 @@ Contributions приветствуются!
 **Разработчик?** Смотрите:
 1. [Architecture](docs/02-architecture/)
 2. [Contributing](CONTRIBUTING.md)
-3. [Current Architecture State](docs/architecture/ARCHITECTURE_CURRENT_STATE.md)
+3. [Current Architecture State](docs/02-architecture/ARCHITECTURE_OVERVIEW.md)
 
 **DevOps?** Читайте:
 1. [Deployment](docs/01-getting-started/DEPLOYMENT_INSTRUCTIONS.md)

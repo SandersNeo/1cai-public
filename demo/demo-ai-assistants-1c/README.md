@@ -7,7 +7,7 @@
 [![Coverage Status](https://img.shields.io/badge/coverage-80%25-brightgreen.svg)](https://codecov.io/gh/demo/demo-ai-assistants-1c)
 [![Tests](https://img.shields.io/badge/tests-ready-green.svg)](./docs/testing-guide.md)
 [![CI/CD](https://img.shields.io/badge/CI%2FCD-active-blue.svg)](./.github/workflows/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](../../LICENSE)
 
 ## 🚀 Быстрый старт
 
@@ -502,11 +502,11 @@ export COVERAGE_DIR=.deno/coverage_unit_test
 - 📖 **[Документация](./docs/)** - полная документация проекта
 - 🐛 **[Issues](https://github.com/DmitrL-dev/1cai-public/issues)** - баги и фича-реквесты
 - 💬 **[Discussions](https://github.com/DmitrL-dev/1cai-public/discussions)** - обсуждения и вопросы
-- 📧 **[Email](mailto:support@yourcompany.com)** - техническая поддержка
+- 📧 **`Email`** - техническая поддержка
 
 ## 📄 Лицензия
 
-Проект лицензирован под MIT License - подробности в файле [LICENSE](LICENSE).
+Проект лицензирован под MIT License - подробности в файле [LICENSE](../../LICENSE).
 
 ---
 

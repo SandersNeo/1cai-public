@@ -419,7 +419,7 @@ bash -n scripts/health-check.sh
 ### Контакты
 - **DevOps Team**: devops@company.com
 - **Slack**: #ci-cd
-- **Documentation**: [CI/CD Documentation](../README-CI-CD.md)
+- **Documentation**: [CI/CD Documentation](../../README.md)
 
 ---
 

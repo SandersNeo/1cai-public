@@ -757,6 +757,6 @@ netstat -ano | findstr ":3000"
 
 **Happy Testing!** 🧪✨
 
-**Questions?** Check [docs/README.md](./docs/README.md)
+**Questions?** Check [docs/README.md](../README.md)
 
 

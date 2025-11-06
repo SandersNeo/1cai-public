@@ -499,7 +499,7 @@ make test-ratelimit-all
 
 При возникновении проблем:
 
-1. Проверьте [Issues](../../issues)
+1. Проверьте [Issues](https://github.com/DmitrL-dev/1cai-public/issues)
 2. Создайте новый issue с описанием проблемы
 3. Приложите логи и конфигурацию
 4. Укажите версию Python и зависимостей

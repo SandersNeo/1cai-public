@@ -283,8 +283,8 @@ After successful setup:
    - Run sample queries
 
 2. ✅ **Read documentation**
-   - [Architecture Overview](./docs/architecture/README.md)
-   - [Implementation Plan](./IMPLEMENTATION_PLAN.md)
+   - [Architecture Overview](../02-architecture/)
+   - [Implementation Plan](../02-architecture/IMPLEMENTATION_PLAN.md)
 
 3. ✅ **Prepare for Stage 1**
    - Review Neo4j setup (coming next)
@@ -300,7 +300,7 @@ After successful setup:
 
 - **GitHub Issues**: [Report bugs](https://github.com/DmitrL-dev/1cai-public/issues)
 - **Discussions**: [Ask questions](https://github.com/DmitrL-dev/1cai-public/discussions)
-- **Documentation**: [Full docs](./docs/)
+- **Documentation**: [Full docs](../)
 
 ---
 

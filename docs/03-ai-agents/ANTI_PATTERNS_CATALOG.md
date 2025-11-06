@@ -434,5 +434,5 @@ result = await architect.detect_anti_patterns("ERP", include_code_analysis=False
 
 # 🎉 **Используйте AI Архитектор для автоматической детекции!**
 
-**→ См. →** [architect_agent_extended.py](../src/ai/agents/architect_agent_extended.py)
+**→ См. →** [architect_agent_extended.py](../../src/ai/agents/architect_agent_extended.py)
 

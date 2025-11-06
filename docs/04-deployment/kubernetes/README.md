@@ -248,5 +248,5 @@ kubectl describe pvc PVC_NAME -n 1c-ai-stack
 
 - [Kubernetes Docs](https://kubernetes.io/docs/)
 - [Helm Docs](https://helm.sh/docs/)
-- Main project: [START_HERE.md](../START_HERE.md)
+- Main project: [START_HERE.md](../../01-getting-started/README.md)
 

@@ -409,5 +409,5 @@ print(f"Cache info: {cache_info}")
 
 - [RFC 7234: HTTP Caching](https://tools.ietf.org/html/rfc7234)
 - [MDN: HTTP Caching](https://developer.mozilla.org/ru/docs/Web/HTTP/Guides/Caching)
-- [Стандарты кэширования 1С](../docs/1c_caching_standards.md)
-- [Анализ архитектуры 1c_mcp](../docs/1c_mcp_structure/1c_mcp_code_structure_analysis.md)
+- [Стандарты кэширования 1С](../README.md)
+- [Анализ архитектуры 1c_mcp](../README.md)

@@ -90,6 +90,6 @@ python scripts/maintenance/cleanup_project.py
 ---
 
 **См. также:**
-- [Getting Started](../GETTING_STARTED.md)
-- [Deployment Instructions](../docs/04-deployment/instructions.md)
-- [Project Status](../PROJECT_STATUS.md)
+- [Getting Started](../docs/01-getting-started/README.md)
+- [Deployment Instructions](../docs/01-getting-started/DEPLOYMENT_INSTRUCTIONS.md)
+- [Quick Start](../QUICK_START.md)

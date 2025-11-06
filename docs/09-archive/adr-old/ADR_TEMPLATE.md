@@ -154,8 +154,8 @@
 
 ## References
 
-- [Link 1](url)
-- [Link 2](url)
+- `Link 1`
+- `Link 2`
 - Internal docs: ...
 
 ---

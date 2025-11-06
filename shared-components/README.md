@@ -238,7 +238,7 @@ import { ReportsDashboard } from '1c-ai-shared-components';
 
 ## 📄 Лицензия
 
-MIT License - см. [LICENSE](LICENSE) файл.
+MIT License - см. [LICENSE](../LICENSE) файл.
 
 ## 📞 Поддержка
 

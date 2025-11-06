@@ -102,7 +102,7 @@ src/
 
 ## 🎨 Design System
 
-See: [`docs/ui-ux/DESIGN_SYSTEM.md`](../docs/ui-ux/DESIGN_SYSTEM.md)
+See: 
 
 **Colors:**
 - Primary: `#2563EB` (Blue)
@@ -213,11 +213,11 @@ VITE_AUTH_DOMAIN=yourdomain.auth0.com
 
 ## 📚 Documentation
 
-- [Design System](../docs/ui-ux/DESIGN_SYSTEM.md)
-- [Executive Dashboard](../docs/ui-ux/EXECUTIVE_DASHBOARD.md)
-- [PM Dashboard](../docs/ui-ux/PM_DASHBOARD.md)
-- [Developer Console](../docs/ui-ux/DEVELOPER_CONSOLE.md)
-- [Architecture](../docs/ui-ux/UNIFIED_PORTAL_ARCHITECTURE.md)
+- 
+- 
+- 
+- 
+- 
 
 ---
 

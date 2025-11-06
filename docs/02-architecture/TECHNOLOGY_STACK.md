@@ -254,7 +254,7 @@
 ## 📚 Дополнительно
 
 - [Architecture Overview](./ARCHITECTURE_OVERVIEW.md)
-- [Implementation Plan](./IMPLEMENTATION_PLAN.md)
+- [Implementation Plan](IMPLEMENTATION_PLAN.md)
 - [ADR](./adr/) - Architecture Decision Records
 
 ---

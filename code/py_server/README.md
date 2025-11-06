@@ -498,6 +498,6 @@ async def handle_tool_with_cache(tool_name, arguments):
 Для вопросов и предложений создавайте issues в репозитории проекта.
 
 ### Дополнительные ресурсы
-- [Стандарты кэширования 1С](docs/1c_caching_standards.md)
-- [Анализ производительности MCP](docs/1c_mcp_performance/1c_mcp_performance_bottlenecks.md)
+- [Документация проекта](../../docs/)
+- [Cache README](cache/README.md)
 - [Спецификация Model Context Protocol](https://modelcontextprotocol.io/)

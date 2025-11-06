@@ -173,7 +173,7 @@ python -m src.telegram.bot
    - Какие фичи нужны?
 
 3. **Следуйте Distribution Strategy:**
-   См. [docs/TELEGRAM_DISTRIBUTION_STRATEGY.md](docs/TELEGRAM_DISTRIBUTION_STRATEGY.md)
+   См. 
 
 ---
 
@@ -308,16 +308,16 @@ docker stop 1c-ai-telegram-bot
 ## 📚 Документация
 
 **Для пользователей:**
-- [TELEGRAM_README.md](docs/TELEGRAM_README.md) - Обзор возможностей
-- [TELEGRAM_BOT_QUICKSTART.md](docs/TELEGRAM_BOT_QUICKSTART.md) - Быстрый старт
+-  - Обзор возможностей
+-  - Быстрый старт
 
 **Для разработчиков:**
-- [src/telegram/](src/telegram/) - Исходный код
-- [TELEGRAM_DISTRIBUTION_STRATEGY.md](docs/TELEGRAM_DISTRIBUTION_STRATEGY.md) - Стратегия распространения
+- [src/telegram/](../../src/telegram/) - Исходный код
+-  - Стратегия распространения
 
 **Техническое:**
-- [docker-compose.stage1.yml](docker-compose.stage1.yml) - Конфигурация Docker
-- [requirements-telegram.txt](requirements-telegram.txt) - Python зависимости
+- [docker-compose.stage1.yml](../../docker-compose.stage1.yml) - Конфигурация Docker
+- [requirements-telegram.txt](../../requirements-telegram.txt) - Python зависимости
 
 ---
 
@@ -389,7 +389,7 @@ docker stop 1c-ai-telegram-bot
 ## 🆘 Поддержка
 
 **Проблемы?**
-- GitHub Issues: [создать issue](../../issues)
+- GitHub Issues: [создать issue](https://github.com/DmitrL-dev/1cai-public/issues)
 - Telegram: @ai1c_support (создайте канал поддержки)
 - Email: support@your-domain.com
 

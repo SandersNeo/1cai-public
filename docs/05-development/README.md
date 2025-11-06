@@ -34,5 +34,5 @@ flake8 src/
 
 ---
 
-[← Deployment](../04-deployment/) | [→ Project Reports](../06-project-reports/)
+[← Deployment](../04-deployment/) | 
 

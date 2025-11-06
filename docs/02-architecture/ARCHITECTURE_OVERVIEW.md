@@ -250,7 +250,7 @@ deno run --allow-all execution-harness.ts
 ## 📚 Дополнительно
 
 - [Технологический стек](./TECHNOLOGY_STACK.md) - полный список технологий
-- [Implementation Plan](./IMPLEMENTATION_PLAN.md) - план реализации
+- [Implementation Plan](IMPLEMENTATION_PLAN.md) - план реализации
 - [ADR](./adr/) - Architecture Decision Records
 
 ---

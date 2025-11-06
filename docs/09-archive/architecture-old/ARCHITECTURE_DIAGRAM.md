@@ -1,7 +1,7 @@
 # 🏗️ 1C AI Stack - Architecture Diagram
 
 > ⚠️ **ВНИМАНИЕ:** Этот файл описывает состояние на **5 ноября 2025**.  
-> **Актуальная версия:** [ARCHITECTURE_CURRENT_STATE.md](./ARCHITECTURE_CURRENT_STATE.md) (обновлено 6 ноября 2025)  
+> **Актуальная версия:** [ARCHITECTURE_OVERVIEW.md](../../02-architecture/ARCHITECTURE_OVERVIEW.md) (обновлено 6 ноября 2025)  
 > **Новые компоненты:** EDT-Parser, ML Dataset (24K+ примеров), Analysis tools, Audit suite
 
 **Версия:** 5.0  

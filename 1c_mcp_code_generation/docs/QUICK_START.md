@@ -105,9 +105,9 @@ curl -X POST http://localhost:3000/tools/list
 ## 📚 Дополнительные ресурсы
 
 - **Полная документация:** [`docs/API_DOCUMENTATION.md`](./API_DOCUMENTATION.md)
-- **Примеры кода:** [`examples/`](./examples/)
-- **Конфигурация:** [`config/generation_config.yaml`](./config/generation_config.yaml)
-- **Шаблоны:** [`templates/`](./templates/)
+- **Примеры кода:** [`examples/`](../)
+- **Конфигурация:** [`config/generation_config.yaml`](../config/generation_config.yaml)
+- **Шаблоны:** [`templates/`](../templates/)
 
 ## 🆘 Проблемы?
 
