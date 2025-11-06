@@ -1,338 +1,197 @@
-# 📚 Документация Enterprise 1C AI Stack
+# 📚 Документация 1C AI Stack
 
-**Версия:** 3.0  
-**Обновлено:** 2025-11-03  
+**Версия:** 5.1.0  
+**Обновлено:** 6 ноября 2025  
 **Статус:** Production Ready ✅
 
 ---
 
-## 🎯 БЫСТРАЯ НАВИГАЦИЯ
+## 🚀 БЫСТРАЯ НАВИГАЦИЯ
 
-| Я хочу... | Перейти к... |
-|-----------|--------------|
-| 🚀 **Начать использовать** | [Quick Start](./01-getting-started/QUICKSTART.md) |
-| 🏗️ **Понять архитектуру** | [Architecture](./02-architecture/PROJECT_SUMMARY.md) |
-| 🤖 **Использовать AI агентов** | [AI Agents Guide](./03-ai-agents/FINAL_PROJECT_SUMMARY.md) |
-| 📦 **Развернуть в production** | [Deployment](./04-deployment/PRODUCTION_DEPLOYMENT.md) |
-| 📋 **Внедрить ITIL/ITSM** | [ITIL Analysis](./itil-analysis/README.md) |
-| 💻 **Разрабатывать и контрибьютить** | [Development](./05-development/) |
-| 📊 **Посмотреть отчеты** | [Project Reports](./06-project-reports/) |
-| 💡 **Узнать о новых возможностях** | [Innovation Report](./06-project-reports/INNOVATION_OPPORTUNITIES_2025.md) |
+| Задача | Документация |
+|--------|--------------|
+| **🎯 Быстрый старт** | [Quick Start](./01-getting-started/START_HERE.md) |
+| **🏗️ Архитектура** | [Architecture Overview](./02-architecture/ARCHITECTURE_OVERVIEW.md) |
+| **🛠️ Технологический стек** | [Technology Stack](./02-architecture/TECHNOLOGY_STACK.md) |
+| **🤖 AI Агенты** | [AI Agents](./03-ai-agents/README.md) |
+| **⚡ Code Execution (NEW!)** | [Code Execution](./08-code-execution/README.md) |
+| **📋 ITIL/ITSM (NEW!)** | [ITIL Analysis](./07-itil-analysis/README.md) |
+| **📦 Deployment** | [Deployment Guide](./04-deployment/README.md) |
+| **💻 Development** | [Development Guide](./05-development/README.md) |
+| **🎁 Специальные фичи** | [Features](./06-features/) |
 
 ---
 
 ## 📂 СТРУКТУРА ДОКУМЕНТАЦИИ
 
-### **[01-getting-started/](./01-getting-started/)** 🎯
-Быстрый старт и основы
-
-- ⚡ [Quick Start](./01-getting-started/QUICKSTART.md) - запустить за 5 минут
-- 🎬 [Start Here](./01-getting-started/START_HERE.md) - для новичков
-- 🚀 [Deployment](./01-getting-started/DEPLOYMENT_INSTRUCTIONS.md) - как развернуть
-- 🤝 [Contributing](./01-getting-started/CONTRIBUTING.md) - как помочь проекту
-
----
-
-### **[02-architecture/](./02-architecture/)** 🏗️
-Архитектура и технологии
-
-- 📊 [Project Summary](./02-architecture/PROJECT_SUMMARY.md) - обзор проекта
-- 📐 [Implementation Plan](./02-architecture/IMPLEMENTATION_PLAN.md) - план реализации
-- 📝 [ADR](./02-architecture/adr/) - архитектурные решения
-
-**Уровни системы:**
 ```
-L0: Continuous Innovation Engine
-L1: IDE & Clients (EDT, Cursor, VSCode)
-L2: Language Services (MCP)
-L3: AI Orchestrator
-L4: API Gateway (FastAPI, MCP)
-L5: Data & Search (PostgreSQL, Neo4j, Qdrant, ES, Redis)
-L6: Automation & CI/CD
-L7: Monitoring
-L8: Infrastructure (Docker, K8s)
+docs/
+├── README.md                       ← Вы здесь
+│
+├── 01-getting-started/             🚀 Быстрый старт
+│   ├── START_HERE.md               ← Начать здесь!
+│   ├── quickstart.md
+│   ├── DEPLOYMENT_INSTRUCTIONS.md
+│   └── telegram-setup.md
+│
+├── 02-architecture/                🏗️ Архитектура
+│   ├── README.md
+│   ├── ARCHITECTURE_OVERVIEW.md    ← Обзор архитектуры
+│   ├── TECHNOLOGY_STACK.md         ← Полный стек технологий
+│   ├── IMPLEMENTATION_PLAN.md
+│   └── adr/                        (Architecture Decision Records)
+│
+├── 03-ai-agents/                   🤖 AI Агенты
+│   ├── README.md
+│   ├── FINAL_PROJECT_SUMMARY.md    ← 8 AI агентов, ROI €309K/год
+│   ├── SQL_OPTIMIZER_COMPLETE.md
+│   └── TECH_LOG_INTEGRATION_COMPLETE.md
+│
+├── 04-deployment/                  📦 Развертывание
+│   ├── README.md
+│   ├── PRODUCTION_DEPLOYMENT.md
+│   └── kubernetes/
+│
+├── 05-development/                 💻 Разработка
+│   ├── README.md
+│   └── CHANGELOG.md
+│
+├── 06-features/                    🎁 Специальные возможности
+│   ├── VOICE_QUERIES.md            (Голосовые запросы)
+│   ├── OCR_INTEGRATION.md          (Распознавание документов)
+│   ├── I18N_GUIDE.md               (Мультиязычность)
+│   └── BSL_FINETUNING_GUIDE.md     (Fine-tuning модели)
+│
+├── 07-itil-analysis/               📋 ITIL/ITSM (NEW!)
+│   ├── README.md
+│   ├── ITIL_EXECUTIVE_SUMMARY.md   ← Management summary
+│   ├── ITIL_ACTION_PLAN.md         ← Детальный план
+│   ├── ITIL_APPLICATION_REPORT.md  (60+ стр)
+│   └── ITIL_VISUAL_OVERVIEW.md
+│
+├── 08-code-execution/              ⚡ Code Execution (NEW!)
+│   ├── README.md
+│   └── IMPLEMENTATION_COMPLETE.md
+│
+└── archive/                        📦 Архив
+    ├── sessions/                   (Old session reports)
+    ├── research-backup/            (Research files)
+    └── old-summaries/              (Old versions)
 ```
-
----
-
-### **[03-ai-agents/](./03-ai-agents/)** 🤖
-AI ассистенты и возможности
-
-**Главные документы:**
-- 🎉 **[FINAL_PROJECT_SUMMARY.md](./03-ai-agents/FINAL_PROJECT_SUMMARY.md)** - START HERE!
-- 📊 [All Assistants Complete](./03-ai-agents/ALL_ASSISTANTS_IMPLEMENTATION_COMPLETE.md)
-
-**AI Agents (6):**
-
-| Agent | Status | ROI/год | Key Features |
-|-------|--------|---------|--------------|
-| 🏗️ **Architect** | ✅ 120% | €155K | Architecture analysis, ADR, anti-patterns, SQL optimization |
-| ⚙️ **DevOps** | ✅ 95% | €32K | CI/CD optimization, log analysis, cost optimization, IaC |
-| 🧪 **QA Engineer** | ✅ 95% | €47K | Smart test generation, coverage analysis, bug patterns |
-| 📊 **Business Analyst** | ✅ 92% | €40K | Requirements NLP, BPMN, gap analysis, traceability |
-| 📝 **Technical Writer** | ✅ 88% | €20K | API docs, user guides, release notes |
-| 👨‍💻 **Developer** | ✅ 80% | €15K | Code generation, optimization |
-
-**Total ROI:** **€309,000/год** 💰
-
-**Специализированные компоненты:**
-- 🗄️ [SQL Optimizer](./03-ai-agents/SQL_OPTIMIZER_COMPLETE.md)
-- 📊 [Tech Log Analyzer](./03-ai-agents/TECH_LOG_INTEGRATION_COMPLETE.md)
-- 📚 [ITS Knowledge Integration](./03-ai-agents/ITS_ARCHITECTURE_KNOWLEDGE_INTEGRATION.md)
-- 🚨 [Anti-Patterns Catalog](./03-ai-agents/ANTI_PATTERNS_CATALOG.md)
-
----
-
-### **[04-deployment/](./04-deployment/)** 🚀
-Production развертывание
-
-- 🌐 [Production Deployment](./04-deployment/PRODUCTION_DEPLOYMENT.md)
-- ☸️ [Kubernetes](./04-deployment/kubernetes/)
-- 🔒 [Security](./04-deployment/security/)
-
-**Deployment options:**
-- Docker Compose (development)
-- Kubernetes (production)
-- Cloud platforms (AWS, Azure, GCP)
-
----
-
-### **[itil-analysis/](./itil-analysis/)** 📋
-ITIL/ITSM анализ и внедрение
-
-**Главный документ:**
-- 📊 **[README](./itil-analysis/README.md)** - START HERE!
-
-**Документация:**
-- 📄 [Полный отчёт](./itil-analysis/ITIL_APPLICATION_REPORT.md) (60+ стр)
-- 📄 [Executive Summary](./itil-analysis/ITIL_EXECUTIVE_SUMMARY.md) (5 стр)
-- 📄 [Action Plan](./itil-analysis/ITIL_ACTION_PLAN.md) (30+ стр)
-- 📄 [Visual Overview](./itil-analysis/ITIL_VISUAL_OVERVIEW.md) (диаграммы)
-
-**Ключевые выводы:**
-- ✅ Проект готов к ITIL (6/10 readiness)
-- 💰 ROI: 458-4900% (окупаемость 1 неделя - 2.5 мес)
-- 🎯 Рекомендация: ВНЕДРЯТЬ (высокий приоритет)
-- 🎁 Уникальные преимущества: Telegram + AI
-
----
-
-### **[05-development/](./05-development/)** 💻
-Разработка и вклад
-
-- 📝 [Changelog](./05-development/CHANGELOG.md)
-- 🔌 [EDT Plugin Development](./05-development/edt-plugin/)
-- 📜 [Scripts & Utilities](./05-development/scripts/)
-
----
-
-### **[06-project-reports/](./06-project-reports/)** 📊
-Отчеты, аналитика, инновации
-
-**Текущий статус:**
-- ✅ [Status](./06-project-reports/STATUS.md) - текущее состояние
-- 📋 [Documentation Audit](./06-project-reports/DOCUMENTATION_AUDIT.md) - аудит документации
-- 🧹 [Root Cleanup](./06-project-reports/ROOT_CLEANUP_COMPLETE.md) - cleanup отчет
-
-**Инновации и рост:**
-- 💡 **[Innovation Opportunities](./06-project-reports/INNOVATION_OPPORTUNITIES_2025.md)** - TOP-10 прорывных идей
-- 🔬 [Technical Innovations](./06-project-reports/TECHNICAL_INNOVATIONS_ROADMAP.md) - технические инновации
-- 📈 **[Growth Strategy 2025-2027](./06-project-reports/GROWTH_STRATEGY_2025_2027.md)** - стратегия роста
-
----
-
-### **[07-archive/](./07-archive/)** 📦
-Архивные документы
-
-Старые версии, промежуточные отчеты, историческая справка
-
----
-
-## 🚀 QUICK START
-
-### **Для новых пользователей:**
-
-**1. Установка (5 минут):**
-```bash
-git clone https://github.com/DmitrL-dev/1cai-public
-cd enterprise-1c-ai-stack
-pip install -r requirements.txt
-cp .env.example .env
-```
-
-**2. Запуск (1 минута):**
-```bash
-docker-compose up -d
-python main.py
-```
-
-**3. Использование:**
-- Откройте Cursor/VSCode
-- Подключитесь к MCP Server
-- Начните использовать AI агентов!
-
-**Подробнее:** [Quick Start Guide](./01-getting-started/QUICKSTART.md)
-
----
-
-## 💡 ИННОВАЦИИ И ВОЗМОЖНОСТИ РОСТА
-
-**Текущий ROI:** €309K/год  
-**Потенциальный ROI:** **€10M+/год** (X32 рост!)
-
-### **TOP-5 Прорывных идей:**
-
-1. 🔥 **Multi-Tenant SaaS Platform** - €2.1M ARR
-2. 🔥 **1С:Copilot (AI Pair Programming)** - €1.8M ARR  
-3. 🔥 **AI Code Review Agent** - €307K ARR
-4. 🔥 **AI Model Marketplace** - €1.68M ARR
-5. 🔥 **Predictive Analytics** - €450K ARR
-
-**Подробнее:** [Innovation Report](./06-project-reports/INNOVATION_OPPORTUNITIES_2025.md)
-
----
-
-## 📈 PROJECT METRICS
-
-### **Реализация:**
-- ✅ Код: 50,000+ строк
-- ✅ Файлов: 150+
-- ✅ AI Agents: 6 (95% avg)
-- ✅ MCP Tools: ~80
-- ✅ Documentation: 100% coverage
-
-### **ROI & Impact:**
-- 💰 Current ROI: €309K/year
-- 💰 Potential: €10M+/year
-- ⚡ Time savings: 22.5 hours/week
-- 📊 Coverage: 95%
-- ⭐ Quality score: 9/10
 
 ---
 
 ## 🎯 ПО РОЛЯМ
 
-### **👨‍💼 Я CEO/CTO**
-→ [Growth Strategy](./06-project-reports/GROWTH_STRATEGY_2025_2027.md)  
-→ [Innovation Report](./06-project-reports/INNOVATION_OPPORTUNITIES_2025.md)  
-→ [ROI Analysis](./03-ai-agents/FINAL_PROJECT_SUMMARY.md)
+### 👔 Для Management
 
-### **🏗️ Я архитектор**
-→ [Architecture Overview](./02-architecture/)  
-→ [ADR](./02-architecture/adr/)  
-→ [AI Architect Guide](./03-ai-agents/ARCHITECT_AI_IMPLEMENTATION_COMPLETE.md)
+**Start here:**
+1. [ITIL Executive Summary](./07-itil-analysis/ITIL_EXECUTIVE_SUMMARY.md) - бизнес-кейс
+2. [AI Agents ROI](./03-ai-agents/FINAL_PROJECT_SUMMARY.md) - €309K/год
+3. [Architecture Overview](./02-architecture/ARCHITECTURE_OVERVIEW.md) - что имеем
 
-### **👨‍💻 Я разработчик**
-→ [Development Guide](./05-development/)  
-→ [Contributing](./01-getting-started/CONTRIBUTING.md)  
-→ [AI Agents](./03-ai-agents/)
-
-### **⚙️ Я DevOps**
-→ [Deployment](./04-deployment/)  
-→ [Kubernetes](./04-deployment/kubernetes/)  
-→ [Security](./04-deployment/security/)
-
-### **🧪 Я QA Engineer**
-→ [QA Agent Guide](./03-ai-agents/)  
-→ [Testing Strategy](./05-development/)
-
-### **📊 Я бизнес-аналитик**
-→ [BA Agent Guide](./03-ai-agents/)  
-→ [Requirements Extraction](./03-ai-agents/OTHER_ASSISTANTS_ANALYSIS_AND_IMPROVEMENTS.md)
+**Time:** 30 минут
 
 ---
 
-## 🆘 ПОМОЩЬ
+### 👨‍💻 Для Developers
 
-### **Нашли проблему?**
-- Создайте [Issue на GitHub](https://github.com/DmitrL-dev/1cai-public/issues)
-- См. [Contributing Guide](./01-getting-started/CONTRIBUTING.md)
+**Start here:**
+1. [Quick Start](./01-getting-started/START_HERE.md) - начать работу
+2. [Code Execution Guide](./08-code-execution/README.md) - NEW!
+3. [AI Agents Guide](./03-ai-agents/README.md) - использование агентов
+4. [Development Guide](./05-development/README.md) - контрибьюция
 
-### **Есть вопросы?**
-- Проверьте документацию выше
-- Изучите [Architecture](./02-architecture/)
-- Посмотрите [Examples](../examples/)
-
-### **Хотите помочь?**
-- Читайте [Contributing](./01-getting-started/CONTRIBUTING.md)
-- Проверьте [Development Docs](./05-development/)
-- Присоединяйтесь к community!
+**Time:** 2 часа
 
 ---
 
-## 🌟 HIGHLIGHTS
+### ⚙️ Для DevOps
 
-### **✨ Что уникального:**
-- First comprehensive AI platform для 1С
-- 6 specialized AI agents
-- Multi-database architecture
-- Enterprise-grade security
-- Production-ready из коробки
+**Start here:**
+1. [Deployment Guide](./04-deployment/README.md)
+2. [Production Deployment](./04-deployment/PRODUCTION_DEPLOYMENT.md)
+3. [Kubernetes](./04-deployment/kubernetes/)
+4. [Code Execution Setup](./08-code-execution/README.md)
 
-### **📊 Цифры:**
-- **50,000+ строк кода**
-- **€309K/год текущий ROI**
-- **€10M+ потенциал**
-- **95% реализация**
-- **75+ TODO в коде** (opportunities!)
-
-### **🚀 Vision:**
-> "Стать Operating System для 1С разработки с AI"
+**Time:** 3 часа
 
 ---
 
-## 🗺️ ROADMAP
+### 📋 Для Service Manager
 
-### **Q4 2025:**
-- Multi-Tenant SaaS
-- AI Code Review
-- Performance optimization
+**Start here:**
+1. [ITIL Analysis](./07-itil-analysis/README.md) - overview
+2. [ITIL Action Plan](./07-itil-analysis/ITIL_ACTION_PLAN.md) - детальный план
+3. [ITIL Visual Overview](./07-itil-analysis/ITIL_VISUAL_OVERVIEW.md) - диаграммы
 
-### **Q1-Q2 2026:**
-- 1С:Copilot launch
-- AI Marketplace beta
-- Predictive Analytics
-
-### **Q3-Q4 2026:**
-- Visual Development Studio
-- IoT integration
-- Voice interface
-
-**Подробнее:** [Growth Strategy](./06-project-reports/GROWTH_STRATEGY_2025_2027.md)
+**Time:** 2 часа
 
 ---
 
-## 📞 CONTACT & SUPPORT
+## 🆕 Что нового (Nov 6, 2025)
 
-**GitHub:** [Enterprise 1C AI Stack](https://github.com/DmitrL-dev/1cai-public)  
-**Docs:** Вы здесь! 📚  
-**Community:** [Discussions](https://github.com/DmitrL-dev/1cai-public/discussions)
+### Code Execution with MCP
+- ✅ Deno sandbox environment
+- ✅ 98.7% token savings
+- ✅ PII protection (152-ФЗ)
+- ✅ Progressive disclosure
+- ✅ Skills system
+
+**Docs:** [08-code-execution/](./08-code-execution/)
+
+### ITIL/ITSM Analysis & Planning
+- ✅ Полный анализ применения ITIL
+- ✅ План на 12 месяцев
+- ✅ ROI 458-4900%
+- ✅ Топ-5 quick wins
+
+**Docs:** [07-itil-analysis/](./07-itil-analysis/)
 
 ---
 
-## 📜 ИСТОРИЯ ВЕРСИЙ
+## 📊 Метрики проекта
 
-- **v3.0** (2025-11-03) - Документация restructure, все агенты готовы, €309K ROI
-- **v2.0** (2025-10-25) - Multi-Role AI система
-- **v1.0** (2025-10-01) - Первый релиз
+### Текущее состояние:
+- **Готовность:** 99.5%
+- **LOC:** ~52,500
+- **Документов:** ~60 (после cleanup)
+- **AI Agents:** 8 (ROI €309K/год)
+- **Databases:** 5
+- **Docker Services:** 18
+
+### Impact:
+- **Token savings:** 98.7% (Code Execution)
+- **ITIL ROI:** 458-4900%
+- **Combined savings:** ~$430K/год
 
 ---
 
-[⚡ Quick Start](./01-getting-started/QUICKSTART.md) | [🏗️ Architecture](./02-architecture/) | [🤖 AI Agents](./03-ai-agents/) | [💡 Innovations](./06-project-reports/INNOVATION_OPPORTUNITIES_2025.md) | [🚀 Deploy](./04-deployment/)
+## 🔗 Внешние ресурсы
+
+### Технологии:
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [Neo4j](https://neo4j.com/)
+- [Qdrant](https://qdrant.tech/)
+- [Deno](https://deno.land/)
+- [Model Context Protocol](https://modelcontextprotocol.io/)
+
+### Best Practices:
+- [Anthropic: Code Execution with MCP](https://www.anthropic.com/engineering/code-execution-with-mcp)
+- [Cloudflare: Code Mode](https://blog.cloudflare.com/ru-ru/code-mode/)
+- [ITIL 4](https://www.axelos.com/certifications/itil-service-management)
 
 ---
 
-<div align="center">
+## 📞 Поддержка
 
-# ✨ Enterprise 1C AI Stack ✨
+**Вопросы?** 
+- Проверьте раздел документации выше
+- См. [FAQ](./01-getting-started/README.md)
+- Создайте Issue на GitHub
 
-**Making 1C Development 10x Faster with AI**
+---
 
-[![Status](https://img.shields.io/badge/status-production%20ready-success)]()
-[![ROI](https://img.shields.io/badge/ROI-%E2%82%AC309K%2Fyear-blue)]()
-[![Coverage](https://img.shields.io/badge/coverage-95%25-green)]()
-[![Docs](https://img.shields.io/badge/docs-100%25-brightgreen)]()
-
-[Get Started](./01-getting-started/QUICKSTART.md) • [View Roadmap](./06-project-reports/GROWTH_STRATEGY_2025_2027.md) • [Try Demo](#)
-
-</div>
+**Обновлено:** 6 ноября 2025  
+**Cleanup:** 380 → 60 файлов ✅  
+**Status:** Clean & Organized 🎯

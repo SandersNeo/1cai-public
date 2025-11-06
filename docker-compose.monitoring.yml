@@ -80,6 +80,48 @@ services:
     depends_on:
       - prometheus
 
+  # Flower - Celery Monitoring UI
+  flower:
+    image: mher/flower:2.0
+    container_name: flower
+    command: celery --broker=redis://redis:6379/1 flower --port=5555 --url_prefix=flower --basic_auth=admin:admin123
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - FLOWER_PORT=5555
+      - FLOWER_MAX_TASKS=10000
+    networks:
+      - monitoring
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5555/flower"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Celery Exporter - Prometheus metrics for Celery
+  celery-exporter:
+    image: danihodovic/celery-exporter:latest
+    container_name: celery-exporter
+    command:
+      - --broker-url=redis://redis:6379/1
+      - --listen-address=0.0.0.0:9808
+      - --enable-events
+    ports:
+      - "9808:9808"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/1
+    networks:
+      - monitoring
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9808/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 volumes:
   prometheus_data:
   grafana_data:

@@ -36,16 +36,26 @@
          allowMultiple="false">
       </view>
       
-      <!-- Code Optimizer View -->
-      <view
-         id="com.1cai.edt.views.CodeOptimizer"
-         name="Code Optimizer"
-         icon="icons/optimize.png"
-         category="com.1cai.edt.category"
-         class="com.1cai.edt.views.CodeOptimizerView"
-         allowMultiple="false">
-      </view>
-   </extension>
+   <!-- Code Optimizer View -->
+   <view
+      id="com.1cai.edt.views.CodeOptimizer"
+      name="Code Optimizer"
+      icon="icons/optimize.png"
+      category="com.1cai.edt.category"
+      class="com.1cai.edt.views.CodeOptimizerView"
+      allowMultiple="false">
+   </view>
+   
+   <!-- Analysis Dashboard View (NEW) -->
+   <view
+      id="com.1cai.edt.views.AnalysisDashboard"
+      name="Analysis Dashboard"
+      icon="icons/dashboard.png"
+      category="com.1cai.edt.category"
+      class="com.1cai.edt.views.AnalysisDashboardView"
+      allowMultiple="false">
+   </view>
+</extension>
    
    <!-- View Category -->
    <extension point="org.eclipse.ui.views">
@@ -85,15 +95,111 @@
             menubarPath="additions">
          </action>
          
-         <action
-            id="com.1cai.edt.actions.showCallGraph"
-            label="Show Call Graph"
-            icon="icons/graph.png"
-            class="com.1cai.edt.actions.ShowCallGraphAction"
-            menubarPath="additions">
-         </action>
-      </objectContribution>
-   </extension>
+      <action
+         id="com.1cai.edt.actions.showCallGraph"
+         label="Show Call Graph"
+         icon="icons/graph.png"
+         class="com.1cai.edt.actions.ShowCallGraphAction"
+         menubarPath="additions">
+      </action>
+      
+      <action
+         id="com.1cai.edt.actions.quickAnalysis"
+         label="Quick Analysis"
+         icon="icons/quick-analysis.png"
+         class="com.1cai.edt.actions.QuickAnalysisAction"
+         menubarPath="additions"
+         tooltip="Быстрый анализ функции (Ctrl+Alt+Q)">
+      </action>
+   </objectContribution>
+</extension>
+   
+<!-- Main Menu Contribution (NEW) -->
+<extension point="org.eclipse.ui.actionSets">
+   <actionSet
+      id="com.1cai.edt.actionSet"
+      label="1C AI Assistant"
+      visible="true">
+      
+      <!-- Main Menu -->
+      <menu
+         id="com.1cai.edt.menu"
+         label="1C AI Assistant">
+         <separator name="analysis"/>
+         <separator name="generation"/>
+         <separator name="tools"/>
+      </menu>
+      
+      <!-- Run Analysis Actions -->
+      <action
+         id="com.1cai.edt.actions.runFullAnalysis"
+         label="Run Full Analysis"
+         menubarPath="com.1cai.edt.menu/analysis"
+         class="com.1cai.edt.actions.RunFullAnalysisAction"
+         tooltip="Запустить полный анализ конфигурации (6 шагов)">
+      </action>
+      
+      <action
+         id="com.1cai.edt.actions.runQuickAnalysis"
+         label="Quick Analysis (Parse Only)"
+         menubarPath="com.1cai.edt.menu/analysis"
+         class="com.1cai.edt.actions.RunQuickAnalysisAction"
+         tooltip="Быстрый анализ (только парсинг)">
+      </action>
+      
+      <action
+         id="com.1cai.edt.actions.refreshDependencies"
+         label="Refresh Dependencies"
+         menubarPath="com.1cai.edt.menu/analysis"
+         class="com.1cai.edt.actions.RefreshDependenciesAction"
+         tooltip="Обновить граф зависимостей">
+      </action>
+      
+      <action
+         id="com.1cai.edt.actions.updateBestPractices"
+         label="Update Best Practices"
+         menubarPath="com.1cai.edt.menu/analysis"
+         class="com.1cai.edt.actions.UpdateBestPracticesAction"
+         tooltip="Обновить анализ best practices">
+      </action>
+      
+      <!-- Code Generation -->
+      <action
+         id="com.1cai.edt.actions.generateCode"
+         label="Generate Code..."
+         menubarPath="com.1cai.edt.menu/generation"
+         class="com.1cai.edt.actions.GenerateCodeAction"
+         tooltip="Мастер генерации кода">
+      </action>
+   </actionSet>
+</extension>
+   
+<!-- Key Bindings (NEW) -->
+<extension point="org.eclipse.ui.bindings">
+   <key
+      commandId="com.1cai.edt.commands.openAIAssistant"
+      schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+      sequence="Ctrl+Alt+A">
+   </key>
+   
+   <key
+      commandId="com.1cai.edt.commands.semanticSearch"
+      schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+      sequence="Ctrl+Alt+S">
+   </key>
+   
+   <key
+      commandId="com.1cai.edt.commands.quickAnalysis"
+      schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+      sequence="Ctrl+Alt+Q">
+   </key>
+   
+   <key
+      commandId="com.1cai.edt.commands.optimize"
+      schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+      sequence="Ctrl+Alt+O">
+   </key>
+</extension>
    
    <!-- Preferences -->
    <extension point="org.eclipse.ui.preferencePages">

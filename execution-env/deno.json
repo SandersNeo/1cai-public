@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.window"],
+    "strict": true
+  },
+  "lint": {
+    "files": {
+      "include": ["src/"]
+    }
+  },
+  "fmt": {
+    "files": {
+      "include": ["src/"]
+    },
+    "options": {
+      "useTabs": false,
+      "lineWidth": 100,
+      "indentWidth": 2,
+      "singleQuote": true
+    }
+  },
+  "tasks": {
+    "dev": "deno run --allow-all src/execution-harness.ts",
+    "test": "deno test --allow-all tests/"
+  },
+  "imports": {
+    "@std/": "https://deno.land/std@0.208.0/"
+  }
+}
+
+

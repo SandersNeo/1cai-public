@@ -86,7 +86,10 @@ RESUME_IT_DIRECTOR.md
 ИНСТРУКЦИЯ_*.md
 АРХИТЕКТУРА_*.md
 ПРОЕКТ_*.md
+ДОРАБОТКА_*.md
 READY_FOR_GITHUB.txt
+CODE_EXECUTION_*.md
+FINAL_IMPLEMENTATION_*.md
 
 # Archive and backups
 archive/

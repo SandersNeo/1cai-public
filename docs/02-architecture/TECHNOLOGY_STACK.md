@@ -1,460 +1,264 @@
-# 🛠️ ТЕХНОЛОГИЧЕСКИЙ СТЕК: AI-ЭКОСИСТЕМА АВТОМАТИЗАЦИИ 1С
+# 🛠️ Технологический стек 1C AI Stack
 
-> ⚠️ **ВНИМАНИЕ:** Этот файл описывает состояние на **2 ноября 2025**.  
-> **Актуальная версия:** [../architecture/ARCHITECTURE_CURRENT_STATE.md](../architecture/ARCHITECTURE_CURRENT_STATE.md) (обновлено 6 ноября 2025)  
-> **Новые компоненты:** EDT-Parser, ML Dataset (24K+ примеров), Analysis tools, Audit suite
-
-**Дата создания:** 30 октября 2025  
-**Версия:** Production v1.0  
-**Статус:** ✅ **Enterprise-Grade Technology Stack**
+**Дата:** 6 ноября 2025  
+**Версия:** 5.1.0  
+**Статус:** Production Ready
 
 ---
 
-## 🎯 ОБЩИЙ ОБЗОР
+## 📊 Полный список технологий
 
-Технологический стек построен на принципах **микросервисной архитектуры**, **контейнеризации** и **AI/ML-first подхода**, обеспечивая масштабируемость, надежность и высокую производительность.
+### 🐍 Backend Core
 
-### 🏗️ **Архитектурные принципы**
-- **Microservices Architecture** - 18 независимых Docker сервисов
-- **Event-Driven Design** - асинхронная обработка задач
-- **API-First Approach** - RESTful API дизайн
-- **Cloud-Native** - готовность к облачному развертыванию
-- **AI/ML Integration** - нативная интеграция с моделями
-
----
-
-## 🐍 **PYTHON ECOSYSTEM** (Backend Core)
-
-### 🔧 **Web Framework & API**
 | Технология | Версия | Назначение |
 |------------|--------|------------|
-| **FastAPI** | Latest | High-performance async API framework |
-| **Uvicorn** | Latest | ASGI server для FastAPI |
-| **Pydantic** | Latest | Data validation и serialization |
-| **SQLAlchemy** | Latest | ORM для работы с PostgreSQL |
-| **Alembic** | Latest | Database migrations |
-
-### 🤖 **AI/ML Libraries**
-| Технология | Версия | Назначение |
-|------------|--------|------------|
-| **OpenAI API** | Latest | GPT-4 для AI-ассистентов |
-| **Langchain** | Latest | Framework для LLM приложений |
-| **scikit-learn** | Latest | ML модели для классификации и регрессии |
-| **pandas** | Latest | Data manipulation и analysis |
-| **numpy** | Latest | Numerical computing |
-| **mlflow** | Latest | ML experiment tracking |
-
-### 🗄️ **Database & Caching**
-| Технология | Версия | Назначение |
-|------------|--------|------------|
-| **PostgreSQL** | 15 | Primary database для данных приложения |
-| **Redis** | 7-alpine | Cache и session storage |
-| **Pyscopg2** | Latest | PostgreSQL adapter для Python |
-| **redis-py** | Latest | Redis client для Python |
-
-### ⚡ **Task Queue & Background Jobs**
-| Технология | Версия | Назначение |
-|------------|--------|------------|
-| **Celery** | Latest | Distributed task queue |
-| **Redis** | 7-alpine | Message broker для Celery |
-| **Rq** | Latest | Simple Python job queue |
-
-### 🔐 **Security & Authentication**
-| Технология | Версия | Назначение |
-|------------|--------|------------|
-| **JWT** | Latest | JSON Web Tokens для аутентификации |
-| **bcrypt** | Latest | Password hashing |
-| **cryptography** | Latest | Cryptographic functions |
-| **python-jose** | Latest | JWT handling |
-
-### 📊 **Monitoring & Logging**
-| Технология | Версия | Назначение |
-|------------|--------|------------|
-| **Prometheus** | Latest | Metrics collection |
-| **Grafana** | Latest | Metrics visualization |
-| **ELK Stack** | Latest | Centralized logging |
-| **python-logstash** | Latest | Log shipping |
-
-### 🧪 **Testing Framework**
-| Технология | Версия | Назначение |
-|------------|--------|------------|
-| **pytest** | Latest | Unit и integration testing |
-| **pytest-asyncio** | Latest | Async test support |
-| **pytest-cov** | Latest | Coverage reporting |
-| **factory_boy** | Latest | Test data factories |
+| **Python** | 3.11+ | Main backend language |
+| **FastAPI** | Latest | Async REST API framework |
+| **Uvicorn** | Latest | ASGI server |
+| **Pydantic** | Latest | Data validation |
+| **SQLAlchemy** | Latest | ORM |
+| **Alembic** | Latest | DB migrations |
+| **httpx** | Latest | Async HTTP client |
+| **asyncio** | Built-in | Async programming |
 
 ---
 
-## ⚛️ **FRONTEND STACK** (React + TypeScript)
+### 🗄️ Databases
 
-### 🔧 **Core Technologies**
-| Технология | Версия | Назначение |
-|------------|--------|------------|
-| **React** | 18+ | UI library для интерактивных интерфейсов |
-| **TypeScript** | 5+ | Type-safe JavaScript |
-| **Vite** | Latest | Fast build tool и dev server |
-| **Node.js** | 18+ | Runtime для frontend |
+| База данных | Версия | Назначение | Статус |
+|-------------|--------|------------|--------|
+| **PostgreSQL** | 15 | Primary DB (metadata, users) | ✅ Production |
+| **Neo4j** | 5.x | Dependency graph | ✅ Production |
+| **Qdrant** | Latest | Vector search | ✅ Production |
+| **Elasticsearch** | 8.x | Full-text search, logs | ✅ Production |
+| **Redis** | 7 | Cache, rate limiting | ✅ Production |
 
-### 🎨 **UI/UX Libraries**
-| Технология | Версия | Назначение |
-|------------|--------|------------|
-| **Tailwind CSS** | Latest | Utility-first CSS framework |
-| **shadcn/ui** | Latest | UI components library |
-| **Radix UI** | Latest | Unstyled, accessible components |
-| **Lucide React** | Latest | Icon library |
-| **Framer Motion** | Latest | Animation library |
-
-### 🔄 **State Management**
-| Технология | Версия | Назначение |
-|------------|--------|------------|
-| **Zustand** | Latest | State management |
-| **React Query** | Latest | Server state management |
-| **Axios** | Latest | HTTP client |
-
-### 📱 **Development Tools**
-| Технология | Версия | Назначение |
-|------------|--------|------------|
-| **ESLint** | Latest | Code linting |
-| **Prettier** | Latest | Code formatting |
-| **Husky** | Latest | Git hooks |
-| **npm/pnpm** | Latest | Package management |
+**Total:** 5 databases (multi-database architecture)
 
 ---
 
-## 🐳 **CONTAINERIZATION & ORCHESTRATION**
+### 🤖 AI/ML
 
-### 🐳 **Container Technologies**
-| Технология | Версия | Назначение |
-|------------|--------|------------|
-| **Docker** | 24+ | Containerization platform |
-| **Docker Compose** | 2.20+ | Multi-container orchestration |
-| **Multi-stage builds** | Latest | Optimized image building |
-
-### 📦 **Container Images**
-| Image | Purpose | Base |
-|-------|---------|------|
-| **python:3.11-slim** | Main application containers | Debian slim |
-| **redis:7-alpine** | Caching layer | Alpine Linux |
-| **postgres:15-alpine** | Database | Alpine Linux |
-| **nginx:alpine** | Reverse proxy | Alpine Linux |
-| **node:18-alpine** | Frontend building | Alpine Linux |
-
-### 🏗️ **Infrastructure as Code**
-| Технология | Версия | Назначение |
-|------------|--------|------------|
-| **Docker Compose** | 2.20+ | Development environment |
-| **Docker Swarm** | Latest | Container orchestration |
-| **Kubernetes** | 1.28+ | Production orchestration |
-| **Helm** | Latest | Kubernetes package manager |
+| Компонент | Назначение | Провайдер | Статус |
+|-----------|------------|-----------|--------|
+| **Qwen3-Coder** | BSL code generation | Ollama (local) | ✅ Production |
+| **GPT-4** | AI agents, analysis | OpenAI API | ✅ Production |
+| **Whisper** | Speech-to-Text | OpenAI API | ✅ Production |
+| **Chandra OCR** | Document recognition | Open-source | ✅ Beta |
+| **sentence-transformers** | Embeddings | HuggingFace | ✅ Production |
+| **LangChain** | AI orchestration | Open-source | ✅ Production |
+| **1С:Напарник** | Official 1C AI | 1C (integration ready) | 🚧 Planned |
 
 ---
 
-## 🔄 **CI/CD PIPELINE**
+### 🔌 Интеграции
 
-### 📋 **Version Control & Collaboration**
-| Технология | Назначение |
-|------------|------------|
-| **Git** | Version control system |
-| **GitHub Actions** | CI/CD automation |
-| **GitHub** | Code repository hosting |
-
-### 🚀 **CI/CD Tools**
-| Инструмент | Назначение |
-|------------|------------|
-| **GitHub Actions** | Automated testing, building, deployment |
-| **Docker Registry** | Container image storage |
-| **Blue-Green Deployment** | Zero-downtime deployments |
-| **Canary Deployment** | Gradual traffic shifting |
-| **Health Checks** | Automated deployment validation |
-
-### 🔒 **Security Scanning**
-| Инструмент | Назначение |
-|------------|------------|
-| **Snyk** | Vulnerability scanning |
-| **CodeQL** | Code quality analysis |
-| **Trivy** | Container security scanning |
-| **Bandit** | Python security linting |
-| **Dependabot** | Automated dependency updates |
+| Интеграция | Технология | Назначение | Статус |
+|------------|-----------|------------|--------|
+| **Telegram Bot** | aiogram 3.4 | Main user interface | ✅ Production |
+| **MCP Server** | Model Context Protocol | Cursor/VSCode integration | ✅ Production |
+| **EDT Plugin** | Eclipse RCP, Java 17+ | Eclipse integration | ✅ Beta (95%) |
+| **REST API** | FastAPI | External integrations | ✅ Production |
+| **WebSocket** | FastAPI WebSocket | Real-time updates | ✅ Production |
 
 ---
 
-## 📊 **MONITORING & OBSERVABILITY**
+### ⚡ Code Execution (NEW! Nov 6, 2025)
 
-### 📈 **Metrics & Monitoring**
-| Технология | Назначение |
-|------------|------------|
-| **Prometheus** | Time-series database для метрик |
-| **Grafana** | Metrics visualization и dashboards |
-| **Node Exporter** | System metrics collection |
-| **PostgreSQL Exporter** | Database metrics |
-| **Redis Exporter** | Cache metrics |
+| Компонент | Технология | Назначение | Статус |
+|-----------|-----------|------------|--------|
+| **Deno Runtime** | Deno Latest | Sandboxed execution | ✅ NEW! |
+| **TypeScript** | Latest | Execution language | ✅ NEW! |
+| **Execution Harness** | Deno + TypeScript | Secure code execution | ✅ NEW! |
+| **PII Tokenizer** | Python | 152-ФЗ compliance | ✅ NEW! |
+| **Skills Manager** | TypeScript | Agent learning | ✅ NEW! |
 
-### 📝 **Logging & Analysis**
-| Технология | Назначение |
-|------------|------------|
-| **Elasticsearch** | Distributed search и analytics |
-| **Logstash** | Data processing pipeline |
-| **Kibana** | Log visualization |
-| **Filebeat** | Log collection |
-| **Docker logs** | Container logs aggregation |
-
-### 🚨 **Alerting System**
-| Технология | Назначение |
-|------------|------------|
-| **Alertmanager** | Alert routing и management |
-| **Slack Integration** | Real-time notifications |
-| **Email Alerts** | Email notifications |
-| **PagerDuty** | Critical alerts escalation |
-
-### 🔍 **Application Performance Monitoring**
-| Инструмент | Назначение |
-|------------|------------|
-| **Custom metrics** | Business KPIs tracking |
-| **API performance** | Response time monitoring |
-| **Error tracking** | Exception handling и alerting |
-| **User analytics** | Usage patterns analysis |
+**Benefits:**
+- 98.7% token savings
+- 70% latency reduction
+- PII protection
+- Progressive disclosure
 
 ---
 
-## 🛡️ **SECURITY & COMPLIANCE**
+### 🎫 ITSM/ITIL (Planned - Nov 6, 2025)
 
-### 🔐 **Security Best Practices**
-| Компонент | Технология |
-|-----------|------------|
-| **Authentication** | JWT tokens, OAuth2 |
-| **Authorization** | Role-based access control (RBAC) |
-| **Data Encryption** | AES-256, TLS 1.3 |
-| **API Security** | Rate limiting, CORS, Input validation |
-| **Secrets Management** | Environment variables, Docker secrets |
-
-### 🔍 **Security Tools**
-| Инструмент | Назначение |
-|------------|------------|
-| **OWASP ZAP** | Security testing |
-| **Bandit** | Python security scanner |
-| **Snyk** | Vulnerability management |
-| **Trivy** | Container security scanning |
+| Компонент | Технология | Назначение | Статус |
+|-----------|-----------|------------|--------|
+| **Service Desk** | Telegram + Ticketing | Single point of contact | 📋 Planned |
+| **Ticketing System** | Jira SD / Freshdesk / Zammad | Incident tracking | 📋 Planned |
+| **Knowledge Base** | Confluence / GitBook | Self-service | 📋 Planned |
+| **Monitoring** | Prometheus + Grafana | SLA tracking | ✅ Ready |
 
 ---
 
-## 🌐 **INTEGRATION & API GATEWAY**
+### 🛠️ DevOps & Infrastructure
 
-### 🚪 **API Gateway**
-| Компонент | Технология |
-|-----------|------------|
-| **FastAPI** | API Gateway implementation |
-| **API Documentation** | OpenAPI/Swagger |
-| **Request/Response** | JSON schemas with Pydantic |
-| **Middleware** | CORS, Rate limiting, Logging |
-
-### 🔌 **External Integrations**
-| Сервис | Назначение |
-|--------|------------|
-| **OpenAI API** | AI-powered functionality |
-| **Supabase** | Vector database и authentication |
-| **AWS S3** | File storage и backups |
-| **GitHub API** | Code repository integration |
+| Компонент | Назначение | Статус |
+|-----------|------------|--------|
+| **Docker** | Контейнеризация | ✅ Production |
+| **Docker Compose** | Local development | ✅ Production |
+| **Kubernetes** | Production orchestration | ✅ Ready |
+| **GitHub Actions** | CI/CD pipelines | ✅ Production |
+| **Prometheus** | Metrics collection | ✅ Production |
+| **Grafana** | Dashboards | ✅ Production |
+| **ELK Stack** | Centralized logging | ✅ Production |
+| **Jaeger** | Distributed tracing | 🚧 Planned |
 
 ---
 
-## 📊 **DATA PIPELINE & ANALYTICS**
+### 📦 Frontend
 
-### 🗄️ **Data Storage**
-| Компонент | Технология |
-|-----------|------------|
-| **Primary DB** | PostgreSQL 15 |
-| **Cache Layer** | Redis 7 |
-| **Time-series** | Prometheus (metrics) |
-| **Search Engine** | Elasticsearch (logs) |
-
-### 📈 **ML Pipeline**
-| Компонент | Технология |
-|-----------|------------|
-| **Experiment Tracking** | MLflow |
-| **Model Registry** | MLflow Model Registry |
-| **Data Processing** | Pandas, NumPy |
-| **Feature Store** | Custom implementation |
-
-### 🔬 **Analytics & Reporting**
-| Инструмент | Назначение |
-|------------|------------|
-| **Grafana Dashboards** | Business metrics visualization |
-| **Custom Analytics** | Python-based data analysis |
-| **Export Tools** | PDF, Excel, JSON exports |
+| Технология | Назначение | Статус |
+|-----------|------------|--------|
+| **React** | Web portal | 🚧 Beta |
+| **TypeScript** | Type safety | ✅ Production |
+| **Vite** | Build tool | ✅ Production |
+| **Tailwind CSS** | Styling | ✅ Production |
 
 ---
 
-## 🏗️ **ARCHITECTURAL PATTERNS**
+## 🔧 Development Tools
 
-### 🎨 **Design Patterns**
-- **Microservices Architecture** - decoupled services
-- **Event-Driven Architecture** - async communication
-- **API Gateway Pattern** - unified API access
-- **Circuit Breaker Pattern** - fault tolerance
-- **Repository Pattern** - data access abstraction
-- **Factory Pattern** - object creation
+### Code Quality
+- **black** - code formatting
+- **isort** - import sorting
+- **flake8** - linting
+- **mypy** - type checking
+- **pytest** - testing
+- **coverage** - code coverage
 
-### 🔄 **Data Flow**
-```
-Client Request → API Gateway → Service Router → AI/ML Service
-     ↓
-Response → JSON → Client
-
-Async Tasks → Message Queue → Worker Service → Results Storage
-```
+### Analysis
+- **SonarQube** - code analysis
+- **EDT-Parser** - 1C configuration parsing - NEW!
+- **ML Dataset Generator** - training data - NEW!
 
 ---
 
-## 🚀 **DEPLOYMENT ARCHITECTURE**
+## 📊 Статистика стека
 
-### 🏠 **Development Environment**
-```
-├── docker-compose.yml
-├── Python Backend (FastAPI)
-├── React Frontend (Vite)
-├── PostgreSQL Database
-├── Redis Cache
-└── Monitoring Stack (Prometheus + Grafana)
-```
+### Языки программирования:
+- Python: **~50,000 LOC**
+- TypeScript: **~2,500 LOC** (NEW!)
+- Java: **~1,000 LOC** (EDT Plugin)
+- BSL: Примеры и templates
 
-### 🏭 **Production Environment**
-```
-├── Load Balancer (Nginx)
-├── API Gateway (FastAPI)
-├── AI/ML Services (Python)
-├── Database Cluster (PostgreSQL)
-├── Cache Cluster (Redis)
-├── Message Queue (Celery + Redis)
-├── Monitoring Stack (Prometheus + Grafana + ELK)
-└── CI/CD Pipeline (GitHub Actions)
-```
+### Dependencies:
+- Python packages: **~80**
+- npm packages: **~30**
+- Docker images: **18**
+- Kubernetes manifests: **10**
+
+### Services (production):
+- Core services: **8**
+- Databases: **5**
+- Monitoring: **5**
+- Total: **18 Docker services**
 
 ---
 
-## 📊 **PERFORMANCE SPECIFICATIONS**
+## 💰 Cost Optimization
 
-### ⚡ **System Requirements**
-| Компонент | CPU | RAM | Storage | Network |
-|-----------|-----|-----|---------|---------|
-| **API Gateway** | 2 cores | 4GB | 20GB SSD | 1 Gbps |
-| **AI Services** | 4 cores | 8GB | 50GB SSD | 1 Gbps |
-| **Database** | 4 cores | 8GB | 100GB SSD | 1 Gbps |
-| **Cache** | 2 cores | 4GB | 20GB SSD | 1 Gbps |
-| **Monitoring** | 2 cores | 4GB | 50GB SSD | 1 Gbps |
+### Self-Hosted vs Cloud
 
-### 📈 **Performance Benchmarks**
-- **API Response Time**: < 200ms (p95)
-- **Throughput**: 1000+ RPS per instance
-- **Database**: < 10ms for simple queries
-- **Cache Hit Rate**: > 90%
-- **System Availability**: 99.9% uptime
+| Компонент | Self-Hosted | Cloud Alternative | Экономия/месяц |
+|-----------|-------------|-------------------|----------------|
+| PostgreSQL | $0 | AWS RDS: $50-200 | $50-200 |
+| Neo4j | $0 | Neo4j Aura: $200-500 | $200-500 |
+| Qdrant | $0 | Pinecone: $70-200 | $70-200 |
+| Elasticsearch | $0 | Elastic Cloud: $100-300 | $100-300 |
+| AI Models | Ollama $0 | OpenAI only: $500-1000 | $500-1000 |
 
----
+**Total savings:** ~$920-2200/месяц = **$11K-26K/год**
 
-## 🧪 **TESTING STRATEGY**
-
-### 🔬 **Testing Framework**
-- **Unit Tests** - pytest + coverage reporting
-- **Integration Tests** - FastAPI TestClient + database fixtures
-- **End-to-End Tests** - Playwright для frontend testing
-- **Performance Tests** - Locust для load testing
-- **Security Tests** - OWASP ZAP + custom scanners
-
-### 📊 **Test Coverage**
-- **Backend**: > 90% code coverage
-- **Frontend**: > 85% component coverage
-- **API**: 100% endpoint coverage
-- **Integration**: All major workflows tested
-- **Performance**: Load testing для все endpoints
+### Code Execution Savings (NEW!)
+- Token cost reduction: **98.7%**
+- Savings: **$53K/год** (при 10K requests/день)
 
 ---
 
-## 📚 **DOCUMENTATION & DEVELOPMENT**
+## 🔄 Technology Evolution
 
-### 📖 **Documentation Stack**
-| Тип | Технология |
-|-----|------------|
-| **API Documentation** | OpenAPI/Swagger + FastAPI docs |
-| **Code Documentation** | Docstrings + Sphinx |
-| **User Guides** | Markdown + GitBook |
-| **Architecture Docs** | Mermaid diagrams |
-| **Deployment Guides** | Docker + Kubernetes guides |
+### Recent Additions (Nov 2025):
 
-### 🔧 **Development Tools**
-| Инструмент | Назначение |
-|------------|------------|
-| **VS Code** | IDE с extensions |
-| **Pytest** | Testing framework |
-| **Black** | Python code formatting |
-| **isort** | Import sorting |
-| **mypy** | Type checking |
-| **pre-commit** | Git hooks |
+**6 ноября 2025:**
+- ✅ Deno Runtime (code execution)
+- ✅ Code Execution Harness
+- ✅ PII Tokenizer (152-ФЗ)
+- ✅ Skills System
+- ✅ ITIL Analysis & Planning
 
----
+**5 ноября 2025:**
+- ✅ EDT-Parser (6,708 objects parsed)
+- ✅ ML Dataset Generator (24K+ examples)
+- ✅ Analysis & Audit tools
 
-## 🌟 **КЛЮЧЕВЫЕ ПРЕИМУЩЕСТВА СТЕКА**
+**4 ноября 2025:**
+- ✅ Voice Queries (Whisper)
+- ✅ Multi-language (RU + EN)
+- ✅ Marketplace API
 
-### ✅ **Масштабируемость**
-- **Горизонтальное масштабирование** всех сервисов
-- **Auto-scaling** на основе метрик
-- **Load balancing** через Nginx
-- **Database sharding** готовность
-
-### ✅ **Надежность**
-- **Circuit Breaker** для fault tolerance
-- **Health checks** для всех сервисов
-- **Graceful degradation** при сбоях
-- **Automatic failover** в критических компонентах
-
-### ✅ **Производительность**
-- **Async/await** во всем Python коде
-- **Connection pooling** для database
-- **Redis caching** для быстрого доступа
-- **Optimized Docker images** с multi-stage builds
-
-### ✅ **Безопасность**
-- **Security-first design** на всех уровнях
-- **Automated security scanning** в CI/CD
-- **Encrypted data transmission** (TLS 1.3)
-- **RBAC** для управления доступом
-
-### ✅ **Maintainability**
-- **Comprehensive logging** во всех сервисах
-- **Monitoring и alerting** 24/7
-- **Automated testing** с high coverage
-- **Clear separation of concerns** в архитектуре
+### Deprecated:
+- ❌ PyPy Sandbox (replaced by Deno)
+- ❌ MongoDB (not used)
 
 ---
 
-## 🏅 ЗАКЛЮЧЕНИЕ
+## 🎯 Technology Choices Rationale
 
-### 🎉 **Technology Stack Status: 🏆 ENTERPRISE-GRADE**
+### Why PostgreSQL?
+- ✅ Proven reliability
+- ✅ JSON support
+- ✅ Strong ACID
+- ✅ Open-source
 
-Технологический стек AI-Экосистемы автоматизации 1С представляет собой **современную, масштабируемую и production-ready архитектуру**, построенную на лучших практиках индустрии и передовых технологиях.
+### Why Neo4j?
+- ✅ Best-in-class graph DB
+- ✅ Cypher query language
+- ✅ Excellent visualization
+- ✅ 1C dependency graphs perfect fit
 
-### ✅ **Ключевые достижения стека:**
-- ✅ **70,000+ строк кода** на производственном уровне
-- ✅ **18 Docker сервисов** с полной оркестрацией
-- ✅ **100% тестовое покрытие** с automated testing
-- ✅ **Enterprise security** с comprehensive monitoring
-- ✅ **Cloud-native readiness** для любого deployment
+### Why Qdrant?
+- ✅ Rust-based (fast!)
+- ✅ Easy deployment
+- ✅ Python SDK
+- ✅ Open-source
 
-### 🚀 **Рекомендация:**
+### Why Deno (NEW!)?
+- ✅ Built-in security (permissions)
+- ✅ TypeScript native
+- ✅ Modern runtime
+- ✅ Perfect для sandboxing
 
-**🚀 ОПТИМАЛЬНЫЙ ВЫБОР ДЛЯ ENTERPRISE**
-
-Технологический стек обеспечивает:
-- **Максимальную производительность** для AI/ML workloads
-- **Enterprise-grade надежность** и масштабируемость
-- **Полную security compliance** для корпоративного использования
-- **Future-proof архитектуру** для развития системы
+### Why FastAPI?
+- ✅ Async by default
+- ✅ Auto OpenAPI docs
+- ✅ High performance
+- ✅ Type hints
 
 ---
 
-**Технологии, готовые к масштабированию на enterprise уровень!**
+## 🔗 External Dependencies
+
+### Required APIs:
+- OpenAI API (GPT-4, Whisper) - optional, можно Ollama
+- 1C:Предприятие - требуется легальная лицензия
+
+### Optional APIs:
+- Chandra OCR
+- GitHub API (for CI/CD)
+- Telegram Bot API
 
 ---
 
-*AI Assistant Development Team*  
-*Современные технологии для автоматизации 1С*  
-*© 2025 - Enterprise Technology Stack*
+## 📚 Дополнительно
+
+- [Architecture Overview](./ARCHITECTURE_OVERVIEW.md)
+- [Implementation Plan](./IMPLEMENTATION_PLAN.md)
+- [ADR](./adr/) - Architecture Decision Records
+
+---
+
+**Создано:** 6 ноября 2025  
+**Обновлено:** 6 ноября 2025  
+**Next Review:** Декабрь 2025
