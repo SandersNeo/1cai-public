@@ -10,7 +10,14 @@
 
 > **Статус:** Production Ready | **Версия:** 5.1.0 | **Обновлено:** 2025-11-06
 
-## 🆕 Что нового (Nov 6, 2025)
+## 🆕 Что нового
+
+### 🛡️ Admin Role Management (Nov 7, 2025)
+- REST endpoints `/admin/users/{id}/roles|permissions` (требуется роль `admin`)
+- Миграции Alembic для `user_roles`, `user_permissions`, `security_audit_log`
+- CLI `scripts/manage_roles.py` и аудит с записью в БД + JSONL
+
+### Что нового (Nov 6, 2025)
 
 ### ⚡ Code Execution with MCP
 **Эффективное выполнение AI-generated кода**
