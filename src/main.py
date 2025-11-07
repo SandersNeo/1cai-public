@@ -35,6 +35,7 @@ from src.api.websocket_enhanced import router as websocket_router
 from src.api.bpmn_api import router as bpmn_router
 from src.api.auth import router as auth_router
 from src.api.admin_roles import router as admin_roles_router
+from src.api.admin_audit import router as admin_audit_router
 
 # NEW: Security routers
 from src.api.code_approval import router as code_approval_router
@@ -198,6 +199,7 @@ app.include_router(websocket_router)
 app.include_router(bpmn_router)
 app.include_router(auth_router)
 app.include_router(admin_roles_router)
+app.include_router(admin_audit_router)
 
 # NEW: Security routers
 app.include_router(code_approval_router)

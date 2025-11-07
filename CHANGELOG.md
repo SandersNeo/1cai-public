@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Введены service-to-service токены (`X-Service-Token`) и централизованный аудит действий модерации.
 - Добавлены админские REST endpoints `/admin/users/{id}/roles|permissions`, CLI `scripts/manage_roles.py` и миграции для `user_roles`, `user_permissions`, `user_role_assignments`, `security_audit_log`.
 - CI теперь выполняет `python scripts/run_migrations.py` перед интеграционными тестами.
+- Добавлен REST endpoint `/admin/audit` для просмотра журнала безопасности с фильтрами и пагинацией.
 
 ### 🧪 Quality
 - Новые unit-тесты для JWT AuthService и S3-пайплайна Marketplace.

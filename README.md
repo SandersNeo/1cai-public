@@ -19,6 +19,7 @@
 - Service-to-service токены (`X-Service-Token`) и автоматическое обогащение ролей в `get_current_user`
 - Обновлены интеграционные и unit-тесты, документация, CI (миграции выполняются перед прогоном тестов)
 - Подробности см. в [CHANGELOG.md](CHANGELOG.md)
+- Новый endpoint `/admin/audit` для просмотра журнала безопасности + документация в [API Reference](docs/API_REFERENCE.md#-security-audit-api)
 
 ### Что нового (Nov 6, 2025)
 

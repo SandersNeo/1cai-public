@@ -416,6 +416,42 @@ Response: `204 No Content`
 
 ---
 
+## 📜 Security Audit API
+
+### GET /admin/audit
+
+Возвращает список записей аудита (только для `admin`):
+
+```bash
+curl "http://localhost:8000/admin/audit?limit=20&actor=admin" \
+  -H "Authorization: Bearer <admin_token>"
+```
+
+Query-параметры:
+- `limit` (1..200), `offset`
+- `actor`, `action` — фильтры
+
+**Response:**
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "timestamp": "2025-11-07T12:00:00+00:00",
+      "actor": "admin",
+      "action": "admin.role.grant",
+      "target": "user-123",
+      "metadata": {"role": "moderator"}
+    }
+  ],
+  "total": 1,
+  "limit": 20,
+  "offset": 0
+}
+```
+
+---
+
 ## 📈 Rate Limits
 
 ### Default Limits
