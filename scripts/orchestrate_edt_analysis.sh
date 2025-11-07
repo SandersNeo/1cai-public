@@ -88,7 +88,7 @@ check_requirements() {
     
     # Check Python
     if ! command -v python &> /dev/null && ! command -v python3 &> /dev/null; then
-        log "ERROR" "Python not found. Please install Python 3.11+"
+        log "ERROR" "Python not found. Please install Python 3.11.x"
         exit 1
     fi
     

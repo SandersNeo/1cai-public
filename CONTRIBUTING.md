@@ -126,6 +126,22 @@ pytest --cov=src --cov-report=html
 - Update architecture.yaml for architectural changes
 - Create/update docs in `docs/` folder
 
+### Audit Tooling
+
+Before отправкой изменений, прогоняйте автоматические проверки:
+
+```bash
+# Проверка ссылок во всех .md файлах
+python check_all_links.py
+
+# Полный аудит (структура, security, README vs code)
+python comprehensive_project_audit_final.py
+python check_security_comprehensive.py
+python check_readme_vs_code.py
+```
+
+Отчёты сохраняются в корне проекта (например, `BROKEN_LINKS_REPORT.txt`).
+
 ## Pull Request Process
 
 1. Update CHANGELOG.md

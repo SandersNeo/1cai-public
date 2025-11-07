@@ -21,6 +21,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [5.1.1] - 2025-11-07
+
+### 🚀 Enhancements
+- Marketplace API теперь использует Redis-кэш для `featured`/`trending` и категорий (TTL 5 минут).
+- Добавлен планировщик (APScheduler) для периодического обновления кэшей и метрик.
+- Реализовано per-user/IP rate limiting на основе Redis (глобальный middleware) + логирование контекста пользователя.
+- Поддержка подписанных ссылок на загрузку плагинов через S3/MinIO (presigned URL, TTL 5 минут).
+- `.env`/документация обновлены: новые переменные `USER_RATE_LIMIT_*`, `MARKETPLACE_CACHE_REFRESH_MINUTES`, `AWS_S3_*`.
+- Введены service-to-service токены (`X-Service-Token`) и централизованный аудит действий модерации.
+
+### 🧪 Quality
+- Новые unit-тесты для JWT AuthService и S3-пайплайна Marketplace.
+- FAQ/Installation/Config гайды дополнены инструкциями по rate limiting и storage.
+- README выделяет новые возможности Marketplace (JWT rate limiting, S3, Redis cache).
+- Добавлен Python Setup Guide + тесты для audit logger/service tokens.
+
+---
+
 ## [5.1.0] - 2025-11-06
 
 ### 🎉 Major Features Added

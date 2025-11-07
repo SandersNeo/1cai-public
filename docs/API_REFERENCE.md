@@ -9,10 +9,56 @@
 **Base URL:** `http://localhost:8000`  
 **API Version:** v1  
 **Format:** JSON  
-**Authentication:** API Key (optional)
+**Authentication:** Bearer JWT (рекомендуется) | X-Service-Token (internal)
 
 **Swagger UI:** http://localhost:8000/docs  
 **ReDoc:** http://localhost:8000/redoc
+
+---
+
+## 🔐 Auth API
+
+### POST /auth/token
+
+Получить access token. Использует `OAuth2PasswordRequestForm` (username/password).
+
+**Request (form-data):**
+
+```
+POST /auth/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=&username=<your_username>&password=<your_password>&scope=&client_id=&client_secret=
+```
+
+**Response:**
+
+```json
+{
+  "access_token": "<JWT>",
+  "token_type": "bearer",
+  "expires_in": 3600
+}
+```
+
+### GET /auth/me
+
+Вернуть информацию о текущем пользователе.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response:**
+
+```json
+{
+  "user_id": "user-123",
+  "username": "your_username",
+  "roles": ["developer"],
+  "permissions": ["marketplace:submit", "marketplace:review"],
+  "full_name": "Your Name",
+  "email": "you@example.com"
+}
+```
 
 ---
 
@@ -217,7 +263,7 @@ Get usage statistics.
 
 ### GET /api/marketplace/plugins
 
-List available plugins.
+List available plugins. Cached в Redis на 5 минут для повышения производительности.
 
 **Response:**
 ```json
@@ -229,11 +275,38 @@ List available plugins.
       "version": "2.1.0",
       "author": "community",
       "rating": 4.8,
-      "downloads": 1234
+      "downloads": 1234,
+      "artifact_path": null
     }
   ]
 }
 ```
+
+### GET /api/marketplace/plugins/{plugin_id}/download
+
+Возвращает полезную нагрузку с готовой ссылкой для скачивания. Если S3/MinIO настроены, `download_url` будет содержать подписанную ссылку (TTL 5 минут). В противном случае возвращается fallback-URL из базы.
+
+**Response (S3 configured):**
+```json
+{
+  "status": "ready",
+  "plugin_id": "sql-optimizer-v2",
+  "download_url": "https://s3.example.com/onecai/sql-optimizer-v2?X-Amz-Signature=...",
+  "message": "Download link generated",
+  "files": [
+    "manifest.json",
+    "README.md",
+    "plugin.py"
+  ]
+}
+```
+
+**Errors:**
+- `404` — плагин не найден.
+
+### GET /api/marketplace/trending
+
+Возвращает трендовые плагины. Данные кэшируются в Redis и пересчитываются планировщиком раз в 5 минут (настраивается переменной `MARKETPLACE_CACHE_REFRESH_MINUTES`).
 
 ---
 
@@ -291,6 +364,56 @@ curl -H "X-API-Key: 1c-ai_xxxxxxxx" \
      http://localhost:8000/api/search
 ```
 
+### Service-to-Service Token
+
+Используйте для внутренних интеграций без участия пользователя.
+
+**Headers:**
+```http
+X-Service-Token: <token из SERVICE_API_TOKENS>
+Content-Type: application/json
+```
+
+**Пример:**
+```bash
+curl -H "X-Service-Token: change_me" \
+     http://localhost:8000/marketplace/plugins
+```
+
+Права сервиса определяются в ENV (`roles`, `permissions`).
+
+---
+
+## 🛡️ Admin Role Management
+
+### POST /admin/users/{user_id}/roles
+
+Назначить роль пользователю.
+
+```json
+{
+  "role": "moderator",
+  "reason": "On-call rotation"
+}
+```
+
+- Требуется роль `admin`
+- Запись аудит-лога создаётся автоматически
+
+### DELETE /admin/users/{user_id}/roles/{role}
+
+Отозвать роль.
+
+### POST /admin/users/{user_id}/permissions
+
+Назначить разрешение (fine-grained).
+
+### DELETE /admin/users/{user_id}/permissions/{permission}
+
+Отозвать разрешение.
+
+Response: `204 No Content`
+
 ---
 
 ## 📈 Rate Limits
@@ -302,6 +425,8 @@ Anonymous: 10 requests/minute
 Authenticated: 60 requests/minute
 Premium: Unlimited
 ```
+
+> Все аутентифицированные запросы учитываются по `user_id` (JWT). Для гостей — по IP. При превышении вернётся `429` с сообщением `"Too many requests"`.
 
 **Headers:**
 ```http
@@ -399,6 +524,6 @@ curl -X POST http://localhost:8000/api/generate \
 
 ---
 
-**Обновлено:** 6 ноября 2025  
+**Обновлено:** 7 ноября 2025  
 **API Version:** 2.2.0
 

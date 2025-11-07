@@ -50,7 +50,7 @@ Level 8: Infrastructure
 
 ## 🔧 Технологии
 
-- **Backend:** Python 3.11+, FastAPI
+- **Backend:** Python 3.11.x, FastAPI
 - **AI:** Qwen3-Coder, GigaChat, YandexGPT
 - **Data:** PostgreSQL 15, Neo4j 5.x, Qdrant, Elasticsearch 8.x
 - **Infrastructure:** Docker, Kubernetes, Terraform

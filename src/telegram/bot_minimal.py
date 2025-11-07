@@ -6,10 +6,13 @@ MINIMAL Telegram Bot - Работает БЕЗ Docker, БЕЗ баз данны�
 import asyncio
 import logging
 import os
+
+from aiohttp import ClientTimeout
 from aiogram import Bot, Dispatcher, Router, F
+from aiogram.client.session.aiohttp import AiohttpSession
+from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.types import Message
-from aiogram.enums import ParseMode
 
 # Настройка логирования
 logging.basicConfig(
@@ -22,7 +25,7 @@ logger = logging.getLogger(__name__)
 router = Router()
 
 # Простое хранилище в памяти (НЕ для production!)
-user_requests = {}
+user_search_counts = {}
 
 
 @router.message(Command("start"))
@@ -108,18 +111,18 @@ async def cmd_search(message: Message):
     
     # Tracking
     user_id = message.from_user.id
-    user_requests[user_id] = user_requests.get(user_id, 0) + 1
+    user_search_counts[user_id] = user_search_counts.get(user_id, 0) + 1
 
 
 @router.message(Command("stats"))
 async def cmd_stats(message: Message):
     """Статистика"""
     user_id = message.from_user.id
-    requests = user_requests.get(user_id, 0)
+    search_count = user_search_counts.get(user_id, 0)
     
     text = f"""📊 **Ваша статистика**
 
-Запросов сделано: {requests}
+Запросов сделано: {search_count}
 
 ⚠️ Demo режим - данные в памяти
 """
@@ -193,7 +196,9 @@ async def main():
     logger.info("⚠️  Demo mode - without databases")
     
     # Создаем бота
-    bot = Bot(token=bot_token)
+    timeout_seconds = float(os.getenv("TELEGRAM_HTTP_TIMEOUT", "10"))
+    session = AiohttpSession(timeout=ClientTimeout(total=timeout_seconds))
+    bot = Bot(token=bot_token, session=session)
     dp = Dispatcher()
     dp.include_router(router)
     

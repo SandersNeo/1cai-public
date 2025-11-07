@@ -1,6 +1,6 @@
 # 🎁 Специальные возможности 1C AI Stack
 
-**Обновлено:** 6 ноября 2025
+**Обновлено:** 7 ноября 2025
 
 ---
 
@@ -54,6 +54,35 @@
 
 ---
 
+### 🔗 [n8n Integration](./n8n-integration.md)
+**No-code автоматизация с 1C AI Stack**
+
+- Кастомная нода `@onecai/n8n-nodes-onec-ai`
+- Шаблоны workflow (PR code review, ежедневные дайджесты, health-check)
+- Поддержка Graph/Qdrant/PostgreSQL/Code Generation API
+- Быстрый запуск: `npm install && npm run build`, переменная `N8N_CUSTOM_EXTENSIONS`
+
+**Безопасность:**
+- Используйте отдельный API-ключ и храните его в менеджере секретов (Vault, Doppler, n8n credentials)
+- Ограничьте доступ по IP/ VPN, включите HTTPS и rate limiting (`TELEGRAM_RATE_LIMIT_*`, SlowAPI)
+- Для production — разворачивайте n8n в приватной сети рядом с API, логируйте audit-следы
+
+**Status:** 🟡 MVP (готов к пилотным внедрениям)
+
+---
+
+### 📦 Marketplace Hardening (Nov 7, 2025)
+**См:** [docs/API_REFERENCE.md](../API_REFERENCE.md#-marketplace-api)
+
+- Redis-кэш для витрин (`featured`, `trending`, категории)
+- APScheduler обновляет данные каждые `MARKETPLACE_CACHE_REFRESH_MINUTES`
+- JWT + Redis rate limiting (по user_id/IP)
+- Подписанные ссылки на скачивание через S3/MinIO (`artifact_path`)
+
+**Status:** 🟡 Beta → Production-ready ядро
+
+---
+
 ## 🆕 NEW Features (Nov 6, 2025)
 
 ### ⚡ Code Execution with MCP
@@ -86,6 +115,7 @@
 - [OCR Integration](./OCR_INTEGRATION.md)
 - [i18n Guide](./I18N_GUIDE.md)
 - [BSL Fine-tuning](./BSL_FINETUNING_GUIDE.md)
+- [n8n Integration](./n8n-integration.md)
 
 ---
 

@@ -222,7 +222,7 @@
 
 ```yaml
 Backend:
-  Languages: [Python 3.11+, Java 17+]
+  Languages: [Python 3.11.x, Java 17+]
   Frameworks: [FastAPI, Eclipse RCP]
   
 Databases:

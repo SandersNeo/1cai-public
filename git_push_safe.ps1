@@ -11,7 +11,7 @@ Write-Host "====================================================================
 Write-Host ""
 
 # Change to project directory
-Set-Location "C:\Users\user\Desktop\package (1)"
+Set-Location -Path (Split-Path -Parent $MyInvocation.MyCommand.Path)
 
 Write-Host "[1/6] Security check..."
 Write-Host ""

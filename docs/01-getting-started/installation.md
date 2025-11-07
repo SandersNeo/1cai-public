@@ -10,7 +10,7 @@
 
 ```yaml
 OS: Windows 10+, Ubuntu 20.04+, macOS 11+
-Python: 3.11 или выше
+Python: 3.11.x (рекомендуем 3.11.9)
 RAM: 4 GB (MVP) или 8-12 GB (full stack)
 Disk: 10 GB свободного места
 ```
@@ -31,9 +31,12 @@ Java: 17+ (для EDT plugin)
 ### Вариант 1: Минимальный (только Telegram Bot)
 
 **Время:** 5-10 минут  
-**Требования:** Python 3.11+
+**Требования:** Python 3.11.x
 
 ```bash
+# Проверьте, что используется правильная версия Python
+python --version  # ожидаем Python 3.11.x
+
 # Шаг 1: Клонировать проект
 git clone https://github.com/DmitrL-dev/1cai-public.git
 cd 1cai-public
@@ -61,6 +64,25 @@ cp env.example .env
 # Шаг 6: Настроить .env
 nano .env
 # Добавить: TELEGRAM_BOT_TOKEN=your_token_here
+# Также задайте: JWT_SECRET (случайная строка), JWT_ACCESS_TOKEN_EXPIRE_MINUTES, AUTH_DEMO_USERS (JSON со списком аккаунтов)
+
+### Marketplace и хранилище
+
+```bash
+# Лимиты и кэш API (по умолчанию включено)
+USER_RATE_LIMIT_PER_MINUTE=60
+USER_RATE_LIMIT_WINDOW_SECONDS=60
+MARKETPLACE_CACHE_REFRESH_MINUTES=15
+
+# S3/MinIO для артефактов плагинов (опционально)
+AWS_S3_BUCKET=onecai-marketplace
+AWS_S3_REGION=ru-1
+AWS_S3_ENDPOINT=https://s3.selectel.ru  # если используете Selectel/MinIO
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+```
+
+> После изменения переменных перезапустите backend (`docker-compose restart api` или `systemctl restart onecai`).
 
 # Шаг 7: Запустить PostgreSQL + Redis (через Docker)
 docker-compose up -d postgres redis
@@ -94,8 +116,9 @@ docker-compose -f docker-compose.mvp.yml up -d
 docker-compose ps
 # Должны быть: postgres (Up), redis (Up)
 
-# Шаг 5: Запустить FastAPI
+# Шаг 5: Подготовить backend
 pip install -r requirements.txt
+python scripts/run_migrations.py
 uvicorn src.main:app --reload
 
 # Шаг 6: Запустить Telegram Bot
@@ -292,7 +315,7 @@ curl http://localhost:6001/health
 
 ## 🐛 Проблемы при установке?
 
-См. [TROUBLESHOOTING.md](../TROUBLESHOOTING.md)
+См. [TROUBLESHOOTING.md](../../TROUBLESHOOTING.md)
 
 Или создайте issue: https://github.com/DmitrL-dev/1cai-public/issues
 

@@ -19,6 +19,8 @@
 | **📦 Deployment** | [Deployment Guide](./04-deployment/README.md) |
 | **💻 Development** | [Development Guide](./05-development/README.md) |
 | **🎁 Специальные фичи** | [Features](./06-features/) |
+| **🔗 n8n интеграция** | [n8n Integration](./06-features/n8n-integration.md) |
+| **🔑 Auth API** | [Auth endpoints](./API_REFERENCE.md#-auth-api) |
 
 ---
 
@@ -175,6 +177,7 @@ docs/
 - [Qdrant](https://qdrant.tech/)
 - [Deno](https://deno.land/)
 - [Model Context Protocol](https://modelcontextprotocol.io/)
+- [Python Setup Guide](01-getting-started/python-setup.md)
 
 ### Best Practices:
 - [Anthropic: Code Execution with MCP](https://www.anthropic.com/engineering/code-execution-with-mcp)

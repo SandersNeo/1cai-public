@@ -41,6 +41,10 @@ python src/main.py
 - **Новичок?** → [START_HERE.md](./START_HERE.md)
 - **Хочу развернуть?** → [DEPLOYMENT_INSTRUCTIONS.md](./DEPLOYMENT_INSTRUCTIONS.md)
 - **Хочу помочь?** → [CONTRIBUTING.md](./CONTRIBUTING.md)
+- **Обновить БД?** → `python scripts/run_migrations.py`
+- **Нужна no-code автоматизация?** → [n8n Integration](../06-features/n8n-integration.md)
+- **Нужен токен?** → [Auth API](../API_REFERENCE.md#-auth-api)
+- [Python Setup Guide](python-setup.md)
 
 ---
 

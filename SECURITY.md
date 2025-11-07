@@ -58,12 +58,23 @@ If you discover a security vulnerability, please **DO NOT** create a public issu
 - Telegram: 10 req/min, 100 req/day
 - REST API: настраиваемые лимиты
 
-#### 4. **Deno Sandbox** ✅
+#### 4. **Service-to-Service Tokens** ✅
+- Встроенная поддержка `X-Service-Token` для внутренних интеграций
+- Роли и permissions задаются в `SERVICE_API_TOKENS`
+- Все сервисы проходят через общий RBAC
+
+#### 5. **Audit Logging** ✅
+- Все модерационные действия записываются в таблицу `security_audit_log` (PostgreSQL)
+- Дополнительно создаётся JSONL-файл (`AUDIT_LOG_PATH`) для локального аудита
+- Поддерживаются `timestamp`, `actor`, `action`, `target`, `metadata`
+- Роли и permissions можно управлять через REST `/admin/users/...` (требуется `admin`) или скрипт `scripts/manage_roles.py`
+
+#### 6. **Deno Sandbox** ✅
 - Изолированное выполнение кода
 - Whitelist разрешений
 - Resource limits (CPU, память)
 
-#### 5. **Security Headers** ✅
+#### 7. **Security Headers** ✅
 - CORS configured
 - CSP (Content Security Policy)
 - X-Frame-Options, X-Content-Type-Options

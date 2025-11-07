@@ -7,7 +7,7 @@
 ## 📋 Предварительные требования
 
 ### **Обязательно:**
-- ✅ Python 3.11+
+- ✅ Python 3.11.x
 - ✅ Node.js 18+
 - ✅ Docker Desktop
 - ✅ Git
@@ -101,7 +101,7 @@ CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 
 ```bash
 # Создаем таблицы (миграция)
-python -m alembic upgrade head
+python scripts/run_migrations.py
 
 # Или запускаем SQL вручную
 # psql -U postgres -d enterprise_1c_ai -f db/schema.sql

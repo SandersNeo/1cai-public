@@ -110,11 +110,19 @@ class GitHubIntegration:
         # Get PR files
         url = f'https://api.github.com/repos/{repo_full_name}/pulls/{pr_number}/files'
         
-        async with httpx.AsyncClient() as client:
-            response = await client.get(url, headers=headers)
-            
-            if response.status_code != 200:
-                logger.error(f"Failed to fetch PR files: {response.status_code}")
+        async with httpx.AsyncClient(timeout=httpx.Timeout(10.0, connect=5.0)) as client:
+            try:
+                response = await client.get(url, headers=headers)
+                response.raise_for_status()
+            except httpx.HTTPStatusError as exc:
+                logger.error(
+                    "Failed to fetch PR files: %s - %s",
+                    exc.response.status_code,
+                    exc.response.text,
+                )
+                return []
+            except httpx.RequestError as exc:
+                logger.error("GitHub request error: %s", exc)
                 return []
             
             files = response.json()
@@ -129,17 +137,26 @@ class GitHubIntegration:
             # Download raw content
             raw_url = file['raw_url']
             
-            async with httpx.AsyncClient() as client:
-                content_response = await client.get(raw_url, headers=headers)
-                
-                if content_response.status_code == 200:
-                    result.append({
-                        'filename': file['filename'],
-                        'content': content_response.text,
-                        'status': file['status'],  # added, modified, removed
-                        'additions': file['additions'],
-                        'deletions': file['deletions']
-                    })
+            async with httpx.AsyncClient(timeout=httpx.Timeout(10.0, connect=5.0)) as client:
+                try:
+                    content_response = await client.get(raw_url, headers=headers)
+                    content_response.raise_for_status()
+                except httpx.RequestError as exc:
+                    logger.error("Failed to download %s: %s", raw_url, exc)
+                    continue
+                except httpx.HTTPStatusError as exc:
+                    logger.error(
+                        "Failed to download %s: %s", raw_url, exc.response.status_code
+                    )
+                    continue
+
+                result.append({
+                    'filename': file['filename'],
+                    'content': content_response.text,
+                    'status': file['status'],  # added, modified, removed
+                    'additions': file['additions'],
+                    'deletions': file['deletions']
+                })
         
         return result
     
@@ -172,17 +189,24 @@ class GitHubIntegration:
             'comments': comments
         }
         
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                url,
-                headers=headers,
-                json=review_body
-            )
-            
-            if response.status_code == 200:
-                logger.info(f"Review posted successfully to PR #{pr_number}")
+        async with httpx.AsyncClient(timeout=httpx.Timeout(10.0, connect=5.0)) as client:
+            try:
+                response = await client.post(
+                    url,
+                    headers=headers,
+                    json=review_body
+                )
+                response.raise_for_status()
+            except httpx.HTTPStatusError as exc:
+                logger.error(
+                    "Failed to post review: %s - %s",
+                    exc.response.status_code,
+                    exc.response.text,
+                )
+            except httpx.RequestError as exc:
+                logger.error("GitHub request error: %s", exc)
             else:
-                logger.error(f"Failed to post review: {response.status_code}")
+                logger.info(f"Review posted successfully to PR #{pr_number}")
     
     def _format_comments_for_github(
         self,

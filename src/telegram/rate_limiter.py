@@ -17,8 +17,8 @@ class RateLimiter:
         self.max_per_day = max_per_day
         
         # В памяти (для простоты, потом можно в Redis)
-        self.minute_requests: Dict[int, list] = defaultdict(list)
-        self.day_requests: Dict[int, int] = defaultdict(int)
+        self.minute_events: Dict[int, list] = defaultdict(list)
+        self.day_events: Dict[int, int] = defaultdict(int)
         self.day_reset: Dict[int, datetime] = {}
     
     async def check_limit(self, user_id: int, is_premium: bool = False) -> Tuple[bool, str]:
@@ -40,7 +40,7 @@ class RateLimiter:
         else:
             self.day_reset[user_id] = now
         
-        if self.day_requests[user_id] >= self.max_per_day:
+        if self.day_events[user_id] >= self.max_per_day:
             return False, (
                 f"❌ Вы достигли дневного лимита ({self.max_per_day} запросов)\n\n"
                 "💎 Попробуйте Premium для безлимитных запросов: /premium"
@@ -50,26 +50,26 @@ class RateLimiter:
         minute_ago = now - timedelta(minutes=1)
         
         # Очистка старых запросов
-        self.minute_requests[user_id] = [
-            req_time for req_time in self.minute_requests[user_id]
+        self.minute_events[user_id] = [
+            req_time for req_time in self.minute_events[user_id]
             if req_time > minute_ago
         ]
         
-        if len(self.minute_requests[user_id]) >= self.max_per_minute:
+        if len(self.minute_events[user_id]) >= self.max_per_minute:
             return False, (
                 f"⏰ Слишком много запросов!\n"
                 f"Подождите минуту. Лимит: {self.max_per_minute} запросов/мин"
             )
         
         # Регистрация запроса
-        self.minute_requests[user_id].append(now)
-        self.day_requests[user_id] += 1
+        self.minute_events[user_id].append(now)
+        self.day_events[user_id] += 1
         
         return True, ""
     
     def get_stats(self, user_id: int) -> Dict:
         """Получить статистику пользователя"""
-        requests_today = self.day_requests.get(user_id, 0)
+        requests_today = self.day_events.get(user_id, 0)
         
         return {
             "requests_today": requests_today,

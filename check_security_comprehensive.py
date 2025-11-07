@@ -116,10 +116,18 @@ class SecurityAuditor:
                     self.critical.append(
                         f"SQL INJECTION RISK: {py_file} uses f-string in execute()"
                     )
-                if re.search(r'execute\s*\([^)]*%[^)]*%', content):
-                    self.high.append(
-                        f"SQL INJECTION RISK: {py_file} uses % formatting in execute()"
-                    )
+                # Проверяем % formatting - но не параметризованные запросы
+                # execute("... %s", (param,)) - БЕЗОПАСНО
+                # execute("... %s" % param) - ОПАСНО
+                if re.search(r'execute\s*\([^)]*%.*%[^)]*\)', content):
+                    # Дополнительная проверка что это не параметризация
+                    matches = re.findall(r'execute\s*\([^)]+\)', content)
+                    for match in matches:
+                        if '%' in match and '(' not in match[match.find('%'):]:
+                            self.high.append(
+                                f"SQL INJECTION RISK: {py_file} uses % formatting in execute()"
+                            )
+                            break
             except:
                 pass
         
@@ -157,7 +165,7 @@ class SecurityAuditor:
             lines = f.readlines()
         
         # Проверяем Python version
-        has_python_version = any('Python' in line and '3.1' in line for line in lines[:10])
+        has_python_version = any('python' in line.lower() and '3.11' in line for line in lines[:10])
         if not has_python_version:
             self.medium.append("requirements.txt: Missing Python version requirement")
         
@@ -166,10 +174,10 @@ class SecurityAuditor:
         for line in lines:
             line = line.strip()
             if line and not line.startswith('#'):
-                # Проверяем на несуществующие пакеты
-                if 'deepseek-ocr' in line.lower():
+                # Проверяем на несуществующие пакеты (только если это реальная установка)
+                if line.startswith('deepseek-ocr'):
                     suspicious.append("deepseek-ocr (package doesn't exist!)")
-                if 'chandra-ocr' in line.lower():
+                if line.startswith('chandra-ocr'):
                     suspicious.append("chandra-ocr (package doesn't exist!)")
         
         if suspicious:

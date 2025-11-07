@@ -3,14 +3,58 @@ Pytest Configuration
 Общие fixtures и настройки для всех тестов
 """
 
-import pytest
 import asyncio
-import asyncpg
-import sys
+import logging
+import os
 from pathlib import Path
 
+import pytest
+
+try:
+    from alembic import command  # type: ignore
+    from alembic.config import Config  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover
+    command = None  # type: ignore
+    Config = None  # type: ignore
+
+try:
+    import asyncpg
+except ModuleNotFoundError:  # noqa: F401
+    asyncpg = None
+
+logger = logging.getLogger(__name__)
+
+
 # Add src to path
+import sys
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+
+_migrations_applied = False
+
+
+def _apply_migrations(database_url: str) -> None:
+    global _migrations_applied
+    if _migrations_applied:
+        return
+
+    if Config is None or command is None:
+        logger.warning("Alembic is not installed; skipping migrations for tests")
+        _migrations_applied = True
+        return
+
+    config_path = Path(__file__).resolve().parents[1] / "alembic.ini"
+    if not config_path.exists():
+        logger.warning("alembic.ini not found; skipping migrations for tests")
+        return
+
+    alembic_cfg = Config(str(config_path))
+    alembic_cfg.set_main_option("sqlalchemy.url", database_url)
+
+    logger.info("Applying test migrations via Alembic")
+    command.upgrade(alembic_cfg, "head")
+    _migrations_applied = True
 
 
 @pytest.fixture(scope="session")
@@ -23,21 +67,50 @@ def event_loop():
 
 @pytest.fixture(scope="session")
 async def db_pool():
-    """Create database connection pool for tests"""
-    try:
-        pool = await asyncpg.create_pool(
-            host='localhost',
-            port=5432,
-            user='postgres',
-            password='postgres',
-            database='enterprise_1c_ai_test',
-            min_size=5,
-            max_size=20
-        )
-        yield pool
-        await pool.close()
-    except:
+    """Create database connection pool for integration tests.
+
+    Requires TEST_DATABASE_URL to be set and asyncpg installed.
+    """
+
+    if asyncpg is None:
         yield None
+        return
+
+    database_url = os.getenv("TEST_DATABASE_URL")
+    if not database_url:
+        yield None
+        return
+
+    try:
+        pool = await asyncpg.create_pool(database_url, min_size=1, max_size=5)
+        async with pool.acquire() as conn:
+            await conn.execute("SELECT 1")
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Skipping DB-backed tests: %s", exc)
+        yield None
+        return
+
+    os.environ.setdefault("DATABASE_URL", database_url)
+
+    _apply_migrations(database_url)
+
+    try:
+        from src.database import create_pool
+
+        await create_pool()
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Failed to initialise global DB pool: %s", exc)
+
+    try:
+        yield pool
+    finally:
+        await pool.close()
+        try:
+            from src.database import close_pool
+
+            await close_pool()
+        except Exception:
+            pass
 
 
 @pytest.fixture(scope="function")

@@ -1,18 +1,35 @@
 """
 Marketplace API
-REST API для marketplace плагинов
+
+Production readiness improvements:
+    - Redis-backed caching and per-user rate limiting for key endpoints
+    - Presigned download links via S3-compatible storage when configured
+    - Periodic cache refresh scheduler and audit-friendly logging
 """
 
 import logging
-from typing import List, Optional, Dict, Any
+import uuid
+from typing import Dict, List, Optional, Any
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
+
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, Request
 from pydantic import BaseModel, Field
 from enum import Enum
+
+from src.security import CurrentUser, get_audit_logger, get_current_user, require_roles
+from src.db.marketplace_repository import MarketplaceRepository
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/marketplace", tags=["marketplace"])
+audit_logger = get_audit_logger()
+
+
+def get_marketplace_repository(request: Request) -> MarketplaceRepository:
+    repo = getattr(request.app.state, "marketplace_repo", None)
+    if repo is None:
+        raise RuntimeError("Marketplace repository is not initialized")
+    return repo
 
 
 # ==================== Models ====================
@@ -65,6 +82,7 @@ class PluginSubmitRequest(BaseModel):
     # Resources
     icon_url: Optional[str] = None
     screenshot_urls: List[str] = Field(default_factory=list)
+    artifact_path: Optional[str] = Field(default=None, description="S3 object key with plugin bundle")
     
     # Documentation
     readme: Optional[str] = None
@@ -82,6 +100,7 @@ class PluginUpdateRequest(BaseModel):
     icon_url: Optional[str] = None
     screenshot_urls: Optional[List[str]] = None
     readme: Optional[str] = None
+    artifact_path: Optional[str] = Field(None, description="S3 object key with plugin bundle")
 
 
 class PluginSearchRequest(BaseModel):
@@ -120,6 +139,7 @@ class PluginResponse(BaseModel):
     download_url: Optional[str] = None
     icon_url: Optional[str] = None
     screenshot_urls: List[str] = []
+    artifact_path: Optional[str] = None
     
     # Metadata
     license: str
@@ -184,17 +204,14 @@ class PluginStatsResponse(BaseModel):
     rating_trend: str
 
 
-# ==================== In-Memory Storage (замените на PostgreSQL) ====================
-
-# Временное хранилище (в production → PostgreSQL)
-plugins_db: Dict[str, Dict[str, Any]] = {}
-reviews_db: Dict[str, Dict[str, Any]] = {}
-
-
 # ==================== Endpoints ====================
 
 @router.post("/plugins", response_model=PluginResponse, status_code=201)
-async def submit_plugin(plugin: PluginSubmitRequest):
+async def submit_plugin(
+    plugin: PluginSubmitRequest,
+    current_user: CurrentUser = Depends(require_roles("developer", "admin")),
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
+):
     """
     Публикация нового плагина
     
@@ -205,32 +222,33 @@ async def submit_plugin(plugin: PluginSubmitRequest):
     4. После одобрения → APPROVED
     """
     try:
-        # Генерируем ID
-        plugin_id = f"plugin_{len(plugins_db) + 1}"
-        
-        # Создаем запись
-        plugin_data = {
-            "id": plugin_id,
-            **plugin.model_dump(),
-            "status": PluginStatus.PENDING,
-            "downloads": 0,
-            "rating": 0.0,
-            "ratings_count": 0,
-            "installs": 0,
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow(),
-            "published_at": None,
-            "featured": False,
-            "verified": False,
-            "download_url": f"/marketplace/plugins/{plugin_id}/download"
-        }
-        
-        # Сохраняем
-        plugins_db[plugin_id] = plugin_data
-        
-        logger.info(f"Plugin submitted: {plugin_id} ({plugin.name})")
-        
-        return PluginResponse(**plugin_data)
+        plugin_id = f"plugin_{uuid.uuid4().hex}"
+        payload = plugin.model_dump()
+        payload["status"] = PluginStatus.PENDING.value
+        payload.setdefault("visibility", PluginVisibility.PUBLIC.value)
+
+        persisted = await repo.create_plugin(
+            plugin_id=plugin_id,
+            owner_id=current_user.user_id,
+            owner_username=current_user.username or current_user.user_id,
+            payload=payload,
+            download_url=f"/marketplace/plugins/{plugin_id}/download",
+        )
+
+        logger.info(
+            "Plugin submitted: %s (%s) by %s",
+            plugin_id,
+            plugin.name,
+            current_user.user_id,
+        )
+        audit_logger.log_action(
+            actor=current_user.user_id,
+            action="marketplace.plugin.submit",
+            target=plugin_id,
+            metadata={"name": plugin.name, "status": PluginStatus.PENDING.value},
+        )
+
+        return PluginResponse(**persisted)
         
     except Exception as e:
         logger.error(f"Plugin submission error: {e}")
@@ -245,7 +263,8 @@ async def search_plugins(
     sort_by: str = "rating",
     order: str = "desc",
     page: int = 1,
-    page_size: int = 20
+    page_size: int = 20,
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
 ):
     """
     Поиск плагинов в marketplace
@@ -262,56 +281,24 @@ async def search_plugins(
     - name: По имени
     """
     try:
-        # Фильтрация
-        filtered = []
-        
-        for plugin in plugins_db.values():
-            # Только одобренные и публичные
-            if plugin["status"] != PluginStatus.APPROVED:
-                continue
-            if plugin["visibility"] != PluginVisibility.PUBLIC:
-                continue
-            
-            # Фильтры
-            if category and plugin["category"] != category:
-                continue
-            
-            if author and plugin["author"] != author:
-                continue
-            
-            if query:
-                search_text = f"{plugin['name']} {plugin['description']} {' '.join(plugin['keywords'])}".lower()
-                if query.lower() not in search_text:
-                    continue
-            
-            filtered.append(plugin)
-        
-        # Сортировка
-        reverse = (order == "desc")
-        
-        if sort_by == "rating":
-            filtered.sort(key=lambda x: x["rating"], reverse=reverse)
-        elif sort_by == "downloads":
-            filtered.sort(key=lambda x: x["downloads"], reverse=reverse)
-        elif sort_by == "updated":
-            filtered.sort(key=lambda x: x["updated_at"], reverse=reverse)
-        elif sort_by == "name":
-            filtered.sort(key=lambda x: x["name"], reverse=not reverse)
-        
-        # Пагинация
-        total = len(filtered)
-        start = (page - 1) * page_size
-        end = start + page_size
-        paginated = filtered[start:end]
-        
-        total_pages = (total + page_size - 1) // page_size
-        
+        plugins, total = await repo.search_plugins(
+            query_text=query,
+            category=category.value if category else None,
+            author=author,
+            sort_by=sort_by,
+            order=order,
+            page=page,
+            page_size=page_size,
+        )
+
+        total_pages = (total + page_size - 1) // page_size if page_size else 1
+
         return PluginSearchResponse(
-            plugins=[PluginResponse(**p) for p in paginated],
+            plugins=[PluginResponse(**p) for p in plugins],
             total=total,
             page=page,
             page_size=page_size,
-            total_pages=total_pages
+            total_pages=total_pages,
         )
         
     except Exception as e:
@@ -320,14 +307,16 @@ async def search_plugins(
 
 
 @router.get("/plugins/{plugin_id}", response_model=PluginResponse)
-async def get_plugin(plugin_id: str):
+async def get_plugin(
+    plugin_id: str,
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
+):
     """Получить информацию о плагине"""
-    
-    if plugin_id not in plugins_db:
+
+    plugin = await repo.get_plugin(plugin_id)
+    if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
-    
-    plugin = plugins_db[plugin_id]
-    
+
     return PluginResponse(**plugin)
 
 
@@ -335,7 +324,8 @@ async def get_plugin(plugin_id: str):
 async def update_plugin(
     plugin_id: str, 
     update: PluginUpdateRequest,
-    user_id: str = "user_123"  # TODO: Получать из auth middleware
+    current_user: CurrentUser = Depends(get_current_user),
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
 ):
     """
     Обновление плагина
@@ -346,13 +336,11 @@ async def update_plugin(
         В production: user_id должен получаться из auth middleware (JWT token)
     """
     
-    if plugin_id not in plugins_db:
+    plugin = await repo.get_plugin(plugin_id)
+    if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
-    
-    plugin = plugins_db[plugin_id]
-    
-    # Проверка прав доступа
-    if not _check_authorization(user_id, plugin_id):
+
+    if not _check_authorization(current_user, plugin):
         raise HTTPException(
             status_code=403, 
             detail="You don't have permission to update this plugin"
@@ -360,25 +348,32 @@ async def update_plugin(
     
     # Обновляем поля
     update_data = update.model_dump(exclude_unset=True)
-    plugin.update(update_data)
-    plugin["updated_at"] = datetime.utcnow()
-    
-    # Если изменилась версия - обновляем статус на PENDING
+    if not update_data:
+        return PluginResponse(**plugin)
+
     if "version" in update_data and update_data["version"] != plugin.get("version"):
-        plugin["status"] = PluginStatus.PENDING
-        logger.info(f"Plugin {plugin_id} version updated, status → PENDING")
-    
-    plugins_db[plugin_id] = plugin
-    
-    logger.info(f"Plugin updated: {plugin_id} by user {user_id}")
-    
-    return PluginResponse(**plugin)
+        update_data["status"] = PluginStatus.PENDING.value
+
+    updated = await repo.update_plugin(plugin_id, update_data)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Plugin not found")
+
+    logger.info("Plugin updated: %s by user %s", plugin_id, current_user.user_id)
+    audit_logger.log_action(
+        actor=current_user.user_id,
+        action="marketplace.plugin.update",
+        target=plugin_id,
+        metadata={"fields": list(update_data.keys())},
+    )
+
+    return PluginResponse(**updated)
 
 
 @router.delete("/plugins/{plugin_id}")
 async def delete_plugin(
     plugin_id: str,
-    user_id: str = "user_123"  # TODO: Получать из auth middleware
+    current_user: CurrentUser = Depends(get_current_user),
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
 ):
     """
     Удаление плагина
@@ -390,113 +385,90 @@ async def delete_plugin(
         В production: user_id должен получаться из auth middleware (JWT token)
     """
     
-    if plugin_id not in plugins_db:
+    plugin = await repo.get_plugin(plugin_id)
+    if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
-    
-    # Проверка прав доступа (автор или админ)
-    if not _check_authorization(user_id, plugin_id):
+
+    if not _check_authorization(current_user, plugin):
         raise HTTPException(
             status_code=403,
             detail="You don't have permission to delete this plugin"
         )
     
-    # Мягкое удаление
-    plugins_db[plugin_id]["status"] = PluginStatus.REMOVED
-    plugins_db[plugin_id]["updated_at"] = datetime.utcnow()
-    
-    logger.info(f"Plugin removed: {plugin_id} by user {user_id}")
-    
+    removed = await repo.soft_delete_plugin(plugin_id)
+    logger.info("Plugin removed: %s by user %s", plugin_id, current_user.user_id)
+    audit_logger.log_action(
+        actor=current_user.user_id,
+        action="marketplace.plugin.delete",
+        target=plugin_id,
+        metadata={"status": removed.get("status") if removed else "removed"},
+    )
+
     return {"status": "removed", "plugin_id": plugin_id}
 
 
 @router.post("/plugins/{plugin_id}/install")
-async def install_plugin(plugin_id: str, user_id: str):
+async def install_plugin(
+    plugin_id: str,
+    current_user: CurrentUser = Depends(get_current_user),
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
+):
     """
     Установка плагина
     
     Увеличивает счетчики downloads и installs
     """
     
-    if plugin_id not in plugins_db:
+    updated = await repo.record_install(plugin_id, current_user.user_id)
+    if not updated:
         raise HTTPException(status_code=404, detail="Plugin not found")
-    
-    plugin = plugins_db[plugin_id]
-    
-    # Увеличиваем счетчики
-    plugin["downloads"] += 1
-    plugin["installs"] += 1
-    
-    logger.info(f"Plugin installed: {plugin_id} by user {user_id}")
-    
+
+    logger.info("Plugin installed: %s by user %s", plugin_id, current_user.user_id)
+
     return {
         "status": "installed",
         "plugin_id": plugin_id,
-        "download_url": plugin["download_url"]
+        "download_url": updated["download_url"],
     }
 
 
 @router.post("/plugins/{plugin_id}/uninstall")
-async def uninstall_plugin(plugin_id: str, user_id: str):
+async def uninstall_plugin(
+    plugin_id: str,
+    current_user: CurrentUser = Depends(get_current_user),
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
+):
     """Удаление плагина"""
     
-    if plugin_id not in plugins_db:
+    updated = await repo.remove_install(plugin_id, current_user.user_id)
+    if not updated:
         raise HTTPException(status_code=404, detail="Plugin not found")
-    
-    plugin = plugins_db[plugin_id]
-    
-    # Уменьшаем счетчик активных установок
-    plugin["installs"] = max(0, plugin["installs"] - 1)
-    
-    logger.info(f"Plugin uninstalled: {plugin_id} by user {user_id}")
+
+    logger.info("Plugin uninstalled: %s by user %s", plugin_id, current_user.user_id)
     
     return {"status": "uninstalled", "plugin_id": plugin_id}
 
 
 @router.get("/plugins/{plugin_id}/stats", response_model=PluginStatsResponse)
-async def get_plugin_stats(plugin_id: str):
+async def get_plugin_stats(
+    plugin_id: str,
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
+):
     """Получить статистику плагина"""
     
-    if plugin_id not in plugins_db:
+    stats = await repo.get_plugin_stats(plugin_id)
+    if not stats:
         raise HTTPException(status_code=404, detail="Plugin not found")
-    
-    plugin = plugins_db[plugin_id]
-    
-    # Получаем отзывы для этого плагина
-    plugin_reviews = [r for r in reviews_db.values() if r["plugin_id"] == plugin_id]
-    
-    # Распределение рейтингов
-    rating_dist = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
-    for review in plugin_reviews:
-        rating = review["rating"]
-        rating_dist[rating] = rating_dist.get(rating, 0) + 1
-    
-    # TODO: В production - получать реальную статистику из БД:
-    # - downloads_last_30_days: SELECT COUNT(*) FROM plugin_downloads 
-    #                            WHERE plugin_id = %s AND downloaded_at >= NOW() - INTERVAL '30 days'
-    # - favorites_count: SELECT COUNT(*) FROM user_favorites WHERE plugin_id = %s
-    # - downloads_trend: сравнение с предыдущим периодом
-    # - rating_trend: сравнение текущего рейтинга с предыдущим
-    stats = PluginStatsResponse(
-        plugin_id=plugin_id,
-        downloads_total=plugin["downloads"],
-        downloads_last_30_days=plugin["downloads"] // 2,  # Mock: в production из БД
-        installs_active=plugin["installs"],
-        rating_average=plugin["rating"],
-        rating_distribution=rating_dist,
-        reviews_count=len(plugin_reviews),
-        favorites_count=0,  # TODO: В production из БД (таблица user_favorites)
-        downloads_trend="stable",  # TODO: Вычислять из БД
-        rating_trend="stable"  # TODO: Вычислять из БД
-    )
-    
-    return stats
+
+    return PluginStatsResponse(**stats)
 
 
 @router.post("/plugins/{plugin_id}/reviews", response_model=PluginReviewResponse)
 async def submit_review(
-    plugin_id: str, 
-    review: PluginReviewRequest, 
-    user_id: str = "user_123"  # TODO: Получать из auth middleware
+    plugin_id: str,
+    review: PluginReviewRequest,
+    current_user: CurrentUser = Depends(get_current_user),
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
 ):
     """
     Отзыв на плагин
@@ -507,79 +479,81 @@ async def submit_review(
         В production: user_id должен получаться из auth middleware (JWT token)
     """
     
-    if plugin_id not in plugins_db:
+    plugin = await repo.get_plugin(plugin_id)
+    if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
-    
-    # Проверка что пользователь установил плагин
-    if not _check_plugin_installed(user_id, plugin_id):
+
+    if not await repo.user_has_installed(plugin_id, current_user.user_id):
         raise HTTPException(
             status_code=403,
             detail="You must install the plugin before leaving a review"
         )
     
-    # Генерируем ID отзыва
-    review_id = f"review_{len(reviews_db) + 1}"
+    review_id = f"review_{uuid.uuid4().hex}"
+    display_name = current_user.full_name or current_user.username
+    if not display_name and len(current_user.user_id) >= 4:
+        display_name = f"User {current_user.user_id[-4:]}"
+
+    stored = await repo.create_review(
+        review_id=review_id,
+        plugin_id=plugin_id,
+        user_id=current_user.user_id,
+        user_name=display_name,
+        payload=review.model_dump(),
+    )
+    if not stored:
+        raise HTTPException(status_code=404, detail="Plugin not found")
+
+    logger.info(
+        "Review submitted: %s for plugin %s by user %s",
+        review_id,
+        plugin_id,
+        current_user.user_id,
+    )
+    audit_logger.log_action(
+        actor=current_user.user_id,
+        action="marketplace.review.create",
+        target=plugin_id,
+        metadata={"review_id": review_id, "rating": review.rating},
+    )
     
-    # Создаем отзыв
-    review_data = {
-        "id": review_id,
-        "plugin_id": plugin_id,
-        "user_id": user_id,
-        "user_name": f"User {user_id[-4:]}",  # Mock
-        **review.model_dump(),
-        "helpful_count": 0,
-        "created_at": datetime.utcnow()
-    }
-    
-    reviews_db[review_id] = review_data
-    
-    # Обновляем рейтинг плагина
-    _update_plugin_rating(plugin_id)
-    
-    logger.info(f"Review submitted: {review_id} for plugin {plugin_id}")
-    
-    return PluginReviewResponse(**review_data)
+    return PluginReviewResponse(**stored)
 
 
 @router.get("/plugins/{plugin_id}/reviews")
 async def get_plugin_reviews(
     plugin_id: str,
     page: int = 1,
-    page_size: int = 10
+    page_size: int = 10,
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
 ) -> Dict[str, Any]:
     """Получить отзывы о плагине"""
     
-    if plugin_id not in plugins_db:
+    plugin = await repo.get_plugin(plugin_id)
+    if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
-    
-    # Фильтруем отзывы
-    plugin_reviews = [r for r in reviews_db.values() if r["plugin_id"] == plugin_id]
-    
-    # Сортируем по дате (новые первыми)
-    plugin_reviews.sort(key=lambda x: x["created_at"], reverse=True)
-    
-    # Пагинация
-    total = len(plugin_reviews)
-    start = (page - 1) * page_size
-    end = start + page_size
-    paginated = plugin_reviews[start:end]
-    
+
+    reviews, total = await repo.list_reviews(plugin_id, page, page_size)
+
     return {
-        "reviews": [PluginReviewResponse(**r) for r in paginated],
+        "reviews": [PluginReviewResponse(**r) for r in reviews],
         "total": total,
         "page": page,
         "page_size": page_size,
-        "total_pages": (total + page_size - 1) // page_size
+        "total_pages": (total + page_size - 1) // page_size if page_size else 1,
     }
 
 
 @router.get("/plugins/{plugin_id}/download")
-async def download_plugin(plugin_id: str):
+async def download_plugin(
+    plugin_id: str,
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
+):
     """
     Скачать плагин
-    
+
     Возвращает ZIP архив с manifest.json и кодом плагина
-    
+
     Note:
         В production: реализовать возврат реального файла через FileResponse
         Формат: ZIP архив содержащий:
@@ -587,47 +561,21 @@ async def download_plugin(plugin_id: str):
         - код плагина (Python/BSL файлы)
         - README.md (если есть)
     """
-    
-    if plugin_id not in plugins_db:
+
+    plugin = await repo.get_plugin(plugin_id)
+    if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
-    
-    plugin = plugins_db[plugin_id]
-    
-    if plugin["status"] != PluginStatus.APPROVED:
-        raise HTTPException(status_code=403, detail="Plugin not approved yet")
-    
-    # Увеличиваем счетчик скачиваний
-    plugin["downloads"] += 1
-    
-    # TODO: В production - вернуть реальный файл:
-    # from fastapi.responses import FileResponse
-    # plugin_file_path = f"/storage/plugins/{plugin_id}/{plugin['version']}.zip"
-    # return FileResponse(
-    #     path=plugin_file_path,
-    #     filename=f"{plugin['name']}_{plugin['version']}.zip",
-    #     media_type="application/zip"
-    # )
-    
-    return {
-        "message": "Download started",
-        "plugin_id": plugin_id,
-        "version": plugin["version"],
-        "download_url": f"/files/plugins/{plugin_id}.zip"  # Mock URL
-    }
+
+    return await repo.build_download_payload(plugin)
 
 
 @router.get("/categories")
-async def get_categories():
+async def get_categories(
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
+):
     """Получить список категорий с количеством плагинов"""
-    
-    # Подсчет плагинов по категориям
-    category_counts = {}
-    
-    for plugin in plugins_db.values():
-        if plugin["status"] == PluginStatus.APPROVED:
-            cat = plugin["category"]
-            category_counts[cat] = category_counts.get(cat, 0) + 1
-    
+    category_counts = await repo.get_category_counts()
+
     return {
         "categories": [
             {
@@ -641,27 +589,22 @@ async def get_categories():
 
 
 @router.get("/featured")
-async def get_featured_plugins(limit: int = 6):
+async def get_featured_plugins(
+    limit: int = 6,
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
+):
     """Получить избранные плагины"""
-    
-    # Фильтруем featured плагины
-    featured = [
-        p for p in plugins_db.values()
-        if p["status"] == PluginStatus.APPROVED and p.get("featured", False)
-    ]
-    
-    # Сортируем по рейтингу
-    featured.sort(key=lambda x: x["rating"], reverse=True)
-    
+    featured = await repo.get_featured_plugins(limit)
     return {
-        "plugins": [PluginResponse(**p) for p in featured[:limit]]
+        "plugins": [PluginResponse(**p) for p in featured]
     }
 
 
 @router.get("/trending")
 async def get_trending_plugins(
     period: str = "week",  # day | week | month
-    limit: int = 10
+    limit: int = 10,
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
 ):
     """
     Получить трендовые плагины
@@ -672,24 +615,18 @@ async def get_trending_plugins(
     - Активность (обновления, отзывы)
     """
     
-    # Mock: просто топ по скачиваниям
-    approved = [
-        p for p in plugins_db.values()
-        if p["status"] == PluginStatus.APPROVED
-    ]
-    
-    approved.sort(key=lambda x: x["downloads"], reverse=True)
-    
+    plugins = await repo.get_trending_plugins(limit)
     return {
-        "plugins": [PluginResponse(**p) for p in approved[:limit]],
-        "period": period
+        "plugins": [PluginResponse(**p) for p in plugins],
+        "period": period,
     }
 
 
 @router.post("/plugins/{plugin_id}/favorite")
 async def add_to_favorites(
-    plugin_id: str, 
-    user_id: str = "user_123"  # TODO: Получать из auth middleware
+    plugin_id: str,
+    current_user: CurrentUser = Depends(get_current_user),
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
 ):
     """
     Добавить плагин в избранное
@@ -698,23 +635,22 @@ async def add_to_favorites(
         В production: user_id должен получаться из auth middleware (JWT token)
     """
     
-    if plugin_id not in plugins_db:
+    plugin = await repo.get_plugin(plugin_id)
+    if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
-    
-    # TODO: В production - сохранить в БД:
-    # INSERT INTO user_favorites (user_id, plugin_id, created_at)
-    # VALUES (%s, %s, NOW())
-    # ON CONFLICT (user_id, plugin_id) DO NOTHING
-    
-    logger.info(f"Plugin {plugin_id} added to favorites by user {user_id}")
+
+    await repo.add_favorite(plugin_id, current_user.user_id)
+
+    logger.info("Plugin %s added to favorites by user %s", plugin_id, current_user.user_id)
     
     return {"status": "added", "plugin_id": plugin_id}
 
 
 @router.delete("/plugins/{plugin_id}/favorite")
 async def remove_from_favorites(
-    plugin_id: str, 
-    user_id: str = "user_123"  # TODO: Получать из auth middleware
+    plugin_id: str,
+    current_user: CurrentUser = Depends(get_current_user),
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
 ):
     """
     Удалить плагин из избранного
@@ -723,13 +659,13 @@ async def remove_from_favorites(
         В production: user_id должен получаться из auth middleware (JWT token)
     """
     
-    if plugin_id not in plugins_db:
+    plugin = await repo.get_plugin(plugin_id)
+    if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
-    
-    # TODO: В production - удалить из БД:
-    # DELETE FROM user_favorites WHERE user_id = %s AND plugin_id = %s
-    
-    logger.info(f"Plugin {plugin_id} removed from favorites by user {user_id}")
+
+    await repo.remove_favorite(plugin_id, current_user.user_id)
+
+    logger.info("Plugin %s removed from favorites by user %s", plugin_id, current_user.user_id)
     
     return {"status": "removed", "plugin_id": plugin_id}
 
@@ -739,7 +675,8 @@ async def report_plugin(
     plugin_id: str,
     reason: str,
     details: Optional[str] = None,
-    user_id: str = "user_123"  # TODO: Получать из auth middleware
+    current_user: CurrentUser = Depends(get_current_user),
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
 ):
     """
     Пожаловаться на плагин
@@ -755,154 +692,72 @@ async def report_plugin(
         В production: user_id должен получаться из auth middleware (JWT token)
     """
     
-    if plugin_id not in plugins_db:
+    plugin = await repo.get_plugin(plugin_id)
+    if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
-    
-    # TODO: В production - сохранить жалобу в БД:
-    # INSERT INTO plugin_reports (plugin_id, user_id, reason, details, created_at)
-    # VALUES (%s, %s, %s, %s, NOW())
-    
-    # TODO: В production - отправить уведомление модераторам:
-    # - Через email/telegram бот
-    # - Или через очередь задач (Celery/RQ)
-    # - Или через webhook к системе модерации
-    
-    logger.warning(f"Plugin {plugin_id} reported by user {user_id}: {reason}")
-    
+
+    complaint_id = f"complaint_{uuid.uuid4().hex}"
+    await repo.add_complaint(
+        complaint_id=complaint_id,
+        plugin_id=plugin_id,
+        user_id=current_user.user_id,
+        reason=reason,
+        details=details,
+    )
+
+    logger.warning("Plugin %s reported by user %s: %s", plugin_id, current_user.user_id, reason)
+    audit_logger.log_action(
+        actor=current_user.user_id,
+        action="marketplace.plugin.report",
+        target=plugin_id,
+        metadata={"reason": reason},
+    )
+
     return {
         "status": "reported",
         "plugin_id": plugin_id,
-        "message": "Thank you for your report. We will review it shortly."
+        "message": "Thank you for your report. We will review it shortly.",
     }
 
 
 # ==================== Helper Functions ====================
 
-def _check_authorization(user_id: str, plugin_id: str) -> bool:
-    """
-    Проверка прав доступа к плагину
-    
-    Args:
-        user_id: ID пользователя
-        plugin_id: ID плагина
-    
-    Returns:
-        True если пользователь имеет права (автор или админ)
-    
-    Note:
-        В production: заменить на реальную проверку через auth middleware
-        и проверку ролей пользователя в БД
-    """
-    if plugin_id not in plugins_db:
-        return False
-    
-    plugin = plugins_db[plugin_id]
-    
-    # Проверка: автор плагина
-    if plugin.get("author") == user_id:
-        return True
-    
-    # Проверка: админ (в production - через роль в БД)
-    # TODO: Реализовать проверку роли админа через auth middleware
-    if user_id == "admin" or user_id.startswith("admin_"):
-        return True
-    
-    return False
-
-
-def _is_admin(user_id: str) -> bool:
-    """
-    Проверка является ли пользователь админом
-    
-    Args:
-        user_id: ID пользователя
-    
-    Returns:
-        True если пользователь админ
-    
-    Note:
-        В production: заменить на проверку роли через auth middleware
-    """
-    # TODO: Реализовать проверку роли через auth middleware
-    return user_id == "admin" or user_id.startswith("admin_")
-
-
-def _check_plugin_installed(user_id: str, plugin_id: str) -> bool:
-    """
-    Проверка установлен ли плагин у пользователя
-    
-    Args:
-        user_id: ID пользователя
-        plugin_id: ID плагина
-    
-    Returns:
-        True если плагин установлен
-    
-    Note:
-        В production: проверка через БД (таблица user_plugin_installs)
-    """
-    # TODO: Реализовать проверку через БД
-    # SELECT EXISTS(SELECT 1 FROM user_plugin_installs 
-    #               WHERE user_id = %s AND plugin_id = %s AND uninstalled_at IS NULL)
-    return True  # Mock: всегда True для демо
-
-
-def _update_plugin_rating(plugin_id: str):
-    """Пересчитать рейтинг плагина на основе отзывов"""
-    
-    if plugin_id not in plugins_db:
-        return
-    
-    # Получаем все отзывы
-    plugin_reviews = [r for r in reviews_db.values() if r["plugin_id"] == plugin_id]
-    
-    if not plugin_reviews:
-        return
-    
-    # Средний рейтинг
-    total_rating = sum(r["rating"] for r in plugin_reviews)
-    avg_rating = total_rating / len(plugin_reviews)
-    
-    # Обновляем плагин
-    plugins_db[plugin_id]["rating"] = round(avg_rating, 2)
-    plugins_db[plugin_id]["ratings_count"] = len(plugin_reviews)
-    
-    logger.info(f"Plugin {plugin_id} rating updated: {avg_rating:.2f} ({len(plugin_reviews)} reviews)")
+def _check_authorization(user: CurrentUser, plugin: Dict[str, Any]) -> bool:
+    return plugin.get("owner_id") == user.user_id or user.has_role("admin", "moderator")
 
 
 # ==================== Admin Endpoints ====================
 
 @router.post("/admin/plugins/{plugin_id}/approve")
 async def approve_plugin(
-    plugin_id: str, 
-    admin_id: str = "admin"  # TODO: Получать из auth middleware
+    plugin_id: str,
+    current_user: CurrentUser = Depends(require_roles("admin", "moderator")),
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
 ):
     """
-    Одобрить плагин (только админы)
-    
-    Note:
-        В production: admin_id должен получаться из auth middleware (JWT token)
-        и проверяться через _is_admin()
+    Одобрить плагин (требуется роль admin или moderator)
     """
     
-    if plugin_id not in plugins_db:
+    plugin = await repo.get_plugin(plugin_id)
+    if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
-    
-    # Проверка прав админа
-    if not _is_admin(admin_id):
-        raise HTTPException(
-            status_code=403,
-            detail="Admin access required"
-        )
-    
-    plugin = plugins_db[plugin_id]
-    
-    plugin["status"] = PluginStatus.APPROVED
-    plugin["published_at"] = datetime.utcnow()
-    plugin["updated_at"] = datetime.utcnow()
-    
-    logger.info(f"Plugin approved by admin {admin_id}: {plugin_id}")
-    
+
+    await repo.update_plugin(
+        plugin_id,
+        {
+            "status": PluginStatus.APPROVED.value,
+            "published_at": datetime.utcnow(),
+        },
+    )
+
+    logger.info("Plugin approved by %s: %s", current_user.user_id, plugin_id)
+    audit_logger.log_action(
+        actor=current_user.user_id,
+        action="marketplace.plugin.approve",
+        target=plugin_id,
+        metadata={"status": PluginStatus.APPROVED.value},
+    )
+
     return {"status": "approved", "plugin_id": plugin_id}
 
 
@@ -910,98 +765,102 @@ async def approve_plugin(
 async def reject_plugin(
     plugin_id: str,
     reason: str,
-    admin_id: str = "admin"  # TODO: Получать из auth middleware
+    current_user: CurrentUser = Depends(require_roles("admin", "moderator")),
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
 ):
     """
-    Отклонить плагин (только админы)
-    
-    Note:
-        В production: admin_id должен получаться из auth middleware (JWT token)
+    Отклонить плагин (требуется роль admin или moderator)
     """
     
-    if plugin_id not in plugins_db:
+    plugin = await repo.get_plugin(plugin_id)
+    if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
-    
-    # Проверка прав админа
-    if not _is_admin(admin_id):
-        raise HTTPException(
-            status_code=403,
-            detail="Admin access required"
-        )
-    
-    plugin = plugins_db[plugin_id]
-    
-    plugin["status"] = PluginStatus.REJECTED
-    plugin["updated_at"] = datetime.utcnow()
-    
-    # TODO: В production - отправить уведомление автору с причиной:
-    # - Через email на адрес автора (plugin["author_email"])
-    # - Или через внутреннюю систему уведомлений
-    # - Или через webhook к системе уведомлений
-    
-    logger.info(f"Plugin rejected by admin {admin_id}: {plugin_id} (reason: {reason})")
-    
+
+    await repo.update_plugin(
+        plugin_id,
+        {
+            "status": PluginStatus.REJECTED.value,
+        },
+    )
+
+    logger.info(
+        "Plugin rejected by %s: %s (reason: %s)",
+        current_user.user_id,
+        plugin_id,
+        reason,
+    )
+    audit_logger.log_action(
+        actor=current_user.user_id,
+        action="marketplace.plugin.reject",
+        target=plugin_id,
+        metadata={"reason": reason},
+    )
+
     return {"status": "rejected", "plugin_id": plugin_id, "reason": reason}
 
 
 @router.post("/admin/plugins/{plugin_id}/feature")
 async def feature_plugin(
-    plugin_id: str, 
-    featured: bool = True, 
-    admin_id: str = "admin"  # TODO: Получать из auth middleware
+    plugin_id: str,
+    featured: bool = True,
+    current_user: CurrentUser = Depends(require_roles("admin", "moderator")),
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
 ):
     """
-    Добавить/убрать из избранных (только админы)
-    
-    Note:
-        В production: admin_id должен получаться из auth middleware (JWT token)
+    Добавить/убрать из избранных (требуется роль admin или moderator)
     """
     
-    if plugin_id not in plugins_db:
+    plugin = await repo.get_plugin(plugin_id)
+    if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
-    
-    # Проверка прав админа
-    if not _is_admin(admin_id):
-        raise HTTPException(
-            status_code=403,
-            detail="Admin access required"
-        )
-    
-    plugins_db[plugin_id]["featured"] = featured
-    plugins_db[plugin_id]["updated_at"] = datetime.utcnow()
-    
-    logger.info(f"Plugin {plugin_id} featured={featured} by admin {admin_id}")
-    
+
+    await repo.update_plugin(plugin_id, {"featured": featured})
+
+    logger.info(
+        "Plugin %s featured=%s by %s",
+        plugin_id,
+        featured,
+        current_user.user_id,
+    )
+    audit_logger.log_action(
+        actor=current_user.user_id,
+        action="marketplace.plugin.feature",
+        target=plugin_id,
+        metadata={"featured": featured},
+    )
+
     return {"status": "updated", "plugin_id": plugin_id, "featured": featured}
 
 
 @router.post("/admin/plugins/{plugin_id}/verify")
 async def verify_plugin(
-    plugin_id: str, 
-    verified: bool = True, 
-    admin_id: str = "admin"  # TODO: Получать из auth middleware
+    plugin_id: str,
+    verified: bool = True,
+    current_user: CurrentUser = Depends(require_roles("admin", "moderator")),
+    repo: MarketplaceRepository = Depends(get_marketplace_repository),
 ):
     """
-    Верифицировать плагин (только админы)
-    
-    Note:
-        В production: admin_id должен получаться из auth middleware (JWT token)
+    Верифицировать плагин (требуется роль admin или moderator)
     """
     
-    if plugin_id not in plugins_db:
+    plugin = await repo.get_plugin(plugin_id)
+    if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
-    
-    # Проверка прав админа
-    if not _is_admin(admin_id):
-        raise HTTPException(
-            status_code=403,
-            detail="Admin access required"
-        )
-    
-    plugins_db[plugin_id]["verified"] = verified
-    plugins_db[plugin_id]["updated_at"] = datetime.utcnow()
-    
-    logger.info(f"Plugin {plugin_id} verified={verified} by admin {admin_id}")
-    
+
+    await repo.update_plugin(plugin_id, {"verified": verified})
+
+    logger.info(
+        "Plugin %s verified=%s by %s",
+        plugin_id,
+        verified,
+        current_user.user_id,
+    )
+    audit_logger.log_action(
+        actor=current_user.user_id,
+        action="marketplace.plugin.verify",
+        target=plugin_id,
+        metadata={"verified": verified},
+    )
+
     return {"status": "updated", "plugin_id": plugin_id, "verified": verified}
 

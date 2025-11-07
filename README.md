@@ -5,7 +5,7 @@
 Комплексная AI-экосистема для автоматизации разработки, тестирования и сопровождения проектов на платформе 1С:Предприятие.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
 [![GitHub](https://img.shields.io/badge/GitHub-DmitrL--dev%2F1cai--public-blue)](https://github.com/DmitrL-dev/1cai-public)
 
 > **Статус:** Production Ready | **Версия:** 5.1.0 | **Обновлено:** 2025-11-06
@@ -191,7 +191,7 @@ EN: "find function..."
 ### Вариант 1: Telegram Bot (самый простой)
 
 ```bash
-# 1. Установите Python 3.11+
+# 1. Установите Python 3.11 (рекомендуем 3.11.9)
 # 2. Клонируйте проект
 git clone https://github.com/DmitrL-dev/1cai-public.git
 cd 1cai-public
@@ -336,7 +336,9 @@ curl -X POST http://localhost:8000/generate \
 
 ### Для начинающих:
 - 📗 [Getting Started](docs/01-getting-started/README.md) - введение
+- 🐍 [Python Setup Guide](docs/01-getting-started/python-setup.md) - установка Python 3.11
 - 📦 [Installation Guide](docs/01-getting-started/installation.md) - полная установка
+- 🛡️ [Admin Roles API](docs/API_REFERENCE.md#-admin-role-management) - управление ролями/permissions
 - ⚡ [Quick Start](docs/01-getting-started/quickstart.md) - быстрый старт
 - 📱 [Telegram Setup](docs/01-getting-started/telegram-setup.md) - настройка бота
 - ❓ [FAQ](FAQ.md) - часто задаваемые вопросы
@@ -352,6 +354,8 @@ curl -X POST http://localhost:8000/generate \
 - 📋 [ITIL Analysis](docs/07-itil-analysis/) - NEW! Enterprise ITSM
 - 📊 [Monitoring Guide](docs/MONITORING_GUIDE.md) - мониторинг и observability
 - 🔐 [Security Guide](SECURITY.md) - безопасность и best practices
+- 🔑 [Auth API](docs/API_REFERENCE.md#-auth-api) - получение JWT токенов
+- 🔗 [n8n Integration](docs/06-features/n8n-integration.md) - кастомная нода + workflows
 
 ### Специальные возможности:
 - 🎁 [All Features](docs/06-features/) - index всех фич
@@ -359,6 +363,7 @@ curl -X POST http://localhost:8000/generate \
 - 📸 [OCR Integration](docs/06-features/OCR_INTEGRATION.md) - распознавание документов
 - 🌍 [i18n Guide](docs/06-features/I18N_GUIDE.md) - мультиязычность
 - 🧠 [BSL Fine-tuning](docs/06-features/BSL_FINETUNING_GUIDE.md) - обучение модели
+- 🔗 [n8n Integration](docs/06-features/n8n-integration.md) - автоматизация через no-code
 
 **Полная документация:** [docs/README.md](docs/README.md)
 
@@ -403,7 +408,7 @@ curl -X POST http://localhost:8000/generate \
 ## 🛠️ Технологический стек
 
 ### Backend:
-- **Python 3.11+** (FastAPI, asyncio)
+- **Python 3.11.x** (FastAPI, asyncio)
 - **PostgreSQL 15** - основная БД
 - **Neo4j 5.x** - граф зависимостей
 - **Qdrant** - векторный поиск
@@ -436,7 +441,7 @@ curl -X POST http://localhost:8000/generate \
 
 ## 📊 Статус проекта
 
-> 💡 **NEW!** [Что реально работает →](WHAT_REALLY_WORKS.md) | [Критический анализ архитектуры →](АРХИТЕКТУРА_КРИТИЧЕСКИЙ_АНАЛИЗ.md)
+> 💡 **NEW!** [Что реально работает →](docs/02-architecture/PROJECT_SUMMARY.md) | [Критический анализ архитектуры →](docs/02-architecture/ARCHITECTURE_OVERVIEW.md)
 
 ### Готовность: 75% (MVP) + 25% (Planned)
 
@@ -517,6 +522,9 @@ curl -X POST http://localhost:8000/generate \
 - Custom AI agents
 - Integrations
 - Themes
+- 🔐 JWT + per-user rate limiting (Redis)
+- ☁️ Presigned downloads через S3/MinIO (beta)
+- ⚡ Кэширование витрин (Redis + APScheduler)
 
 ---
 

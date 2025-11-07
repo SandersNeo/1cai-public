@@ -181,7 +181,7 @@ networks:
 #    cd execution-env
 #    deno run --allow-all execution-harness.ts
 #
-# Полная инструкция: WHAT_REALLY_WORKS.md
+# Полная инструкция: docs/02-architecture/PROJECT_SUMMARY.md
 #
 # ═══════════════════════════════════════════════════════════════
 

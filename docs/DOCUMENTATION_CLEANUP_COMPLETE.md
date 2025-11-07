@@ -152,7 +152,7 @@ docs/
 ## 🎯 АКТУАЛЬНЫЙ ТЕХНОЛОГИЧЕСКИЙ СТЕК
 
 ### Backend:
-- Python 3.11+ | FastAPI | Uvicorn
+- Python 3.11.x | FastAPI | Uvicorn
 
 ### Databases (5):
 - PostgreSQL 15

@@ -23,7 +23,7 @@ pip install -r requirements-telegram.txt
 **Решение:**
 ```bash
 # Windows
-# Установите Python 3.11+ с python.org
+# Установите Python 3.11.x с python.org
 
 # Linux
 sudo apt-get install python3.11

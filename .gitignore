@@ -156,6 +156,7 @@ LICENSE_AUDIT_*.md
 
 # Node modules (если используется)
 node_modules/
+**/node_modules/
 
 # Coverage reports
 htmlcov/
@@ -258,3 +259,15 @@ scripts/tiers/
 *PRICING_STRATEGY*.md
 *MONETIZATION*.md
 *REVENUE*.md
+
+# Browser screenshots and debugging files
+.browser_screenshots/
+visual_feedback_*.png
+
+# Integration helper artifacts
+n8n_cookies.txt
+BROKEN_LINKS_REPORT.txt
+output/edt_parser/*.txt
+COMPREHENSIVE_AUDIT_FINAL.txt
+SECURITY_AUDIT_REPORT.txt
+README_CODE_VERIFICATION.txt

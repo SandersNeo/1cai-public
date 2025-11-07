@@ -12,7 +12,7 @@
 
 | Технология | Версия | Назначение |
 |------------|--------|------------|
-| **Python** | 3.11+ | Main backend language |
+| **Python** | 3.11.x | Main backend language |
 | **FastAPI** | Latest | Async REST API framework |
 | **Uvicorn** | Latest | ASGI server |
 | **Pydantic** | Latest | Data validation |

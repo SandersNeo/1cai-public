@@ -12,7 +12,7 @@ Write-Host "====================================================================
 Write-Host ""
 
 # Переход в директорию проекта
-cd "C:\Users\user\Desktop\package (1)"
+Set-Location -Path (Split-Path -Parent $MyInvocation.MyCommand.Path)
 
 Write-Host "[1/6] Финальная проверка безопасности..."
 Write-Host ""

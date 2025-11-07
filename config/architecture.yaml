@@ -210,7 +210,7 @@ features:
 # Technology Stack
 technology_stack:
   languages:
-    - "Python 3.11+"
+    - "Python 3.11.x"
     - "Java 17+ (EDT plugin)"
     - "TypeScript (web dashboard)"
     - "BSL/1C"

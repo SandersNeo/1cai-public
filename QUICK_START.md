@@ -132,7 +132,7 @@ curl http://localhost:6001/mcp
 - REST API
 
 ### 📊 Технологии
-- Python 3.11+
+- Python 3.11.x
 - FastAPI
 - PostgreSQL, Redis, Neo4j, Qdrant
 - OpenAI API (GPT-4, Whisper)

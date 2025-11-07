@@ -405,7 +405,7 @@ graph TB
 mindmap
   root((1C AI Stack))
     Backend
-      Python 3.11+
+      Python 3.11.x
       FastAPI
       asyncio
       Pydantic

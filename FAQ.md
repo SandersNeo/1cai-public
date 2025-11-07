@@ -1,6 +1,6 @@
 # ❓ FAQ - Frequently Asked Questions
 
-**Последнее обновление:** 6 ноября 2025
+**Последнее обновление:** 7 ноября 2025
 
 ---
 
@@ -29,10 +29,59 @@ python src/telegram/bot_minimal.py
 
 ---
 
+### Q: Как получить JWT токен для API?
+
+**A:**
+
+```bash
+# Запросить токен (демо-учётки задаются через AUTH_DEMO_USERS)
+curl -X POST http://localhost:8000/auth/token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=<your_username>&password=<your_password>"
+
+# Использовать токен
+curl http://localhost:8000/marketplace/plugins \
+  -H "Authorization: Bearer <your_token>"
+```
+
+В production обязательно задайте собственный `JWT_SECRET`, `JWT_ACCESS_TOKEN_EXPIRE_MINUTES` и переопределите `AUTH_DEMO_USERS`.
+
+---
+
+## 🛡️ Marketplace & Security
+
+### Q: Как изменить лимиты запросов к Marketplace и REST API?
+
+**A:** Используйте переменные окружения в `.env`:
+
+```bash
+USER_RATE_LIMIT_PER_MINUTE=120      # Количество запросов на пользователя в минуту
+USER_RATE_LIMIT_WINDOW_SECONDS=60   # Размер окна (секунды)
+MARKETPLACE_CACHE_REFRESH_MINUTES=5 # Как часто пересчитывать кэш витрин
+```
+
+После изменения перезапустите backend (`uvicorn`, `docker-compose` или systemd-сервис).
+
+### Q: Как включить скачивание плагинов через S3/MinIO?
+
+**A:** Укажите параметры хранилища в `.env`:
+
+```bash
+AWS_S3_BUCKET=onecai-marketplace
+AWS_S3_REGION=ru-1
+AWS_S3_ENDPOINT=https://s3.selectel.ru  # для MinIO/Selectel
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+```
+
+При наличии `artifact_path` в карточке плагина API вернёт подписанную ссылку (TTL 5 минут). Без этих переменных останется fallback-URL.
+
+---
+
 ### Q: Какие минимальные требования?
 
 **A:** 
-- **Python:** 3.11+
+- **Python:** 3.11.x (рекомендуем 3.11.9)
 - **RAM:** 2-4 GB (MVP) или 8-12 GB (full stack)
 - **Docker:** 20.10+ (опционально, но рекомендуется)
 - **OS:** Windows, Linux, macOS
@@ -50,7 +99,7 @@ python src/telegram/bot_minimal.py
 - 🟡 Qdrant (для семантического поиска)
 - ❌ Elasticsearch (не нужен, PostgreSQL FTS достаточно)
 
-См.: [WHAT_REALLY_WORKS.md](WHAT_REALLY_WORKS.md)
+См.: [Что реально работает](docs/02-architecture/PROJECT_SUMMARY.md)
 
 ---
 
@@ -361,4 +410,21 @@ docker-compose -f docker-compose.monitoring.yml up -d
 
 **Обновлено:** 6 ноября 2025  
 **Следующее обновление:** По мере поступления вопросов
+
+---
+
+### Q: Как интегрировать внутренний сервис без OAuth?
+
+**A:** Используйте заголовок `X-Service-Token`:
+
+1. В `.env` задайте JSON в `SERVICE_API_TOKENS`:
+   ```bash
+   SERVICE_API_TOKENS=[{"name":"analytics","token":"secret","roles":["service"],"permissions":["marketplace:read"]}]
+   ```
+2. Перезапустите backend.
+3. В запросе передайте `X-Service-Token: secret`.
+
+> Убедитесь, что токены хранятся в Vault/Secrets Manager и не попадают в репозиторий.
+
+---
 
