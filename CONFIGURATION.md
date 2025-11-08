@@ -289,12 +289,14 @@ AWS_S3_ENDPOINT=https://s3.selectel.ru
 # Доступы сервисного пользователя
 AWS_ACCESS_KEY_ID=...
 AWS_SECRET_ACCESS_KEY=...
+AWS_S3_CREATE_BUCKET=true
+MINIO_ENDPOINT=http://localhost:9000
 
 # Максимальный размер загружаемого артефакта (в мегабайтах)
 MARKETPLACE_MAX_ARTIFACT_SIZE_MB=25
 ```
 
-> ℹ️  Если `AWS_S3_BUCKET` не задан, сервис отдаёт fallback-URL из базы. При использовании MinIO/Selectel настройте `AWS_S3_ENDPOINT` и включите HTTPS.<br/>
+> ℹ️  Если `AWS_S3_BUCKET` не задан, сервис отдаёт fallback-URL из базы. При использовании MinIO/Selectel настройте `AWS_S3_ENDPOINT` (или `MINIO_ENDPOINT`) и включите HTTPS.<br/>
 > ✅ При первом обращении бакет создаётся автоматически (если переменная `AWS_S3_CREATE_BUCKET` не равна `false`).
 
 ---
