@@ -1,0 +1,45 @@
+@startuml
+title 1C AI Stack — System Context
+
+skinparam backgroundColor #FFFFFF
+skinparam componentStyle rectangle
+
+actor "1C Developers\n(EDT)" as Developer
+actor "Ops/DevOps" as DevOps
+actor "1C IT Staff\n(Support)" as Support
+actor "ITS Portal" as ITS
+actor "External AI Providers" as AIProviders
+
+rectangle "1C AI Stack" {
+  component "Graph API\n(FastAPI)" as API
+  component "Workers & Orchestrator" as Workers
+  component "ML Pipelines" as MLPipelines
+  component "Integrations" as Integrations
+  component "Monitoring Stack\n(Prometheus/Grafana)" as Monitoring
+}
+
+Developer --> API : IDE (EDT Plugin)\nMCP / Graph API
+Developer --> Integrations : n8n workflows\nTelegram Bot
+Support --> Integrations : Cases / FAQ / ITS Scraper Data
+Support --> API : Administration Portal\nRole Management
+
+DevOps --> Monitoring : Metrics, Alerts
+DevOps --> API : CI/CD Pipelines\nDeployment Control
+
+ITS --> Integrations : ITS Scraper (HTTPS)
+AIProviders --> MLPipelines : Model Inference / Training
+
+API --> Workers : Job Dispatch\nAnalysis Requests
+Workers --> MLPipelines : Dataset / Training Jobs
+Workers --> Monitoring : Metrics / Logs
+
+note right of Integrations
+  • ITS Scraper
+  • n8n node
+  • Telegram Bot
+  • Marketplace
+  • EDT Plugin actions
+end note
+
+@enduml
+

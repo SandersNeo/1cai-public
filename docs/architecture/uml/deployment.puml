@@ -1,0 +1,72 @@
+@startuml
+title 1C AI Stack — Deployment Topology
+
+skinparam backgroundColor #FFFFFF
+skinparam componentStyle rectangle
+
+node "User Workstations" {
+  artifact "1C:EDT + Plugin" as EDT
+  artifact "CLI/Makefile" as CLI
+}
+
+cloud "Kubernetes Cluster / Stage" {
+  node "Namespace: ai-stack" {
+    node "Ingress" {
+      component "API Gateway\n(FastAPI Pods)" as APIPods
+      component "Realtime Gateway\n(WebSocket)" as Realtime
+    }
+    node "Workers" {
+      component "Celery Worker Pods" as CeleryPods
+      component "ML Worker Pods" as MLPods
+    }
+    node "Databases" {
+      database "PostgreSQL\n(stateful set)" as Postgres
+      database "Neo4j" as Neo4j
+      database "Qdrant" as Qdrant
+      database "Redis" as Redis
+      database "MinIO" as Minio
+    }
+    node "Observability" {
+      component "Prometheus" as Prometheus
+      component "Grafana" as Grafana
+      component "Alertmanager" as Alertmanager
+    }
+  }
+}
+
+cloud "GitHub Actions / CI" as CI
+cloud "ITS Portal" as ITS
+cloud "External AI Providers" as AIProviders
+
+EDT --> APIPods : MCP / REST
+CLI --> API Pods : make scrape-its / audits
+APIPods --> Redis : rate limit / cache
+APIPods --> Postgres
+APIPods --> Neo4j
+APIPods --> Qdrant
+
+CeleryPods --> Postgres
+CeleryPods --> Neo4j
+CeleryPods --> Qdrant
+CeleryPods --> Minio
+
+MLPods --> Minio : datasets/models
+MLPods --> Qdrant : embeddings
+
+Prometheus --> Grafana
+Prometheus --> Alertmanager
+CeleryPods --> Prometheus : celery_* metrics
+APIPods --> Prometheus : api_* metrics
+
+CLI --> Prometheus : its_scraper metrics
+CLI --> Minio : upload artefacts
+
+CI --> APIPods : Deploy / Smoke tests
+CI --> CeleryPods
+CI --> Prometheus : Synthetic metrics
+
+CeleryPods --> ITS : Fetch documentation (ITS Scraper)
+MLPods --> AIProviders : model inference/training calls
+
+@enduml
+

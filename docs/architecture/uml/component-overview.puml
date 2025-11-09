@@ -1,0 +1,84 @@
+@startuml
+title 1C AI Stack — Component Overview
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FFFFFF
+
+package "API Layer" {
+  component "Graph API\n(FastAPI)" as GraphAPI
+  component "Auth & RBAC\n(OAuth2/JWT)" as Auth
+  component "Admin Portal\n(Security Agent)" as AdminPortal
+  component "Realtime Gateway\n(WebSocket/MCP)" as Realtime
+}
+
+package "Workers & Pipelines" {
+  component "Celery Workers\n(analysis/audit)" as Celery
+  component "ML Pipelines\n(training/eval)" as ML
+  component "ITS Scraper\n(stateful queue)" as ITSScraper
+}
+
+package "Integrations" {
+  component "EDT Plugin" as EDT
+  component "n8n Node" as n8n
+  component "Telegram Bot" as Telegram
+  component "Marketplace\n(extensions)" as Marketplace
+}
+
+package "Data Stores" {
+  database "PostgreSQL" as Postgres
+  database "Neo4j" as Neo4j
+  database "Qdrant" as Qdrant
+  database "Redis" as Redis
+  database "MinIO / S3" as Minio
+}
+
+package "Observability" {
+  component "Prometheus\nScrapers" as Prometheus
+  component "Grafana Dashboards" as Grafana
+  component "Alertmanager" as Alertmanager
+}
+
+component "CI/CD\n(GitHub Actions)" as CICD
+
+GraphAPI --> Auth
+GraphAPI --> Realtime
+GraphAPI --> Celery : Submit jobs
+GraphAPI --> Postgres
+GraphAPI --> Neo4j
+GraphAPI --> Qdrant
+
+Realtime --> Redis : Pub/Sub
+Celery --> Postgres
+Celery --> Neo4j
+Celery --> Qdrant
+Celery --> Minio
+
+ML --> Minio
+ML --> Qdrant
+ML --> Postgres
+
+ITSScraper --> Minio
+ITSScraper --> Postgres
+ITSScraper --> Prometheus
+
+EDT --> GraphAPI
+n8n --> GraphAPI
+Telegram --> GraphAPI
+Marketplace --> GraphAPI
+Marketplace --> Minio
+
+Prometheus --> Grafana
+Prometheus --> Alertmanager
+Grafana --> DevOps : Dashboards
+Alertmanager --> DevOps : Alerts
+
+CICD --> GraphAPI : Deploy/Smoke
+CICD --> Celery
+CICD --> ITSScraper
+CICD --> Prometheus : Synthetic checks
+
+Redis --> Celery : Task Queue
+Redis --> GraphAPI : Cache / Rate limit
+
+@enduml
+
