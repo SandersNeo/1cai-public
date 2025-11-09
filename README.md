@@ -110,7 +110,8 @@
 
 ---
 
-[Подробные пошаговые сценарии → `docs/CASE_STUDIES.md`](docs/CASE_STUDIES.md)
+- **Чек-лист результатов:** [`docs/CASE_STUDIES.html`](docs/CASE_STUDIES.html) / [`docs/CASE_STUDIES.md`](docs/CASE_STUDIES.md)
+- По итогам сценариев в `models/`, `reports/eval/` и `reports/security/` должны появиться свежие артефакты.
 
 ---
 

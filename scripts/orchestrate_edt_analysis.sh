@@ -40,9 +40,16 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 RUN_ID="edt_analysis_$TIMESTAMP"
 LOG_FILE="$LOG_DIR/${RUN_ID}.log"
 
-# Default configuration
-CONFIG_NAME="${1:-ERPCPM}"
-CONFIG_PATH="$PROJECT_ROOT/1c_configurations/$CONFIG_NAME"
+# Default configuration (can be overridden via CLI)
+CONFIG_NAME="ERPCPM"
+CONFIG_PATH=""
+SKIP_PARSE=false
+RUN_ARCH=true
+RUN_DATASET=true
+RUN_DEPS=true
+RUN_BP=true
+RUN_DOC=true
+QUICK_MODE=false
 
 # Colors for output
 RED='\033[0;31m'
@@ -170,14 +177,18 @@ Arguments:
                  Must exist in 1c_configurations/ directory
 
 Options:
-  -h, --help     Show this help message
-  --dry-run      Show what would be executed without running
-  --skip-parse   Skip parsing step (use existing parse results)
+  -h, --help        Show this help message
+  --config NAME     Specify configuration explicitly (default: ERPCPM)
+  --skip-parse      Skip parsing step (use existing parse results)
+  --quick           Run only parsing step and exit
+  --only-deps       Run only dependencies analysis (requires parse results)
+  --only-bp         Run only best practices extraction (requires parse results)
 
 Examples:
   $0                    # Analyze ERPCPM (default)
   $0 ERP                # Analyze ERP configuration
   $0 --skip-parse       # Skip parsing, run only analysis
+  $0 --only-deps --skip-parse
 
 Output:
   Logs: $LOG_DIR/
@@ -191,17 +202,78 @@ EOF
 # ============================================================================
 
 main() {
-    # Parse arguments
-    if [[ "${1:-}" == "-h" ]] || [[ "${1:-}" == "--help" ]]; then
-        show_usage
-        exit 0
-    fi
+    local CONFIG_SPECIFIED=false
+    local ARG
     
-    local SKIP_PARSE=false
-    if [[ "${1:-}" == "--skip-parse" ]]; then
-        SKIP_PARSE=true
-        shift
-    fi
+    while [[ $# -gt 0 ]]; do
+        ARG="$1"
+        case "$ARG" in
+            -h|--help)
+                show_usage
+                exit 0
+                ;;
+            --config)
+                if [[ -z "${2:-}" ]]; then
+                    log "ERROR" "--config requires a value"
+                    exit 1
+                fi
+                CONFIG_NAME="$2"
+                CONFIG_SPECIFIED=true
+                shift 2
+                continue
+                ;;
+            --skip-parse)
+                SKIP_PARSE=true
+                shift
+                continue
+                ;;
+            --quick)
+                QUICK_MODE=true
+                RUN_ARCH=false
+                RUN_DATASET=false
+                RUN_DEPS=false
+                RUN_BP=false
+                RUN_DOC=false
+                shift
+                continue
+                ;;
+            --only-deps)
+                RUN_ARCH=false
+                RUN_DATASET=false
+                RUN_DEPS=true
+                RUN_BP=false
+                RUN_DOC=false
+                shift
+                continue
+                ;;
+            --only-bp)
+                RUN_ARCH=false
+                RUN_DATASET=false
+                RUN_DEPS=false
+                RUN_BP=true
+                RUN_DOC=false
+                shift
+                continue
+                ;;
+            --*)
+                log "WARNING" "Unknown option: $ARG"
+                shift
+                continue
+                ;;
+            *)
+                if [[ "$CONFIG_SPECIFIED" = false ]]; then
+                    CONFIG_NAME="$ARG"
+                    CONFIG_SPECIFIED=true
+                else
+                    log "WARNING" "Ignoring extra argument: $ARG"
+                fi
+                shift
+                continue
+                ;;
+        esac
+    done
+    
+    CONFIG_PATH="$PROJECT_ROOT/1c_configurations/$CONFIG_NAME"
     
     print_header "EDT ANALYSIS PIPELINE"
     log "INFO" "Run ID: $RUN_ID"
@@ -218,13 +290,30 @@ main() {
     
     # Global start time
     PIPELINE_START=$(date +%s)
+    local TOTAL_STEPS_LABEL=1
+    if [ "$QUICK_MODE" = false ] && [ "$RUN_DOC" = true ]; then
+        TOTAL_STEPS_LABEL=2
+    fi
+    local PARSE_STEP_LABEL="1/${TOTAL_STEPS_LABEL}"
+    local DOC_STEP_LABEL="${TOTAL_STEPS_LABEL}/${TOTAL_STEPS_LABEL}"
+    
+    if [ "$QUICK_MODE" = true ]; then
+        log "INFO" "Mode: QUICK (parsing only)"
+    else
+        log "INFO" "Selected analyses:"
+        log "INFO" "  - Architecture:      $( [ "$RUN_ARCH" = true ] && echo "ON" || echo "OFF" )"
+        log "INFO" "  - ML Dataset:        $( [ "$RUN_DATASET" = true ] && echo "ON" || echo "OFF" )"
+        log "INFO" "  - Dependencies:      $( [ "$RUN_DEPS" = true ] && echo "ON" || echo "OFF" )"
+        log "INFO" "  - Best Practices:    $( [ "$RUN_BP" = true ] && echo "ON" || echo "OFF" )"
+        log "INFO" "  - Documentation:     $( [ "$RUN_DOC" = true ] && echo "ON" || echo "OFF" )"
+    fi
     
     # ========================================================================
     # STEP 1: Parsing (обязательно первым)
     # ========================================================================
     
     if [ "$SKIP_PARSE" = false ]; then
-        if ! run_step "1/6" \
+        if ! run_step "$PARSE_STEP_LABEL" \
             "Parsing EDT configuration" \
             "cd '$PROJECT_ROOT' && $PYTHON_CMD scripts/parsers/edt/edt_parser_with_metadata.py" \
             1200; then
@@ -233,118 +322,129 @@ main() {
         fi
     else
         log "WARNING" "Skipping parsing step (using existing results)"
+        log "INFO" "Step ${PARSE_STEP_LABEL}: Skipping parsing (existing results)"
     fi
     
+    if [ "$QUICK_MODE" = true ]; then
+        log "INFO" "Quick mode enabled – skipping analysis and documentation."
+        PIPELINE_END=$(date +%s)
+        TOTAL_DURATION=$((PIPELINE_END - PIPELINE_START))
+        
+        print_header "QUICK MODE SUMMARY"
+        log "SUCCESS" "✅ Parsing data ready"
+        log "INFO" "Results stored in: $OUTPUT_DIR/edt_parser/"
+        log "INFO" "Elapsed: ${TOTAL_DURATION}s ($(echo "scale=1; $TOTAL_DURATION/60" | bc) min)"
+        print_footer
+        
+        rm -f "$LOG_DIR/${RUN_ID}"_*.exit
+        exit 0
+    fi
     # ========================================================================
-    # STEPS 2-5: Parallel Analysis (4 независимых задачи)
+    # STEPS 2-5: Parallel Analysis (динамический набор задач)
     # ========================================================================
     
-    print_header "PARALLEL ANALYSIS (4 tasks)"
+    declare -a TASK_LABELS=()
+    declare -a TASK_SUFFIX=()
+    declare -a TASK_COMMANDS=()
     
-    PARALLEL_START=$(date +%s)
+    if [ "$RUN_ARCH" = true ]; then
+        TASK_LABELS+=("Architecture analysis")
+        TASK_SUFFIX+=("arch")
+        TASK_COMMANDS+=("$PYTHON_CMD scripts/analysis/analyze_architecture.py")
+    fi
+    if [ "$RUN_DATASET" = true ]; then
+        TASK_LABELS+=("ML dataset creation")
+        TASK_SUFFIX+=("dataset")
+        TASK_COMMANDS+=("$PYTHON_CMD scripts/dataset/create_ml_dataset.py")
+    fi
+    if [ "$RUN_DEPS" = true ]; then
+        TASK_LABELS+=("Dependencies analysis")
+        TASK_SUFFIX+=("deps")
+        TASK_COMMANDS+=("$PYTHON_CMD scripts/analysis/analyze_dependencies.py")
+    fi
+    if [ "$RUN_BP" = true ]; then
+        TASK_LABELS+=("Best practices extraction")
+        TASK_SUFFIX+=("bp")
+        TASK_COMMANDS+=("$PYTHON_CMD scripts/analysis/extract_best_practices.py")
+    fi
     
-    # Запускаем 4 задачи в фоне
-    log "INFO" "Launching 4 parallel analyses..."
+    TASK_COUNT=${#TASK_LABELS[@]}
     
-    # Analysis 1: Architecture
-    (
-        cd "$PROJECT_ROOT"
-        $PYTHON_CMD scripts/analysis/analyze_architecture.py > "$LOG_DIR/${RUN_ID}_arch.log" 2>&1
-        echo $? > "$LOG_DIR/${RUN_ID}_arch.exit"
-    ) &
-    PID_ARCH=$!
-    
-    # Analysis 2: ML Dataset
-    (
-        cd "$PROJECT_ROOT"
-        $PYTHON_CMD scripts/dataset/create_ml_dataset.py > "$LOG_DIR/${RUN_ID}_dataset.log" 2>&1
-        echo $? > "$LOG_DIR/${RUN_ID}_dataset.exit"
-    ) &
-    PID_DATASET=$!
-    
-    # Analysis 3: Dependencies
-    (
-        cd "$PROJECT_ROOT"
-        $PYTHON_CMD scripts/analysis/analyze_dependencies.py > "$LOG_DIR/${RUN_ID}_deps.log" 2>&1
-        echo $? > "$LOG_DIR/${RUN_ID}_deps.exit"
-    ) &
-    PID_DEPS=$!
-    
-    # Analysis 4: Best Practices
-    (
-        cd "$PROJECT_ROOT"
-        $PYTHON_CMD scripts/analysis/extract_best_practices.py > "$LOG_DIR/${RUN_ID}_bp.log" 2>&1
-        echo $? > "$LOG_DIR/${RUN_ID}_bp.exit"
-    ) &
-    PID_BP=$!
-    
-    log "INFO" "  Process IDs: ARCH=$PID_ARCH, DATASET=$PID_DATASET, DEPS=$PID_DEPS, BP=$PID_BP"
-    log "INFO" "Waiting for all analyses to complete..."
-    
-    # Ждём завершения всех задач
-    wait $PID_ARCH
-    wait $PID_DATASET
-    wait $PID_DEPS
-    wait $PID_BP
-    
-    PARALLEL_END=$(date +%s)
-    PARALLEL_DURATION=$((PARALLEL_END - PARALLEL_START))
-    
-    # Проверяем exit codes
-    FAILED_COUNT=0
-    
-    EXIT_ARCH=$(cat "$LOG_DIR/${RUN_ID}_arch.exit" 2>/dev/null || echo "1")
-    if [ "$EXIT_ARCH" -eq 0 ]; then
-        log "SUCCESS" "  ✅ Architecture analysis complete"
+    if [ "$TASK_COUNT" -gt 0 ]; then
+        print_header "PARALLEL ANALYSIS (${TASK_COUNT} task(s))"
+        
+        PARALLEL_START=$(date +%s)
+        
+        declare -a TASK_PIDS=()
+        declare -a TASK_EXIT_FILES=()
+        
+        for idx in "${!TASK_LABELS[@]}"; do
+            label="${TASK_LABELS[$idx]}"
+            suffix="${TASK_SUFFIX[$idx]}"
+            command="${TASK_COMMANDS[$idx]}"
+            
+            log "INFO" "Starting: $label"
+            
+            (
+                cd "$PROJECT_ROOT"
+                bash -c "$command" > "$LOG_DIR/${RUN_ID}_${suffix}.log" 2>&1
+                EXIT_CODE=$?
+                echo $EXIT_CODE > "$LOG_DIR/${RUN_ID}_${suffix}.exit"
+                exit $EXIT_CODE
+            ) &
+            TASK_PIDS[$idx]=$!
+            TASK_EXIT_FILES[$idx]="$LOG_DIR/${RUN_ID}_${suffix}.exit"
+        done
+        
+        log "INFO" "Waiting for analysis tasks to complete..."
+        for pid in "${TASK_PIDS[@]}"; do
+            wait "$pid"
+        done
+        
+        PARALLEL_END=$(date +%s)
+        PARALLEL_DURATION=$((PARALLEL_END - PARALLEL_START))
+        
+        FAILED_COUNT=0
+        
+        for idx in "${!TASK_LABELS[@]}"; do
+            label="${TASK_LABELS[$idx]}"
+            exit_file="${TASK_EXIT_FILES[$idx]}"
+            EXIT_CODE=$(cat "$exit_file" 2>/dev/null || echo "1")
+            if [ "$EXIT_CODE" -eq 0 ]; then
+                log "SUCCESS" "  ✅ $label complete"
+            else
+                log "ERROR" "  ❌ $label FAILED"
+                FAILED_COUNT=$((FAILED_COUNT + 1))
+            fi
+        done
+        
+        log "INFO" "Analysis tasks completed in ${PARALLEL_DURATION}s"
+        
+        if [ $FAILED_COUNT -gt 0 ]; then
+            log "ERROR" "Pipeline failed: $FAILED_COUNT task(s) failed"
+            log "INFO" "Check detailed logs in: $LOG_DIR/"
+            exit 1
+        fi
+        
+        print_footer
     else
-        log "ERROR" "  ❌ Architecture analysis FAILED"
-        FAILED_COUNT=$((FAILED_COUNT + 1))
+        log "INFO" "No analysis tasks selected (quick or selective mode)."
     fi
-    
-    EXIT_DATASET=$(cat "$LOG_DIR/${RUN_ID}_dataset.exit" 2>/dev/null || echo "1")
-    if [ "$EXIT_DATASET" -eq 0 ]; then
-        log "SUCCESS" "  ✅ ML Dataset creation complete"
-    else
-        log "ERROR" "  ❌ ML Dataset creation FAILED"
-        FAILED_COUNT=$((FAILED_COUNT + 1))
-    fi
-    
-    EXIT_DEPS=$(cat "$LOG_DIR/${RUN_ID}_deps.exit" 2>/dev/null || echo "1")
-    if [ "$EXIT_DEPS" -eq 0 ]; then
-        log "SUCCESS" "  ✅ Dependencies analysis complete"
-    else
-        log "ERROR" "  ❌ Dependencies analysis FAILED"
-        FAILED_COUNT=$((FAILED_COUNT + 1))
-    fi
-    
-    EXIT_BP=$(cat "$LOG_DIR/${RUN_ID}_bp.exit" 2>/dev/null || echo "1")
-    if [ "$EXIT_BP" -eq 0 ]; then
-        log "SUCCESS" "  ✅ Best practices extraction complete"
-    else
-        log "ERROR" "  ❌ Best practices extraction FAILED"
-        FAILED_COUNT=$((FAILED_COUNT + 1))
-    fi
-    
-    log "INFO" "Parallel analysis completed in ${PARALLEL_DURATION}s"
-    
-    if [ $FAILED_COUNT -gt 0 ]; then
-        log "ERROR" "Pipeline failed: $FAILED_COUNT tasks failed"
-        log "INFO" "Check individual logs in: $LOG_DIR/"
-        exit 1
-    fi
-    
-    print_footer
     
     # ========================================================================
     # STEP 6: Documentation (после всех анализов)
     # ========================================================================
     
-    if ! run_step "6/6" \
-        "Generating documentation" \
-        "cd '$PROJECT_ROOT' && $PYTHON_CMD scripts/analysis/generate_documentation.py" \
-        300; then
-        log "ERROR" "Documentation generation failed (non-critical)"
-        # Не останавливаем pipeline, документация - не критична
+    if [ "$RUN_DOC" = true ]; then
+        if ! run_step "$DOC_STEP_LABEL" \
+            "Generating documentation" \
+            "cd '$PROJECT_ROOT' && $PYTHON_CMD scripts/analysis/generate_documentation.py" \
+            300; then
+            log "ERROR" "Documentation generation failed (non-critical)"
+            # Не останавливаем pipeline, документация - не критична
+        fi
+    else
+        log "WARNING" "Skipping documentation step."
     fi
     
     # ========================================================================
@@ -363,11 +463,21 @@ main() {
     log "INFO" ""
     log "INFO" "Results:"
     log "INFO" "  📊 Parse results:     $OUTPUT_DIR/edt_parser/"
-    log "INFO" "  🏗️  Architecture:      $OUTPUT_DIR/analysis/architecture_analysis.json"
-    log "INFO" "  🔗 Dependencies:      $OUTPUT_DIR/analysis/dependency_graph.json"
-    log "INFO" "  💾 ML Dataset:        $OUTPUT_DIR/dataset/ml_training_dataset.json"
-    log "INFO" "  📖 Best practices:    $OUTPUT_DIR/analysis/best_practices.json"
-    log "INFO" "  📝 Documentation:     docs/generated/"
+    if [ "$RUN_ARCH" = true ]; then
+        log "INFO" "  🏗️  Architecture:      $OUTPUT_DIR/analysis/architecture_analysis.json"
+    fi
+    if [ "$RUN_DEPS" = true ]; then
+        log "INFO" "  🔗 Dependencies:      $OUTPUT_DIR/analysis/dependency_graph.json"
+    fi
+    if [ "$RUN_DATASET" = true ]; then
+        log "INFO" "  💾 ML Dataset:        $OUTPUT_DIR/dataset/ml_training_dataset.json"
+    fi
+    if [ "$RUN_BP" = true ]; then
+        log "INFO" "  📖 Best practices:    $OUTPUT_DIR/analysis/best_practices.json"
+    fi
+    if [ "$RUN_DOC" = true ]; then
+        log "INFO" "  📝 Documentation:     docs/generated/"
+    fi
     log "INFO" ""
     log "INFO" "Logs:"
     log "INFO" "  Main log:             $LOG_FILE"

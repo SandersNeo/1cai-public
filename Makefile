@@ -1,7 +1,12 @@
 # Makefile for Enterprise 1C AI Development Stack
 # Quick commands for common tasks
 
-.PHONY: help install test docker-up docker-down migrate clean train-ml-demo eval-ml-demo
+.PHONY: help install test docker-up docker-down migrate clean train-ml eval-ml train-ml-demo eval-ml-demo
+
+CONFIG ?= ERPCPM
+EPOCHS ?=
+LIMIT ?= 20
+BASE_MODEL ?=
 
 help:
 	@echo "Enterprise 1C AI Development Stack - Commands:"
@@ -46,9 +51,13 @@ help:
 	@echo "  make ollama-pull      - Download Qwen3-Coder model"
 	@echo "  make ollama-list      - List installed models"
 	@echo ""
+	@echo "ML:"
+	@echo "  make train-ml         - Train neural pipeline (CONFIG=$(CONFIG), EPOCHS=$(if $(EPOCHS),$(EPOCHS),default))"
+	@echo "  make eval-ml          - Evaluate dataset (CONFIG=$(CONFIG), LIMIT=$(LIMIT))"
+	@echo ""
 	@echo "ML Demos:"
-	@echo "  make train-ml-demo    - Run demo training inside ml-worker"
-	@echo "  make eval-ml-demo     - Evaluate trained demo model"
+	@echo "  make train-ml-demo    - Run demo training preset (DEMO)"
+	@echo "  make eval-ml-demo     - Evaluate demo preset (DEMO)"
 	@echo ""
 	@echo "Utilities:"
 	@echo "  make status           - Show project status"
@@ -171,9 +180,15 @@ clean:
 	rm -rf htmlcov/ coverage.xml .coverage
 	@echo "✓ Cleaned temporary files"
 
+train-ml:
+	@python scripts/ml/config_utils.py --info $(CONFIG)
+	python scripts/run_neural_training.py $(if $(EPOCHS),--epochs $(EPOCHS),)
+
+eval-ml:
+	python scripts/eval/eval_model.py --config-name $(CONFIG) --limit $(LIMIT)
+
 train-ml-demo:
-	docker compose -f docker-compose.neural.yml up -d
-	docker compose exec ml-worker python train.py --dataset /data/DEMO_dataset.jsonl --epochs 1 --output /models/demo-model
+	$(MAKE) train-ml CONFIG=DEMO EPOCHS=1
 
 eval-ml-demo:
-	python scripts/eval/eval_model.py --model ./models/demo-model --questions output/dataset/DEMO_qa.jsonl --limit 10
+	$(MAKE) eval-ml CONFIG=DEMO LIMIT=10

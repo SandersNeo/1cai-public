@@ -36,11 +36,11 @@
    ```bash
    pip install -r requirements.txt
    pip install -r requirements-neural.txt
-   docker compose -f docker-compose.neural.yml up -d
+   python scripts/ml/config_utils.py --info DEMO
    ```
 2. Соберите демо-датасет (см. `docs/01-getting-started/LOCAL_MODEL_TRAINING.md`):
    ```bash
-   python scripts/dataset/create_ml_dataset.py --source 1c_configurations/ERPCPM --output output/dataset/ERPCPM_dataset.jsonl
+   python scripts/dataset/create_ml_dataset.py
    ```
 3. Запустите тренировку и оценку через make-таргеты:
    ```bash

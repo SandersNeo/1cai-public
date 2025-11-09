@@ -150,8 +150,18 @@ docker compose exec ml-worker python train.py ^
 #### Быстрый демо-запуск
 ```bash
 make train-ml-demo
+make eval-ml-demo
 ```
-Команда поднимет `ml-worker`, обучит небольшую демо-модель и сохранит её в `/models/demo-model`.
+`train-ml-demo` использует преднастройку `DEMO` из `config/ml_datasets.json`: создаёт модель `models/demo-model` и складывает отчёт в `reports/eval/demo-model.json`. `eval-ml-demo` прогоняет лёгкую проверку качества.
+
+#### Конфигурации
+- Список преднастроенных наборов: `python scripts/ml/config_utils.py --list`
+- Подробности по набору: `python scripts/ml/config_utils.py --info ERPCPM`
+- Запуск полного цикла через Make:
+  ```bash
+  make train-ml CONFIG=ERPCPM EPOCHS=3
+  make eval-ml CONFIG=ERPCPM LIMIT=20
+  ```
 
 ### 5.2 Мониторим процесс
 - Логи обучения: `docker compose logs -f ml-worker`.
@@ -174,9 +184,9 @@ python scripts/eval/eval_model.py ^
   --limit 10
 ```
 
-Для демо-модели:
+Альтернатива (используем конфигурацию и автоматически сохраняем отчёт):
 ```bash
-make eval-ml-demo
+make eval-ml CONFIG=ERPCPM LIMIT=10
 ```
 
 ### 6.3 Проверяем качество

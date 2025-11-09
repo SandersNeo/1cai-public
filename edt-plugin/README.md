@@ -32,6 +32,14 @@ Right-click on any BSL function:
 - **Update Best Practices** ✨ NEW - Обновить best practices
 - **Generate Code...** - Мастер генерации кода
 
+### Orchestrator Modes
+
+- **Full** — полный pipeline (парсинг → все анализы → документация).
+- **Quick** (`--quick`) — только парсинг, чтобы получить свежий `full_parse_with_metadata.json`.
+- **Refresh Dependencies** (`--only-deps --skip-parse`) — использует существующий парсинг, обновляет `dependency_graph.json`.
+- **Update Best Practices** (`--only-bp --skip-parse`) — пересчитывает рекомендации.
+- Все логи и ошибки можно наблюдать в консоли *1C AI Assistant* (Window → Show View → Console).
+
 ### Keyboard Shortcuts:
 
 - **Ctrl+Alt+A** - Open AI Assistant
@@ -338,6 +346,19 @@ EDT Plugin
 = **2 minutes active time**
 
 **Savings: 23-28 minutes per analysis run!**
+
+## 🛠 Diagnostics
+
+- Логи оркестратора доступны в консоли *1C AI Assistant* (Window → Show View → Console).
+- Подробные файлы: `logs/edt_analysis/edt_analysis_<timestamp>.log` + по задачам (`_arch.log`, `_deps.log`, и т.д.).
+- Ошибки также попадают в стандартный **Error Log** Eclipse.
+- Скрипт `scripts/orchestrate_edt_analysis.sh` поддерживает флаги `--quick`, `--only-deps`, `--only-bp`, `--skip-parse`, `--config NAME`.
+
+## 🧪 Smoke Test
+
+- Быстрый сценарий ручной проверки: [docs/SMOKE_TEST.md](docs/SMOKE_TEST.md)
+- Тестовые модули: `test-fixtures/SampleProject/CommonModules/DemoModule.bsl`
+- Рекомендуется перед релизом плагина прогонять smoke + `run_full_audit.py --stop-on-failure`
 
 ## 🐛 Known Issues
 

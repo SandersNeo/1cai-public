@@ -2,6 +2,7 @@ package com.onecai.edt.services;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -10,11 +11,19 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleManager;
+import org.eclipse.ui.console.MessageConsole;
+import org.eclipse.ui.console.MessageConsoleStream;
+
+import com.onecai.edt.Activator;
 
 /**
  * Orchestrator Runner
@@ -31,6 +40,8 @@ public class OrchestratorRunner {
     private static final String ORCHESTRATOR_SCRIPT = "scripts/orchestrate_edt_analysis.sh";
     private static final Pattern STEP_PATTERN = Pattern.compile("Step (\\d+)/(\\d+): (.+)");
     private static final Pattern SUCCESS_PATTERN = Pattern.compile("✅ (.+) complete \\((\\d+)s\\)");
+    private static final String CONSOLE_NAME = "1C AI Assistant";
+    private static volatile MessageConsole sharedConsole;
     
     /**
      * Запуск полного анализа
@@ -71,8 +82,8 @@ public class OrchestratorRunner {
                     // Получаем рабочую директорию (корень проекта)
                     Path workingDir = getProjectRoot();
                     
-                    monitor.beginTask("Running EDT Analysis Orchestrator", 
-                        type == AnalysisType.FULL ? 6 : 1);
+                    int totalWork = type == AnalysisType.FULL ? 2 : 1;
+                    monitor.beginTask("Running EDT Analysis Orchestrator", totalWork);
                     
                     // Запускаем процесс
                     ProcessBuilder pb = new ProcessBuilder(command);
@@ -199,17 +210,17 @@ public class OrchestratorRunner {
         switch (type) {
             case QUICK:
                 // Только парсинг, пропустить анализы
-                // TODO: добавить флаг --quick в оркестратор
+                command.add("--quick");
                 break;
             case DEPENDENCIES:
                 // Только зависимости
                 command.add("--skip-parse");
-                // TODO: добавить флаг --only-deps
+                command.add("--only-deps");
                 break;
             case BEST_PRACTICES:
                 // Только best practices
                 command.add("--skip-parse");
-                // TODO: добавить флаг --only-bp
+                command.add("--only-bp");
                 break;
             case FULL:
             default:
@@ -264,11 +275,79 @@ public class OrchestratorRunner {
     }
     
     private static void logInfo(String message) {
-        System.out.println("[OrchestratorRunner] " + message);
+        log(IStatus.INFO, message);
     }
     
     private static void logError(String message) {
-        System.err.println("[OrchestratorRunner] " + message);
+        log(IStatus.ERROR, message);
+    }
+
+    private static void log(int severity, String message) {
+        String decorated = "[Orchestrator] " + message;
+
+        Activator activator = Activator.getDefault();
+        if (activator != null) {
+            ILog pluginLog = activator.getLog();
+            if (pluginLog != null) {
+                pluginLog.log(new Status(severity, Activator.PLUGIN_ID, decorated));
+            }
+        }
+
+        // Fallback to stdout/stderr for development consoles
+        if (severity == IStatus.ERROR) {
+            System.err.println(decorated);
+        } else {
+            System.out.println(decorated);
+        }
+
+        appendToConsole(severity, decorated);
+    }
+
+    private static void appendToConsole(int severity, String message) {
+        Display display = Display.getDefault();
+        if (display == null || display.isDisposed()) {
+            return;
+        }
+
+        display.asyncExec(() -> {
+            MessageConsole console = getConsole();
+            if (console == null) {
+                return;
+            }
+
+            try (MessageConsoleStream stream = console.newMessageStream()) {
+                String prefix = severity == IStatus.ERROR ? "[ERROR] " : "[INFO] ";
+                stream.println(prefix + message);
+            } catch (IOException e) {
+                // If console writing fails, log to stderr
+                System.err.println("[Orchestrator] Console write failed: " + e.getMessage());
+            }
+        });
+    }
+
+    private static MessageConsole getConsole() {
+        MessageConsole console = sharedConsole;
+        if (console != null) {
+            return console;
+        }
+
+        ConsolePlugin consolePlugin = ConsolePlugin.getDefault();
+        if (consolePlugin == null) {
+            return null;
+        }
+
+        IConsoleManager manager = consolePlugin.getConsoleManager();
+        for (IConsole existing : manager.getConsoles()) {
+            if (existing instanceof MessageConsole && CONSOLE_NAME.equals(existing.getName())) {
+                sharedConsole = (MessageConsole) existing;
+                return sharedConsole;
+            }
+        }
+
+        MessageConsole newConsole = new MessageConsole(CONSOLE_NAME, null);
+        manager.addConsoles(new IConsole[] { newConsole });
+        sharedConsole = newConsole;
+        return sharedConsole;
     }
     
     /**
