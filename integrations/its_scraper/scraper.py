@@ -47,6 +47,8 @@ class ITSScraper:
         self._visited: Set[str] = set()
         self.stats = ScrapeStatistics()
         self._existing_metadata: Dict[str, Dict[str, object]] = {}
+        self._base_delay = config.delay_between_requests
+        self._adaptive_delay = self._base_delay
 
     async def __aenter__(self) -> "ITSScraper":
         if self._client is None:
@@ -64,7 +66,7 @@ class ITSScraper:
         if self._client and not self._external_client:
             await self._client.aclose()
 
-    async def fetch_html(self, url: str) -> str:
+    async def fetch_html(self, url: str, metrics=None) -> str:
         assert self._client is not None, "Scraper must be used as async context manager"
 
         async for attempt in AsyncRetrying(
@@ -75,17 +77,26 @@ class ITSScraper:
         ):
             with attempt:
                 async with self._semaphore:
-                    if self.config.delay_between_requests:
-                        await asyncio.sleep(self.config.delay_between_requests)
+                    delay = max(self._adaptive_delay, self._base_delay)
+                    if metrics and metrics.get("rate"):
+                        metrics["rate"].set(delay)
+                    if delay:
+                        await asyncio.sleep(delay)
                     response = await self._client.get(
                         url, headers={"User-Agent": self._pick_user_agent()}
                     )
                     response.raise_for_status()
+                    self._update_delay(success=True)
+                    if metrics and metrics.get("requests"):
+                        metrics["requests"].labels(status="success").inc()
                     return response.text
+        self._update_delay(success=False)
+        if metrics and metrics.get("requests"):
+            metrics["requests"].labels(status="failed").inc()
 
         raise ScraperError(f"Unable to fetch {url}")
 
-    async def _iter_article_urls(self) -> Iterable[str]:
+    async def _iter_article_urls(self, metrics=None) -> Iterable[str]:
         to_visit: Deque[str] = deque([self.config.start_url])
         seen_pages: Set[str] = set()
 
@@ -96,7 +107,7 @@ class ITSScraper:
             seen_pages.add(page_url)
 
             try:
-                html = await self.fetch_html(page_url)
+                html = await self.fetch_html(page_url, metrics=metrics)
             except (httpx.HTTPError, RetryError) as exc:
                 logger.warning("Failed to load list page %s: %s", page_url, exc)
                 continue
@@ -126,13 +137,15 @@ class ITSScraper:
                             to_visit.append(next_url)
 
     async def _scrape_article(
-        self, url: str
+        self, url: str, metrics=None
     ) -> Optional[Tuple[Article, Optional[Dict[str, object]]]]:
         try:
-            html = await self.fetch_html(url)
+            html = await self.fetch_html(url, metrics=metrics)
         except (httpx.HTTPError, RetryError) as exc:
             logger.error("Failed to fetch article %s: %s", url, exc)
             self.stats.failed += 1
+            if metrics and metrics.get("requests"):
+                metrics["requests"].labels(status="failed").inc()
             return None
 
         soup = BeautifulSoup(html, "html.parser")
@@ -178,10 +191,12 @@ class ITSScraper:
                 return None
         return article, existing_meta
 
-    async def scrape(self) -> List[Tuple[Article, Optional[Dict[str, object]]]]:
+    async def scrape(
+        self, metrics=None
+    ) -> List[Tuple[Article, Optional[Dict[str, object]]]]:
         articles: List[Tuple[Article, Optional[Dict[str, object]]]] = []
-        async for url in self._iter_article_urls():
-            result = await self._scrape_article(url)
+        async for url in self._iter_article_urls(metrics=metrics):
+            result = await self._scrape_article(url, metrics=metrics)
             if not result:
                 continue
             article, existing_meta = result
@@ -217,4 +232,15 @@ class ITSScraper:
         if self.config.user_agents:
             return random.choice(self.config.user_agents)
         return self.config.user_agent
+
+    def _update_delay(self, success: bool) -> None:
+        if success:
+            if self._adaptive_delay > self._base_delay:
+                self._adaptive_delay = max(
+                    self._base_delay, self._adaptive_delay * 0.75
+                )
+        else:
+            self._adaptive_delay = min(
+                self._base_delay + 5, self._adaptive_delay * 1.5 + 0.5
+            )
 

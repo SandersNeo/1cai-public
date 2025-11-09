@@ -103,6 +103,10 @@ class ScrapeConfig(BaseModel):
         None,
         description="Optional HTTP(S) proxy URL (e.g. http://user:pass@host:port).",
     )
+    enable_metrics: bool = Field(
+        False,
+        description="Expose Prometheus metrics on /metrics (when running as service).",
+    )
 
     @field_validator("formats", mode="before")
     def _normalize_formats(cls, value: Iterable[str]) -> List[OutputFormat]:

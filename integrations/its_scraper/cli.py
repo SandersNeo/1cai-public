@@ -1,17 +1,32 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 from pathlib import Path
 from typing import List, Optional
 
 import typer
+from prometheus_client import Counter, Gauge, Histogram, start_http_server
 
 from .config import DEFAULT_CONFIG, OutputFormat, ScrapeConfig
 from .scraper import ITSScraper
 from .writers import persist_article
 
 app = typer.Typer(help="Enhanced scraper for 1C ITS documentation.")
+
+REQUEST_COUNTER = Counter(
+    "its_scraper_requests_total", "Total requests performed", ["status"]
+)
+ARTICLE_COUNTER = Counter(
+    "its_scraper_articles_total", "Total articles processed", ["state"]
+)
+REQUEST_DURATION = Histogram(
+    "its_scraper_request_duration_seconds", "Duration of scrape operation"
+)
+RATE_LIMIT_GAUGE = Gauge(
+    "its_scraper_delay_seconds", "Current delay between requests (adaptive)"
+)
 
 
 def _load_config(config_path: Optional[Path]) -> ScrapeConfig:
@@ -80,6 +95,16 @@ def scrape(
         "--proxy",
         help="HTTP(S) proxy URL (e.g. http://user:pass@host:port).",
     ),
+    metrics_port: Optional[int] = typer.Option(
+        None,
+        "--metrics-port",
+        help="Expose Prometheus metrics on given port (e.g. 9200).",
+    ),
+    stream: bool = typer.Option(
+        False,
+        "--stream",
+        help="Stream articles to stdout as JSONL instead of writing to disk.",
+    ),
 ) -> None:
     """
     Scrape ITS documentation starting from START_URL and produce the selected formats.
@@ -106,6 +131,9 @@ def scrape(
         )
     if proxy:
         config.proxy = proxy
+    if metrics_port:
+        config.enable_metrics = True
+        start_http_server(metrics_port)
 
     if config.verbose:
         logging.basicConfig(level=logging.DEBUG)
@@ -114,11 +142,26 @@ def scrape(
 
     async def _runner() -> None:
         async with ITSScraper(config) as scraper:
-            results = await scraper.scrape()
+            metrics_dict = {
+                "requests": REQUEST_COUNTER,
+                "rate": RATE_LIMIT_GAUGE,
+            }
+            RATE_LIMIT_GAUGE.set(config.delay_between_requests)
+            with REQUEST_DURATION.time():
+                results = await scraper.scrape(metrics=metrics_dict)
             for article, existing_meta in results:
-                files = list(persist_article(article, config, existing_meta=existing_meta))
+                if stream:
+                    typer.echo(json.dumps(article.to_dict(), ensure_ascii=False))
+                    ARTICLE_COUNTER.labels(state="streamed").inc()
+                    continue
+                files = list(
+                    persist_article(article, config, existing_meta=existing_meta)
+                )
                 if not files and config.update_only:
                     scraper.stats.skipped += 1
+                    ARTICLE_COUNTER.labels(state="skipped").inc()
+                else:
+                    ARTICLE_COUNTER.labels(state="stored").inc()
             typer.echo(
                 f"Fetched {scraper.stats.fetched}, "
                 f"skipped {scraper.stats.skipped}, "

@@ -13,9 +13,10 @@
 ## 🆕 Что нового
 
 ### 🔄 ITS Documentation Scraper (Nov 9, 2025)
-- Добавлен модуль `integrations/its_scraper` с асинхронным скрейпером 1С:ИТС (ретраи, rate limit, slug по canonical)
-- CLI `python -m integrations.its_scraper scrape …` и Make-таргет `make scrape-its` (поддержка `ITS_CONCURRENCY`, `ITS_SLEEP`)
-- Расширенные метаданные (`content_hash`, `word_count`, `excerpt`), юнит-тесты и документация [`docs/03-integrations/ITS_SCRAPER.md`](docs/03-integrations/ITS_SCRAPER.md)
+- Добавлен модуль `integrations/its_scraper` с асинхронным скрейпером 1С:ИТС (ретраи, адаптивный rate-limit, slug по canonical)
+- CLI `python -m integrations.its_scraper scrape …` и Make-таргет `make scrape-its` (поддержка `ITS_CONCURRENCY`, `ITS_SLEEP`, `ITS_PROXY`, `ITS_USER_AGENT_FILE`, stream-режим)
+- Расширенные метаданные (`content_hash`, `word_count`, `excerpt`, `previous_version`), версионирование `versions/<timestamp>/`, Prometheus-метрики и юнит-тесты
+- Документация: [`docs/03-integrations/ITS_SCRAPER.md`](docs/03-integrations/ITS_SCRAPER.md)
 - Источник: [hawkxtreme/scraping_its](https://github.com/hawkxtreme/scraping_its) — спасибо автору за базу для интеграции
 
 ### 🛡️ Security Agent Framework (Nov 9, 2025)
