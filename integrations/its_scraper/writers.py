@@ -4,12 +4,15 @@ import json
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Iterable, Optional
+from typing import Callable, Dict, Iterable, Optional
 
 from markdownify import markdownify as html_to_markdown
 
 from .config import OutputFormat, ScrapeConfig
 from .types import Article
+
+WriterFactory = Callable[[ScrapeConfig], "BaseWriter"]
+_WRITER_REGISTRY: Dict[str, WriterFactory] = {}
 
 
 def _ensure_dir(path: Path) -> None:
@@ -76,6 +79,7 @@ def persist_article(
     config: ScrapeConfig,
     *,
     existing_meta: Optional[Dict[str, object]] = None,
+    external_writers: Optional[Iterable["BaseWriter"]] = None,
 ) -> Iterable[Path]:
     slug_source = article.meta.get("canonical") or article.url or article.title
     slug = slugify(slug_source)
@@ -113,6 +117,8 @@ def persist_article(
     persisted.append(
         write_metadata(article, article_dir, config, existing_meta=existing_meta)
     )
+    for writer in external_writers or []:
+        writer.write(article)
     return persisted
 
 
@@ -125,4 +131,22 @@ def slugify(value: str) -> str:
             allowed.append("-")
     slug = "".join(allowed).strip("-")
     return slug or "article"
+
+
+class BaseWriter:
+    def write(self, article: Article) -> None:
+        raise NotImplementedError
+
+    def close(self) -> None:
+        pass
+
+
+def register_writer(name: str, factory: WriterFactory) -> None:
+    _WRITER_REGISTRY[name] = factory
+
+
+def get_writer(name: str, config: ScrapeConfig) -> BaseWriter:
+    if name not in _WRITER_REGISTRY:
+        raise KeyError(f"Writer '{name}' is not registered")
+    return _WRITER_REGISTRY[name](config)
 
