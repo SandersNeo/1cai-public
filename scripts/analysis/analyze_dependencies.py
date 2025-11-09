@@ -1,347 +1,258 @@
 #!/usr/bin/env python3
 """
-Анализ зависимостей между объектами
-Шаг 3: Поиск зависимостей между объектами
-
-Анализирует:
-- Ссылки между справочниками и документами
-- Использование API
-- Вызовы методов
-- Граф зависимостей
+Анализ зависимостей между объектами конфигурации 1С.
 """
 
+from __future__ import annotations
+
+import argparse
 import json
-import sys
 import re
+import sys
+from collections import Counter, defaultdict
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
-from collections import defaultdict, Counter
+from typing import Any, Dict, Iterable, List, Set
 
-def load_parse_results():
-    """Загрузка результатов парсинга"""
-    results_file = Path("./output/edt_parser/full_parse_with_metadata.json")
-    
-    print("Загрузка результатов парсинга...")
-    with open(results_file, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-    print(f"Загружено успешно!")
-    return data
+CATALOG_PATTERNS = [
+    r"Справочники\.(\w+)",
+    r"Справочник\.(\w+)",
+    r"CatalogRef\.(\w+)",
+    r"Catalog\.(\w+)",
+]
+DOCUMENT_PATTERNS = [
+    r"Документы\.(\w+)",
+    r"Документ\.(\w+)",
+    r"DocumentRef\.(\w+)",
+    r"Document\.(\w+)",
+]
+REGISTER_PATTERNS = [
+    r"РегистрыСведений\.(\w+)",
+    r"РегистрыНакопления\.(\w+)",
+    r"InformationRegister\.(\w+)",
+    r"AccumulationRegister\.(\w+)",
+]
 
-def extract_catalog_references(code: str) -> Set[str]:
-    """Извлечение ссылок на справочники из кода"""
-    # Паттерны для поиска ссылок
-    patterns = [
-        r'Справочники\.(\w+)',
-        r'Справочник\.(\w+)',
-        r'CatalogRef\.(\w+)',
-        r'Catalog\.(\w+)'
-    ]
-    
-    refs = set()
+
+def load_parse_results(parse_path: Path) -> Dict[str, Any]:
+    if not parse_path.exists():
+        raise FileNotFoundError(
+            f"Файл {parse_path} не найден. Запустите парсинг EDT перед анализом зависимостей."
+        )
+
+    try:
+        with parse_path.open("r", encoding="utf-8") as fp:
+            return json.load(fp)
+    except json.JSONDecodeError as err:
+        raise ValueError(f"Повреждён JSON ({parse_path}): {err}") from err
+
+
+def _extract(patterns: Iterable[str], code: str) -> Set[str]:
+    refs: Set[str] = set()
     for pattern in patterns:
-        matches = re.findall(pattern, code, re.IGNORECASE)
-        refs.update(matches)
-    
+        refs.update(re.findall(pattern, code, re.IGNORECASE))
     return refs
 
-def extract_document_references(code: str) -> Set[str]:
-    """Извлечение ссылок на документы из кода"""
-    patterns = [
-        r'Документы\.(\w+)',
-        r'Документ\.(\w+)',
-        r'DocumentRef\.(\w+)',
-        r'Document\.(\w+)'
-    ]
-    
-    refs = set()
-    for pattern in patterns:
-        matches = re.findall(pattern, code, re.IGNORECASE)
-        refs.update(matches)
-    
-    return refs
 
-def extract_register_references(code: str) -> Set[str]:
-    """Извлечение ссылок на регистры из кода"""
-    patterns = [
-        r'РегистрыСведений\.(\w+)',
-        r'РегистрыНакопления\.(\w+)',
-        r'InformationRegister\.(\w+)',
-        r'AccumulationRegister\.(\w+)'
-    ]
-    
-    refs = set()
-    for pattern in patterns:
-        matches = re.findall(pattern, code, re.IGNORECASE)
-        refs.update(matches)
-    
-    return refs
+def analyze_module_dependencies(module: Dict[str, Any], module_name: str) -> Dict[str, Any]:
+    code_parts: List[str] = []
+    if "code" in module:
+        code_parts.append(module["code"])
+    for func in module.get("functions", []):
+        body = func.get("body")
+        if body:
+            code_parts.append(body)
+    for proc in module.get("procedures", []):
+        body = proc.get("body")
+        if body:
+            code_parts.append(body)
 
-def analyze_module_dependencies(module: Dict, module_name: str) -> Dict:
-    """Анализ зависимостей одного модуля"""
-    code_parts = []
-    
-    # Собираем код
-    if 'code' in module:
-        code_parts.append(module['code'])
-    
-    for func in module.get('functions', []):
-        if 'body' in func:
-            code_parts.append(func['body'])
-    
-    for proc in module.get('procedures', []):
-        if 'body' in proc:
-            code_parts.append(proc['body'])
-    
-    full_code = '\n'.join(code_parts)
-    
-    # Извлекаем зависимости
-    deps = {
-        'module_name': module_name,
-        'catalogs': list(extract_catalog_references(full_code)),
-        'documents': list(extract_document_references(full_code)),
-        'registers': list(extract_register_references(full_code))
+    full_code = "\n".join(code_parts)
+    return {
+        "module_name": module_name,
+        "catalogs": list(_extract(CATALOG_PATTERNS, full_code)),
+        "documents": list(_extract(DOCUMENT_PATTERNS, full_code)),
+        "registers": list(_extract(REGISTER_PATTERNS, full_code)),
     }
-    
-    return deps
 
-def analyze_object_dependencies(obj: Dict, obj_name: str, obj_type: str) -> Dict:
-    """Анализ зависимостей объекта (справочника/документа)"""
-    deps = {
-        'object_name': obj_name,
-        'object_type': obj_type,
-        'metadata_refs': {
-            'catalogs': [],
-            'documents': []
-        },
-        'code_refs': {
-            'catalogs': set(),
-            'documents': set(),
-            'registers': set()
-        }
+
+def analyze_object_dependencies(obj: Dict[str, Any], obj_name: str, obj_type: str) -> Dict[str, Any]:
+    dependencies = {
+        "object_name": obj_name,
+        "object_type": obj_type,
+        "metadata_refs": {"catalogs": [], "documents": []},
+        "code_refs": {"catalogs": [], "documents": [], "registers": []},
     }
-    
-    # Из метаданных
-    metadata = obj.get('metadata', {})
+
+    metadata = obj.get("metadata")
     if metadata:
-        # Реквизиты
-        for attr in metadata.get('attributes', []):
-            types = attr.get('type', {}).get('types', [])
-            for type_name in types:
-                if 'CatalogRef.' in type_name:
-                    catalog_name = type_name.replace('CatalogRef.', '').replace('Справочник.', '')
-                    deps['metadata_refs']['catalogs'].append(catalog_name)
-                elif 'DocumentRef.' in type_name:
-                    doc_name = type_name.replace('DocumentRef.', '').replace('Документ.', '')
-                    deps['metadata_refs']['documents'].append(doc_name)
-        
-        # Табличные части
-        for tab_section in metadata.get('tabular_sections', []):
-            for col in tab_section.get('columns', []):
-                types = col.get('type', {}).get('types', [])
-                for type_name in types:
-                    if 'CatalogRef.' in type_name:
-                        catalog_name = type_name.replace('CatalogRef.', '').replace('Справочник.', '')
-                        deps['metadata_refs']['catalogs'].append(catalog_name)
-                    elif 'DocumentRef.' in type_name:
-                        doc_name = type_name.replace('DocumentRef.', '').replace('Документ.', '')
-                        deps['metadata_refs']['documents'].append(doc_name)
-    
-    # Из кода
-    code_parts = []
-    
-    for module_key in ['manager_module', 'object_module']:
+        for attr in metadata.get("attributes", []) or []:
+            for type_name in attr.get("type", {}).get("types", []) or []:
+                if "CatalogRef." in type_name or "Справочник." in type_name:
+                    dependencies["metadata_refs"]["catalogs"].append(
+                        type_name.split(".")[-1]
+                    )
+                elif "DocumentRef." in type_name or "Документ." in type_name:
+                    dependencies["metadata_refs"]["documents"].append(
+                        type_name.split(".")[-1]
+                    )
+        for section in metadata.get("tabular_sections", []) or []:
+            for col in section.get("columns", []) or []:
+                for type_name in col.get("type", {}).get("types", []) or []:
+                    if "CatalogRef." in type_name or "Справочник." in type_name:
+                        dependencies["metadata_refs"]["catalogs"].append(
+                            type_name.split(".")[-1]
+                        )
+                    elif "DocumentRef." in type_name or "Документ." in type_name:
+                        dependencies["metadata_refs"]["documents"].append(
+                            type_name.split(".")[-1]
+                        )
+
+    code_parts: List[str] = []
+    for module_key in ["manager_module", "object_module"]:
         module = obj.get(module_key)
         if not module:
             continue
-        
-        if 'code' in module:
-            code_parts.append(module['code'])
-        
-        for func in module.get('functions', []):
-            if 'body' in func:
-                code_parts.append(func['body'])
-    
-    if code_parts:
-        full_code = '\n'.join(code_parts)
-        deps['code_refs']['catalogs'] = extract_catalog_references(full_code)
-        deps['code_refs']['documents'] = extract_document_references(full_code)
-        deps['code_refs']['registers'] = extract_register_references(full_code)
-    
-    # Преобразуем sets в lists
-    deps['code_refs']['catalogs'] = list(deps['code_refs']['catalogs'])
-    deps['code_refs']['documents'] = list(deps['code_refs']['documents'])
-    deps['code_refs']['registers'] = list(deps['code_refs']['registers'])
-    
-    return deps
+        if "code" in module:
+            code_parts.append(module["code"])
+        for func in module.get("functions", []) or []:
+            body = func.get("body")
+            if body:
+                code_parts.append(body)
+        for proc in module.get("procedures", []) or []:
+            body = proc.get("body")
+            if body:
+                code_parts.append(body)
 
-def build_dependency_graph(data: Dict) -> Dict:
-    """Построение графа зависимостей"""
+    if code_parts:
+        full_code = "\n".join(code_parts)
+        dependencies["code_refs"]["catalogs"] = list(_extract(CATALOG_PATTERNS, full_code))
+        dependencies["code_refs"]["documents"] = list(_extract(DOCUMENT_PATTERNS, full_code))
+        dependencies["code_refs"]["registers"] = list(_extract(REGISTER_PATTERNS, full_code))
+
+    return dependencies
+
+
+def build_dependency_graph(
+    data: Dict[str, Any],
+    limit_modules: int | None,
+    limit_objects: int | None,
+) -> Dict[str, Any]:
     print("\n" + "=" * 80)
     print("ПОСТРОЕНИЕ ГРАФА ЗАВИСИМОСТЕЙ")
     print("=" * 80)
-    
-    graph = {
-        'nodes': [],
-        'edges': []
-    }
-    
-    all_deps = []
-    
-    # Общие модули
+
+    graph = {"nodes": [], "edges": []}
+    all_deps: List[Dict[str, Any]] = []
+
+    modules = data.get("common_modules", [])
+    if limit_modules:
+        modules = modules[:limit_modules]
+
     print("\nАнализ общих модулей...")
-    for module in data.get('common_modules', [])[:100]:  # Берем 100 для начала
-        deps = analyze_module_dependencies(module, module['name'])
+    for module in modules:
+        deps = analyze_module_dependencies(module, module.get("name", ""))
         all_deps.append(deps)
-        
-        graph['nodes'].append({
-            'name': module['name'],
-            'type': 'CommonModule'
-        })
-    
-    # Справочники
-    print("Анализ справочников...")
-    for catalog in data.get('catalogs', []):
-        deps = analyze_object_dependencies(catalog, catalog['name'], 'Catalog')
-        all_deps.append(deps)
-        
-        graph['nodes'].append({
-            'name': catalog['name'],
-            'type': 'Catalog'
-        })
-        
-        # Добавляем ребра из метаданных
-        for ref_catalog in set(deps['metadata_refs']['catalogs']):
-            graph['edges'].append({
-                'from': catalog['name'],
-                'to': ref_catalog,
-                'type': 'metadata_ref',
-                'ref_type': 'catalog'
-            })
-        
-        for ref_doc in set(deps['metadata_refs']['documents']):
-            graph['edges'].append({
-                'from': catalog['name'],
-                'to': ref_doc,
-                'type': 'metadata_ref',
-                'ref_type': 'document'
-            })
-    
-    # Документы
-    print("Анализ документов...")
-    for doc in data.get('documents', []):
-        deps = analyze_object_dependencies(doc, doc['name'], 'Document')
-        all_deps.append(deps)
-        
-        graph['nodes'].append({
-            'name': doc['name'],
-            'type': 'Document'
-        })
-        
-        # Добавляем ребра из метаданных
-        for ref_catalog in set(deps['metadata_refs']['catalogs']):
-            graph['edges'].append({
-                'from': doc['name'],
-                'to': ref_catalog,
-                'type': 'metadata_ref',
-                'ref_type': 'catalog'
-            })
-    
-    print(f"\nУзлов в графе: {len(graph['nodes']):,}")
-    print(f"Ребер в графе: {len(graph['edges']):,}")
-    
-    return graph, all_deps
+        graph["nodes"].append({"name": module.get("name", ""), "type": "CommonModule"})
+        for catalog in deps["catalogs"]:
+            graph["edges"].append({"source": module.get("name", ""), "target": catalog, "type": "catalog"})
+        for document in deps["documents"]:
+            graph["edges"].append({"source": module.get("name", ""), "target": document, "type": "document"})
 
-def analyze_dependencies_stats(all_deps: List[Dict]) -> Dict:
-    """Статистика зависимостей"""
-    print("\n" + "=" * 80)
-    print("СТАТИСТИКА ЗАВИСИМОСТЕЙ")
+    objects = []
+    for catalog in data.get("catalogs", []):
+        objects.append((catalog, "Catalog"))
+    for doc in data.get("documents", []):
+        objects.append((doc, "Document"))
+
+    if limit_objects:
+        objects = objects[:limit_objects]
+
+    for obj, obj_type in objects:
+        deps = analyze_object_dependencies(obj, obj.get("name", ""), obj_type)
+        graph["nodes"].append({"name": obj.get("name", ""), "type": obj_type})
+        all_deps.append(deps)
+
+        for catalog in deps["code_refs"]["catalogs"]:
+            graph["edges"].append({"source": obj.get("name", ""), "target": catalog, "type": "catalog"})
+        for document in deps["code_refs"]["documents"]:
+            graph["edges"].append({"source": obj.get("name", ""), "target": document, "type": "document"})
+        for register in deps["code_refs"]["registers"]:
+            graph["edges"].append({"source": obj.get("name", ""), "target": register, "type": "register"})
+
+    return {"graph": graph, "dependencies": all_deps}
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Анализ зависимостей объектов конфигурации 1С")
+    parser.add_argument(
+        "--input",
+        type=Path,
+        default=Path("./output/edt_parser/full_parse_with_metadata.json"),
+        help="Путь к результатам парсинга EDT",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=Path("./output/analysis/dependency_analysis.json"),
+        help="Файл для сохранения графа и зависимостей",
+    )
+    parser.add_argument(
+        "--limit-modules",
+        type=int,
+        default=None,
+        help="Ограничить количество анализируемых общих модулей",
+    )
+    parser.add_argument(
+        "--limit-objects",
+        type=int,
+        default=None,
+        help="Ограничить количество анализируемых объектов (справочники + документы)",
+    )
+    parser.add_argument(
+        "--config-name",
+        default="Configuration",
+        help="Имя конфигурации для заголовков",
+    )
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+
     print("=" * 80)
-    
-    # Подсчет использования справочников
-    catalog_usage = Counter()
-    document_usage = Counter()
-    register_usage = Counter()
-    
-    for deps in all_deps:
-        if 'metadata_refs' in deps:
-            catalog_usage.update(deps['metadata_refs']['catalogs'])
-            document_usage.update(deps['metadata_refs']['documents'])
-        
-        if 'code_refs' in deps:
-            catalog_usage.update(deps['code_refs']['catalogs'])
-            document_usage.update(deps['code_refs']['documents'])
-            register_usage.update(deps['code_refs']['registers'])
-        
-        if 'catalogs' in deps:
-            catalog_usage.update(deps['catalogs'])
-        if 'documents' in deps:
-            document_usage.update(deps['documents'])
-        if 'registers' in deps:
-            register_usage.update(deps['registers'])
-    
-    print("\nТОП-20 самых используемых справочников:")
-    for i, (name, count) in enumerate(catalog_usage.most_common(20), 1):
-        print(f"  {i:2d}. {name:<50} {count:>4} ссылок")
-    
-    print("\nТОП-20 самых используемых документов:")
-    for i, (name, count) in enumerate(document_usage.most_common(20), 1):
-        print(f"  {i:2d}. {name:<50} {count:>4} ссылок")
-    
-    print("\nТОП-20 самых используемых регистров:")
-    for i, (name, count) in enumerate(register_usage.most_common(20), 1):
-        print(f"  {i:2d}. {name:<50} {count:>4} ссылок")
-    
-    return {
-        'catalog_usage': dict(catalog_usage),
-        'document_usage': dict(document_usage),
-        'register_usage': dict(register_usage)
+    print(f"АНАЛИЗ ЗАВИСИМОСТЕЙ ДЛЯ {args.config_name.upper()}")
+    print("=" * 80)
+
+    try:
+        data = load_parse_results(args.input)
+    except (FileNotFoundError, ValueError) as err:
+        print(f"Ошибка: {err}")
+        return 1
+
+    graph_data = build_dependency_graph(data, args.limit_modules, args.limit_objects)
+
+    result = {
+        "schema_version": "1.0.0",
+        "config_name": args.config_name,
+        "graph": graph_data["graph"],
+        "dependencies": graph_data["dependencies"],
     }
 
-def main():
-    """Главная функция"""
-    print("=" * 80)
-    print("АНАЛИЗ ЗАВИСИМОСТЕЙ")
-    print("=" * 80)
-    
-    # Загрузка данных
-    data = load_parse_results()
-    
-    # Построение графа
-    graph, all_deps = build_dependency_graph(data)
-    
-    # Статистика
-    stats = analyze_dependencies_stats(all_deps)
-    
-    # Сохранение
-    output_dir = Path("./output/analysis")
-    output_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Граф зависимостей
-    graph_file = output_dir / "dependency_graph.json"
-    with open(graph_file, 'w', encoding='utf-8') as f:
-        json.dump(graph, f, ensure_ascii=False, indent=2)
-    print(f"\nГраф сохранен: {graph_file}")
-    
-    # Все зависимости
-    deps_file = output_dir / "all_dependencies.json"
-    with open(deps_file, 'w', encoding='utf-8') as f:
-        json.dump(all_deps, f, ensure_ascii=False, indent=2)
-    print(f"Зависимости сохранены: {deps_file}")
-    
-    # Статистика
-    stats_file = output_dir / "dependencies_statistics.json"
-    with open(stats_file, 'w', encoding='utf-8') as f:
-        json.dump(stats, f, ensure_ascii=False, indent=2)
-    print(f"Статистика сохранена: {stats_file}")
-    
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    with args.output.open("w", encoding="utf-8") as fp:
+        json.dump(result, fp, ensure_ascii=False, indent=2)
+
     print("\n" + "=" * 80)
-    print("АНАЛИЗ ЗАВЕРШЕН!")
+    print("АНАЛИЗ ЗАВИСИМОСТЕЙ ЗАВЕРШЁН")
     print("=" * 80)
-    
+    print(f"\nРезультаты сохранены: {args.output}")
+
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())
+
 
 
 
