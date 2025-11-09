@@ -1,84 +1,218 @@
 {
   "dashboard": {
     "title": "Celery Tasks Monitoring",
+    "uid": "celery-monitoring",
     "tags": ["celery", "tasks", "ml", "workers"],
     "timezone": "browser",
+    "schemaVersion": 39,
+    "version": 2,
     "refresh": "10s",
+    "editable": true,
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m"],
+      "time_options": ["1h", "6h", "12h", "24h", "7d", "30d"]
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "datasource",
+          "type": "datasource",
+          "label": "Prometheus",
+          "query": "prometheus",
+          "refresh": 1,
+          "current": {
+            "text": "Prometheus",
+            "value": "Prometheus"
+          }
+        },
+        {
+          "name": "queue",
+          "label": "Queue",
+          "type": "query",
+          "datasource": "$datasource",
+          "definition": "label_values(celery_queue_length, queue)",
+          "refresh": 2,
+          "multi": true,
+          "includeAll": true,
+          "current": {
+            "text": "All",
+            "value": "$__all"
+          }
+        },
+        {
+          "name": "task",
+          "label": "Task",
+          "type": "query",
+          "datasource": "$datasource",
+          "definition": "label_values(celery_tasks_total, name)",
+          "refresh": 2,
+          "multi": true,
+          "includeAll": true,
+          "current": {
+            "text": "All",
+            "value": "$__all"
+          }
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": false,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
     "panels": [
       {
         "id": 1,
         "title": "Active Workers",
         "type": "stat",
-        "datasource": "Prometheus",
+        "datasource": "$datasource",
         "targets": [
           {
-            "expr": "celery_workers",
-            "legendFormat": "Workers",
+            "expr": "sum(celery_workers)",
+            "legendFormat": "workers",
             "refId": "A"
           }
         ],
         "fieldConfig": {
           "defaults": {
-            "color": {"mode": "thresholds"},
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [],
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "red"},
-                {"value": 1, "color": "green"}
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 1
+                },
+                {
+                  "color": "green",
+                  "value": 2
+                }
               ]
             }
           }
         },
-        "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4}
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 6,
+          "h": 4
+        }
       },
       {
         "id": 2,
-        "title": "Tasks Executed (Total)",
+        "title": "Tasks Received (5m)",
         "type": "stat",
-        "datasource": "Prometheus",
+        "datasource": "$datasource",
         "targets": [
           {
-            "expr": "sum(celery_tasks_total)",
-            "legendFormat": "Total Tasks"
-          }
-        ],
-        "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4}
-      },
-      {
-        "id": 3,
-        "title": "Failed Tasks (Last Hour)",
-        "type": "stat",
-        "datasource": "Prometheus",
-        "targets": [
-          {
-            "expr": "increase(celery_tasks_failed_total[1h])",
-            "legendFormat": "Failed"
+            "expr": "sum(increase(celery_tasks_total{state=\"received\"}[5m]))",
+            "legendFormat": "received",
+            "refId": "A"
           }
         ],
         "fieldConfig": {
           "defaults": {
-            "color": {"mode": "thresholds"},
+            "color": {
+              "mode": "thresholds"
+            },
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "green"},
-                {"value": 1, "color": "yellow"},
-                {"value": 5, "color": "red"}
+                {
+                  "color": "blue",
+                  "value": null
+                },
+                {
+                  "color": "green",
+                  "value": 10
+                },
+                {
+                  "color": "orange",
+                  "value": 100
+                }
               ]
             }
           }
         },
-        "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4}
+        "gridPos": {
+          "x": 6,
+          "y": 0,
+          "w": 6,
+          "h": 4
+        }
+      },
+      {
+        "id": 3,
+        "title": "Failed Tasks (5m)",
+        "type": "stat",
+        "datasource": "$datasource",
+        "targets": [
+          {
+            "expr": "sum(increase(celery_tasks_total{state=\"failed\"}[5m]))",
+            "legendFormat": "failed",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 1
+                },
+                {
+                  "color": "red",
+                  "value": 5
+                }
+              ]
+            }
+          }
+        },
+        "gridPos": {
+          "x": 12,
+          "y": 0,
+          "w": 6,
+          "h": 4
+        }
       },
       {
         "id": 4,
-        "title": "Task Success Rate %",
+        "title": "Success Rate %",
         "type": "gauge",
-        "datasource": "Prometheus",
+        "datasource": "$datasource",
         "targets": [
           {
-            "expr": "rate(celery_tasks_succeeded_total[5m]) / rate(celery_tasks_total[5m]) * 100",
-            "legendFormat": "Success Rate"
+            "expr": "sum(rate(celery_tasks_total{state=\"succeeded\"}[5m])) / clamp_min(sum(rate(celery_tasks_total{state=\"received\"}[5m])), 0.001) * 100",
+            "legendFormat": "success",
+            "refId": "A"
           }
         ],
         "fieldConfig": {
@@ -89,181 +223,242 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "red"},
-                {"value": 90, "color": "yellow"},
-                {"value": 95, "color": "green"}
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 90
+                },
+                {
+                  "color": "green",
+                  "value": 97
+                }
               ]
             }
           }
         },
-        "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4}
+        "gridPos": {
+          "x": 18,
+          "y": 0,
+          "w": 6,
+          "h": 4
+        }
       },
       {
         "id": 5,
-        "title": "Task Execution Rate (per minute)",
+        "title": "Task Throughput (per minute)",
         "type": "graph",
-        "datasource": "Prometheus",
+        "datasource": "$datasource",
         "targets": [
           {
-            "expr": "rate(celery_tasks_total[5m]) * 60",
-            "legendFormat": "{{ task_name }}"
+            "expr": "sum by (name) (rate(celery_tasks_total{state=\"received\", name=~\"$task\"}[$__rate_interval]) * 60)",
+            "legendFormat": "{{ name }}",
+            "refId": "A"
           }
         ],
         "yaxes": [
-          {"format": "short", "label": "tasks/min"}
+          {
+            "format": "short",
+            "label": "tasks/min"
+          },
+          {
+            "format": "short"
+          }
         ],
-        "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8}
+        "gridPos": {
+          "x": 0,
+          "y": 4,
+          "w": 12,
+          "h": 8
+        }
       },
       {
         "id": 6,
-        "title": "Task Duration (p95)",
+        "title": "Task Duration p95",
         "type": "graph",
-        "datasource": "Prometheus",
+        "datasource": "$datasource",
         "targets": [
           {
-            "expr": "histogram_quantile(0.95, rate(celery_task_runtime_seconds_bucket[5m]))",
-            "legendFormat": "{{ task_name }} (p95)"
+            "expr": "histogram_quantile(0.95, sum by (le, name) (rate(celery_task_runtime_seconds_bucket{name=~\"$task\"}[$__rate_interval])))",
+            "legendFormat": "{{ name }}",
+            "refId": "A"
           }
         ],
         "yaxes": [
-          {"format": "s", "label": "Duration"}
+          {
+            "format": "s",
+            "label": "seconds"
+          },
+          {
+            "format": "short"
+          }
         ],
-        "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8}
+        "gridPos": {
+          "x": 12,
+          "y": 4,
+          "w": 12,
+          "h": 8
+        }
       },
       {
         "id": 7,
         "title": "Queue Length",
         "type": "graph",
-        "datasource": "Prometheus",
+        "datasource": "$datasource",
         "targets": [
           {
-            "expr": "celery_queue_length",
-            "legendFormat": "{{ queue_name }}"
+            "expr": "sum by (queue) (celery_queue_length{queue=~\"$queue\"})",
+            "legendFormat": "{{ queue }}",
+            "refId": "A"
           }
         ],
         "yaxes": [
-          {"format": "short", "label": "Tasks in Queue"}
+          {
+            "format": "short",
+            "label": "tasks"
+          },
+          {
+            "format": "short"
+          }
         ],
-        "gridPos": {"x": 0, "y": 12, "w": 12, "h": 8}
+        "gridPos": {
+          "x": 0,
+          "y": 12,
+          "w": 12,
+          "h": 8
+        }
       },
       {
         "id": 8,
-        "title": "Worker Memory Usage",
+        "title": "Worker Availability",
         "type": "graph",
-        "datasource": "Prometheus",
+        "datasource": "$datasource",
         "targets": [
           {
-            "expr": "celery_worker_memory_rss_bytes / 1024 / 1024",
-            "legendFormat": "Worker {{ worker }} (MB)"
+            "expr": "sum by (instance) (max_over_time(up{job=~\"celery.*\"}[5m]))",
+            "legendFormat": "{{ instance }}",
+            "refId": "A"
           }
         ],
         "yaxes": [
-          {"format": "short", "label": "Memory (MB)"}
+          {
+            "format": "short",
+            "label": "up"
+          },
+          {
+            "format": "short"
+          }
         ],
-        "gridPos": {"x": 12, "y": 12, "w": 12, "h": 8}
+        "gridPos": {
+          "x": 12,
+          "y": 12,
+          "w": 12,
+          "h": 8
+        }
       },
       {
         "id": 9,
-        "title": "Task Failures Timeline",
+        "title": "Failures (per minute)",
         "type": "graph",
-        "datasource": "Prometheus",
+        "datasource": "$datasource",
         "targets": [
           {
-            "expr": "increase(celery_tasks_failed_total[5m])",
-            "legendFormat": "{{ task_name }}"
+            "expr": "sum by (name) (rate(celery_tasks_total{state=\"failed\", name=~\"$task\"}[$__rate_interval]) * 60)",
+            "legendFormat": "{{ name }}",
+            "refId": "A"
           }
         ],
         "yaxes": [
-          {"format": "short", "label": "Failed Tasks"}
+          {
+            "format": "short",
+            "label": "failures/min"
+          },
+          {
+            "format": "short"
+          }
         ],
-        "alert": {
-          "conditions": [
-            {
-              "evaluator": {
-                "params": [5],
-                "type": "gt"
-              },
-              "query": {
-                "params": ["A", "5m", "now"]
-              },
-              "type": "query"
-            }
-          ],
-          "frequency": "1m",
-          "handler": 1,
-          "name": "Celery High Failure Rate",
-          "message": "More than 5 Celery task failures in 5 minutes!",
-          "noDataState": "no_data",
-          "executionErrorState": "alerting"
-        },
-        "gridPos": {"x": 0, "y": 20, "w": 24, "h": 8}
+        "gridPos": {
+          "x": 0,
+          "y": 20,
+          "w": 12,
+          "h": 8
+        }
       },
       {
         "id": 10,
-        "title": "Task Status Distribution",
-        "type": "piechart",
-        "datasource": "Prometheus",
-        "targets": [
-          {
-            "expr": "sum by (state) (celery_tasks_by_state)",
-            "legendFormat": "{{ state }}"
-          }
-        ],
-        "gridPos": {"x": 0, "y": 28, "w": 12, "h": 8}
-      },
-      {
-        "id": 11,
-        "title": "Active Tasks Now",
-        "type": "table",
-        "datasource": "Prometheus",
-        "targets": [
-          {
-            "expr": "celery_task_active{state='STARTED'}",
-            "legendFormat": "{{ task_name }}",
-            "format": "table",
-            "instant": true
-          }
-        ],
-        "gridPos": {"x": 12, "y": 28, "w": 12, "h": 8}
-      },
-      {
-        "id": 12,
-        "title": "Task Retry Rate",
+        "title": "Retries (per minute)",
         "type": "graph",
-        "datasource": "Prometheus",
+        "datasource": "$datasource",
         "targets": [
           {
-            "expr": "rate(celery_tasks_retried_total[5m])",
-            "legendFormat": "{{ task_name }}"
+            "expr": "sum by (name) (rate(celery_tasks_total{state=\"retried\", name=~\"$task\"}[$__rate_interval]) * 60)",
+            "legendFormat": "{{ name }}",
+            "refId": "A"
           }
         ],
         "yaxes": [
-          {"format": "short", "label": "Retries/sec"}
-        ],
-        "gridPos": {"x": 0, "y": 36, "w": 12, "h": 8}
-      },
-      {
-        "id": 13,
-        "title": "Task Heatmap (by hour)",
-        "type": "heatmap",
-        "datasource": "Prometheus",
-        "targets": [
           {
-            "expr": "sum(rate(celery_tasks_total[1h])) by (hour)",
-            "legendFormat": "Hour {{ hour }}"
+            "format": "short",
+            "label": "retries/min"
+          },
+          {
+            "format": "short"
           }
         ],
-        "gridPos": {"x": 12, "y": 36, "w": 12, "h": 8}
+        "gridPos": {
+          "x": 12,
+          "y": 20,
+          "w": 12,
+          "h": 8
+        }
+      },
+      {
+        "id": 11,
+        "title": "Top Failed Tasks (6h)",
+        "type": "table",
+        "datasource": "$datasource",
+        "targets": [
+          {
+            "expr": "topk(10, increase(celery_tasks_total{state=\"failed\"}[6h]))",
+            "format": "table",
+            "instant": true,
+            "legendFormat": "{{ name }}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {
+          "x": 0,
+          "y": 28,
+          "w": 12,
+          "h": 8
+        }
+      },
+      {
+        "id": 12,
+        "title": "Queue Share (6h)",
+        "type": "piechart",
+        "datasource": "$datasource",
+        "targets": [
+          {
+            "expr": "sum by (queue) (increase(celery_tasks_total{state=\"received\", queue=~\"$queue\"}[6h]))",
+            "legendFormat": "{{ queue }}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {
+          "x": 12,
+          "y": 28,
+          "w": 12,
+          "h": 8
+        }
       }
     ],
-    "schemaVersion": 36,
-    "version": 1,
-    "uid": "celery-monitoring",
-    "time": {
-      "from": "now-6h",
-      "to": "now"
-    }
+    "links": []
   }
 }
+
+
 
 

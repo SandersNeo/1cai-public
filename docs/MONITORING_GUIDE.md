@@ -447,56 +447,60 @@ docker run -d --name datadog \
 
 См. [monitoring/grafana/dashboards/](../monitoring/grafana/dashboards/)
 
+- `overview.json` - ??? (нужно проверить)
 - `system_overview.json` - главный dashboard
 - `business_metrics.json` - бизнес метрики
 - `celery_monitoring.json` - очереди задач
 - `system_monitoring.json` - мониторинг системы
 
----
+### System Overview
 
-## 🔧 Troubleshooting Monitoring
+Дашборд `system_overview.json` служит быстрым health-check’ом площадки:
 
-### Prometheus не собирает метрики
+- **Request Rate / Success Rate** — `http_requests_total` c темплейтами `$job`, `$endpoint` и автоматическим clamping для избежания деления на ноль.
+- **HTTP latency p95 / 5xx rate** — `histogram_quantile` по `http_request_duration_seconds_bucket` и `rate` для ошибок.
+- **Active Users / Tenants** — Gauge `active_users`, `active_tenants{status="active"}`.
+- **AI Queries / Latency** — `ai_queries_total`, `ai_response_duration_seconds_bucket` по фильтру `$agent`.
+- **Cache hit % / DB pool** — расчёт на базе `cache_operations_total`, `db_pool_size`, `db_pool_available_connections`.
+- **System CPU usage** — Gauge `system_cpu_usage_percent` от агента.
 
-**Решение:**
-```bash
-# 1. Проверьте targets
-open http://localhost:9090/targets
+Темплейты `$datasource`, `$job`, `$endpoint`, `$agent`, `$cache_layer` позволяют переключать сервисы и компоненты без правки запросов.
 
-# Должны быть UP
+### Business & Adoption Metrics
 
-# 2. Проверьте network
-docker network inspect 1c-ai-network
+`business_metrics.json` показывает активность пользователей и использование AI:
 
-# 3. Проверьте firewall
-curl http://localhost:8000/metrics
-```
+- **Active Users / Tenants** — Gauge `active_users` и `active_tenants{status="active"}` с цветовыми порогами.
+- **Tenants by Status / Projects by Status** — piechart с распределением `active_tenants` и `projects_total` по статусам.
+- **AI Queries / Tokens** — метрики `ai_queries_total`, `ai_tokens_used_total` через `rate`/`increase` и фильтр `$agent`.
+- **Code Reviews / Tests Generated** — `code_reviews_total`, `tests_generated_total` с выбором `$language`.
+- **Projects** — отдельные стат-панели `projects_total{status="active"|"review"}`.
 
-### Grafana не показывает данные
+Темплейты `$datasource`, `$agent`, `$language` позволяют быстро переключать срезы. Дашборд рассчитан на накопительные счётчики (используем `increase()`/`rate()`), поэтому важен сохранённый retention в Prometheus.
 
-**Решение:**
-```bash
-# 1. Проверьте datasource
-# Grafana → Configuration → Data Sources
-# Prometheus URL должен быть: http://prometheus:9090
+### System Monitoring
 
-# 2. Проверьте query
-# Попробуйте простой: up
+`system_monitoring.json` обновлён под актуальные метрики Prometheus и внутреннего агента:
 
-# 3. Проверьте time range
-# Установите: Last 5 minutes
-```
+- **Активные таргеты / Алерты** — быстрые стат-панели по `up{}` и `ALERTS{alertstate="firing"}`.
+- **Статус сервисов** — таблица с цветовым маппингом состояний для `instance` и `job` (фильтры через темплейты).
+- **Инфраструктура** — CPU, RAM, диски c `node_exporter`, плюс отдельная линия `system_cpu_usage_percent` из нашего агента.
+- **HTTP & сервисные метрики** — `http_requests_total`, `http_request_duration_seconds_bucket` с p95/p50 и отдельная серия для 5xx.
+- **Темплейты**: `$datasource`, `$instance`, `$job`, `$endpoint` — помогают сузить выборку без редактирования запросов.
 
----
+Важно: дашборд предполагает наличие Node Exporter и включённого `/metrics` сервиса приложения. Если часть таргетов отсутствует, убедитесь в актуальности scrape-конфигураций.
 
-## 📞 Support
+### Celery Tasks Monitoring
 
-- **Monitoring issues:** https://github.com/DmitrL-dev/1cai-public/issues
-- **Grafana docs:** https://grafana.com/docs/
-- **Prometheus docs:** https://prometheus.io/docs/
+Dashboard `celery_monitoring.json` теперь привязан к актуальным метрикам `celery-exporter` и содержит готовые фильтры по очередям и задачам. Основные панели:
 
----
+- **Active Workers** — `sum(celery_workers)`, цветовые пороги помогают заметить потерю воркеров.
+- **Tasks Received/Failed (5m)** — прирост счётчиков `celery_tasks_total` по состояниям `received` и `failed` за последние 5 минут.
+- **Success Rate %** — отношение `succeeded` к `received` с защитой от деления на ноль (`clamp_min`).
+- **Task Throughput / Duration p95** — производительность и перцентили `histogram_quantile` по лейблу `name` (фильтр `$task`).
+- **Queue Length** — `sum by (queue) (celery_queue_length)` с фильтром `$queue`.
+- **Worker Availability** — `max_over_time(up{job=~"celery.*"}[5m])`, показывает стабильность таргетов в Prometheus.
+- **Failures & Retries per minute** — скорость ошибок/повторных запусков для оперативного реагирования.
+- **Top Failed Tasks / Queue Share (6h)** — таблица и круговая диаграмма по `increase(...[6h])` для ретроспективного анализа.
 
-**Updated:** November 6, 2025  
-**Status:** Production Ready
-
+Темплейты `$queue`

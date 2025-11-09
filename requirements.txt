@@ -23,6 +23,7 @@ hiredis==2.3.0
 # HTTP/API
 aiohttp==3.9.1
 httpx==0.25.2
+tenacity==8.2.3
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 python-multipart==0.0.6
@@ -31,6 +32,7 @@ slowapi>=0.1.9  # Rate limiting for API endpoints
 # 1C Parsing (current)
 lxml==4.9.3
 beautifulsoup4==4.12.2
+markdownify==0.11.6
 
 # AI/ML
 transformers>=4.36.0  # For DeepSeek-OCR, Qwen-Coder models
@@ -59,6 +61,7 @@ apscheduler==3.10.4  # Background jobs for cache refresh
 
 # Utilities
 click==8.1.7
+typer==0.9.0
 rich==13.7.0
 colorama==0.4.6
 tqdm==4.66.1

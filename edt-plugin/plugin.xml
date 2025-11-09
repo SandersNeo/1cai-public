@@ -174,6 +174,50 @@
    </actionSet>
 </extension>
    
+<!-- Commands for keyboard shortcuts -->
+<extension point="org.eclipse.ui.commands">
+   <command
+      id="com.1cai.edt.commands.openAIAssistant"
+      name="Open AI Assistant"
+      description="Открыть AI Assistant view">
+   </command>
+   <command
+      id="com.1cai.edt.commands.semanticSearch"
+      name="Open Semantic Search"
+      description="Открыть Semantic Search view">
+   </command>
+   <command
+      id="com.1cai.edt.commands.quickAnalysis"
+      name="Quick Analysis"
+      description="Быстрый анализ текущей функции">
+   </command>
+   <command
+      id="com.1cai.edt.commands.optimize"
+      name="Optimize Code"
+      description="Открыть Code Optimizer для AI оптимизации">
+   </command>
+</extension>
+
+<!-- Command handlers -->
+<extension point="org.eclipse.ui.handlers">
+   <handler
+      commandId="com.1cai.edt.commands.openAIAssistant"
+      class="com.onecai.edt.handlers.OpenAIAssistantHandler">
+   </handler>
+   <handler
+      commandId="com.1cai.edt.commands.semanticSearch"
+      class="com.onecai.edt.handlers.SemanticSearchHandler">
+   </handler>
+   <handler
+      commandId="com.1cai.edt.commands.quickAnalysis"
+      class="com.onecai.edt.handlers.QuickAnalysisHandler">
+   </handler>
+   <handler
+      commandId="com.1cai.edt.commands.optimize"
+      class="com.onecai.edt.handlers.OptimizeCodeHandler">
+   </handler>
+</extension>
+
 <!-- Key Bindings (NEW) -->
 <extension point="org.eclipse.ui.bindings">
    <key
@@ -222,10 +266,3 @@
       <startup class="com.1cai.edt.Activator"/>
    </extension>
 </plugin>
-
-
-
-
-
-
-

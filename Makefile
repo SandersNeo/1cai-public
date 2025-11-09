@@ -1,12 +1,17 @@
 # Makefile for Enterprise 1C AI Development Stack
 # Quick commands for common tasks
 
-.PHONY: help install test docker-up docker-down migrate clean train-ml eval-ml train-ml-demo eval-ml-demo
+.PHONY: help install test docker-up docker-down migrate clean train-ml eval-ml train-ml-demo eval-ml-demo scrape-its
 
 CONFIG ?= ERPCPM
 EPOCHS ?=
 LIMIT ?= 20
 BASE_MODEL ?=
+ITS_START_URL ?= https://its.1c.ru/db/cabinetdoc
+ITS_OUTPUT ?= output/its-scraper
+ITS_FORMATS ?= json markdown
+ITS_CONCURRENCY ?=
+ITS_SLEEP ?=
 
 help:
 	@echo "Enterprise 1C AI Development Stack - Commands:"
@@ -62,6 +67,7 @@ help:
 	@echo "Utilities:"
 	@echo "  make status           - Show project status"
 	@echo "  make clean            - Clean temporary files"
+	@echo "  make scrape-its       - Run ITS scraper (ITS_START_URL, ITS_OUTPUT, ITS_FORMATS)"
 
 # Installation
 install:
@@ -179,6 +185,9 @@ clean:
 	find . -type f -name "*.log" -delete
 	rm -rf htmlcov/ coverage.xml .coverage
 	@echo "✓ Cleaned temporary files"
+
+scrape-its:
+	python -m integrations.its_scraper scrape $(ITS_START_URL) --output $(ITS_OUTPUT) $(foreach fmt,$(ITS_FORMATS), --format $(fmt)) $(if $(ITS_CONCURRENCY), --concurrency $(ITS_CONCURRENCY),) $(if $(ITS_SLEEP), --sleep $(ITS_SLEEP),)
 
 train-ml:
 	@python scripts/ml/config_utils.py --info $(CONFIG)

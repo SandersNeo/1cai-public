@@ -353,6 +353,14 @@ docker-compose run --rm migrations
 - Code Optimizer View
 - Metadata Graph View
 
+### ITS Scraper
+**Подготовка корпусов документации**
+
+- `python -m integrations.its_scraper scrape <URL>` — выгрузка статей (JSON/Markdown/TXT)
+- RAG-метаданные (`metadata.json`) с SHA256, word count и excerpt для `output/<slug>/`
+- Параметры `ITS_START_URL`, `ITS_OUTPUT`, `ITS_FORMATS`, `ITS_CONCURRENCY`, `ITS_SLEEP` для `make scrape-its`
+- База взята из [hawkxtreme/scraping_its](https://github.com/hawkxtreme/scraping_its). Благодарим автора за открытый проект!
+
 ### REST API
 **Для кастомных интеграций**
 
