@@ -39,7 +39,7 @@ cloud "ITS Portal" as ITS
 cloud "External AI Providers" as AIProviders
 
 EDT --> APIPods : MCP / REST
-CLI --> API Pods : make scrape-its / audits
+CLI --> APIPods : make scrape-its / audits
 APIPods --> Redis : rate limit / cache
 APIPods --> Postgres
 APIPods --> Neo4j

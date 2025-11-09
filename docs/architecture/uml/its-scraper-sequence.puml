@@ -27,7 +27,7 @@ loop Article Consumer
   Scraper -> Prometheus : its_scraper_requests_total{status="success"}++
   Scraper -> LocalFS : write article.json/md/txt
   alt stream enabled
-    Scraper -> S3/MinIO : put_object(article.json)
+    Scraper -> Minio : put_object(article.json)
   end
   Scraper -> Postgres : upsert metadata / previous_version
   Scraper -> Qdrant : update embeddings (optional)
