@@ -1,7 +1,7 @@
 # Makefile for Enterprise 1C AI Development Stack
 # Quick commands for common tasks
 
-.PHONY: help install test docker-up docker-down migrate clean train-ml eval-ml train-ml-demo eval-ml-demo scrape-its render-uml render-uml-svg adr-new test-bsl export-context generate-docs bsl-ls-up bsl-ls-down bsl-ls-logs
+.PHONY: help install test docker-up docker-down migrate clean train-ml eval-ml train-ml-demo eval-ml-demo scrape-its render-uml render-uml-svg adr-new test-bsl export-context generate-docs bsl-ls-up bsl-ls-down bsl-ls-logs feature-init feature-validate
 
 CONFIG ?= ERPCPM
 EPOCHS ?=
@@ -77,7 +77,21 @@ help:
 	@echo "  make render-uml       - Render all PlantUML diagrams to PNG"
 	@echo "  make render-uml-svg   - Render PlantUML diagrams to PNG + SVG"
 	@echo "  make adr-new SLUG=... - Create a new Architecture Decision Record"
+	@echo "  make feature-init FEATURE=slug - Create spec-driven feature scaffold"
+	@echo "  make feature-validate [FEATURE=slug] - Validate filled spec-driven documents"
 	@echo "  make test-bsl         - Run BSL/YAxUnit test suites (see tests/bsl/testplan.json)"
+feature-init:
+ifndef FEATURE
+	$(error FEATURE is required, e.g. make feature-init FEATURE=my-new-feature)
+endif
+	python scripts/research/init_feature.py --slug $(FEATURE)
+
+feature-validate:
+ifdef FEATURE
+	python scripts/research/check_feature.py --feature $(FEATURE)
+else
+	python scripts/research/check_feature.py
+endif
 	@echo "  make export-context   - Export platform context via platform-context-exporter (see ADR-0005)"
 	@echo "  make generate-docs    - Generate documentation via ones_doc_gen (see ADR-0005)"
 

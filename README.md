@@ -18,6 +18,7 @@
 - [Recent Updates](#-recent-updates)
 - [Support](#-support)
 - [Credits & Acknowledgements](#-credits--acknowledgements)
+- [Constitution](docs/research/constitution.md)
 
 ---
 
@@ -34,6 +35,7 @@
    make bsl-ls-up           # bsl-language-server для AST (порт 8081 → 8080)
    make bsl-ls-check        # health + тестовый parse
    ```
+   > На Windows без `make` используйте скрипты из `scripts/windows/` (например, `pwsh scripts/windows/bsl-ls-up.ps1` и `feature-init.ps1`).
 4. **Откройте IDE**
    - Cursor/VS Code через MCP (`http://localhost:6001/mcp`)
    - EDT плагин — билд в `edt-plugin/`
@@ -71,9 +73,11 @@
   - Детальный гайд: [`docs/06-features/AST_TOOLING_BSL_LANGUAGE_SERVER.md`](docs/06-features/AST_TOOLING_BSL_LANGUAGE_SERVER.md).
 - **Spec-driven development** (по мотивам [github/spec-kit](https://github.com/github/spec-kit)):
   - Анализ и предложения: [`docs/research/spec_kit_analysis.md`](docs/research/spec_kit_analysis.md).
-  - TODO: внедрить шаблоны планов/тасков и "конституцию" для AI агентов.
+  - Конституция правил проверки: [`docs/research/constitution.md`](docs/research/constitution.md).
+  - Шаблоны и CLI: `templates/`, `scripts/research/init_feature.py`, make-таргеты `feature-init` и `feature-validate`.
 - **MCP инструменты**: поиск метаданных, генерация кода, запуск тестов.
 - **Automation scripts**: `scripts/context/export_platform_context.py`, `scripts/context/generate_docs.py`, `scripts/docs/create_adr.py`.
+- **Monitoring automation**: `scripts/monitoring/github_monitor.py` + workflow `github-monitor.yml` — ежедневный snapshot зависимостей.
 
 ---
 
@@ -91,6 +95,7 @@
 - `make test-bsl` (см. `scripts/tests/run_bsl_tests.py`).
 - Статический анализ, best practices, проверка зависимостей.
 - Сторожевые скрипты: `scripts/audit/*`, `scripts/analysis/*`.
+- Справочник по тестам: [`docs/06-features/TESTING_GUIDE.md`](docs/06-features/TESTING_GUIDE.md).
 
 ---
 
@@ -103,23 +108,27 @@
 ---
 
 ## 📚 Documentation Hub
-- **AI & Tooling**
-  - [`docs/06-features/AST_TOOLING_BSL_LANGUAGE_SERVER.md`](docs/06-features/AST_TOOLING_BSL_LANGUAGE_SERVER.md)
-  - [`docs/research/spec_kit_analysis.md`](docs/research/spec_kit_analysis.md)
-  - [`docs/research/bsl_language_server_plan.md`](docs/research/bsl_language_server_plan.md)
+- **Feature Guides**
+  - [`docs/06-features/AST_TOOLING_BSL_LANGUAGE_SERVER.md`](docs/06-features/AST_TOOLING_BSL_LANGUAGE_SERVER.md) — запуск и диагностика bsl-language-server, fallback сценарии.
+  - [`docs/06-features/MCP_SERVER_GUIDE.md`](docs/06-features/MCP_SERVER_GUIDE.md) — эндпоинты MCP, переменные окружения, troubleshooting.
+  - [`docs/06-features/TESTING_GUIDE.md`](docs/06-features/TESTING_GUIDE.md) — матрица тестов, команды pytest/k6, CI-джобы.
+  - [`docs/06-features/EDT_PARSER_GUIDE.md`](docs/06-features/EDT_PARSER_GUIDE.md) — разбор EDT XML, метрики и сценарии анализа.
+  - [`docs/06-features/ML_DATASET_GENERATOR_GUIDE.md`](docs/06-features/ML_DATASET_GENERATOR_GUIDE.md) — подготовка ML датасетов и пайплайн обучения.
+- **Operations & Tooling**
+  - [`docs/scripts/README.md`](docs/scripts/README.md) — карта CLI/скриптов, spec-driven workflow, Windows альтернативы.
 - **Architecture**
-  - [`docs/architecture/README.md`](docs/architecture/README.md)
-  - [`docs/architecture/adr/`](docs/architecture/adr/)
-  - [`docs/architecture/uml/`](docs/architecture/uml/)
+  - [`docs/architecture/README.md`](docs/architecture/README.md) — обзор C4, операции и ссылки на ADR.
+  - [`docs/architecture/adr/`](docs/architecture/adr/) — реестр решений, статусы и история изменений.
+  - [`docs/architecture/uml/`](docs/architecture/uml/) — PlantUML диаграммы (структура, потоки, безопасность).
 - **Parsers & Documentation**
-  - [`docs/06-features/EDT_PARSER_GUIDE.md`](docs/06-features/EDT_PARSER_GUIDE.md)
-  - [`docs/06-features/ML_DATASET_GENERATOR_GUIDE.md`](docs/06-features/ML_DATASET_GENERATOR_GUIDE.md)
-  - [`docs/06-features/ITS_SCRAPER.md`](docs/03-integrations/ITS_SCRAPER.md)
+  - [`docs/06-features/EDT_PARSER_GUIDE.md`](docs/06-features/EDT_PARSER_GUIDE.md) — парсинг конфигураций, метаданные.
+  - [`docs/06-features/ML_DATASET_GENERATOR_GUIDE.md`](docs/06-features/ML_DATASET_GENERATOR_GUIDE.md) — генерация обучающих наборов.
+  - [`docs/06-features/ITS_SCRAPER.md`](docs/03-integrations/ITS_SCRAPER.md) — сбор данных ITS и обновление базы знаний.
 - **Research & Plans**
-  - [`docs/research/README_LOCAL.md`](docs/research/README_LOCAL.md)
-  - [`docs/research/alkoleft_todo.md`](docs/research/alkoleft_todo.md)
-  - [`docs/research/github_monitoring_plan.md`](docs/research/github_monitoring_plan.md)
-  - [`docs/research/archive_tools_assessment.md`](docs/research/archive_tools_assessment.md)
+  - [`docs/research/README_LOCAL.md`](docs/research/README_LOCAL.md) — ежедневные статусы и подготовка публикации.
+  - [`docs/research/alkoleft_todo.md`](docs/research/alkoleft_todo.md) — интеграция экосистемы @alkoleft с приоритетами.
+  - [`docs/research/github_monitoring_plan.md`](docs/research/github_monitoring_plan.md) — мониторинг внешних репозиториев и уведомления.
+  - [`docs/research/archive_tools_assessment.md`](docs/research/archive_tools_assessment.md) — анализ архивных утилит и кандидаты для CLI.
 
 ---
 

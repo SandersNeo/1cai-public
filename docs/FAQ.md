@@ -44,6 +44,30 @@ python run_full_audit.py --stop-on-failure
 **Q:** Как оценить качество модели после обучения?  
 **A:** Запустите `python scripts/eval/eval_model.py --model ./models/<NAME> --questions output/dataset/<NAME>_qa.jsonl --limit 20`.
 
+## BSL & AST tooling
+
+**Q:** `make bsl-ls-up` ничего не делает на Windows — нет `make`.  
+**A:** Используйте PowerShell скрипт `scripts/windows/bsl-ls-up.ps1` или команду `docker-compose -f docker-compose.dev.yml up -d bsl-language-server`. Аналогично для проверки — `scripts/windows/bsl-ls-check.ps1`.
+
+**Q:** `check_bsl_language_server.py` сообщает `LSP недоступен`.  
+**A:** Убедитесь, что контейнер `bsl-language-server` запущен и порт 8081 не занят. Проверьте health: `curl http://localhost:8081/actuator/health`. Если работает в Docker Desktop на Windows, включите TCP-переадресацию.
+
+## MCP / AI инструменты
+
+**Q:** EDT плагин пишет “Connection failed”.  
+**A:** Проверьте, что оба сервиса запущены: `python -m uvicorn src.main:app --port 8080` и `python -m src.ai.mcp_server --port 6001` (или `make servers`). После изменения `.env` перезапустите.
+
+**Q:** MCP-инструмент `bsl_platform_context` возвращает `configured=false`.  
+**A:** Не настроены переменные `MCP_BSL_CONTEXT_BASE_URL` и `MCP_BSL_CONTEXT_TOOL_NAME`. Запустите внешний сервис [alkoleft/mcp-bsl-platform-context](https://github.com/alkoleft/mcp-bsl-platform-context) и пропишите URL в `.env`.
+
+## CI / публикация
+
+**Q:** PR падает на задаче `spec-driven-validation`.  
+**A:** Один из файлов `docs/research/features/<slug>/plan|spec|tasks|research.md` содержит `{{FEATURE_TITLE}}`, `{{DATE}}`, `{{OWNER}}` или `TODO`. Заполните реальные данные и запустите `make feature-validate`.
+
+**Q:** Как локально воспроизвести проверки документации?  
+**A:** Выполните `npm install -g markdownlint-cli` (или `npx markdownlint "**/*.md"`) и `npx lychee --config .lychee.toml` (см. `.github/workflows/docs-lint.yml`). Ошибки должны быть исправлены до коммита.
+
 ## Поддержка
 
 - Технические вопросы → [Issues](https://github.com/DmitrL-dev/1cai-public/issues)  

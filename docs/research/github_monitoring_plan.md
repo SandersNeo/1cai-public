@@ -32,15 +32,16 @@
    - При release → создать issue/вписать в Slack/Telegram (через существующие интеграции).
    - При push в main → пометить зависимости «проверить» (TODO).
 6. **Интеграция с CI**:
-   - Workflow GitHub Actions, который обновляет baseline (для подрядчиков).  
-   - Возможность запускать `python scripts/monitoring/github_check.py --repo ...` локально.
+   - Workflow GitHub Actions `github-monitor.yml` запускается ежедневно (04:00 UTC) и по запросу.  
+   - Артефакт `github-monitor-state` доступен в Actions для анализа подрядчиками.  
+   - Возможность запускать `python scripts/monitoring/github_monitor.py --repo ...` локально.
 7. **Документация**: обновить `docs/architecture/README.md`, добавить раздел в `docs/research/alkoleft_todo.md`.
 
 ## Минимальный MVP
 
-- Cron job (AsyncIOScheduler) каждые 12 часов → polling GitHub API.  
-- Логирование в `logs/github_monitor.log`.  
-- Создание заметки в `docs/research/alkoleft_inventory.md` при появлении нового релиза.
+- CLI `python scripts/monitoring/github_monitor.py` — ручной запуск, сохраняет snapshot в `output/monitoring/github_state.json` и показывает изменения.  
+- GitHub Actions workflow `github-monitor.yml` запускается ежедневно и прикладывает свежий snapshot как артефакт.  
+- (Следующий шаг) добавить логирование в `logs/github_monitor.log` и автоматическое уведомление в `docs/research/alkoleft_inventory.md` или Telegram.
 
 ## Расширения
 

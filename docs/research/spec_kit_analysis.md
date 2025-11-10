@@ -32,20 +32,19 @@
 
 ## 4. Предлагаемые шаги
 
-1. **Шаблоны**
-   - Подготовить наш `templates/feature-plan.md`, `templates/feature-tasks.md` (на основе spec-kit).
-   - Скрипт `scripts/research/init_feature.py` (или bash) для создания `docs/research/features/<slug>/` с заполненными шаблонами.
-2. **Конституция**
-   - Создать `docs/research/constitution.md`, перенести 26 правил проверки туда.
-   - Добавить ссылку в README/CHANGELOG и использовать документ во всех инструкциях для агентов.
-3. **CLI/Automation**
-   - Добавить make-цели `make feature-plan FEATURE=...` → вызывает скрипт и создаёт структуру.
-   - Включить проверку "все документы заполнены" перед merge (аналог `check-prerequisites.sh`).
-4. **Интеграция AI**
-   - Оценить возможность адаптации `/speckit.plan` под MCP/Claude – возможно, через наши же агенты (Future task).
-5. **Документация**
-   - Обновить `docs/research/README_LOCAL.md` — добавить раздел "Spec-driven workflow".
-   - В CHANGELOG упомянуть заимствование практик (с благодарностью GitHub/spec-kit).
+1. **Шаблоны** ✅
+   - Добавлены `templates/feature-plan.md`, `feature-spec.md`, `feature-tasks.md`, `feature-research.md` и `templates/README.md` с благодарностью GitHub/spec-kit.
+   - Скрипт `scripts/research/init_feature.py` создаёт `docs/research/features/<slug>/` с авто-подстановкой заголовков и даты.
+2. **Конституция** ✅
+   - Документ `docs/research/constitution.md` создан, добавлены ссылки в README/CHANGELOG.
+3. **CLI/Automation** ✅ (MVP)
+   - Make-таргеты `make feature-init` и `make feature-validate` вызывают `scripts/research/init_feature.py` и `scripts/research/check_feature.py`.
+   - Подключен job `spec-driven-validation` в CI (`comprehensive-testing.yml`), который выполняет `make feature-validate`.
+4. **Интеграция AI** ⬜
+   - Исследовать адаптацию `/speckit.plan` под MCP/Claude: возможно, использовать наших агентов для авто-заполнения разделов (future task).
+5. **Документация** ✅
+   - README, Documentation Hub, `docs/scripts/README.md`, `CHANGELOG.md`, `docs/research/README_LOCAL.md` обновлены ссылками на новый workflow.
+   - TODO: расширить FAQ/Troubleshooting с учётом spec-driven подхода.
 
 ## 5. Вывод
 

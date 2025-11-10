@@ -245,6 +245,24 @@ jobs:
     - name: Run white-box tests
       run: pytest tests/whitebox/ -v -s
 
+  spec-driven-validation:
+    name: Spec-driven Docs Validation
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Validate features
+      run: make feature-validate
+
   full-project-audit:
     name: Full Project Audit
     runs-on: ubuntu-latest

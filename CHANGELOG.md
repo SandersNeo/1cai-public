@@ -27,7 +27,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Локальная интеграция `bsl-language-server`: docker-compose сервис, make-таргеты для управления и скрипт `scripts/parsers/check_bsl_language_server.py` для health/AST проверки.
 - `BSLASTParser` теперь читает `BSL_LANGUAGE_SERVER_URL`, валидирует доступность LSP и корректно откатывается на regex-парсер.
 - Документация обновлена планом интеграции и рекомендациями по локальному тестированию.
-- README полностью реструктурирован: навигация, Quick Start, Documentation Hub, ссылки на подробные гайды.
+- Создан `docs/06-features/MCP_SERVER_GUIDE.md` — запуск, инструменты, переменные окружения и troubleshooting для MCP сервера.
+- Создан `docs/06-features/TESTING_GUIDE.md` — обзор тестовой матрицы, команды, CI и troubleshooting.
+- Создан `docs/scripts/README.md` — карта утилит `scripts/`, зависимости и связь с Makefile/CI.
+- Добавлен `scripts/monitoring/github_monitor.py` — CLI для отслеживания релизов/коммитов внешних GitHub-репозиториев и сохранения состояния.
+- Добавлены шаблоны spec-driven workflow (`templates/feature-*.md`), README и скрипты `scripts/research/init_feature.py`, `scripts/research/check_feature.py`; Make цели `feature-init` и `feature-validate`.
+- CI job `spec-driven-validation` выполняет `make feature-validate`, предотвращая публикацию незаполненных спецификаций.
+- Добавлены PowerShell-утилиты (`scripts/windows/*`) для bsl-language-server и spec-driven команд.
+- Workflow `github-monitor.yml` ежедневно сохраняет snapshot зависимостей; workflow `docs-lint.yml` проверяет Markdown и ссылки.
+- FAQ и `docs/06-features/TESTING_GUIDE.md` расширены разделами Troubleshooting и описанием артефактов.
 
 ---
 
