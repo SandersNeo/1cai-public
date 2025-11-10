@@ -1,7 +1,7 @@
 # Makefile for Enterprise 1C AI Development Stack
 # Quick commands for common tasks
 
-.PHONY: help install test docker-up docker-down migrate clean train-ml eval-ml train-ml-demo eval-ml-demo scrape-its
+.PHONY: help install test docker-up docker-down migrate clean train-ml eval-ml train-ml-demo eval-ml-demo scrape-its render-uml render-uml-svg adr-new test-bsl export-context generate-docs bsl-ls-up bsl-ls-down bsl-ls-logs
 
 CONFIG ?= ERPCPM
 EPOCHS ?=
@@ -27,6 +27,10 @@ help:
 	@echo "  make docker-down      - Stop all Docker services"
 	@echo "  make docker-logs      - View Docker logs"
 	@echo "  make docker-clean     - Remove all Docker volumes (⚠️  deletes data!)"
+	@echo "  make bsl-ls-up        - Start the bsl-language-server (docker-compose.dev.yml)"
+	@echo "  make bsl-ls-down      - Stop the bsl-language-server"
+	@echo "  make bsl-ls-logs      - Tail logs from bsl-language-server"
+	@echo "  make bsl-ls-check     - Run health/parse check against bsl-language-server"
 	@echo ""
 	@echo "Migration:"
 	@echo "  make migrate          - Run all migrations (JSON→PG→Neo4j→Qdrant)"
@@ -70,6 +74,12 @@ help:
 	@echo "  make status           - Show project status"
 	@echo "  make clean            - Clean temporary files"
 	@echo "  make scrape-its       - Run ITS scraper (ITS_START_URL, ITS_OUTPUT, ITS_FORMATS, ITS_CONCURRENCY, ITS_SLEEP, ITS_PROXY, ITS_USER_AGENT_FILE)"
+	@echo "  make render-uml       - Render all PlantUML diagrams to PNG"
+	@echo "  make render-uml-svg   - Render PlantUML diagrams to PNG + SVG"
+	@echo "  make adr-new SLUG=... - Create a new Architecture Decision Record"
+	@echo "  make test-bsl         - Run BSL/YAxUnit test suites (see tests/bsl/testplan.json)"
+	@echo "  make export-context   - Export platform context via platform-context-exporter (see ADR-0005)"
+	@echo "  make generate-docs    - Generate documentation via ones_doc_gen (see ADR-0005)"
 
 # Installation
 install:
@@ -97,6 +107,19 @@ docker-logs:
 docker-clean:
 	docker-compose -f docker-compose.yml -f docker-compose.stage1.yml down -v
 	@echo "⚠️  All data deleted!"
+
+# bsl-language-server helpers
+bsl-ls-up:
+	docker-compose -f docker-compose.dev.yml up -d bsl-language-server
+
+bsl-ls-down:
+	docker-compose -f docker-compose.dev.yml stop bsl-language-server
+
+bsl-ls-logs:
+	docker-compose -f docker-compose.dev.yml logs -f bsl-language-server
+
+bsl-ls-check:
+	python scripts/parsers/check_bsl_language_server.py
 
 # Migration
 migrate: migrate-pg migrate-neo4j migrate-qdrant
@@ -190,6 +213,27 @@ clean:
 
 scrape-its:
 	python -m integrations.its_scraper scrape $(ITS_START_URL) --output $(ITS_OUTPUT) $(foreach fmt,$(ITS_FORMATS), --format $(fmt)) $(if $(ITS_CONCURRENCY), --concurrency $(ITS_CONCURRENCY),) $(if $(ITS_SLEEP), --sleep $(ITS_SLEEP),) $(if $(ITS_PROXY), --proxy $(ITS_PROXY),) $(if $(ITS_USER_AGENT_FILE), --user-agent-file $(ITS_USER_AGENT_FILE),)
+
+render-uml:
+	python scripts/docs/render_uml.py --fail-on-missing
+
+render-uml-svg:
+	python scripts/docs/render_uml.py --format png --format svg --fail-on-missing
+
+adr-new:
+ifndef SLUG
+	$(error "Usage: make adr-new SLUG=my-decision")
+endif
+	python scripts/docs/create_adr.py $(SLUG)
+
+test-bsl:
+	python scripts/tests/run_bsl_tests.py
+
+export-context:
+	python scripts/context/export_platform_context.py
+
+generate-docs:
+	python scripts/context/generate_docs.py
 
 train-ml:
 	@python scripts/ml/config_utils.py --info $(CONFIG)

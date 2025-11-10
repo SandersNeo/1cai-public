@@ -17,11 +17,13 @@ BSL AST Parser - интеграция с bsl-language-server
 Версия: 1.0.0
 """
 
-import requests
 import json
-from typing import Dict, List, Any, Optional
-from pathlib import Path
 import logging
+import os
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import requests
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -39,21 +41,34 @@ class BSLLanguageServerClient:
     java -jar bsl-language-server.jar --server.port=8080
     """
     
-    def __init__(self, server_url: str = "http://localhost:8080"):
-        self.server_url = server_url
-        self._check_server()
+    def __init__(self, server_url: Optional[str] = None, timeout: float = 2.0):
+        self.server_url = server_url or os.getenv("BSL_LANGUAGE_SERVER_URL", "http://localhost:8080")
+        self.timeout = timeout
+        if not self._check_server():
+            raise RuntimeError(
+                "BSL Language Server недоступен. Запустите его (например, 'make bsl-ls-up') "
+                f"или задайте верный BSL_LANGUAGE_SERVER_URL (текущий: {self.server_url})."
+            )
     
-    def _check_server(self):
+    def _check_server(self) -> bool:
         """Проверка доступности сервера"""
         try:
-            response = requests.get(f"{self.server_url}/actuator/health", timeout=2)
+            response = requests.get(f"{self.server_url}/actuator/health", timeout=self.timeout)
             if response.status_code == 200:
                 logger.info(f"✅ BSL Language Server доступен: {self.server_url}")
-            else:
-                logger.warning(f"⚠️ BSL Language Server вернул статус {response.status_code}")
+                return True
+            logger.warning(
+                "⚠️ BSL Language Server вернул статус %s по адресу %s",
+                response.status_code,
+                self.server_url,
+            )
+            return False
         except requests.exceptions.RequestException as e:
-            logger.error(f"❌ BSL Language Server недоступен: {e}")
-            logger.error("Запустите: docker run -p 8080:8080 ghcr.io/1c-syntax/bsl-language-server")
+            logger.error("❌ BSL Language Server недоступен (%s): %s", self.server_url, e)
+            logger.error(
+                "Подсказка: 'make bsl-ls-up' или docker run -p 8080:8080 ghcr.io/1c-syntax/bsl-language-server"
+            )
+            return False
     
     def parse_to_ast(self, code: str, file_path: Optional[str] = None) -> Dict[str, Any]:
         """
@@ -73,9 +88,9 @@ class BSLLanguageServerClient:
                 json={
                     "text": code,
                     "uri": file_path or "untitled:module.bsl",
-                    "languageId": "bsl"
+                    "languageId": "bsl",
                 },
-                timeout=10
+                timeout=10,
             )
             
             if response.status_code == 200:
@@ -99,7 +114,7 @@ class BSLLanguageServerClient:
             response = requests.post(
                 f"{self.server_url}/lsp/diagnostics",
                 json={"text": code},
-                timeout=10
+                timeout=10,
             )
             
             if response.status_code == 200:
@@ -126,14 +141,18 @@ class BSLASTParser:
     
     def __init__(self, use_language_server: bool = True):
         self.use_language_server = use_language_server
-        
+        self.fallback_parser = None
         if use_language_server:
-            self.lsp_client = BSLLanguageServerClient()
+            try:
+                self.lsp_client = BSLLanguageServerClient()
+                logger.info("✅ AST парсинг через bsl-language-server активирован (%s)", self.lsp_client.server_url)
+            except Exception as exc:
+                logger.warning("⚠️ bsl-language-server недоступен: %s", exc)
+                logger.warning("Используется fallback regex parser")
+                self.use_language_server = False
+                self._ensure_fallback_parser()
         else:
-            # Fallback на regex parser
-            logger.warning("LSP недоступен, используем fallback regex parser")
-            from improve_bsl_parser import ImprovedBSLParser
-            self.fallback_parser = ImprovedBSLParser()
+            self._ensure_fallback_parser()
     
     def parse(self, code: str, file_path: Optional[str] = None) -> Dict[str, Any]:
         """
@@ -186,12 +205,20 @@ class BSLASTParser:
     
     def _parse_fallback(self, code: str) -> Dict[str, Any]:
         """Fallback парсинг без AST"""
+        self._ensure_fallback_parser()
         result = self.fallback_parser.parse(code)
         result['ast'] = None
         result['control_flow'] = None
         result['data_flow'] = None
         result['complexity'] = {'cyclomatic': 0}
         return result
+
+    def _ensure_fallback_parser(self) -> None:
+        """Ленивая инициализация fallback парсера."""
+        if self.fallback_parser is None:
+            from scripts.parsers.improve_bsl_parser import ImprovedBSLParser
+
+            self.fallback_parser = ImprovedBSLParser()
     
     def _extract_functions_from_ast(self, ast: Dict) -> List[Dict[str, Any]]:
         """Извлечение функций из AST"""
@@ -487,6 +514,7 @@ def example_usage():
 
 if __name__ == "__main__":
     example_usage()
+
 
 
 

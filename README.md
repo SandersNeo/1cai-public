@@ -12,6 +12,13 @@
 
 ## 🆕 Что нового
 
+### 🧪 bsl-language-server Integration (Nov 10, 2025)
+- В `docker-compose.dev.yml` появился сервис `bsl-language-server` с health-check и пробросом порта (8081→8080) — теперь AST-сервер запускается одной командой.
+- Makefile дополнен целями `bsl-ls-up`, `bsl-ls-down`, `bsl-ls-logs`, `bsl-ls-check`; есть скрипт `scripts/parsers/check_bsl_language_server.py` для проверки health/parse.
+- Парсер `BSLASTParser` использует переменную `BSL_LANGUAGE_SERVER_URL`, проверяет доступность сервиса и автоматически откатывается на regex, если LSP недоступен.
+- В документации (`docs/research/bsl_language_server_plan.md`) описаны шаги интеграции и обязательное локальное тестирование перед эскалацией.
+- Благодарим авторов проекта [1c-syntax/bsl-language-server](https://github.com/1c-syntax/bsl-language-server) за открытый сервис, на котором основана интеграция.
+
 ### 🔄 ITS Documentation Scraper (Nov 9, 2025)
 - Построен модуль `integrations/its_scraper`: асинхронный сбор статей ИТС (ретраи, адаптивный rate-limit, прокси, user-agent rotation, Prometheus-метрики, stream JSONL)
 - Версионирование артефактов (`versions/<ts>/`), расширенные метаданные (`content_hash`, `word_count`, `excerpt`, `previous_version`), queue-based producer/consumer с резюмированием (`--state-file`, `--resume`)
@@ -20,9 +27,14 @@
 - Источник: [hawkxtreme/scraping_its](https://github.com/hawkxtreme/scraping_its) — благодарим автора проекта за основу
 
 ### 🧭 Архитектурные артефакты (Nov 9, 2025)
-- Добавлен раздел [`docs/architecture/`](docs/architecture/README.md): High Level Design, инструкции по обновлению, полный набор UML (system-context, components, data-flow, deployment, ITS Scraper sequence)
-- Архитектура покрывает API, воркеры, ML, интеграции, хранилища, observability, security; есть checklist для актуализации
-- UML диаграммы (PlantUML): [System Context](docs/architecture/uml/system-context.puml) · [Component Overview](docs/architecture/uml/component-overview.puml) · [Data Flow](docs/architecture/uml/data-flow.puml) · [Deployment](docs/architecture/uml/deployment.puml) · [ITS Scraper Sequence](docs/architecture/uml/its-scraper-sequence.puml)
+- Добавлен раздел [`docs/architecture/`](docs/architecture/README.md): High Level Design, Structurizr DSL (`c4/workspace.dsl`), ADR-реестр, автоматизация `make render-uml`
+- Архитектура покрывает API, воркеры, ML, интеграции, хранилища, observability, security; добавлены инструкции по поддержке актуальности
+- Основные диаграммы (PNG → просматриваются напрямую на GitHub): [C4 System Context](docs/architecture/uml/c4/png/context.png) · [Container Landscape](docs/architecture/uml/c4/png/container_overview.png) · [Component Views](docs/architecture/uml/c4/png/component_analysis.png) · [Data Lifecycle](docs/architecture/uml/data/png/lifecycle.png) · [CI/CD Pipeline](docs/architecture/uml/dynamics/png/ci-cd-sequence.png) · [Threat Model](docs/architecture/uml/security/png/threat-model.png)
+- Добавлены BSL тесты в CI: `make test-bsl` (локально) и job `bsl-tests` в GitHub Actions. За основу взят открытый фреймворк [alkoleft/yaxunit](https://github.com/alkoleft/yaxunit) — благодарим @alkoleft за экосистему и документацию.
+- MCP сервер теперь проксирует внешние инструменты: платформенный контекст и тест-раннер ([alkoleft/mcp-bsl-platform-context](https://github.com/alkoleft/mcp-bsl-platform-context), [alkoleft/mcp-onec-test-runner](https://github.com/alkoleft/mcp-onec-test-runner)). Благодарим @alkoleft за открытые решения.
+- Аналитические скрипты используют [tree-sitter-bsl](https://github.com/alkoleft/tree-sitter-bsl) для AST-анализa (вызовы функций, графы зависимостей). Благодарим @alkoleft за грамматику.
+- `make export-context` (через [alkoleft/platform-context-exporter](https://github.com/alkoleft/platform-context-exporter)) выгружает платформенный контекст в `output/context/` для RAG/документации; `make generate-docs` запускает [alkoleft/ones_doc_gen](https://github.com/alkoleft/ones_doc_gen) и формирует ReST/Markdown артефакты (`output/docs/generated/`). Благодарим @alkoleft за утилиты.
+- Подготовлена [инвентаризация репозиториев @alkoleft](docs/research/alkoleft_inventory.md) — основные инструменты, благодарности и инструкции (например, как собрать `tree-sitter-bsl`).
 
 ### 🛡️ Security Agent Framework (Nov 9, 2025)
 - Опубликован модуль `security/agent_framework` с CLI для запуска сценариев проверки безопасности (BSL, REST, n8n, статический анализ репозитория)

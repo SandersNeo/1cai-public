@@ -22,6 +22,7 @@ services:
       - QDRANT_HOST=qdrant
       - QDRANT_PORT=6333
       - ENVIRONMENT=development
+      - BSL_LANGUAGE_SERVER_URL=http://bsl-language-server:8080
     ports:
       - "8000:8000"
       - "3000:3000"
@@ -30,6 +31,7 @@ services:
       - redis
       - neo4j
       - qdrant
+      - bsl-language-server
     networks:
       - dev-network
 
@@ -74,6 +76,21 @@ services:
       - "6333:6333"
     volumes:
       - qdrant-data:/qdrant/storage
+    networks:
+      - dev-network
+
+  bsl-language-server:
+    image: ghcr.io/1c-syntax/bsl-language-server:latest
+    environment:
+      SPRING_MAIN_BANNER-MODE: "off"
+    ports:
+      - "8081:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health > /dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     networks:
       - dev-network
 
