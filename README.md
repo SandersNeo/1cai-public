@@ -874,3 +874,4 @@ make bsl-ls-down        # останавливаем сервис
 - `BSLASTParser` использует LSP, и при недоступности сервера автоматически откатывается на regex — в логах будет предупреждение.
 - Перед эскалацией обязательно собрать информацию: результат `make bsl-ls-check`, логи сервиса и вывод health-endpoint (`http://localhost:8081/actuator/health`).
 - Благодарим команду [1c-syntax/bsl-language-server](https://github.com/1c-syntax/bsl-language-server) за открытый сервис, на котором построена интеграция.
+- Детальный гайд: [`docs/06-features/AST_TOOLING_BSL_LANGUAGE_SERVER.md`](docs/06-features/AST_TOOLING_BSL_LANGUAGE_SERVER.md).
