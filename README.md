@@ -125,6 +125,7 @@
   - [`docs/runbooks/alert_slo_runbook.md`](docs/runbooks/alert_slo_runbook.md) — действия при нарушении SLO.
   - [`docs/status/dora_history.md`](docs/status/dora_history.md) — автоматическая история DORA метрик (weekly).
   - Workflow `observability.yml` — напоминание об интеграции SLO/метрик.
+  - `make observability-up` → локальный Prometheus/Grafana стек (см. `observability/docker-compose.observability.yml`).
 - **Architecture**
   - [`docs/architecture/README.md`](docs/architecture/README.md) — обзор C4, операции и ссылки на ADR.
   - [`docs/architecture/adr/`](docs/architecture/adr/) — реестр решений, статусы и история изменений.

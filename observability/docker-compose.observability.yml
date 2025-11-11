@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  smoke-api:
+    build:
+      context: ..
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8080
+    environment:
+      - IGNORE_PY_VERSION_CHECK=1
+    networks:
+      - observability-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  prometheus:
+    image: prom/prometheus:latest
+    depends_on:
+      - smoke-api
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - observability-net
+
+  grafana:
+    image: grafana/grafana:latest
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - observability-net
+
+networks:
+  observability-net:

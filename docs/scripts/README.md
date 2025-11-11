@@ -93,6 +93,7 @@
 - `scripts/metrics/collect_dora.py` — вычисляет DORA метрики (deployment frequency, lead time, CFR, MTTR) и сохраняет их в `output/metrics/`.
 - Workflow `dora-metrics.yml` выполняет скрипт еженедельно и прикладывает отчёты как артефакт.
 - Allure отчёты (`output/test-results/allure/`) доступны после job `unit-tests`; открываются `allure serve ...`.
+- `observability/docker-compose.observability.yml` запускает стек Prometheus+Grafana (`make observability-up`).
 
 ### 4.11 ML и экспериментальные утилиты
 - `dataset/create_ml_dataset.py`, `prepare_neural_training_data.py` — подготовка выборок для моделей.
@@ -111,18 +112,6 @@
 | `make render-uml` | `docs/render_uml.py` | раздел 4.2 |
 | `make quality` | пакет формата/линта + `pytest` | см. `Makefile` |
 | `make release-notes/tag/push` | `scripts/release/create_release.py` | раздел 4.10 |
+| `make observability-up/down` | `observability/docker-compose.observability.yml` | раздел 4.11 |
 
-Всегда сверяйтесь с `make help`: команды обновляются синхронно со скриптами.
-
-## 6. Правила безопасности
-
-- Перед выпуском прогоните `run_full_audit.py` и убедитесь, что все пункты `docs/research/constitution.md` соблюдены.
-- Скрипты не должны хранить секреты в открытом виде; используйте `.env` и `Settings` (см. `src/config.py`).
-- Если скрипт требует внешнюю утилиту, документируйте её версию и путь в README или changelog.
-
-## 7. Благодарности
-
-- [alkoleft/platform-context-exporter](https://github.com/alkoleft/platform-context-exporter) — экспорт платформенного контекста (используется в `export_platform_context.py`).
-- [alkoleft/ones_doc_gen](https://github.com/alkoleft/ones_doc_gen) — генерация документации (используется в `generate_docs.py`).
-- [alkoleft/yaxunit](https://github.com/alkoleft/yaxunit) и [alkoleft/mcp-onec-test-runner](https://github.com/alkoleft/mcp-onec-test-runner) — тестирование BSL, реализовано в `run_bsl_tests.py` и Makefile.
-- Сообщество GitHub Spec Kit — вдохновение для стандартизованных процессов и CLI.
+Всегда сверяйтесь с `

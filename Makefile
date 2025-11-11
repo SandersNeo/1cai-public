@@ -85,6 +85,8 @@ help:
 	@echo "  make smoke-tests         - Run smoke checks (compile, spec validation, health)"
 	@echo "  make smoke-up            - Run smoke FastAPI service (docker-compose.yml)"
 	@echo "  make smoke-down          - Stop smoke service"
+	@echo "  make observability-up     - Start Prometheus/Grafana stack (observability/docker-compose.observability.yml)"
+	@echo "  make observability-down   - Stop Prometheus/Grafana stack"
 	@echo "  make test-bsl         - Run BSL/YAxUnit test suites (see tests/bsl/testplan.json)"
 feature-init:
 ifndef FEATURE
@@ -122,6 +124,14 @@ smoke-up:
 
 smoke-down:
 	docker compose down smoke-api
+
+observability-up:
+	docker compose -f observability/docker-compose.observability.yml up -d
+	docker compose -f observability/docker-compose.observability.yml ps
+	@echo "Prometheus: http://localhost:9090, Grafana: http://localhost:3000 (user: admin, password: admin)"
+
+observability-down:
+	docker compose -f observability/docker-compose.observability.yml down
 
 # Installation
 install:

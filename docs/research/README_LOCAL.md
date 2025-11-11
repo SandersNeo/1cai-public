@@ -68,7 +68,7 @@
     - Документ `docs/observability/SLO.md` (SLO/SLI/Error Budget).  
     - Runbook `docs/runbooks/alert_slo_runbook.md` + `docs/runbooks/postmortem_template.md`.  
     - История DORA: `docs/status/dora_history.md` (обновляется автоматически workflow `dora-metrics`).  
-    - TODO: Интеграция с Prometheus/Grafana (`.github/workflows/observability.yml`).
+    - `make observability-up` поднимает локальный стек Prometheus/Grafana (`observability/docker-compose.observability.yml`).
 
 16. **Обновлён мастер-лист TODO**  
     - `docs/research/alkoleft_todo.md` теперь с приоритетами и ссылками на соответствующие планы.

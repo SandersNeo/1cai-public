@@ -16,4 +16,4 @@
   - ✅ `scripts/metrics/collect_dora.py`, workflow `dora-metrics.yml`; настроить визуализацию (следующий шаг).
 - [ ] (Средний) Observability & Runbooks
   - ✅ `docs/observability/SLO.md`, `docs/runbooks/alert_slo_runbook.md`, `docs/runbooks/postmortem_template.md`; внедрить автоматический экспорт метрик и alert канал.
-  - TODO: Интеграция с Prometheus/Grafana (`observability.yml`).
+  - TODO: Интеграция с Prometheus/Grafana (`observability/docker-compose.observability.yml`, `observability.yml`).
