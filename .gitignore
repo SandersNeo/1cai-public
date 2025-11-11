@@ -279,3 +279,4 @@ tools/plantuml-*.jar
 # Metrics artifacts
 output/metrics/
 output/test-results/
+output/test-results/allure/

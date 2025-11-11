@@ -21,6 +21,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 
 import redis.asyncio as aioredis
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from prometheus_fastapi_instrumentator import Instrumentator
 
 # Database
 from src.database import create_pool, close_pool
@@ -135,6 +136,9 @@ app = FastAPI(
     version="2.1.0",
     lifespan=lifespan
 )
+
+# Metrics instrumentation (Prometheus)
+Instrumentator().instrument(app).expose(app, include_in_schema=False)
 
 # CORS
 app.add_middleware(

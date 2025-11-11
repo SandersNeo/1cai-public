@@ -21,6 +21,7 @@
 | Windows Helpers | `scripts/windows/` | `bsl-ls-up.ps1`, `bsl-ls-check.ps1`, `feature-init.ps1`, `feature-validate.ps1` | Альтернатива make/dc для PowerShell пользователей |
 | Spec-driven workflow | `scripts/research/`, `templates/` | `init_feature.py`, шаблоны `feature-*.md` | Создание каркасов планов/спеков, работа по методологии |
 | Release & Metrics | `scripts/release/`, `scripts/metrics/` | `create_release.py`, `collect_dora.py` | Подготовка релизов, генерация нотесов, сбор DORA-показателей |
+| Observability | `docs/observability/`, `docs/runbooks/` | SLO, runbooks, postmortem template | Мониторинг, Error Budget, реакции |
 | ML & Benchmarks | `scripts/dataset/`, `scripts/ml/`, `benchmark_*.py` | `create_ml_dataset.py`, `massive_ast_dataset_builder.py`, `benchmark_performance.py` | Подготовка датасетов, измерение производительности |
 
 ## 3. Зависимости и подготовка
@@ -72,6 +73,7 @@
 - `blue-green-deploy.sh`, `schedule-traffic-switch.sh`, `monitor-deployment.sh` — сценарии развёртывания и переключения трафика.
 - `health-check.sh`, `monitoring.sh` — базовые health-проверки.
 - `monitoring/github_monitor.py` — опрос GitHub API для отслеживания релизов/коммитов внешних зависимостей, сохраняет состояние в `output/monitoring/github_state.json` (см. план мониторинга).
+- Prometheus `/metrics` обрабатывается `prometheus_fastapi_instrumentator` из `src/main.py` (см. `requirements.txt`).
 
 ### 4.8 Spec-driven workflow
 - `templates/feature-*.md` — заготовки для планов, спецификаций, задач и исследований (благодарность [github/spec-kit](https://github.com/github/spec-kit)).
@@ -90,6 +92,7 @@
 - Workflow `.github/workflows/release.yml` публикует GitHub Release при пуше тега `v*`.
 - `scripts/metrics/collect_dora.py` — вычисляет DORA метрики (deployment frequency, lead time, CFR, MTTR) и сохраняет их в `output/metrics/`.
 - Workflow `dora-metrics.yml` выполняет скрипт еженедельно и прикладывает отчёты как артефакт.
+- Allure отчёты (`output/test-results/allure/`) доступны после job `unit-tests`; открываются `allure serve ...`.
 
 ### 4.11 ML и экспериментальные утилиты
 - `dataset/create_ml_dataset.py`, `prepare_neural_training_data.py` — подготовка выборок для моделей.

@@ -64,6 +64,7 @@ pytest --cov=src --cov-report=html --cov-report=term
 5. Для анализа результатов:
    - `cat output/bsl-tests/<runner>.log` — ищите `FAILED`/`PASSED`.
    - Добавляйте `--junit` отчёты (см. пример в `tests/bsl/README.md`) и прикладывайте к CI артефактам.
+   - Для Allure: `pytest ... --alluredir=output/test-results/allure`; открыть отчёт `allure serve output/test-results/allure` (потребуется установить `allure` CLI).
 
 ## 6. CI интеграция
 
@@ -90,6 +91,7 @@ pytest --cov=src --cov-report=html --cov-report=term
 |-----|------|
 | Pytest HTML coverage | `htmlcov/index.html` |
 | Pytest unit reports | `output/test-results/unit-report.html`, `output/test-results/unit-junit.xml` |
+| Allure (unit) | `output/test-results/allure/` |
 | BSL логи | `output/bsl-tests/*.log` |
 | Audit отчёты | `BROKEN_LINKS_REPORT.txt`, `COMPREHENSIVE_AUDIT_FINAL.txt`, `SECURITY_AUDIT_REPORT.txt`, `README_CODE_VERIFICATION.txt` |
 | Performance | Вывод `pytest -s` + `tests/load/k6_load_test.js` (stdout, экспортируйте вручную) |
@@ -110,6 +112,7 @@ pytest --cov=src --cov-report=html --cov-report=term
 | `k6` не установлен | пакет не поставлен локально | Установите k6 (Linux: репозиторий k6; Windows: Chocolatey) |
 | `spec-driven-validation` падает | остались шаблонные маркеры/ TODO | Заполните файлы фичи и запустите `make feature-validate` |
 | `smoke-tests` падает | Нарушена компиляция или spec workflow | Прогоните `make smoke-tests` локально, исправьте ошибки |
+| Нет Allure отчёта | `output/test-results/allure/` пуст | Убедитесь, что `allure-pytest` установлен и директория объявлена через `--alluredir` |
 | `docs-lint` → markdownlint | форматирование Markdown | Запустите `markdownlint "**/*.md"` и исправьте подсказки |
 | `docs-lint` → lychee | битая ссылка / 429 | Проверьте URL, добавьте в `.lychee.toml` (только при необходимости) |
 

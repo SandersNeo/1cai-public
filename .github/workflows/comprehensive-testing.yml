@@ -24,12 +24,12 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
-        pip install pytest pytest-asyncio pytest-cov pytest-mock pytest-html
+        pip install pytest pytest-asyncio pytest-cov pytest-mock pytest-html allure-pytest
     
     - name: Run unit tests
       run: |
         mkdir -p output/test-results
-        pytest tests/unit/ -v --cov=src --cov-report=xml --junitxml=output/test-results/unit-junit.xml --html=output/test-results/unit-report.html --self-contained-html
+        pytest tests/unit/ -v --cov=src --cov-report=xml --junitxml=output/test-results/unit-junit.xml --html=output/test-results/unit-report.html --self-contained-html --alluredir=output/test-results/allure
     
     - name: Upload coverage
       uses: codecov/codecov-action@v3
