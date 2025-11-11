@@ -79,3 +79,34 @@ vault:
     - name: DATABASE_URL
       secretName: db-credentials
       secretKey: url
+  agent:
+    enabled: false
+    image: hashicorp/vault:1.15.5
+    annotations: {}
+    config: |
+      exit_after_auth = false
+      pid_file = "/tmp/vault-agent.pid"
+
+      auto_auth {
+        method "kubernetes" {
+          mount_path = "auth/kubernetes"
+          config = {
+            role = "1cai-app"
+          }
+        }
+
+        sink "file" {
+          config = {
+            path = "/vault/secrets/token"
+          }
+        }
+      }
+
+      template {
+        destination = "/vault/secrets/app.env"
+        contents    = <<EOT
+{{- with secret "secret/data/1cai/database" -}}
+DATABASE_URL={{ .Data.data.url }}
+{{- end -}}
+EOT
+      }

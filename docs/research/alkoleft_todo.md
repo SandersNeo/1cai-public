@@ -31,17 +31,16 @@
   - TODO: Terraform backend (S3/DynamoDB, Azure Storage), Managed Identity для Vault.
 - [ ] (Средний) Secret management
   - ✅ Vault политика/скрипт (`infrastructure/vault/`, `docs/ops/vault.md`).
-  - ✅ CSI: SecretProviderClass (`infrastructure/vault/csi`), пример deployment, `make vault-csi-apply`.
-  - ✅ AWS sync → Vault (`scripts/secrets/aws_sync_to_vault.py`).
-  - TODO: Azure Key Vault пример, Vault Agent sidecar, автоматическое обновление секретов.
+  - ✅ CSI: SecretProviderClass (`infrastructure/vault/csi`), Helm интеграция (`vault.enabled`, agent sidecar), make `vault-csi-apply`, sync скрипты (`scripts/secrets/*`).
+  - TODO: Vault Agent sidecar автоматические обновления, Azure Key Vault Terraform, Secret rotation alerts.
 - [ ] (Средний) FinOps
-  - ✅ Скрипты `scripts/finops/aws_cost_report.py`, `aws_cost_to_slack.py`, `azure_cost_to_slack.py`; workflow `finops-report.yml`; make `finops-slack`.
-  - TODO: Budget alerts (AWS Budgets/Azure), Teams интеграция, Grafana dashboards.
+  - ✅ Скрипты `scripts/finops/aws_cost_report.py`, `aws_cost_to_slack.py`, `aws_budget_check.py`, `azure_cost_to_slack.py`; workflow `finops-report.yml`; make `finops-slack`.
+  - TODO: Azure Budgets, Teams уведомления, дашборды Grafana.
 - [ ] (Средний) Service Mesh & Chaos
   - ✅ Istio профиль (`infrastructure/service-mesh/istio`), make `mesh-istio-apply`, документ `docs/ops/service_mesh.md`.
-  - ✅ Linkerd blueprint (`infrastructure/service-mesh/linkerd`), make `linkerd-install`.
+  - ✅ Linkerd blueprint (`infrastructure/service-mesh/linkerd`), ArgoCD application, make `linkerd-install`.
   - ✅ Litmus pod-delete + network latency (`infrastructure/chaos/litmus`, `make chaos-litmus-run`).
-  - TODO: Linkerd Helm chart, Istio mTLS policies, chaos в CI.
+  - TODO: Linkerd Helm overlay/ ApplicationSet для множественных окружений, chaos в CI, Istio mTLS policies.
 - [ ] (Высокий) Runtime & Compliance
   - ✅ `scripts/setup/check_runtime.py`, make `check-runtime`, инструкция `docs/setup/python_311.md`.
   - TODO: Обновить конституцию правилами по установленной версии Python; автоматизировать проверку наличия `make`, `docker compose`.

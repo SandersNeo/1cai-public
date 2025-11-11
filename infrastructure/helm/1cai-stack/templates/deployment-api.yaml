@@ -18,6 +18,21 @@ spec:
         app.kubernetes.io/component: api
     spec:
       serviceAccountName: {{ include "1cai-stack.serviceAccountName" . }}
+      initContainers:
+{{- if and .Values.vault.enabled .Values.vault.agent.enabled }}
+        - name: vault-agent-init
+          image: {{ .Values.vault.agent.image }}
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              cp /vault/config/agent.hcl /vault/data/agent.hcl
+          volumeMounts:
+            - name: vault-agent-config
+              mountPath: /vault/config
+            - name: vault-secrets
+              mountPath: /vault/data
+{{- end }}
       containers:
         - name: api
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -27,7 +42,13 @@ spec:
               value: {{ quote .Values.api.env.IGNORE_PY_VERSION_CHECK }}
             - name: LOG_LEVEL
               value: {{ quote .Values.api.env.LOG_LEVEL }}
-{{- if and .Values.vault.enabled .Values.vault.env }}
+{{- if and .Values.vault.enabled .Values.vault.agent.enabled }}
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: url
+{{- else if and .Values.vault.enabled .Values.vault.env }}
 {{- range .Values.vault.env }}
             - name: {{ .name }}
               valueFrom:
@@ -60,6 +81,22 @@ spec:
               mountPath: {{ .Values.vault.mountPath | default "/vault/secrets" }}
               readOnly: true
 {{- end }}
+{{- if and .Values.vault.enabled .Values.vault.agent.enabled }}
+        - name: vault-agent
+          image: {{ .Values.vault.agent.image }}
+          args:
+            - agent
+            - -config=/vault/data/agent.hcl
+            - -log-level=info
+          env:
+            - name: VAULT_ADDR
+              value: {{ .Values.vault.secretProviderClass.parameters.static.vaultAddress | quote }}
+          volumeMounts:
+            - name: vault-agent-config
+              mountPath: /vault/config
+            - name: vault-secrets
+              mountPath: {{ .Values.vault.mountPath | default "/vault/secrets" }}
+{{- end }}
       volumes:
         - name: vault-token
           projected:
@@ -75,4 +112,9 @@ spec:
             readOnly: true
             volumeAttributes:
               secretProviderClass: {{ .Values.vault.secretProviderClass.name }}
+{{- end }}
+{{- if and .Values.vault.enabled .Values.vault.agent.enabled }}
+        - name: vault-agent-config
+          configMap:
+            name: {{ include "1cai-stack.fullname" . }}-vault-agent
 {{- end }}

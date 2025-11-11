@@ -114,14 +114,17 @@
 
 24. **Vault & Secret Management**  
     - Политика `infrastructure/vault/policies/1cai-app.hcl`, скрипт `infrastructure/vault/scripts/configure.sh`.  
-    - CSI пример `infrastructure/vault/csi/*`, Make `vault-csi-apply`, скрипты `scripts/secrets/*`.  
+    - CSI пример `infrastructure/vault/csi/*`, Helm интеграция (`vault.enabled`, agent sidecar), Make `vault-csi-apply`, скрипты `scripts/secrets/*`.  
 
 25. **FinOps & Cost Reports**  
-    - Скрипты `scripts/finops/aws_cost_to_slack.py`, `scripts/finops/azure_cost_to_slack.py`, Make `finops-slack`.  
+    - Скрипты `scripts/finops/aws_cost_to_slack.py`, `scripts/finops/azure_cost_to_slack.py`, `scripts/finops/aws_budget_check.py`, Make `finops-slack`.  
     - Workflow `.github/workflows/finops-report.yml`.  
 
 26. **Self-control checklist**  
-    - Скрипт `scripts/checklists/preflight.sh`, make `preflight`, документ `docs/ops/self_control.md`.  
+    - Скрипт `scripts/checklists/preflight.sh` (слэк-нотификации), make `preflight`, документ `docs/ops/self_control.md`.  
 
-27. **Обновлён мастер-лист TODO**  
+27. **GitOps**  
+    - Linkerd control plane через Argo CD (`infrastructure/argocd/application-linkerd.yaml`).  
+
+28. **Обновлён мастер-лист TODO**  
     - `docs/research/alkoleft_todo.md` теперь с приоритетами и ссылками на соответствующие планы.

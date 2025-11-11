@@ -107,10 +107,10 @@
   - Infrastructure scanners: `scripts/security/run_checkov.sh` (Checkov + Trivy) подключён в Jenkins/GitLab/Azure pipeline.
   - GitOps: `infrastructure/argocd/`, `scripts/gitops/*.sh`, make `gitops-apply`, `gitops-sync`.
   - Cloud readiness: `infrastructure/terraform/aws-eks/`, `infrastructure/terraform/azure-aks/`, Ansible bootstrap (`infrastructure/ansible/`).
-  - Secrets: `scripts/secrets/aws_sync_to_vault.py`, `scripts/secrets/apply_vault_csi.sh`.
+  - Secrets: `scripts/secrets/aws_sync_to_vault.py`, `scripts/secrets/azure_sync_to_vault.py`, `scripts/secrets/apply_vault_csi.sh`.
   - Self-control: `scripts/checklists/preflight.sh`, make `preflight`.
 - **FinOps**
-  - Скрипты `scripts/finops/aws_cost_*`, `scripts/finops/azure_cost_to_slack.py` — отчёты и Slack уведомления.
+  - Скрипты `scripts/finops/aws_cost_*`, `scripts/finops/azure_cost_to_slack.py`, `scripts/finops/aws_budget_check.py` — отчёты и Slack уведомления.
   - Workflow `.github/workflows/finops-report.yml` — ежедневный отчёт.
 
 ---
@@ -148,7 +148,7 @@
   - `infrastructure/terraform/aws-eks` — Terraform модуль EKS (AWS).
   - `infrastructure/terraform/azure-aks` — Terraform модуль AKS (Azure).
   - `infrastructure/azure/azure-pipelines.yml` — Azure DevOps pipeline.
-  - `infrastructure/vault/` — политики, скрипты, SecretProviderClass для Vault (`make vault-csi-apply`).
+  - `infrastructure/vault/` — политики, скрипты, SecretProviderClass для Vault (`make vault-csi-apply`, sync скрипты).
   - `scripts/secrets/aws_sync_to_vault.py` — синхронизация AWS Secrets Manager → Vault.
   - `infrastructure/jenkins/Jenkinsfile`, `infrastructure/gitlab/.gitlab-ci.yml` — многостадийные pipeline.
   - [`docs/security/policy_as_code.md`](docs/security/policy_as_code.md) — Rego-политики, Conftest, Semgrep.

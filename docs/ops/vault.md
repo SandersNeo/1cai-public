@@ -20,11 +20,11 @@
 - AWS: Terraform пример (см. `infrastructure/terraform/aws-eks`) + IAM policy для чтения `secretsmanager:GetSecretValue` (TODO).
 - Azure: добавить Key Vault (Terraform) и Managed Identity (TODO).
 
-## 5. AWS/Azure Secret Manager
+## 4. AWS/Azure Secret Manager
 - AWS: скрипт `scripts/secrets/aws_sync_to_vault.py` — переносит указанные Secrets Manager ключи в Vault (`python scripts/secrets/aws_sync_to_vault.py my/secret --vault-path secret/data/1cai/aws`).
-- Azure: добавить Key Vault (Terraform) и Managed Identity (TODO).
+- Azure: скрипт `scripts/secrets/azure_sync_to_vault.py` (`python scripts/secrets/azure_sync_to_vault.py <vault-name> secret1 --vault-path secret/data/1cai/azure`).
 
-## 6. Best Practices
+## 5. Best Practices
 - Политики только на нужные пути (`secret/data/1cai/*`).
 - Короткие TTL, регулярный `vault lease renew` через sidecar.
 - Audit log включен (`vault audit enable file file_path=/var/log/vault_audit.log`).
