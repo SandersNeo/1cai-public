@@ -49,15 +49,16 @@ SLO определяют целевые показатели доступнос�
 - [ ] CI проверка `observability-test.yml` (docker-compose stack) — следить за результатами.
 - [ ] Alertmanager → Telegram: заполнить `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` для локального и CI окружений.
 
-## 8. Prometheus & Grafana (локально)
+## 8. Prometheus & Grafana (локально / Kubernetes)
 
-- Используйте `make observability-up`, чтобы поднять стек (`observability/docker-compose.observability.yml`).
-  - Prometheus: `http://localhost:9090`
-  - Alertmanager: `http://localhost:9093`
-  - Grafana: `http://localhost:3000` (логин/пароль: `admin`/`admin` — измените после первого входа).
-- Контейнер `smoke-api` экспортирует метрики на `/metrics`; Prometheus забирает их согласно `observability/prometheus.yml`.
-- Alertmanager использует конфигурацию `observability/alertmanager.yml` и правила `observability/alerts.yml` (см. runbook).
-- Для остановки используйте `make observability-down`.
+- Локально (docker-compose): `make observability-up` — Prometheus, Grafana, Alertmanager, smoke-api.
+- Kubernetes: `make helm-observability` — Helm chart `infrastructure/helm/observability-stack` (Prometheus + Loki + Tempo + Grafana + OTEL Collector + Promtail).
+  - Prometheus: `observability-stack-prometheus` (`http://prometheus.observability.svc:9090`).
+  - Grafana: `observability-stack-grafana` (`http://grafana.observability.svc:3000`, admin/admin — сменить). Datasource’ы (Prometheus/Loki/Tempo) и дашборды (`API Overview`, `Platform Health`) создаются автоматически.
+  - OTEL Collector: `observability-stack-otel-collector` (OTLP gRPC 4317, HTTP 4318, metrics 9464).
+  - Tempo: `observability-stack-tempo` (HTTP 3100). Loki: `observability-stack-loki` (HTTP 3100).
+- Включите экспорт OTLP в сервисы (`OTEL_EXPORTER_OTLP_ENDPOINT=http://observability-stack-otel-collector:4317`).
+- Для остановки Helm release: `helm uninstall observability -n observability`.
 - TODO: добавить дешборды Grafana и автоматическую публикацию.
 
 ## 9. Следующие шаги

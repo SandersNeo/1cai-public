@@ -69,9 +69,11 @@
     - Runbook `docs/runbooks/alert_slo_runbook.md` + `docs/runbooks/postmortem_template.md`.  
     - История DORA: `docs/status/dora_history.md` (обновляется автоматически workflow `dora-metrics`).  
     - `make observability-up` поднимает локальный стек Prometheus/Grafana/Alertmanager (`observability/docker-compose.observability.yml`).  
+    - `make helm-observability` устанавливает Kubernetes-стек (Prometheus+Loki+Tempo+OTEL+Grafana) из `infrastructure/helm/observability-stack`.  
     - CI проверка compose стека: `observability-test.yml`.  
     - Telegram алерты: `telegram-alert.yaml` (потребуются secrets `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`).  
     - Alertmanager правила: `observability/alerts.yml`, конфиг `observability/alertmanager.yml` (помнить про env).  
+
 17. **Runtime & Secrets**  
     - Скрипт `scripts/setup/check_runtime.py` + make-цель `check-runtime`.  
     - Инструкция по установке Python 3.11: `docs/setup/python_311.md`.  

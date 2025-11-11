@@ -15,6 +15,7 @@
 | Kubernetes | kind (локально), Helm chart `infrastructure/helm/1cai-stack` | базовый кластер и оркестрация сервисов |
 | IaC | Terraform (`infrastructure/terraform`) | описывает namespace и устанавливает chart |
 | CI/CD | Jenkins (`infrastructure/jenkins/Jenkinsfile`), GitLab CI (`infrastructure/gitlab/.gitlab-ci.yml`) | multi-stage pipeline с lint/test/security/build/deploy |
+| Observability | Helm chart `infrastructure/helm/observability-stack` (Prometheus + Loki + Tempo + OTEL + Grafana) | метрики, логи, трейсы, дашборды |
 | Registry | GHCR (по умолчанию) | хранение контейнеров |
 | Secret store | HashiCorp Vault (адрес `vault.vault:8200`) | выдача секретов приложения и пайплайна |
 | Security scans | Bandit, pip-audit, Safety, Trufflehog | статический анализ и поиск секрета |
@@ -27,6 +28,7 @@
 4. `deploy-kind` (preview) — устанавливает Helm chart в локальный kind-кластер (интеграционные проверки).
 5. `deploy` (manual) — Terraform применяет Helm chart в production кластере.
 6. Alertmanager / Prometheus отслеживают состояние; отчёты публикуются в Telegram.
+4. `make helm-observability` → устанавливает Prometheus/Loki/Tempo/Grafana/OTEL Collector/Promtail в namespace `observability`.
 
 ## 4. Onboarding
 
@@ -44,6 +46,7 @@
 - IaC для Vault (policies, Kubernetes auth).
 - Автоматическая публикация Helm chart в собственный репозиторий.
 - Настроить политики Conftest/OPA (см. план security).
+- Подключить Prometheus Operator/kube-prometheus-stack, когда выпадет необходимость.
 
 ## 6. Благодарности
 - kind (https://kind.sigs.k8s.io/)

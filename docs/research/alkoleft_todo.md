@@ -19,7 +19,7 @@
   - ✅ `scripts/metrics/collect_dora.py`, workflow `dora-metrics.yml`; настроить визуализацию (следующий шаг).
 - [ ] (Средний) Observability & Runbooks
   - ✅ `docs/observability/SLO.md`, `docs/runbooks/alert_slo_runbook.md`, `docs/runbooks/postmortem_template.md`; внедрить автоматический экспорт метрик и alert канал.
-  - ✅ Инфраструктура: `observability/docker-compose.observability.yml` (Prometheus/Grafana/Alertmanager), правила `observability/alerts.yml`, конфиг `observability/alertmanager.yml`.
+  - ✅ Инфраструктура: `observability/docker-compose.observability.yml` (локально), `infrastructure/helm/observability-stack` (K8s), правила `observability/alerts.yml`, конфиг `observability/alertmanager.yml`.
   - TODO: Интеграция с Prometheus/Grafana (`observability.yml`) и Telegram (workflow `telegram-alert.yaml`) + секреты в CI/CD.
 - [ ] (Высокий) Runtime & Compliance
   - ✅ `scripts/setup/check_runtime.py`, make `check-runtime`, инструкция `docs/setup/python_311.md`.

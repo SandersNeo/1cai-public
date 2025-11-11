@@ -25,6 +25,7 @@ help:
 	@echo "  make kind-up          - Start local kind cluster (infrastructure/kind/cluster.yaml)"
 	@echo "  make kind-down        - Delete local kind cluster"
 	@echo "  make helm-deploy      - Deploy 1cai via Helm chart (infrastructure/helm/1cai-stack)"
+	@echo "  make helm-observability- Deploy observability stack (prometheus+loki+tempo+grafana)"
 	@echo "  make terraform-apply  - Apply Terraform stack (namespace + Helm release)"
 	@echo "  make terraform-destroy - Destroy Terraform resources"
 	@echo ""
@@ -149,6 +150,11 @@ helm-deploy:
 	helm upgrade --install 1cai infrastructure/helm/1cai-stack \
 	  --namespace 1cai --create-namespace \
 	  -f infrastructure/helm/1cai-stack/values.yaml
+
+helm-observability:
+	helm upgrade --install observability infrastructure/helm/observability-stack \
+	  --namespace observability --create-namespace \
+	  -f infrastructure/helm/observability-stack/values.yaml
 
 terraform-apply:
 	cd infrastructure/terraform && terraform init && terraform apply -auto-approve

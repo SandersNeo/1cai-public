@@ -123,6 +123,7 @@
 | `make release-notes/tag/push` | `scripts/release/create_release.py` | раздел 4.10 |
 | `make observability-up/down` | `observability/docker-compose.observability.yml` | раздел 4.11 |
 | `make check-runtime` | `scripts/setup/check_runtime.py` | раздел 4.11 |
+| `make helm-observability` | `infrastructure/helm/observability-stack` | раздел 4.3 |
 | security pipeline | `scripts/security/run_security_scans.sh` | раздел 4.12 |
 | GitHub Actions | `observability-test.yml` | автоматическая проверка compose стека |
 

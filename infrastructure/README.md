@@ -26,7 +26,21 @@
     -f infrastructure/helm/1cai-stack/values.yaml
   ```
 
-## 3. Terraform
+## 3. Observability stack
+
+- Каталог: `helm/observability-stack/` — Prometheus + Loki + Tempo + Grafана + OTEL Collector + Promtail.
+- Деплой:
+  ```bash
+  make helm-observability
+  # или напрямую
+  helm upgrade --install observability infrastructure/helm/observability-stack \
+    --namespace observability --create-namespace \
+    -f infrastructure/helm/observability-stack/values.yaml
+  ```
+- После установки: Grafana доступна через сервис `observability-stack-grafana` (порт 3000). Default пароль — admin/admin (смените через UI). Datasource’ы и дашборды создаются автоматически.
+- OTEL Collector — сервис `observability-stack-otel-collector` (порты 4317/4318/9464). Перенастройте приложения на экспорт трейс/метрик через OTLP.
+
+## 4. Terraform
 
 - Файлы: `terraform/providers.tf`, `main.tf`, `variables.tf`, `outputs.tf`.
 - Назначение: создавать namespace и устанавливать Helm chart через Terraform (подходит для GitOps пайплайна).
