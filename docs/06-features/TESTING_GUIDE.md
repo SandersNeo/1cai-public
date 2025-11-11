@@ -16,7 +16,7 @@
 | Performance & Load | `tests/performance/`, `tests/load/` | `pytest tests/performance/ -v -s`; `k6 run tests/load/k6_load_test.js` | `performance-tests` |
 | Security | `tests/security/` | `pytest tests/security/ -v`; `bandit -r src/` | `security-tests` |
 | White-box | `tests/whitebox/` | `pytest tests/whitebox/ -v -s` | `whitebox-analysis` |
-| Smoke | `scripts/testing/smoke_healthcheck.py` | `make smoke-tests` | `smoke-tests` |
+| Smoke | `scripts/testing/smoke_healthcheck.py` | `make smoke-tests` (`make smoke-up` для проверки docker) | `smoke-tests` |
 | BSL / YAxUnit | `tests/bsl/` | `make test-bsl` / `python scripts/tests/run_bsl_tests.py` | `bsl-tests` |
 | Full audit | скрипты и отчёты в корне | `python run_full_audit.py --stop-on-failure` | `full-project-audit` |
 
@@ -66,7 +66,7 @@ pytest --cov=src --cov-report=html --cov-report=term
    - Добавляйте `--junit` отчёты (см. пример в `tests/bsl/README.md`) и прикладывайте к CI артефактам.
    - Для Allure: `pytest ... --alluredir=output/test-results/allure`; открыть отчёт `allure serve output/test-results/allure` (потребуется установить `allure` CLI).
 
-Smoke-скрипт проверяет компиляцию ключевых модулей, валидность spec-driven документов и доступность `/health` через `fastapi.testclient`.
+Smoke-скрипт проверяет компиляцию ключевых модулей, валидность spec-driven документов, доступность `/metrics` и `/health` in-memory, а при запущенном `make smoke-up` также проверяет внешний сервис на `http://localhost:8080/health`.
 
 ## 6. CI интеграция
 
@@ -108,17 +108,4 @@ Smoke-скрипт проверяет компиляцию ключевых мо
 | Симптом | Причина | Решение |
 |---------|---------|---------|
 | `ModuleNotFoundError` в pytest | зависимости не установлены | `make install` / `pip install -r requirements.txt` |
-| Интеграционные тесты не находят БД | Docker не поднят или `DATABASE_URL` пуст | `make docker-up`, проверьте `.env` |
-| `Permission denied` для BSL runner | OSCRIPT/YAxUnit не установлены или нет доступа | Проверить пути в `testplan.json`, запуск от администратора (Windows) |
-| `Manifest ... not found` | нет `tests/bsl/testplan.json` | Создать файл, даже если пустой массив `[]` |
-| `k6` не установлен | пакет не поставлен локально | Установите k6 (Linux: репозиторий k6; Windows: Chocolatey) |
-| `spec-driven-validation` падает | остались шаблонные маркеры/ TODO | Заполните файлы фичи и запустите `make feature-validate` |
-| `smoke-tests` падает | Нарушена компиляция или spec workflow | Прогоните `make smoke-tests` локально, исправьте ошибки |
-| Нет Allure отчёта | `output/test-results/allure/` пуст | Убедитесь, что `allure-pytest` установлен и директория объявлена через `--alluredir` |
-| `docs-lint` → markdownlint | форматирование Markdown | Запустите `markdownlint "**/*.md"` и исправьте подсказки |
-| `docs-lint` → lychee | битая ссылка / 429 | Проверьте URL, добавьте в `.lychee.toml` (только при необходимости) |
-
-## 9. Благодарности
-
-- [alkoleft/yaxunit](https://github.com/alkoleft/yaxunit) и [alkoleft/mcp-onec-test-runner](https://github.com/alkoleft/mcp-onec-test-runner) за основу BSL тестирования.
-- Сообщество GitHub Spec Kit за подход к тестовым спецификациям и матрицам.
+| Интеграционные тесты не находят БД | Docker не поднят или `

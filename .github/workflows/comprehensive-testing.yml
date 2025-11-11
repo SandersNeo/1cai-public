@@ -288,8 +288,17 @@ jobs:
     - name: Install dependencies
       run: pip install -r requirements.txt
 
+    - name: Prepare smoke docker service
+      run: |
+        docker compose up -d smoke-api
+        docker compose wait smoke-api
+
     - name: Run smoke checks
       run: make smoke-tests
+
+    - name: Tear down smoke docker service
+      if: always()
+      run: docker compose down smoke-api
 
   full-project-audit:
     name: Full Project Audit

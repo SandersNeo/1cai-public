@@ -82,7 +82,9 @@ help:
 	@echo "  make release-notes VERSION=vX.Y.Z - Generate release notes"
 	@echo "  make release-tag VERSION=vX.Y.Z   - Generate notes and create tag"
 	@echo "  make release-push VERSION=vX.Y.Z  - Generate notes, tag and push"
-	@echo "  make smoke-tests         - Run smoke checks (compile, spec validation)"
+	@echo "  make smoke-tests         - Run smoke checks (compile, spec validation, health)"
+	@echo "  make smoke-up            - Run smoke FastAPI service (docker-compose.yml)"
+	@echo "  make smoke-down          - Stop smoke service"
 	@echo "  make test-bsl         - Run BSL/YAxUnit test suites (see tests/bsl/testplan.json)"
 feature-init:
 ifndef FEATURE
@@ -111,6 +113,15 @@ release-push: release-notes
 
 smoke-tests:
 	python scripts/testing/smoke_healthcheck.py
+
+smoke-up:
+	docker compose up -d smoke-api
+	@echo "Waiting for smoke-api to become healthy..."
+	docker compose wait smoke-api
+	@echo "Smoke API ready on http://localhost:8080/health"
+
+smoke-down:
+	docker compose down smoke-api
 
 # Installation
 install:

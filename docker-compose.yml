@@ -124,6 +124,22 @@ services:
     profiles:
       - migrations
 
+  smoke-api:
+    build:
+      context: .
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8080
+    environment:
+      - IGNORE_PY_VERSION_CHECK=1
+    ports:
+      - "8080"
+    networks:
+      - smoke-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
 volumes:
   postgres_data:
     name: 1c-ai-postgres-data
@@ -133,4 +149,7 @@ volumes:
 networks:
   1c-ai-network:
     name: 1c-ai-network
+    driver: bridge
+  smoke-net:
+    name: smoke-net
     driver: bridge
