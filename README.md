@@ -103,6 +103,7 @@
 - Наблюдаемость: `/metrics` (Prometheus), SLO/Runbooks (`docs/observability/SLO.md`, `docs/runbooks/alert_slo_runbook.md`), автоматические отчёты DORA.
 - **Secret scanning & Security**
   - Workflows `secret-scan.yml` (Gitleaks) и `trufflehog.yml` (Trufflehog) — регулярное сканирование репозитория на утечки токенов.
+  - Policy-as-code: `policy/` (Rego) + `scripts/security/run_policy_checks.sh` (Conftest + Semgrep) → `make policy-check` / CI стадии.
 
 ---
 
@@ -125,6 +126,7 @@
   - `infrastructure/helm/observability-stack` — Prometheus/Loki/Tempo/Grafana/OTEL.
   - `infrastructure/terraform` — Terraform конфигурация для Helm релиза.
   - `infrastructure/jenkins/Jenkinsfile`, `infrastructure/gitlab/.gitlab-ci.yml` — многостадийные pipeline для Jenkins и GitLab.
+  - [`docs/security/policy_as_code.md`](docs/security/policy_as_code.md) — Rego-политики, Conftest, Semgrep.
 - **Feature Guides**
   - [`docs/06-features/AST_TOOLING_BSL_LANGUAGE_SERVER.md`](docs/06-features/AST_TOOLING_BSL_LANGUAGE_SERVER.md) — запуск и диагностика bsl-language-server, fallback сценарии.
   - [`docs/06-features/MCP_SERVER_GUIDE.md`](docs/06-features/MCP_SERVER_GUIDE.md) — эндпоинты MCP, переменные окружения, troubleshooting.

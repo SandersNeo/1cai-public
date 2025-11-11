@@ -1,7 +1,7 @@
 # Makefile for Enterprise 1C AI Development Stack
 # Quick commands for common tasks
 
-.PHONY: help install test docker-up docker-down migrate clean train-ml eval-ml train-ml-demo eval-ml-demo scrape-its render-uml render-uml-svg adr-new test-bsl export-context generate-docs bsl-ls-up bsl-ls-down bsl-ls-logs feature-init feature-validate release-notes release-tag release-push smoke-tests check-runtime kind-up kind-down helm-deploy terraform-apply terraform-destroy
+.PHONY: help install test docker-up docker-down migrate clean train-ml eval-ml train-ml-demo eval-ml-demo scrape-its render-uml render-uml-svg adr-new test-bsl export-context generate-docs bsl-ls-up bsl-ls-down bsl-ls-logs feature-init feature-validate release-notes release-tag release-push smoke-tests check-runtime kind-up kind-down helm-deploy terraform-apply terraform-destroy policy-check
 
 CONFIG ?= ERPCPM
 EPOCHS ?=
@@ -28,6 +28,7 @@ help:
 	@echo "  make helm-observability- Deploy observability stack (prometheus+loki+tempo+grafana)"
 	@echo "  make terraform-apply  - Apply Terraform stack (namespace + Helm release)"
 	@echo "  make terraform-destroy - Destroy Terraform resources"
+	@echo "  make policy-check     - Run policy-as-code checks (Conftest + Semgrep)"
 	@echo ""
 	@echo "Docker:"
 	@echo "  make docker-up        - Start all Docker services"
@@ -161,6 +162,9 @@ terraform-apply:
 
 terraform-destroy:
 	cd infrastructure/terraform && terraform destroy -auto-approve
+
+policy-check:
+	bash scripts/security/run_policy_checks.sh
 
 # Installation
 install:

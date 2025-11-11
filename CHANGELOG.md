@@ -51,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Workflow `trufflehog.yml` выполняет дополнительное сканирование секретов (trufflesecurity/trufflehog) на push/PR и по расписанию.
 - Добавлен инфраструктурный стек: kind-кластер (`infrastructure/kind/cluster.yaml`), Helm chart (`infrastructure/helm/1cai-stack`), Terraform шаблон (`infrastructure/terraform`), Jenkins pipeline (`infrastructure/jenkins/Jenkinsfile`) и GitLab CI (`infrastructure/gitlab/.gitlab-ci.yml`); документ [`docs/ops/devops_platform.md`](docs/ops/devops_platform.md).
 - Добавлен Helm chart `infrastructure/helm/observability-stack` (Prometheus + Loki + Tempo + OTEL Collector + Grafana + Promtail) и make-цель `helm-observability`.
+- Внедрён policy-as-code: Conftest Rego (`policy/kubernetes/*.rego`), Semgrep (`security/semgrep.yml`), скрипт `scripts/security/run_policy_checks.sh`, make-цель `policy-check`, обновлены Jenkins/GitLab pipeline; документ [`docs/security/policy_as_code.md`](docs/security/policy_as_code.md).
 
 ---
 

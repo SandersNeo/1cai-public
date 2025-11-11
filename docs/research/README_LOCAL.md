@@ -85,5 +85,12 @@
     - Jenkins pipeline `infrastructure/jenkins/Jenkinsfile`, GitLab pipeline `infrastructure/gitlab/.gitlab-ci.yml`.  
     - Документ [`docs/ops/devops_platform.md`](../ops/devops_platform.md) — описание стратегии и онбординг.  
 
-19. **Обновлён мастер-лист TODO**  
+19. **Policy-as-Code (Conftest/OPA + Semgrep)**  
+    - Политики `policy/kubernetes/*.rego` (ресурсы, probes, securityContext).  
+    - Скрипт `scripts/security/run_policy_checks.sh`, Make `policy-check`.  
+    - Semgrep конфиг `security/semgrep.yml`.  
+    - Документ `docs/security/policy_as_code.md`.  
+    - Jenkins/GitLab pipeline обновлены (stage Security Scan).  
+
+20. **Обновлён мастер-лист TODO**  
     - `docs/research/alkoleft_todo.md` теперь с приоритетами и ссылками на соответствующие планы.

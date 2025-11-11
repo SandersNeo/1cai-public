@@ -103,6 +103,7 @@
 
 ### 4.12 Безопасность (`scripts/security/`)
 - `run_security_scans.sh` — единая точка запуска bandit/pip-audit/safety. Используется в Jenkins/GitLab pipeline.
+- `run_policy_checks.sh` — рендер Helm-чартов, Conftest (Rego-политики из `policy/`), Semgrep (`security/semgrep.yml`). Требуются утилиты `helm`, `conftest`, `semgrep`, `terraform`.
 
 ### 4.13 ML и экспериментальные утилиты
 - `dataset/create_ml_dataset.py`, `prepare_neural_training_data.py` — подготовка выборок для моделей.

@@ -15,6 +15,8 @@
   - ✅ `scripts/release/create_release.py`, make `release-*`, workflow `release.yml`, `docs/research/release_playbook.md`.
 - [ ] (Средний) Secret scanning и политика безопасности
   - ✅ Workflows `secret-scan.yml` (Gitleaks) и `trufflehog.yml` (Trufflehog); расширить конституцию пунктами по least privilege.
+  - ✅ Policy-as-code: `policy/kubernetes/*.rego`, Semgrep (`security/semgrep.yml`), make `policy-check`, CI интеграция.
+  - TODO: внедрить OPA/Conftest для Terraform планов и GitOps; формализовать исключения.
 - [ ] (Низкий) Сбор и публикация DORA-метрик
   - ✅ `scripts/metrics/collect_dora.py`, workflow `dora-metrics.yml`; настроить визуализацию (следующий шаг).
 - [ ] (Средний) Observability & Runbooks

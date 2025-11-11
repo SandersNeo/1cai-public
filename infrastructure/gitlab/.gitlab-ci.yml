@@ -35,6 +35,9 @@ security_scan:
     - trufflehog git file://. --only-verified --fail
     - pip install pip-audit
     - pip-audit
+    - apk add --no-cache bash helm git && wget -q https://github.com/open-policy-agent/conftest/releases/download/v0.46.0/conftest_0.46.0_Linux_x86_64.tar.gz -O - | tar xz -C /usr/local/bin conftest
+    - pip install semgrep
+    - bash scripts/security/run_policy_checks.sh
 
 build:
   image: docker:24.0

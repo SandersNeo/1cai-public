@@ -35,6 +35,7 @@
 29. **Release-only через automation** — релизы создаём `scripts/release/create_release.py` + workflow `release.yml`; никаких ручных GitHub Releases.
 30. **DORA и наблюдаемость** — workflow `dora-metrics.yml` не должен пропускаться; анализ метрик фиксируется в weekly summary.
 31. **Python runtime** — перед запуском сервисов выполняем `make check-runtime`; Python 3.11.x обязателен для API/MCP.
+32. **Policy-as-Code** — `make policy-check` (Conftest + Semgrep) и CI стадии (Jenkins/GitLab) обязаны проходить перед merge/release; исключения документируются.
 
 ## Процесс
 
