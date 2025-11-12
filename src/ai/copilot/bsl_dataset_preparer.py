@@ -129,6 +129,18 @@ class BSLDatasetPreparer:
         
         logger.info(f"Prepared {len(self.examples)} examples")
     
+    def prepare_single_sample(self, code: str, description: str) -> Dict[str, str]:
+        """
+        Формирует единственную запись датасета в формате instruction/input/output.
+        """
+        entry = {
+            "instruction": description.strip(),
+            "input": code.strip(),
+            "output": code.strip(),
+        }
+        self.examples.append(entry)
+        return entry
+    
     def save_dataset(self, format: str = 'jsonl'):
         """
         Сохранение dataset

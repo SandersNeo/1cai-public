@@ -97,3 +97,13 @@ class TenantContextMiddleware(BaseHTTPMiddleware):
             raise HTTPException(status_code=500, detail="Internal server error")
 
 
+def extract_tenant_id(request: Request) -> str:
+    """
+    Утилита для прямого извлечения tenant-id из заголовков (используется тестами).
+    """
+    tenant_id = request.headers.get('X-Tenant-ID')
+    if not tenant_id:
+        raise HTTPException(status_code=400, detail="X-Tenant-ID header missing")
+    return tenant_id
+
+

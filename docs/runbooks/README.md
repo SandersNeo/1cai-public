@@ -12,5 +12,6 @@
 - Автоматический запуск DR сценариев: `scripts/runbooks/dr_rehearsal_runner.py` + workflow `dr-rehearsal.yml`.
 - Наблюдаемость и SLO: [`docs/observability/`](../observability/).
 - Процессная часть: [`docs/process/postmortem_playbook.md`](../process/postmortem_playbook.md).
+- ⚠️ Локальный запуск `dr_rehearsal_runner.py` требует установленного `kubectl` и доступа к кластеру. Без этого скрипт завершится с ошибкой `FileNotFoundError`.
 
 Перед обновлением runbook'ов убедитесь, что соответствующие скрипты и workflows отражают новые шаги.

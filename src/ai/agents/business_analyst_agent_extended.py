@@ -119,6 +119,27 @@ class RequirementsExtractor:
         
         # Extract acceptance criteria
         acceptance_criteria = self._extract_acceptance_criteria(document_text)
+
+        if not functional_requirements and not non_functional_requirements:
+            # Простая эвристика: строки вида "1. ..." трактуем как требования
+            for line in document_text.splitlines():
+                stripped = line.strip()
+                if not stripped or not stripped[0].isdigit():
+                    continue
+                parts = stripped.split('.', 1)
+                if len(parts) < 2:
+                    continue
+                req_text = parts[1].strip()
+                if not req_text:
+                    continue
+                functional_requirements.append({
+                    "id": f"SIMPLE-REQ-{len(functional_requirements) + 1:03d}",
+                    "title": req_text[:100],
+                    "description": req_text,
+                    "priority": "medium",
+                    "extracted_from": "list_item",
+                    "confidence": 0.6,
+                })
         
         return {
             "document_type": document_type,
@@ -128,7 +149,8 @@ class RequirementsExtractor:
             "stakeholders": stakeholders,
             "acceptance_criteria": acceptance_criteria,
             "total_requirements": len(functional_requirements) + len(non_functional_requirements),
-            "extracted_at": datetime.now().isoformat()
+            "extracted_at": datetime.now().isoformat(),
+            "requirements": functional_requirements + non_functional_requirements + constraints,
         }
     
     def _extract_stakeholders(self, text: str) -> List[str]:

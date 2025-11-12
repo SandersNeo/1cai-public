@@ -3,13 +3,15 @@ GitHub Integration
 Автоматический code review для Pull Requests
 """
 
+import asyncio
 import os
 import hmac
 import hashlib
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, Request, HTTPException, Header
 import httpx
+import requests
 
 from src.ai.agents.code_review.ai_reviewer import AICodeReviewer
 
@@ -207,6 +209,38 @@ class GitHubIntegration:
                 logger.error("GitHub request error: %s", exc)
             else:
                 logger.info(f"Review posted successfully to PR #{pr_number}")
+    
+    async def post_pr_comment(
+        self,
+        repo: str,
+        pr_number: int,
+        comment: str,
+        github_token: Optional[str] = None,
+    ) -> bool:
+        """
+        Публикация одиночного комментария в PR. Совместима с тестами, использующими requests.patch.
+        """
+
+        token = github_token or self.github_token
+        if not token:
+            logger.warning("Skip PR comment: GITHUB_TOKEN not configured")
+            return False
+
+        url = f"https://api.github.com/repos/{repo}/issues/{pr_number}/comments"
+        headers = {
+            "Authorization": f"token {token}",
+            "Accept": "application/vnd.github.v3+json",
+        }
+
+        def _post():
+            return requests.post(url, headers=headers, json={"body": comment}, timeout=10)
+
+        response = await asyncio.to_thread(_post)
+        if response.status_code in (200, 201):
+            return True
+
+        logger.error("GitHub comment error: %s %s", response.status_code, response.text)
+        return False
     
     def _format_comments_for_github(
         self,

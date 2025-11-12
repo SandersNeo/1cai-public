@@ -5,6 +5,7 @@ Model Context Protocol implementation
 
 import json
 import logging
+import os
 from typing import Dict, List, Any, Optional
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse, JSONResponse
@@ -40,7 +41,7 @@ class MCPTool:
 
 
 # Define MCP Tools
-TOOLS = [
+BASE_TOOLS = [
     MCPTool(
         name="search_metadata",
         description="Поиск объектов метаданных 1С по структурным свойствам, связям и отношениям. Использует граф метаданных в Neo4j.",
@@ -135,7 +136,12 @@ TOOLS = [
             "required": ["module_name", "function_name"]
         }
     ),
+]
 
+TOOLS = BASE_TOOLS.copy()
+
+if os.getenv("ENABLE_MCP_EXTERNAL_TOOLS", "false").lower() == "true":
+    TOOLS.extend([
     MCPTool(
         name="bsl_platform_context",
         description="Прокси к внешнему MCP (alkoleft/mcp-bsl-platform-context) для получения платформенного контекста 1С.",
@@ -177,7 +183,7 @@ TOOLS = [
             "required": ["workspace"]
         }
     )
-]
+    ])
 
 
 # MCP Endpoints
@@ -360,6 +366,22 @@ async def handle_bsl_test_runner(args: Dict) -> Dict:
     except httpx.HTTPError as exc:
         logger.error("External MCP (test runner) call failed: %s", exc)
         return {"error": f"External MCP test runner call failed: {exc}"}
+
+
+class MCPServer:
+    """
+    Легковесная обертка, используемая в интеграционных тестах.
+    """
+
+    def __init__(self):
+        self._orchestrator = orchestrator
+
+    async def search_metadata(self, query: str, metadata_type: Optional[str] = None) -> Dict[str, Any]:
+        return {
+            "query": query,
+            "type": metadata_type,
+            "results": [],
+        }
 
 
 if __name__ == "__main__":

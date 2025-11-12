@@ -618,10 +618,19 @@ class QAEngineerAgentExtended:
         function_name: str
     ) -> Dict[str, Any]:
         """AI генерация тестов для функции"""
-        return await self.test_generator.generate_tests_for_function(
+        raw = await self.test_generator.generate_tests_for_function(
             function_code,
             function_name
         )
+        # Унифицируем структуру для unit-тестов: добавляем "tests" и "test_cases".
+        unit_tests = raw.get("unit_tests", [])
+        edge_cases = raw.get("edge_cases", [])
+
+        return {
+            **raw,
+            "tests": unit_tests,
+            "test_cases": edge_cases,
+        }
     
     async def analyze_coverage(
         self,
