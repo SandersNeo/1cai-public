@@ -30,6 +30,7 @@ class SecurityScanner:
         
         self.credential_patterns = [
             (r'Пароль\s*=\s*"[^"]+"', 'Password'),
+            (r'Password\s*=\s*"[^"]+"', 'Password'),
             (r'Token\s*=\s*"[A-Za-z0-9]{20,}"', 'Token'),
             (r'APIKey\s*=\s*"[A-Za-z0-9]{20,}"', 'API Key'),
             (r'SecretKey\s*=\s*"[^"]+"', 'Secret Key'),
@@ -155,7 +156,7 @@ XSS (Cross-Site Scripting) позволяет атакующему:
         
         return issues
     
-    def scan_hardcoded_credentials(self, code: str) -> List[Dict]:
+    def scan_hardcoded_credentials(self, code: str, _: Dict | None = None) -> List[Dict]:
         """Поиск захардкоженных паролей"""
         issues = []
         

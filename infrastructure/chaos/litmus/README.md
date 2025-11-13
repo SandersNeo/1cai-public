@@ -1,6 +1,6 @@
 # Litmus Chaos Experiments
 
-> Требуется Litmus 3.x (chaos-center или `kubectl apply -f litmus-operator.yaml`).
+> Требуется Litmus 3.x (chaos-center или `kubectl apply -f litmus-operator.yaml`). Подробнее — [docs/ops/chaos_engineering.md](../../../docs/ops/chaos_engineering.md).
 
 ## Эксперимент: Pod Restart (1cai API)
 - `chaos-engine.yaml` — привязывает эксперимент к namespace `1cai`, метке `app.kubernetes.io/component=api`.
@@ -25,8 +25,3 @@ kubectl delete -f infrastructure/chaos/litmus/chaos-engine-network.yaml --ignore
 kubectl delete -f infrastructure/chaos/litmus/pod-delete.yaml --ignore-not-found
 kubectl delete -f infrastructure/chaos/litmus/pod-network-latency.yaml --ignore-not-found
 ```
-
-## TODO
-- Добавить сетевой chaos (pod-network-loss) для проверки Istio resilience.
-- Интеграция с Grafana (панель ChaosRun).
-- Автоматизировать запуск в CI (nightly).

@@ -1,53 +1,74 @@
-# 🎯 Getting Started - Быстрый старт
+# 🚀 Getting Started
 
-Добро пожаловать в Enterprise 1C AI Stack!
-
----
-
-## 📚 Содержание раздела
-
-1. **[README.md](./README.md)** - главная страница проекта (copy from root)
-2. **[QUICKSTART.md](./QUICKSTART.md)** - быстрый старт за 5 минут
-3. **[START_HERE.md](./START_HERE.md)** - пошаговое руководство для новичков
-4. **[LOCAL_MODEL_TRAINING.md](./LOCAL_MODEL_TRAINING.md)** - обучение локальных моделей (простое пошаговое руководство)
-5. **[INSTALLATION_VIDEO_GUIDE.md](./INSTALLATION_VIDEO_GUIDE.md)** - сценарий видеодемо установки
-6. **[DEPLOYMENT_INSTRUCTIONS.md](./DEPLOYMENT_INSTRUCTIONS.md)** - развертывание
-7. **[CONTRIBUTING.md](./CONTRIBUTING.md)** - как контрибьютить
+Добро пожаловать в 1C AI Stack — лабораторию эксплуатационных и AI-практик для 1C:Enterprise. Этот раздел помогает быстро развернуть окружение, понять структуру репозитория и выбрать следующий шаг.
 
 ---
 
-## ⚡ Быстрый старт (5 минут)
+## 🗂 Что здесь есть
 
-### **Шаг 1: Установка**
+| Файл | Зачем читать |
+|------|--------------|
+| [`QUICKSTART.md`](QUICKSTART.md) | «TL;DR» запуск на локальной машине с использованием `make`/Docker |
+| [`START_HERE.md`](START_HERE.md) | Пошаговый onboarding: обзор репозитория, что запускать в первую очередь |
+| [`installation.md`](installation.md) | Детали установки зависимостей и подготовка окружения (Linux/macOS) |
+| [`local.md`](local.md) | Работа без Docker: запуск сервисов вручную |
+| [`LOCAL_MODEL_TRAINING.md`](LOCAL_MODEL_TRAINING.md) | Генерация датасетов, обучение и тест локальных моделей |
+| [`python-setup.md`](python-setup.md) | Настройка Python 3.11 и виртуального окружения |
+| [`telegram-setup.md`](telegram-setup.md) | Как подключить Telegram-интеграции платформы |
+| [`INSTALLATION_VIDEO_GUIDE.md`](INSTALLATION_VIDEO_GUIDE.md) | Сценарий будущего видеогида (пошаговый сценарий) |
+| [`DEPLOYMENT_INSTRUCTIONS.md`](DEPLOYMENT_INSTRUCTIONS.md) | Развертывание в инфраструктуре (Docker/Kubernetes) |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Как мы оформляем вклад: стиль коммитов, проверка, пайплайны |
+
+---
+
+## ⚡ Минимальный запуск (5 минут)
+
+> **Требования:** Python 3.11, Docker 24+, Docker Compose, GNU Make (или PowerShell эквиваленты из `scripts/windows/`).
+
 ```bash
-git clone https://github.com/DmitrL-dev/1cai-public
-cd enterprise-1c-ai-stack
-pip install -r requirements.txt
+# 1. Склонируйте репозиторий
+git clone git@github.com:DmitrL-dev/1cai.git
+cd 1cai
+
+# 2. Проверьте окружение
+make check-runtime
+
+# 3. Поднимите стенд «всё в Docker»
+make docker-up      # базовые сервисы (БД, брокеры, Neo4j, Qdrant)
+make migrate        # подготовка тестовых данных
+make servers        # Graph API + MCP server
+open http://localhost:6001/mcp
 ```
 
-### **Шаг 2: Настройка**
-```bash
-cp .env.example .env
-# Отредактируйте .env
-```
+- **Windows:** используйте аналоги из `scripts/windows/` (`docker-up.ps1`, `migrate.ps1`, `servers.ps1`).
+- **Под капотом:** см. `makefile` и `scripts/setup/check_runtime.py`.
 
-### **Шаг 3: Запуск**
-```bash
-python src/main.py
-```
+После запуска доступен живой MCP endpoint, журнал сервисов и тестовые данные — можно сразу подключать IDE.
 
 ---
 
-## 🎓 Что дальше?
+## 🧭 Далее по ролям
 
-- **Новичок?** → [START_HERE.md](./START_HERE.md)
-- **Хочу развернуть?** → [DEPLOYMENT_INSTRUCTIONS.md](./DEPLOYMENT_INSTRUCTIONS.md)
-- **Хочу помочь?** → [CONTRIBUTING.md](./CONTRIBUTING.md)
-- **Обновить БД?** → `python scripts/run_migrations.py` или `docker-compose run --rm migrations`
-- **Нужна no-code автоматизация?** → [n8n Integration](../06-features/n8n-integration.md)
-- **Нужен токен?** → [Auth API](../API_REFERENCE.md#-auth-api)
-- [Python Setup Guide](python-setup.md)
+- **DevOps/SRE:** читайте [`docs/04-deployment/README.md`](../04-deployment/README.md) и [`docs/ops/devops_platform.md`](../ops/devops_platform.md) — там Helm/ArgoCD, Vault, Linkerd.
+- **Архитектор/аналитик конфигураций:** начните с [`docs/06-features/EDT_PARSER_GUIDE.md`](../06-features/EDT_PARSER_GUIDE.md) и [`scripts/analysis/README.md`](../../scripts/analysis/README.md).
+- **ML/AI команда:** смотрите [`docs/06-features/ML_DATASET_GENERATOR_GUIDE.md`](../06-features/ML_DATASET_GENERATOR_GUIDE.md) и [`LOCAL_MODEL_TRAINING.md`](LOCAL_MODEL_TRAINING.md).
+- **On-call/операции:** беглый обзор в [`docs/process/`](../process/), тренировки и runbooks — [`docs/runbooks/`](../runbooks/), наблюдаемость — [`docs/observability/SLO.md`](../observability/SLO.md).
 
 ---
 
-[← Назад к документации](../README.md) | [→ Architecture](../02-architecture/)
+## 🛠 Что важно прогнать перед первым PR
+
+1. `make check-runtime`
+2. `make lint` (если правите код в `src/`)
+3. `make test` (или соответствующий таргет из `docs/06-features/TESTING_GUIDE.md`)
+4. `make render-uml` (если менялись диаграммы или ADR)
+5. `make policy-check` (для инфраструктурных правок)
+
+Точные инструкции — в [`docs/05-development/README.md`](../05-development/README.md) и [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+---
+
+## 🔄 Навигация
+
+- [⬅️ К оглавлению документации](../README.md)
+- [➡️ Архитектура и планы](../02-architecture/README.md)

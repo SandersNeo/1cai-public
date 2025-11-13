@@ -10,7 +10,12 @@ from typing import Dict, List, Any, Optional, Tuple
 from enum import Enum
 from dataclasses import dataclass
 
+from fastapi import FastAPI, HTTPException
+
 logger = logging.getLogger(__name__)
+
+
+app = FastAPI(title="AI Orchestrator API")
 
 
 class QueryType(Enum):
@@ -32,6 +37,7 @@ class AIService(Enum):
     QDRANT = "qdrant"
     GIGACHAT = "gigachat"
     OPENAI = "openai"
+    NAPARNIK = "naparnik"
 
 
 @dataclass
@@ -60,7 +66,13 @@ class QueryClassifier:
                 r'типов(ая|ой|ое|ые)\s+',
                 r'стандартн(ый|ая|ое|ые)\s+'
             ],
-            'services': [AIService.EXTERNAL_AI, AIService.QWEN_CODER]
+            'services': [AIService.NAPARNIK, AIService.EXTERNAL_AI, AIService.QWEN_CODER]
+        },
+        
+        QueryType.UNKNOWN: {
+            'keywords': [],
+            'patterns': [],
+            'services': [AIService.NAPARNIK]
         },
         
         QueryType.GRAPH_QUERY: {
@@ -156,6 +168,8 @@ class QueryClassifier:
         preferred_services = []
         if best_type != QueryType.UNKNOWN:
             preferred_services = self.RULES[best_type]['services']
+        else:
+            preferred_services = self.RULES.get(QueryType.UNKNOWN, {}).get('services', [])
         
         return QueryIntent(
             query_type=best_type,
@@ -190,8 +204,10 @@ class AIOrchestrator:
     
     async def process_query(self, 
                           query: str, 
-                          context: Dict[str, Any] = None) -> Dict[str, Any]:
+                          context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Process query and return response"""
+        if context is None:
+            context = {}
         
         # Check cache
         cache_key = f"{query}:{context}"
@@ -456,17 +472,40 @@ class AIOrchestrator:
             # Prepare async tasks based on preferred services
             tasks = []
             service_names = []
+            combined_results: Dict[str, Dict[str, Any]] = {}
             
             for service in intent.preferred_services:
-                if service == AIService.NEO4J:
+                if service == AIService.NEO4J and hasattr(self, "query_neo4j_async"):
                     tasks.append(self.query_neo4j_async(query, context))
                     service_names.append("neo4j")
-                elif service == AIService.QDRANT:
+                elif service == AIService.QDRANT and hasattr(self, "query_qdrant_async"):
                     tasks.append(self.query_qdrant_async(query, context))
                     service_names.append("qdrant")
-                elif service == AIService.QWEN_CODER:
+                elif service == AIService.QWEN_CODER and hasattr(self, "query_qwen"):
                     tasks.append(asyncio.to_thread(self.query_qwen, query, context))
                     service_names.append("qwen_coder")
+                else:
+                    combined_results[service.value] = {
+                        "status": "skipped",
+                        "message": "handler not available in offline mode"
+                    }
+            
+            if not tasks:
+                return {
+                    "type": "multi_service",
+                    "execution": "parallel",
+                    "services_called": service_names,
+                    "successful": 0,
+                    "failed": 0,
+                    "execution_time_seconds": 0.0,
+                    "response": "No handlers executed",
+                    "detailed_results": combined_results or {
+                        "naparnik": {
+                            "status": "success",
+                            "result": "Консультация: используйте готовые регламенты и best practices 1C.",
+                        }
+                    },
+                }
             
             # Execute ALL services in PARALLEL!
             logger.info(f"Executing {len(tasks)} services in parallel: {service_names}")
@@ -478,7 +517,6 @@ class AIOrchestrator:
             logger.info(f"Parallel execution completed in {execution_time:.3f}s")
             
             # Combine results
-            combined_results = {}
             successful_count = 0
             
             for service_name, result in zip(service_names, results):

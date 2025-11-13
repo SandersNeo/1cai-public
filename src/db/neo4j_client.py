@@ -12,8 +12,34 @@ try:
     from neo4j import GraphDatabase, Driver, Session
     NEO4J_AVAILABLE = True
 except ImportError:
+    import sys
+    import types
+
     print("[WARN] neo4j driver not installed. Run: pip install neo4j")
     NEO4J_AVAILABLE = False
+
+    class _StubDriver:
+        def verify_connectivity(self):
+            raise ImportError("neo4j driver not installed")
+
+        def session(self):
+            raise ImportError("neo4j driver not installed")
+
+        def close(self):
+            pass
+
+    class _StubGraphDatabase:
+        @staticmethod
+        def driver(*args, **kwargs):
+            raise ImportError("neo4j driver not installed")
+
+    GraphDatabase = _StubGraphDatabase  # type: ignore[assignment]
+    Driver = Any  # type: ignore[assignment]
+    Session = Any  # type: ignore[assignment]
+
+    neo4j_stub = types.ModuleType("neo4j")
+    neo4j_stub.GraphDatabase = _StubGraphDatabase
+    sys.modules.setdefault("neo4j", neo4j_stub)
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +54,7 @@ class Neo4jClient:
         """Initialize Neo4j connection"""
         
         if not NEO4J_AVAILABLE:
-            raise ImportError("neo4j driver not available")
+            logger.warning("Neo4j driver not available; running in stub mode")
         
         # Get password from env if not provided
         if not password:

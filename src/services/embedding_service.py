@@ -3,16 +3,30 @@ Embedding Service for Vector Search
 Generates embeddings for code and documentation
 """
 
+import importlib
 import logging
-from typing import List, Union
+from typing import Dict, List, Union
+import sys
+import types
 
 logger = logging.getLogger(__name__)
 
 try:
-    from sentence_transformers import SentenceTransformer
+    import sentence_transformers  # noqa: F401
     EMBEDDINGS_AVAILABLE = True
 except ImportError:
     logger.warning("sentence-transformers not installed. Run: pip install sentence-transformers")
+
+    stub_module = types.ModuleType("sentence_transformers")
+    class _StubSentenceTransformer:
+        def __init__(self, *args, **kwargs):
+            raise ImportError("sentence-transformers not installed")
+
+        def encode(self, *args, **kwargs):
+            raise ImportError("sentence-transformers not installed")
+
+    stub_module.SentenceTransformer = _StubSentenceTransformer  # type: ignore[attr-defined]
+    sys.modules.setdefault("sentence_transformers", stub_module)
     EMBEDDINGS_AVAILABLE = False
 
 
@@ -31,9 +45,6 @@ class EmbeddingService:
     def __init__(self, model_name: str = None):
         """Initialize embedding model"""
         
-        if not EMBEDDINGS_AVAILABLE:
-            raise ImportError("sentence-transformers not available")
-        
         self.model_name = model_name or self.DEFAULT_MODEL
         self.model = None
         self._load_model()
@@ -41,8 +52,10 @@ class EmbeddingService:
     def _load_model(self):
         """Load embedding model"""
         try:
-            logger.info(f"Loading embedding model: {self.model_name}")
-            self.model = SentenceTransformer(self.model_name)
+            logger.info("Loading embedding model: %s", self.model_name)
+            module = importlib.import_module("sentence_transformers")
+            transformer_cls = getattr(module, "SentenceTransformer")
+            self.model = transformer_cls(self.model_name)
             logger.info(f"✓ Model loaded (dimension: {self.model.get_sentence_embedding_dimension()})")
         except Exception as e:
             logger.error(f"Failed to load model: {e}")
@@ -79,6 +92,12 @@ class EmbeddingService:
         except Exception as e:
             logger.error(f"Encoding error: {e}")
             return [] if isinstance(text, list) else []
+    
+    async def generate_embedding(self, text: Union[str, List[str]]) -> Union[List[float], List[List[float]]]:
+        """
+        Асинхронная обертка для совместимости с остальным кодом (orchestrator).
+        """
+        return self.encode(text)
     
     def encode_code(self, code: str) -> List[float]:
         """

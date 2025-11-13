@@ -241,6 +241,68 @@ def mock_stripe_event():
     }
 
 
+@pytest.fixture
+def sample_configuration_data():
+    """Configuration payload used in Neo4j tests."""
+    return {
+        "name": "TEST",
+        "full_name": "TEST CONFIGURATION",
+        "version": "1.0.0",
+        "metadata": {"owner": "qa"},
+    }
+
+
+@pytest.fixture
+def sample_module_data():
+    """Module payload used in persistence tests."""
+    return {
+        "full_name": "TEST.Module",
+        "name": "Module",
+        "module_type": "common",
+        "line_count": 42,
+        "code_hash": "abc123",
+        "description": "Test module",
+        "object_name": "TestObject",
+        "object_type": "Catalog",
+        "code": "Функция Test() \n    Возврат 1;\nКонецФункции",
+        "functions": [
+            {
+                "name": "Test",
+                "type": "Function",
+                "code": "Возврат 1;",
+                "exported": True,
+                "params": [],
+                "return_type": "Number",
+                "start_line": 1,
+                "end_line": 2,
+            }
+        ],
+    }
+
+
+@pytest.fixture
+def mock_embedding():
+    """Simple embedding vector used in Qdrant tests."""
+    return [0.1] * 3
+
+
+# ----- Environment preparation -------------------------------------------------
+
+@pytest.fixture(scope="session", autouse=True)
+def _ensure_required_env_vars():
+    """Задает обязательные переменные окружения для Settings/Pydantic."""
+    defaults = {
+        "OPENAI_API_KEY": "test-key",
+        "SUPABASE_URL": "https://example.supabase.co",
+        "SUPABASE_KEY": "test-supabase-key",
+        "DATABASE_URL": "postgresql://user:pass@localhost:5432/db",
+    }
+
+    for key, value in defaults.items():
+        os.environ.setdefault(key, value)
+
+    yield
+
 # Markers
 def pytest_configure(config):
     config.addinivalue_line(

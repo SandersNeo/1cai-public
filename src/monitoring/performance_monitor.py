@@ -44,6 +44,7 @@ class PerformanceMonitor:
             '1s-5s': 0,
             '>5s': 0
         }
+        self.latency_history: list[float] = []
     
     def track_request(self, latency_ms: float, success: bool = True):
         """Трекинг HTTP request"""
@@ -56,6 +57,7 @@ class PerformanceMonitor:
             self.metrics['requests_error'] += 1
         
         self.metrics['total_latency_ms'] += latency_ms
+        self.latency_history.append(latency_ms)
         
         # Buckets
         if latency_ms < 100:
@@ -164,16 +166,15 @@ class PerformanceMonitor:
         target_count = (percentile / 100) * total_requests
         cumulative = 0
         
-        bucket_ranges = [
-            ('<10ms', 5),
-            ('10-50ms', 30),
-            ('50-100ms', 75),
-            ('100-200ms', 150),
-            ('200-500ms', 350),
-            ('500ms+', 500)
-        ]
+        bucket_midpoints = {
+            '<100ms': 50,
+            '100-500ms': 300,
+            '500ms-1s': 750,
+            '1s-5s': 3000,
+            '>5s': 6000,
+        }
         
-        for bucket_name, bucket_midpoint in bucket_ranges:
+        for bucket_name, bucket_midpoint in bucket_midpoints.items():
             cumulative += self.latency_buckets.get(bucket_name, 0)
             if cumulative >= target_count:
                 return float(bucket_midpoint)
@@ -184,6 +185,7 @@ class PerformanceMonitor:
         """Сброс всех метрик"""
         self.metrics = {k: 0 for k in self.metrics.keys()}
         self.latency_buckets = {k: 0 for k in self.latency_buckets.keys()}
+        self.latency_history.clear()
 
 
 # Global instance

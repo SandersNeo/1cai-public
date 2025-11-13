@@ -1,76 +1,49 @@
-# Инфраструктурный стек 1C AI Stack
+# 🧱 Infrastructure Stack
 
-Этот каталог содержит артефакты для быстрого развёртывания современной DevOps-инфраструктуры проекта: локальный Kubernetes (kind), Helm chart приложения, Terraform конфигурации и CI/CD pipeline (Jenkins/GitLab).
+В этом каталоге лежат артефакты для развёртывания 1C AI Stack: локальный Kubernetes, Helm charts, Terraform, GitOps-манифесты, Vault, сервис-меш и CI/CD конфигурации. Используйте эту страницу как карту входа.
 
-## 1. Локальный Kubernetes (kind)
+## 🔍 Быстрая навигация
+| Задача | Где смотреть | Make/CLI |
+|--------|--------------|----------|
+| Поднять локальный кластер | [`kind/`](kind/cluster.yaml) | `make kind-up` / `make kind-down` |
+| Установить приложение через Helm | [`helm/1cai-stack/`](helm/1cai-stack/README.md) | `make helm-deploy` |
+| Развернуть observability стек | [`helm/observability-stack/`](helm/observability-stack/README.md) | `make helm-observability` |
+| Настроить GitOps (Argo CD) | [`argocd/`](argocd/README.md) | `make gitops-apply`, `make gitops-sync` |
+| Настроить Vault/Secret Store | [`vault/`](vault/README.md), [`scripts/secrets/`](../scripts/secrets/README.md) | `make vault-csi-apply`, `scripts/secrets/*.py` |
+| Сервис-меш (Linkerd/Istio) | [`service-mesh/`](service-mesh/README.md), [`scripts/service_mesh/`](../scripts/service_mesh/README.md) | `make linkerd-install`, `make linkerd-rotate-certs` |
+| Terraform-ресурсы | [`terraform/`](terraform/README.md) + модули (`aws-eks/`, `azure-aks/`, `azure-keyvault/`) | `make terraform-apply`, `make terraform-destroy` |
+| Ansible bootstrap | [`ansible/`](ansible/README.md) | `ansible-playbook -i hosts.ini site.yml` |
+| Chaos/Litmus эксперименты | [`chaos/litmus/`](chaos/litmus/README.md) | `make chaos-litmus-run` |
+| CI/CD pipelines | [`jenkins/Jenkinsfile`](jenkins/Jenkinsfile), [`gitlab/.gitlab-ci.yml`](gitlab/.gitlab-ci.yml), [`azure/azure-pipelines.yml`](azure/azure-pipelines.yml) | — |
 
-- Конфигурация: `kind/cluster.yaml` — создаёт кластер `1cai-devops` с одним control-plane и двумя worker-нодами, пробрасывая порты 8080/8443.
-- Запуск:
-  ```bash
-  kind create cluster --config infrastructure/kind/cluster.yaml
-  kubectl cluster-info --context kind-1cai-devops
-  ```
-- После запуска устанавливаем ingress-nginx, cert-manager, argo-rollouts (по мере необходимости).
+## 🧰 Основные шаги
+1. **Локальная инфраструктура:** поднимите Docker-стек (`make docker-up`) и/или Kind-кластер (`make kind-up`).
+2. **Приложение:** `make helm-deploy` (или GitOps через `make gitops-apply`).
+3. **Observability:** `make helm-observability` и `make observability-up` (локальный docker-compose).
+4. **Secret store:** `make vault-csi-apply`, затем синхронизация секретов (`scripts/secrets/aws_sync_to_vault.py`, `azure_sync_to_vault.py`).
+5. **Service Mesh:** `make linkerd-install`, генерация сертификатов (`scripts/service_mesh/linkerd/bootstrap_certs.sh`).
+6. **FinOps/Security:** проверьте `make finops-slack`, `make policy-check`, `make preflight`.
 
-## 2. Helm chart
+Все шаги подробно описаны в соответствии с [docs/04-deployment/README.md](../docs/04-deployment/README.md) и [docs/ops/README.md](../docs/ops/README.md).
 
-- Каталог: `helm/1cai-stack/`
-- Состав:
-  - `Chart.yaml` — метаданные чартa.
-  - `values.yaml` — настройки API, MCP, observability, secret store (Vault).
-  - `templates/` — Deployment/Service/Ingress/ServiceAccount и MCP.
-- Деплой в кластер:
-  ```bash
-  helm upgrade --install 1cai infrastructure/helm/1cai-stack \
-    --namespace 1cai --create-namespace \
-    -f infrastructure/helm/1cai-stack/values.yaml
-  ```
+## 📂 Что внутри
+- [`ansible/`](ansible/README.md) — bootstrap Linux-хостов (Docker, Helm, Terraform, kubectl).
+- [`argocd/`](argocd/README.md) — Kustomize-манифесты AppProject и приложений Argo CD.
+- [`helm/1cai-stack/`](helm/1cai-stack/README.md) — Helm chart приложения (API + MCP + Vault CSI).
+- [`helm/observability-stack/`](helm/observability-stack/README.md) — Helm chart Prometheus/Loki/Tempo/Grafana/OTEL.
+- [`terraform/`](terraform/README.md) — инфраструктурные модули и пример apply.
+- [`vault/`](vault/README.md) — политики и CSI-манифесты Vault.
+- [`service-mesh/`](service-mesh/README.md) — профили Linkerd и Istio.
+- [`chaos/litmus/`](chaos/litmus/README.md) — chaos-эксперименты.
+- [`kind/cluster.yaml`](kind/cluster.yaml) — конфиг локального Kubernetes.
+- [`jenkins/`](jenkins/Jenkinsfile), [`gitlab/`](gitlab/.gitlab-ci.yml), [`azure/`](azure/azure-pipelines.yml) — примеры CI/CD pipeline.
 
-## 3. Observability stack
+## 🔗 Полезные материалы
+- [docs/ops/devops_platform.md](../docs/ops/devops_platform.md)
+- [docs/ops/gitops.md](../docs/ops/gitops.md)
+- [docs/ops/service_mesh.md](../docs/ops/service_mesh.md)
+- [docs/ops/vault.md](../docs/ops/vault.md)
+- [docs/ops/finops.md](../docs/ops/finops.md)
+- [docs/runbooks/dr_rehearsal_plan.md](../docs/runbooks/dr_rehearsal_plan.md)
 
-- Каталог: `helm/observability-stack/` — Prometheus + Loki + Tempo + Grafана + OTEL Collector + Promtail.
-- Деплой:
-  ```bash
-  make helm-observability
-  # или напрямую
-  helm upgrade --install observability infrastructure/helm/observability-stack \
-    --namespace observability --create-namespace \
-    -f infrastructure/helm/observability-stack/values.yaml
-  ```
-- После установки: Grafana доступна через сервис `observability-stack-grafana` (порт 3000). Default пароль — admin/admin (смените через UI). Datasource’ы и дашборды создаются автоматически.
-- OTEL Collector — сервис `observability-stack-otel-collector` (порты 4317/4318/9464). Перенастройте приложения на экспорт трейс/метрик через OTLP.
-
-## 4. Terraform
-
-- Файлы: `terraform/providers.tf`, `main.tf`, `variables.tf`, `outputs.tf`.
-- Назначение: создавать namespace и устанавливать Helm chart через Terraform (подходит для GitOps пайплайна).
-- Пример использования:
-  ```bash
-  cd infrastructure/terraform
-  terraform init
-  terraform apply -var="kubeconfig_path=$HOME/.kube/config" -var="kubeconfig_context=kind-1cai-devops"
-  ```
-- При необходимости добавьте backend (S3/Remote) и отдельные workspace для stage/prod.
-
-## 4. CI/CD
-
-### Jenkins (пример Jenkinsfile)
-- Расположение: `jenkins/Jenkinsfile`
-- Pipeline включает стадии: `lint`, `tests`, `build-image`, `security-scan`, `deploy-kind`, `deploy-k8s`.
-- Требуемые credentials: `REGISTRY_USERNAME`, `REGISTRY_PASSWORD`, `VAULT_TOKEN`, `KUBECONFIG`.
-
-### GitLab CI (пример `.gitlab-ci.yml`)
-- Расположение: `gitlab/.gitlab-ci.yml`
-- Описывает аналогичный pipeline с использованием GitLab registry и environments.
-
-## 5. Secret Store & Vault
-
-- Значения `values.yaml` предполагают использование HashiCorp Vault (адрес `vault.vault:8200`, роль `1cai-app`).
-- Храните Vault token/role в секретах CI (`VAULT_TOKEN`, `VAULT_ROLE_ID`).
-
-## 6. Следующие шаги
-
-- Настроить Argo CD/Flux для GitOps.
-- Добавить Terraform модули для managed Kubernetes (EKS/AKS/GKE).
-- Подготовить Helm chart для observability стека (`prometheus`, `loki`, `tempo`, `grafana`).
-- Автоматизировать создание Vault policies и secrets.
+Обновляйте этот индекс при добавлении новых компонентов инфраструктуры или изменении команд.

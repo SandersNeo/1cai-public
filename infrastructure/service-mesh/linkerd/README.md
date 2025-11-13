@@ -14,12 +14,11 @@
    kubectl rollout restart deploy -n 1cai
    ```
 
-## 2. Сравнение с Istio
-- Быстрая установка, минимальный overhead.
-- Подходит для strict mTLS, observability (viz dashboard).
-- Нет встроенного ingress (используйте Nginx/Voyager).
+## 2. Интеграция с 1C AI Stack
+- Используйте скрипты из [`scripts/service_mesh/linkerd`](../../../scripts/service_mesh/linkerd/README.md) для генерации сертификатов и smoke-тестов.
+- Namespace `1cai` должен быть аннотирован `linkerd.io/inject=enabled`.
+- Observability доступна через `linkerd viz`. Алерты/метрики интегрированы с Grafana (`helm/observability-stack`).
 
-## 3. Roadmap
-- Helm chart для Linkerd (todo).
-- Политики Linkerd AuthorizationPolicy.
-- Интеграция с chaos (fault injection).
+## 3. Примечания
+- Linkerd не ставит ingress — используйте Nginx/contour или Istio Gateway.
+- Для мTLS и политик доступа смотрите [docs/ops/service_mesh.md](../../../docs/ops/service_mesh.md).

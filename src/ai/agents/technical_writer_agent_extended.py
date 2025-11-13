@@ -61,7 +61,9 @@ class APIDocumentationGenerator:
             "examples": examples,
             "postman_collection": postman_collection,
             "endpoints_count": len(endpoints),
-            "generated_at": datetime.now().isoformat()
+            "generated_at": datetime.now().isoformat(),
+            "openapi": openapi_spec,
+            "documentation": markdown_docs,
         }
     
     def _extract_endpoints(self, code: str) -> List[Dict]:
