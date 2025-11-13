@@ -24,9 +24,85 @@
 
 ## Архитектура платформы
 
-![Контейнерная схема платформы](docs/architecture/uml/c4/png/container_overview.png)
+```mermaid
+graph TB
+    subgraph Users["👥 Пользователи"]
+        Developer["👨‍💻 1C Developers<br/>Use IDE and automation"]
+        Operator["👔 Business Stakeholders<br/>Consume dashboards, reports"]
+    end
 
-**Интерактивная версия:** [Mermaid диаграмма](docs/architecture/interactive-architecture.md) | [HTML карта](docs/architecture/interactive-architecture.html)
+    subgraph Core["🔵 Core Services"]
+        API["🌐 Graph API<br/>FastAPI<br/>GraphQL, REST, MCP endpoints"]
+        RestGateway["⚡ Realtime Gateway<br/>Starlette, WebSocket"]
+        Auth["🔐 Auth and RBAC<br/>OAuth2, JWT"]
+        AdminPortal["🛡️ Admin Portal<br/>React, FastAPI"]
+    end
+
+    subgraph Workers["⚙️ Worker Tier"]
+        Celery["🔍 Analysis Workers<br/>Celery"]
+        MLPipelines["🤖 ML Pipelines<br/>Prefect, PyTorch"]
+        ITSScraper["📰 ITS Scraper<br/>Async Python"]
+        Orchestrator["🎯 Task Orchestrator<br/>Bash, scripts"]
+    end
+
+    subgraph DataStores["💾 Data Stores"]
+        Postgres[("🐘 PostgreSQL<br/>Relational data, audit")]
+        Neo4j[("🕸️ Neo4j<br/>Graph DB")]
+        Qdrant[("🔍 Qdrant<br/>Vector DB")]
+        Redis[("⚡ Redis<br/>Cache, queues")]
+        Minio[("📦 MinIO<br/>Object Storage")]
+    end
+
+    subgraph Integrations["🔗 Integration Channels"]
+        EDTPlugin["🔌 EDT Plugin<br/>Java"]
+        n8nNode["🔄 n8n Node<br/>TypeScript"]
+        TelegramBot["💬 Telegram Bot<br/>Python"]
+        Marketplace["🏪 Marketplace<br/>BSL"]
+    end
+
+    subgraph Ops["📊 Operations"]
+        Prometheus["📈 Prometheus<br/>Monitoring"]
+        Grafana["📊 Grafana<br/>Dashboards"]
+        Alertmanager["🚨 Alertmanager"]
+        GitHubActions["⚙️ CI/CD<br/>GitHub Actions"]
+    end
+
+    Developer -->|Graph queries, MCP| API
+    Developer -->|IDE commands| EDTPlugin
+    Operator -->|Dashboards| Grafana
+
+    API -->|Auth| Auth
+    API -->|Persist| Postgres
+    API -->|Graph| Neo4j
+    API -->|Vector search| Qdrant
+    API -->|Cache| Redis
+    API -->|Jobs| Celery
+
+    Celery -->|Update| Postgres
+    Celery -->|Update| Neo4j
+    Celery -->|Sync| Qdrant
+    MLPipelines -->|Store| Minio
+
+    EDTPlugin -->|Analysis| API
+    n8nNode -->|Workflow| API
+    TelegramBot -->|Chatops| API
+
+    Prometheus -->|Metrics| API
+    Prometheus -->|Alerts| Alertmanager
+    Alertmanager -->|Escalations| TelegramBot
+
+    classDef coreStyle fill:#e8f4ff,stroke:#0066cc,stroke-width:2px
+    classDef integrationStyle fill:#fff4e6,stroke:#ff9900,stroke-width:2px
+    classDef storeStyle fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
+    classDef opsStyle fill:#f6fdf3,stroke:#00cc66,stroke-width:2px
+
+    class API,RestGateway,Auth,AdminPortal coreStyle
+    class EDTPlugin,n8nNode,TelegramBot,Marketplace integrationStyle
+    class Postgres,Neo4j,Qdrant,Redis,Minio storeStyle
+    class Prometheus,Grafana,Alertmanager,GitHubActions opsStyle
+```
+
+> **Подробная версия:** [Полная интерактивная карта](docs/architecture/interactive-architecture.html) с фильтрами и поиском
 
 ## За 5 минут: пробный запуск
 
