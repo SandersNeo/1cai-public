@@ -62,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Security: Terraform Conftest политики (`policy/terraform/**`), OPA в `run_policy_checks.sh`, Vault rotation/test скрипты.
 - Resilience: DR rehearsal автоматизирован (скрипт `scripts/runbooks/dr_rehearsal_runner.py`, workflow `dr-rehearsal.yml`).
 - Research: Business Analyst market study (`docs/research/job_market_business_analyst.md`) и roadmap (`docs/research/ba_agent_roadmap.md`); обновлены `docs/03-ai-agents/MULTI_ROLE_AI_SYSTEM.md`, `docs/research/alkoleft_todo.md`, `docs/README.md`.
+- Business Analyst Agent: расширенный requirements extractor (docx/pdf/txt, heuristic + LLM fallback), CLI `scripts/ba/requirements_cli.py`, цель `make ba-extract`, новые клиенты (`src/ai/clients`), schema `schemas/ba/requirements.schema.json`, дополнительные unit-тесты.
 - Docs: обновлён `README.md` (TL;DR, Quick Start, CI/ops обзор), создан индекс [`docs/README.md`](docs/README.md), актуализированы ссылки в документации.
 
 ---

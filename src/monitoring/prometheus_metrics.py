@@ -1,5 +1,11 @@
 """
 Prometheus Metrics Export
+Версия: 2.1.0
+
+Улучшения:
+- Structured logging
+- Улучшена обработка ошибок
+
 TIER 1 Improvement: Comprehensive monitoring
 """
 
@@ -9,8 +15,9 @@ from fastapi import Response
 from typing import Dict
 import psutil
 import time
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 # ==================== REQUEST METRICS ====================
@@ -203,7 +210,14 @@ circuit_breaker_state = Gauge(
 # ==================== HELPER FUNCTIONS ====================
 
 def update_system_metrics():
-    """Update system metrics (CPU, memory, disk)"""
+    """
+    Update system metrics (CPU, memory, disk)
+    
+    Best practices:
+    - Graceful error handling (don't crash if psutil unavailable)
+    - Safe disk path handling (works on Windows/Linux)
+    - Structured logging
+    """
     try:
         # CPU
         cpu_percent = psutil.cpu_percent(interval=0.1)
@@ -214,12 +228,28 @@ def update_system_metrics():
         system_memory_usage_percent.set(memory.percent)
         system_memory_available_bytes.set(memory.available)
         
-        # Disk
-        disk = psutil.disk_usage('/')
+        # Disk (best practice: handle different OS paths)
+        try:
+            # Try root path (Linux/Mac)
+            disk = psutil.disk_usage('/')
+        except (OSError, PermissionError):
+            # Fallback to current directory (Windows)
+            import os
+            disk = psutil.disk_usage(os.getcwd())
+        
         system_disk_usage_percent.set(disk.percent)
         
+    except ImportError:
+        logger.warning(
+            "psutil not available, system metrics disabled",
+            extra={"module": "prometheus_metrics"}
+        )
     except Exception as e:
-        logger.error(f"Failed to update system metrics: {e}")
+        logger.error(
+            f"Failed to update system metrics: {e}",
+            exc_info=True,
+            extra={"error_type": type(e).__name__}
+        )
 
 
 def track_request(method: str, endpoint: str, status_code: int, duration: float, size: int = 0):

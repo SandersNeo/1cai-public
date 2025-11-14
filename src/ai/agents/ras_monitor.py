@@ -8,9 +8,9 @@ Based on: https://github.com/Polyplastic/1c-parsing-tech-log (RAS integration)
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 from dataclasses import dataclass
-import logging
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 @dataclass
@@ -84,7 +84,13 @@ class RASMonitor:
             # Для реализации нужна библиотека для работы с RAS
             # Например: pyautoit, comtypes для COM или прямой протокол RAS
             
-            logger.info(f"Connecting to RAS at {self.ras_host}:{self.ras_port}")
+            logger.info(
+                "Connecting to RAS",
+                extra={
+                    "ras_host": self.ras_host,
+                    "ras_port": self.ras_port
+                }
+            )
             
             # Mock connection
             self.connected = True
@@ -93,7 +99,16 @@ class RASMonitor:
             return True
             
         except Exception as e:
-            logger.error(f"Failed to connect to RAS: {e}")
+            logger.error(
+                "Failed to connect to RAS",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "ras_host": self.ras_host,
+                    "ras_port": self.ras_port
+                },
+                exc_info=True
+            )
             return False
     
     # ==========================================

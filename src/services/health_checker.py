@@ -1,6 +1,11 @@
 """
 Enhanced Health Checker Service
-Quick Win #4: Comprehensive health checks for all dependencies
+Версия: 2.0.0
+
+Улучшения:
+- Добавлен timeout для health checks
+- Улучшена обработка ошибок
+- Structured logging
 """
 
 import logging
@@ -8,8 +13,9 @@ import asyncio
 from typing import Dict, List
 from datetime import datetime
 import os
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class HealthChecker:
@@ -28,8 +34,20 @@ class HealthChecker:
     def __init__(self):
         self.checks = []
     
-    async def check_all(self) -> Dict:
-        """Run all health checks in parallel"""
+    async def check_all(self, timeout: float = 10.0) -> Dict:
+        """
+        Run all health checks in parallel with timeout
+        
+        Args:
+            timeout: Maximum time to wait for all checks (seconds)
+        """
+        # Input validation
+        if not isinstance(timeout, (int, float)) or timeout <= 0:
+            logger.warning(
+                "Invalid timeout in check_all",
+                extra={"timeout": timeout, "timeout_type": type(timeout).__name__}
+            )
+            timeout = 10.0  # Default timeout
         
         checks = [
             self.check_postgresql(),
@@ -40,7 +58,19 @@ class HealthChecker:
             self.check_openai(),
         ]
         
-        results = await asyncio.gather(*checks, return_exceptions=True)
+        try:
+            # Execute all checks with timeout (best practice)
+            results = await asyncio.wait_for(
+                asyncio.gather(*checks, return_exceptions=True),
+                timeout=timeout
+            )
+        except asyncio.TimeoutError:
+            logger.error(
+                "Health checks timeout",
+                extra={"timeout": timeout, "checks_count": len(checks)}
+            )
+            # Return timeout status for all services
+            results = [TimeoutError()] * len(checks)
         
         services = {}
         unhealthy = []
@@ -51,10 +81,18 @@ class HealthChecker:
             if isinstance(result, Exception):
                 services[name] = 'unhealthy'
                 unhealthy.append(name)
-                logger.error(f"Health check failed for {name}: {result}")
+                error_type = type(result).__name__
+                logger.error(
+                    "Health check failed",
+                    extra={
+                        "service": name,
+                        "error_type": error_type,
+                        "error_message": str(result)
+                    }
+                )
             else:
-                services[name] = result['status']
-                if result['status'] != 'healthy':
+                services[name] = result.get('status', 'unknown')
+                if result.get('status') != 'healthy':
                     unhealthy.append(name)
         
         overall = 'healthy' if not unhealthy else 'degraded' if len(unhealthy) < 3 else 'unhealthy'
@@ -77,24 +115,22 @@ class HealthChecker:
             db_url = os.getenv('DATABASE_URL', 'postgresql://postgres:postgres@localhost:5432/enterprise_1c_ai')
             parsed = urlparse(db_url)
             
-            conn = await asyncpg.connect(
+            # Use context manager for proper connection cleanup (best practice)
+            async with asyncpg.connect(
                 host=parsed.hostname or 'localhost',
                 port=parsed.port or 5432,
                 user=parsed.username or 'postgres',
                 password=parsed.password or 'postgres',
                 database=parsed.path.lstrip('/') or 'enterprise_1c_ai',
                 timeout=5.0
-            )
-            
-            # Test query
-            result = await conn.fetchval('SELECT 1')
-            
-            # Check table count
-            table_count = await conn.fetchval(
-                "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public'"
-            )
-            
-            await conn.close()
+            ) as conn:
+                # Test query
+                result = await conn.fetchval('SELECT 1')
+                
+                # Check table count
+                table_count = await conn.fetchval(
+                    "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public'"
+                )
             
             return {
                 'status': 'healthy',
@@ -103,7 +139,14 @@ class HealthChecker:
             }
             
         except Exception as e:
-            logger.error(f"PostgreSQL health check failed: {e}")
+            logger.error(
+                "PostgreSQL health check failed",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return {
                 'status': 'unhealthy',
                 'error': str(e)
@@ -132,7 +175,14 @@ class HealthChecker:
             }
             
         except Exception as e:
-            logger.error(f"Redis health check failed: {e}")
+            logger.error(
+                "Redis health check failed",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return {
                 'status': 'unhealthy',
                 'error': str(e)
@@ -165,7 +215,14 @@ class HealthChecker:
             }
             
         except Exception as e:
-            logger.error(f"Neo4j health check failed: {e}")
+            logger.error(
+                "Neo4j health check failed",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return {
                 'status': 'degraded',  # Optional service
                 'error': str(e)
@@ -191,7 +248,14 @@ class HealthChecker:
             }
             
         except Exception as e:
-            logger.error(f"Qdrant health check failed: {e}")
+            logger.error(
+                "Qdrant health check failed",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return {
                 'status': 'degraded',
                 'error': str(e)
@@ -216,7 +280,14 @@ class HealthChecker:
             }
             
         except Exception as e:
-            logger.error(f"Elasticsearch health check failed: {e}")
+            logger.error(
+                "Elasticsearch health check failed",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return {
                 'status': 'degraded',
                 'error': str(e)
@@ -253,7 +324,14 @@ class HealthChecker:
                     }
         
         except Exception as e:
-            logger.error(f"OpenAI health check failed: {e}")
+            logger.error(
+                "OpenAI health check failed",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return {
                 'status': 'degraded',
                 'error': str(e)

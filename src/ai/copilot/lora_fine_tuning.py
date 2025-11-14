@@ -4,11 +4,11 @@ LoRA Fine-Tuning Pipeline
 """
 
 import os
-import logging
 from pathlib import Path
 from typing import Optional
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class LoRAFineTuner:
@@ -44,7 +44,10 @@ class LoRAFineTuner:
                 missing.append(lib)
         
         if missing:
-            logger.warning(f"Missing dependencies: {missing}")
+            logger.warning(
+                "Missing dependencies",
+                extra={"missing": missing}
+            )
             logger.info("Install: pip install transformers peft torch datasets")
     
     async def fine_tune(
@@ -67,7 +70,10 @@ class LoRAFineTuner:
             Training metrics
         """
         
-        logger.info(f"Starting LoRA fine-tuning: {self.base_model}")
+        logger.info(
+            "Starting LoRA fine-tuning",
+            extra={"base_model": self.base_model}
+        )
         
         try:
             from transformers import (
@@ -115,7 +121,10 @@ class LoRAFineTuner:
             model.print_trainable_parameters()
             
             # 4. Load dataset
-            logger.info(f"Loading dataset from {dataset_path}...")
+            logger.info(
+                "Loading dataset",
+                extra={"dataset_path": dataset_path}
+            )
             dataset = load_dataset('json', data_files=dataset_path)
             
             # 5. Tokenize
@@ -162,7 +171,10 @@ class LoRAFineTuner:
             train_result = trainer.train()
             
             # 9. Save LoRA adapter
-            logger.info(f"Saving LoRA adapter to {self.output_dir}")
+            logger.info(
+                "Saving LoRA adapter",
+                extra={"output_dir": str(self.output_dir)}
+            )
             model.save_pretrained(self.output_dir)
             tokenizer.save_pretrained(self.output_dir)
             
@@ -174,13 +186,27 @@ class LoRAFineTuner:
             }
             
         except ImportError as e:
-            logger.error(f"Missing dependencies: {e}")
+            logger.error(
+                "Missing dependencies",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return {
                 'status': 'error',
                 'error': 'Missing dependencies. Install: pip install transformers peft torch datasets'
             }
         except Exception as e:
-            logger.error(f"Training failed: {e}")
+            logger.error(
+                "Training failed",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return {
                 'status': 'error',
                 'error': str(e)

@@ -5,16 +5,16 @@ AI Code Reviewer - главный orchestrator
 
 import os
 import json
-import logging
 from typing import List, Dict, Any, Optional
 from datetime import datetime
+from src.utils.structured_logging import StructuredLogger
 
 from src.ai.agents.code_review.bsl_parser import BSLParser
 from src.ai.agents.code_review.security_scanner import SecurityScanner
 from src.ai.agents.code_review.performance_analyzer import PerformanceAnalyzer
 from src.ai.agents.code_review.best_practices_checker import BestPracticesChecker
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class AICodeReviewer:
@@ -41,7 +41,7 @@ class AICodeReviewer:
             self.llm_api_key = os.getenv("OPENAI_API_KEY", "")
             if self.llm_api_key:
                 self.llm_available = True
-        except:
+        except (OSError, Exception):
             pass
         
         logger.info("AI Code Reviewer initialized")
@@ -61,13 +61,24 @@ class AICodeReviewer:
         Returns:
             Детальный review с issues и метриками
         """
-        logger.info(f"Reviewing file: {filename}")
+        logger.info(
+            "Reviewing file",
+            extra={"filename": filename}
+        )
         
         # 1. Parse code
         try:
             ast = self.parser.parse_file(code)
         except Exception as e:
-            logger.error(f"Parsing error: {e}")
+            logger.error(
+                "Parsing error",
+                extra={
+                    "filename": filename,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return {
                 'error': 'Failed to parse code',
                 'details': str(e)
@@ -125,7 +136,10 @@ class AICodeReviewer:
         Returns:
             Aggregated review для всего PR
         """
-        logger.info(f"Reviewing PR with {len(files_changed)} files")
+        logger.info(
+            "Reviewing PR",
+            extra={"files_count": len(files_changed)}
+        )
         
         file_reviews = []
         all_issues = []

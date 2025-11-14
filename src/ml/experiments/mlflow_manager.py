@@ -11,7 +11,6 @@ from mlflow.exceptions import MlflowException
 from datetime import datetime
 from typing import Dict, List, Optional, Any, Union
 import json
-import logging
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -20,8 +19,9 @@ import tempfile
 import os
 
 from src.config import settings
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class MLFlowManager:
@@ -38,7 +38,10 @@ class MLFlowManager:
         # Настройка экспериментов
         self._setup_experiments()
         
-        logger.info(f"MLflow инициализирован с URI: {self.tracking_uri}")
+        logger.info(
+            "MLflow инициализирован",
+            extra={"tracking_uri": self.tracking_uri}
+        )
 
     def _setup_experiments(self):
         """Создание и настройка экспериментов"""
@@ -82,10 +85,21 @@ class MLFlowManager:
                             'created_at': datetime.utcnow().isoformat()
                         }
                     )
-                    logger.info(f"Создан эксперимент: {experiment_name}")
+                    logger.info(
+                        "Создан эксперимент",
+                        extra={"experiment_name": experiment_name}
+                    )
                 
             except Exception as e:
-                logger.error(f"Ошибка настройки эксперимента {exp_config['name']}: {e}")
+                logger.error(
+                    "Ошибка настройки эксперимента",
+                    extra={
+                        "experiment_name": exp_config['name'],
+                        "error": str(e),
+                        "error_type": type(e).__name__
+                    },
+                    exc_info=True
+                )
 
     def start_experiment(self, experiment_name: str, run_name: Optional[str] = None) -> str:
         """Запуск нового эксперимента"""
@@ -105,12 +119,26 @@ class MLFlowManager:
             )
             
             run_id = run.info.run_id
-            logger.info(f"Запущен эксперимент {experiment_name}, run_id: {run_id}")
+            logger.info(
+                "Запущен эксперимент",
+                extra={
+                    "experiment_name": experiment_name,
+                    "run_id": run_id
+                }
+            )
             
             return run_id
             
         except Exception as e:
-            logger.error(f"Ошибка запуска эксперимента {experiment_name}: {e}")
+            logger.error(
+                "Ошибка запуска эксперимента",
+                extra={
+                    "experiment_name": experiment_name,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             raise
 
     def log_params(self, params: Dict[str, Any]):
@@ -127,7 +155,10 @@ class MLFlowManager:
                 filtered_params[key] = json.dumps(value)
         
         mlflow.log_params(filtered_params)
-        logger.debug(f"Записаны параметры: {list(filtered_params.keys())}")
+        logger.debug(
+            "Записаны параметры",
+            extra={"params_keys": list(filtered_params.keys())}
+        )
 
     def log_metrics(self, metrics: Dict[str, float], step: Optional[int] = None):
         """Логирование метрик"""
@@ -140,7 +171,10 @@ class MLFlowManager:
         
         if filtered_metrics:
             mlflow.log_metrics(filtered_metrics, step=step)
-            logger.debug(f"Записаны метрики: {list(filtered_metrics.keys())}")
+            logger.debug(
+                "Записаны метрики",
+                extra={"metrics_keys": list(filtered_metrics.keys())}
+            )
 
     def log_artifacts(self, artifacts: Dict[str, Union[str, Path]], prefix: str = ""):
         """Логирование артефактов"""
@@ -149,9 +183,20 @@ class MLFlowManager:
             try:
                 artifact_name = f"{prefix}/{name}" if prefix else name
                 mlflow.log_artifact(str(path), artifact_name)
-                logger.debug(f"Записан артефакт: {artifact_name}")
+                logger.debug(
+                    "Записан артефакт",
+                    extra={"artifact_name": artifact_name}
+                )
             except Exception as e:
-                logger.error(f"Ошибка записи артефакта {name}: {e}")
+                logger.error(
+                    "Ошибка записи артефакта",
+                    extra={
+                        "artifact_name": name,
+                        "error": str(e),
+                        "error_type": type(e).__name__
+                    },
+                    exc_info=True
+                )
 
     def log_model(
         self,
@@ -191,10 +236,21 @@ class MLFlowManager:
                     registered_model_name=registered_model_name
                 )
             
-            logger.info(f"Модель {model_name} записана в MLflow")
+            logger.info(
+                "Модель записана в MLflow",
+                extra={"model_name": model_name}
+            )
             
         except Exception as e:
-            logger.error(f"Ошибка логирования модели {model_name}: {e}")
+            logger.error(
+                "Ошибка логирования модели",
+                extra={
+                    "model_name": model_name,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             raise
 
     def load_model(self, model_uri: str):
@@ -202,10 +258,21 @@ class MLFlowManager:
         
         try:
             model = mlflow.sklearn.load_model(model_uri)
-            logger.info(f"Модель загружена из {model_uri}")
+            logger.info(
+                "Модель загружена",
+                extra={"model_uri": model_uri}
+            )
             return model
         except Exception as e:
-            logger.error(f"Ошибка загрузки модели из {model_uri}: {e}")
+            logger.error(
+                "Ошибка загрузки модели",
+                extra={
+                    "model_uri": model_uri,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             raise
 
     def register_model(self, run_id: str, model_name: str):
@@ -220,12 +287,26 @@ class MLFlowManager:
                 name=model_name
             )
             
-            logger.info(f"Модель зарегистрирована: {model_name} v{model_version.version}")
+            logger.info(
+                "Модель зарегистрирована",
+                extra={
+                    "model_name": model_name,
+                    "version": model_version.version
+                }
+            )
             
             return model_version
             
         except Exception as e:
-            logger.error(f"Ошибка регистрации модели {model_name}: {e}")
+            logger.error(
+                "Ошибка регистрации модели",
+                extra={
+                    "model_name": model_name,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             raise
 
     def get_experiment_metrics(self, experiment_name: str, limit: int = 10) -> pd.DataFrame:
@@ -263,12 +344,26 @@ class MLFlowManager:
                 data.append(run_data)
             
             df = pd.DataFrame(data)
-            logger.debug(f"Получено {len(df)} runs из эксперимента {experiment_name}")
+            logger.debug(
+                "Получено runs из эксперимента",
+                extra={
+                    "runs_count": len(df),
+                    "experiment_name": experiment_name
+                }
+            )
             
             return df
             
         except Exception as e:
-            logger.error(f"Ошибка получения метрик эксперимента {experiment_name}: {e}")
+            logger.error(
+                "Ошибка получения метрик эксперимента",
+                extra={
+                    "experiment_name": experiment_name,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             raise
 
     def compare_models(self, model_names: List[str]) -> Dict[str, Any]:
@@ -297,7 +392,15 @@ class MLFlowManager:
                     }
                     
             except Exception as e:
-                logger.error(f"Ошибка сравнения модели {model_name}: {e}")
+                logger.error(
+                    "Ошибка сравнения модели",
+                    extra={
+                        "model_name": model_name,
+                        "error": str(e),
+                        "error_type": type(e).__name__
+                    },
+                    exc_info=True
+                )
                 comparison_results[model_name] = {'error': str(e)}
         
         return comparison_results
@@ -313,10 +416,27 @@ class MLFlowManager:
                 archive_existing_versions=True
             )
             
-            logger.info(f"Модель {model_name} v{version} переведена в стадию {stage}")
+            logger.info(
+                "Модель переведена в стадию",
+                extra={
+                    "model_name": model_name,
+                    "version": version,
+                    "stage": stage
+                }
+            )
             
         except Exception as e:
-            logger.error(f"Ошибка перевода модели в продакшен: {e}")
+            logger.error(
+                "Ошибка перевода модели в продакшен",
+                extra={
+                    "model_name": model_name,
+                    "version": version,
+                    "stage": stage,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             raise
 
     def log_dataframe(self, df: pd.DataFrame, name: str):
@@ -328,10 +448,21 @@ class MLFlowManager:
                 df.to_csv(f.name, index=False)
                 mlflow.log_artifact(f.name, f"data/{name}.csv")
                 
-            logger.debug(f"DataFrame {name} записан в MLflow")
+            logger.debug(
+                "DataFrame записан в MLflow",
+                extra={"dataframe_name": name}
+            )
             
         except Exception as e:
-            logger.error(f"Ошибка логирования DataFrame {name}: {e}")
+            logger.error(
+                "Ошибка логирования DataFrame",
+                extra={
+                    "dataframe_name": name,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             raise
 
     def _detect_model_flavor(self, model_type: str) -> str:
@@ -374,10 +505,21 @@ class MLFlowManager:
             # Завершаем run
             mlflow.end_run()
             
-            logger.info(f"Feature Store эксперимент создан: {experiment_name}")
+            logger.info(
+                "Feature Store эксперимент создан",
+                extra={"experiment_name": experiment_name}
+            )
             
         except Exception as e:
-            logger.error(f"Ошибка создания Feature Store эксперимента: {e}")
+            logger.error(
+                "Ошибка создания Feature Store эксперимента",
+                extra={
+                    "experiment_name": experiment_name,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             raise
 
     def close_experiment(self, run_id: Optional[str] = None):
@@ -385,6 +527,17 @@ class MLFlowManager:
         
         try:
             mlflow.end_run(run_id)
-            logger.debug(f"Эксперимент завершен: {run_id or 'текущий'}")
+            logger.debug(
+                "Эксперимент завершен",
+                extra={"run_id": run_id or "текущий"}
+            )
         except Exception as e:
-            logger.error(f"Ошибка завершения эксперимента: {e}")
+            logger.error(
+                "Ошибка завершения эксперимента",
+                extra={
+                    "run_id": run_id,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )

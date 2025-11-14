@@ -3,16 +3,16 @@ BPMN API
 Backend for BPMN diagram management
 """
 
-import logging
 from typing import Dict, Any, List
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from datetime import datetime
 import asyncpg
+from src.utils.structured_logging import StructuredLogger
 
 from src.database import get_db_pool
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 router = APIRouter(prefix="/api/bpmn", tags=["BPMN"])
 
@@ -84,7 +84,14 @@ async def list_diagrams(
             ]
     
     except Exception as e:
-        logger.error(f"Error listing diagrams: {e}")
+        logger.error(
+            "Error listing diagrams",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -122,7 +129,15 @@ async def get_diagram(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error getting diagram: {e}")
+        logger.error(
+            "Error getting diagram",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "diagram_id": diagram_id if 'diagram_id' in locals() else None
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -155,7 +170,10 @@ async def save_diagram(
                 request.project_id
             )
             
-            logger.info(f"Saved BPMN diagram: {diagram_id}")
+            logger.info(
+                "Saved BPMN diagram",
+                extra={"diagram_id": str(diagram_id)}
+            )
             
             return {
                 "id": str(diagram_id),
@@ -163,7 +181,14 @@ async def save_diagram(
             }
     
     except Exception as e:
-        logger.error(f"Error saving diagram: {e}")
+        logger.error(
+            "Error saving diagram",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -203,7 +228,15 @@ async def update_diagram(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error updating diagram: {e}")
+        logger.error(
+            "Error updating diagram",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "diagram_id": diagram_id if 'diagram_id' in locals() else None
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -229,7 +262,15 @@ async def delete_diagram(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error deleting diagram: {e}")
+        logger.error(
+            "Error deleting diagram",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "diagram_id": diagram_id if 'diagram_id' in locals() else None
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 

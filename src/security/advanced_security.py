@@ -3,7 +3,6 @@ Advanced Security Features
 OAuth2, 2FA, Audit Logging, Compliance
 """
 
-import logging
 import secrets
 import pyotp
 from datetime import datetime, timedelta
@@ -11,8 +10,9 @@ from typing import Dict, Any, Optional
 from fastapi import HTTPException
 from jose import jwt
 import hashlib
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class AdvancedSecurity:
@@ -152,10 +152,26 @@ class AdvancedSecurity:
                     user_agent
                 )
             
-            logger.info(f"Audit log: {action} on {entity_type}:{entity_id} by user {user_id}")
+            logger.info(
+                "Audit log",
+                extra={
+                    "action": action,
+                    "entity_type": entity_type,
+                    "entity_id": entity_id,
+                    "user_id": user_id
+                }
+            )
             
         except Exception as e:
-            logger.error(f"Failed to log audit event: {e}")
+            logger.error(
+                "Failed to log audit event",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "action": action if 'action' in locals() else None
+                },
+                exc_info=True
+            )
     
     # ===== Rate Limiting Advanced =====
     

@@ -1,17 +1,22 @@
 """
 API эндпоинты для ML системы непрерывного улучшения.
-Интеграция с существующими AI-ассистентами для автоматического улучшения.
+Версия: 2.1.0
+
+Улучшения:
+- Structured logging
+- Улучшена обработка ошибок
+- Input validation
+- Timeout handling
 """
 
 from typing import Dict, List, Optional, Any, Union
 from datetime import datetime, timedelta
 import asyncio
-import logging
 
 from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, APIRouter
 from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from src.ml.metrics.collector import MetricsCollector, MetricType, AssistantRole
 from src.ml.models.predictor import MLPredictor, create_model, PredictionType
@@ -19,8 +24,10 @@ from src.ml.training.trainer import ModelTrainer, TrainingType
 from src.ml.ab_testing.tester import ABTestManager, ABTestConfig, TestType
 from src.ml.experiments.mlflow_manager import MLFlowManager
 from src.config import settings
+from src.middleware.rate_limiter import limiter
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 # Создаем router для ML API
 router = APIRouter(prefix="/api/v1/ml", tags=["Machine Learning"])
@@ -207,11 +214,41 @@ async def record_metric(
     request: MetricRecordRequest,
     services=Depends(get_ml_services)
 ):
-    """Запись метрики эффективности"""
+    """
+    Запись метрики эффективности с валидацией входных данных
+    
+    Best practices:
+    - Валидация enum значений
+    - Sanitization входных данных
+    - Улучшенная обработка ошибок
+    """
     try:
-        # Конвертация строк в enum
-        metric_type = MetricType(request.metric_type.lower())
-        assistant_role = AssistantRole(request.assistant_role.lower())
+        # Input validation and sanitization (best practice)
+        # Validate metric_type
+        try:
+            metric_type = MetricType(request.metric_type.lower())
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid metric_type: {request.metric_type}. Valid types: {[e.value for e in MetricType]}"
+            )
+        
+        # Validate assistant_role
+        try:
+            assistant_role = AssistantRole(request.assistant_role.lower())
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid assistant_role: {request.assistant_role}. Valid roles: {[e.value for e in AssistantRole]}"
+            )
+        
+        # Sanitize project_id
+        project_id = request.project_id.strip()[:100]  # Limit length
+        if not project_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Project ID cannot be empty"
+            )
         
         # Запись метрики в зависимости от типа
         if metric_type == MetricType.REQUIREMENT_ANALYSIS_ACCURACY:
@@ -262,9 +299,36 @@ async def record_metric(
             "message": f"Метрика {metric_type.value} успешно записана"
         }
         
-    except Exception as e:
-        logger.error(f"Ошибка записи метрики: {e}")
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions as-is
+    except ValueError as e:
+        logger.warning(
+            "Validation error recording metric",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "metric_type": request.metric_type if hasattr(request, 'metric_type') else None,
+                "assistant_role": request.assistant_role if hasattr(request, 'assistant_role') else None,
+                "project_id": request.project_id if hasattr(request, 'project_id') else None
+            }
+        )
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(
+            "Unexpected error recording metric",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "metric_type": request.metric_type if hasattr(request, 'metric_type') else None,
+                "assistant_role": request.assistant_role if hasattr(request, 'assistant_role') else None,
+                "project_id": request.project_id if hasattr(request, 'project_id') else None
+            },
+            exc_info=True
+        )
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while recording metric"
+        )
 
 
 @router.get("/metrics/summary")
@@ -272,9 +336,26 @@ async def get_metrics_summary(
     hours_back: int = 24,
     services=Depends(get_ml_services)
 ):
-    """Получение сводки метрик"""
+    """Получение сводки метрик с input validation и timeout handling"""
+    # Input validation
+    if not isinstance(hours_back, int) or hours_back < 1 or hours_back > 720:  # Max 30 days
+        logger.warning(
+            "Invalid hours_back in get_metrics_summary",
+            extra={"hours_back": hours_back, "hours_back_type": type(hours_back).__name__}
+        )
+        raise HTTPException(status_code=400, detail="hours_back must be between 1 and 720")
+    
     try:
-        summary = await services['metrics_collector'].get_performance_summary(hours_back)
+        # Timeout для получения сводки (30 секунд)
+        summary = await asyncio.wait_for(
+            services['metrics_collector'].get_performance_summary(hours_back),
+            timeout=30.0
+        )
+        
+        logger.debug(
+            "Retrieved metrics summary",
+            extra={"hours_back": hours_back, "summary_keys": list(summary.keys()) if isinstance(summary, dict) else None}
+        )
         
         return {
             "status": "success",
@@ -283,8 +364,22 @@ async def get_metrics_summary(
             "timestamp": datetime.utcnow().isoformat()
         }
         
+    except asyncio.TimeoutError:
+        logger.error(
+            "Timeout getting metrics summary",
+            extra={"hours_back": hours_back}
+        )
+        raise HTTPException(status_code=504, detail="Timeout getting metrics summary")
     except Exception as e:
-        logger.error(f"Ошибка получения сводки метрик: {e}")
+        logger.error(
+            "Error getting metrics summary",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "hours_back": hours_back
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -295,30 +390,80 @@ async def get_assistant_metrics(
     hours_back: int = 24,
     services=Depends(get_ml_services)
 ):
-    """Получение метрик конкретного ассистента"""
+    """Получение метрик конкретного ассистента с input validation и timeout handling"""
+    # Input validation
+    if not isinstance(assistant_role, str) or not assistant_role.strip():
+        logger.warning(
+            "Invalid assistant_role in get_assistant_metrics",
+            extra={"assistant_role_type": type(assistant_role).__name__ if assistant_role else None}
+        )
+        raise HTTPException(status_code=400, detail="assistant_role cannot be empty")
+    
+    if not isinstance(hours_back, int) or hours_back < 1 or hours_back > 720:
+        logger.warning(
+            "Invalid hours_back in get_assistant_metrics",
+            extra={"hours_back": hours_back, "hours_back_type": type(hours_back).__name__}
+        )
+        raise HTTPException(status_code=400, detail="hours_back must be between 1 and 720")
+    
+    if metric_type is not None:
+        if not isinstance(metric_type, str) or not metric_type.strip():
+            logger.warning("Invalid metric_type in get_assistant_metrics")
+            metric_type = None
+        else:
+            # Limit metric_type length
+            if len(metric_type) > 100:
+                metric_type = metric_type[:100]
+    
     try:
         role = AssistantRole(assistant_role.lower())
         
+        # Timeout для получения метрик (30 секунд)
         if metric_type:
             metric_enum = MetricType(metric_type.lower())
-            metrics = services['metrics_collector'].db.get_metrics(
-                metric_type=metric_enum,
-                assistant_role=role,
-                hours_back=hours_back
+            metrics = await asyncio.wait_for(
+                asyncio.to_thread(
+                    services['metrics_collector'].db.get_metrics,
+                    metric_type=metric_enum,
+                    assistant_role=role,
+                    hours_back=hours_back
+                ),
+                timeout=30.0
             )
         else:
             # Все метрики для роли
             metrics = {}
             for m_type in MetricType:
                 try:
-                    m_data = services['metrics_collector'].db.get_metrics(
-                        metric_type=m_type,
-                        assistant_role=role,
-                        hours_back=hours_back
+                    m_data = await asyncio.wait_for(
+                        asyncio.to_thread(
+                            services['metrics_collector'].db.get_metrics,
+                            metric_type=m_type,
+                            assistant_role=role,
+                            hours_back=hours_back
+                        ),
+                        timeout=30.0
                     )
                     metrics[m_type.value] = m_data
-                except:
+                except Exception as e:
+                    logger.debug(
+                        "Error getting metric type",
+                        extra={
+                            "metric_type": m_type.value,
+                            "error": str(e),
+                            "error_type": type(e).__name__
+                        }
+                    )
                     continue
+        
+        logger.debug(
+            "Retrieved assistant metrics",
+            extra={
+                "assistant_role": role.value,
+                "hours_back": hours_back,
+                "metrics_count": len(metrics) if isinstance(metrics, dict) else None
+            }
+        )
         
         return {
             "status": "success",
@@ -327,14 +472,40 @@ async def get_assistant_metrics(
             "metrics": metrics
         }
         
+    except ValueError as e:
+        logger.warning(
+            "Invalid enum value in get_assistant_metrics",
+            extra={
+                "error": str(e),
+                "assistant_role": assistant_role,
+                "metric_type": metric_type
+            }
+        )
+        raise HTTPException(status_code=400, detail=f"Invalid assistant_role or metric_type: {str(e)}")
+    except asyncio.TimeoutError:
+        logger.error(
+            "Timeout getting assistant metrics",
+            extra={"assistant_role": assistant_role, "hours_back": hours_back}
+        )
+        raise HTTPException(status_code=504, detail="Timeout getting assistant metrics")
     except Exception as e:
-        logger.error(f"Ошибка получения метрик ассистента: {e}")
+        logger.error(
+            "Error getting assistant metrics",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "assistant_role": assistant_role,
+                "hours_back": hours_back
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
 # ===== МОДЕЛИ =====
 
 @router.post("/models/create")
+@limiter.limit("5/minute")  # Rate limit: 5 model creations per minute
 async def create_model(
     request: ModelCreateRequest,
     services=Depends(get_ml_services)
@@ -365,7 +536,16 @@ async def create_model(
         }
         
     except Exception as e:
-        logger.error(f"Ошибка создания модели: {e}")
+        logger.error(
+            "Ошибка создания модели",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "model_name": request.model_name if hasattr(request, 'model_name') else None,
+                "model_type": request.model_type if hasattr(request, 'model_type') else None
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -400,7 +580,16 @@ async def train_model(
         }
         
     except Exception as e:
-        logger.error(f"Ошибка обучения модели: {e}")
+        logger.error(
+            "Ошибка обучения модели",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "model_name": request.model_name if hasattr(request, 'model_name') else None,
+                "training_type": request.training_type if hasattr(request, 'training_type') else None
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -449,7 +638,15 @@ async def predict_model(
         return result
         
     except Exception as e:
-        logger.error(f"Ошибка предсказания модели {model_name}: {e}")
+        logger.error(
+            "Ошибка предсказания модели",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "model_name": model_name
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -485,6 +682,7 @@ async def list_models():
 # ===== A/B ТЕСТИРОВАНИЕ =====
 
 @router.post("/ab-tests/create")
+@limiter.limit("3/minute")  # Rate limit: 3 AB test creations per minute
 async def create_ab_test(
     request: ABTestCreateRequest,
     services=Depends(get_ml_services)
@@ -527,7 +725,15 @@ async def create_ab_test(
         }
         
     except Exception as e:
-        logger.error(f"Ошибка создания A/B теста: {e}")
+        logger.error(
+            "Ошибка создания A/B теста",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "test_name": request.test_name if hasattr(request, 'test_name') else None
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -569,7 +775,15 @@ async def ab_test_prediction(
         }
         
     except Exception as e:
-        logger.error(f"Ошибка предсказания A/B теста {test_id}: {e}")
+        logger.error(
+            "Ошибка предсказания A/B теста",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "test_id": test_id
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -600,7 +814,15 @@ async def get_ab_test_results(
         }
         
     except Exception as e:
-        logger.error(f"Ошибка получения результатов A/B теста {test_id}: {e}")
+        logger.error(
+            "Ошибка получения результатов A/B теста",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "test_id": test_id
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -621,7 +843,15 @@ async def promote_winning_model(
         }
         
     except Exception as e:
-        logger.error(f"Ошибка продвижения модели: {e}")
+        logger.error(
+            "Ошибка продвижения модели",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "test_id": test_id
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -680,7 +910,16 @@ async def enhance_assistant_analysis(
         }
         
     except Exception as e:
-        logger.error(f"Ошибка улучшения анализа: {e}")
+        logger.error(
+            "Ошибка улучшения анализа",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "assistant_role": assistant_role if 'assistant_role' in locals() else None,
+                "analysis_type": analysis_type if 'analysis_type' in locals() else None
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 

@@ -3,16 +3,16 @@ Dashboard API Endpoints
 Backend для Unified Portal dashboards
 """
 
-import logging
 from typing import Dict, Any, List
 from fastapi import APIRouter, Depends, HTTPException
 from datetime import datetime, timedelta
 import random
+from src.utils.structured_logging import StructuredLogger
 
 from src.database import get_db_pool
 import asyncpg
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 router = APIRouter(prefix="/api/dashboard", tags=["Dashboards"])
 
@@ -83,7 +83,14 @@ async def calculate_real_health_score(conn) -> int:
             score -= 5  # Some failures
         
     except Exception as e:
-        logger.error(f"Error calculating health score: {e}")
+        logger.error(
+            "Error calculating health score",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         score -= 30  # Significant issue if we can't calculate
     
     return max(0, min(100, score))  # Clamp between 0-100
@@ -233,7 +240,14 @@ async def get_executive_dashboard(
             }
     
     except Exception as e:
-        logger.error(f"Error fetching executive dashboard: {e}")
+        logger.error(
+            "Error fetching executive dashboard",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -348,7 +362,14 @@ async def get_pm_dashboard(
             }
     
     except Exception as e:
-        logger.error(f"Error fetching PM dashboard: {e}")
+        logger.error(
+            "Error fetching PM dashboard",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -443,7 +464,14 @@ async def get_developer_dashboard() -> Dict[str, Any]:
         }
     
     except Exception as e:
-        logger.error(f"Error fetching developer dashboard: {e}")
+        logger.error(
+            "Error fetching developer dashboard",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -682,7 +710,14 @@ async def get_team_lead_dashboard(
             }
     
     except Exception as e:
-        logger.error(f"Error fetching team lead dashboard: {e}", exc_info=True)
+        logger.error(
+            "Error fetching team lead dashboard",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         return _get_demo_team_lead_dashboard()
 
 
@@ -926,7 +961,14 @@ async def get_ba_dashboard(
             }
     
     except Exception as e:
-        logger.error(f"Error fetching BA dashboard: {e}", exc_info=True)
+        logger.error(
+            "Error fetching BA dashboard",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         return _get_demo_ba_dashboard()
 
 
@@ -1126,7 +1168,14 @@ async def get_owner_dashboard(
             }
     
     except Exception as e:
-        logger.error(f"Error fetching owner dashboard: {e}", exc_info=True)
+        logger.error(
+            "Error fetching owner dashboard",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         # Return demo data on error (graceful degradation)
         return _get_demo_owner_dashboard()
 

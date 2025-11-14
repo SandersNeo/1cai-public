@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивная карта архитектуры - 1C AI Stack</title>
+    <script type="text/javascript" src="https://unpkg.com/vis-network@latest/standalone/umd/vis-network.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .controls {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .controls label {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .controls input {
+            padding: 0.5rem;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .controls input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .filter-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .diagram-wrapper {
+            background: white;
+            margin: 1rem auto;
+            max-width: 100%;
+            height: 80vh;
+            min-height: 600px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        #network-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        .info-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem auto;
+            max-width: 1400px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .info-panel.visible {
+            display: block;
+        }
+
+        .info-panel h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .info-panel h3 {
+            color: #333;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-panel p {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-panel a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .info-panel a:hover {
+            text-decoration: underline;
+        }
+
+        .close-btn {
+            float: right;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .close-btn:hover {
+            background: #5568d3;
+        }
+
+        .legend {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            border: 1px solid #ccc;
+        }
+
+        .instructions {
+            background: #e8f4ff;
+            padding: 1rem;
+            margin: 1rem auto;
+            max-width: 1400px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            font-size: 0.9rem;
+        }
+
+        .instructions strong {
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-buttons {
+                justify-content: center;
+            }
+
+            .diagram-wrapper {
+                height: 60vh;
+                min-height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏗️ Интерактивная карта архитектуры</h1>
+        <p>1C AI Stack - Перетаскивайте элементы мышкой, кликайте для перехода к документации</p>
+    </div>
+
+    <div class="instructions">
+        <strong>💡 Как использовать:</strong> Перетаскивайте узлы мышкой • Кликайте на узел для просмотра документации • Используйте колесико мыши для масштабирования • Двойной клик для сброса масштаба
+    </div>
+
+    <div class="controls">
+        <label>Фильтр:</label>
+        <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="all">Все</button>
+            <button class="filter-btn" data-filter="core">Core</button>
+            <button class="filter-btn" data-filter="workers">Workers</button>
+            <button class="filter-btn" data-filter="data">Data</button>
+            <button class="filter-btn" data-filter="integration">Integrations</button>
+            <button class="filter-btn" data-filter="ops">Operations</button>
+        </div>
+        <label style="margin-left: auto;">Поиск:</label>
+        <input type="text" id="search" placeholder="Название компонента..." style="flex: 1; max-width: 300px;">
+        <button class="filter-btn" id="reset-view" style="background: #f0f0f0;">Сбросить вид</button>
+    </div>
+
+    <div class="diagram-wrapper">
+        <div id="network-container"></div>
+    </div>
+
+    <div class="info-panel" id="info-panel">
+        <button class="close-btn" onclick="closeInfoPanel()">✕ Закрыть</button>
+        <div id="info-content"></div>
+    </div>
+
+    <div class="info-panel">
+        <h2>📋 Легенда</h2>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #e8f4ff; border-color: #0066cc;"></div>
+                <span>Core Services</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #fff4e6; border-color: #ff9900;"></div>
+                <span>Integrations</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f0f7ff; border-color: #0066cc;"></div>
+                <span>Data Stores</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f6fdf3; border-color: #00cc66;"></div>
+                <span>Operations</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f9f9f9; border-color: #666666;"></div>
+                <span>Users</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Данные компонентов с ссылками на документацию
+        const components = {
+            'Developer': { 
+                category: 'user', 
+                label: '👨‍💻 1C Developers', 
+                description: 'Разработчики используют IDE и автоматизацию',
+                doc: null
+            },
+            'Operator': { 
+                category: 'user', 
+                label: '👔 Business Stakeholders', 
+                description: 'Бизнес-пользователи потребляют дашборды и отчеты',
+                doc: null
+            },
+            'API': { 
+                category: 'core', 
+                label: '🌐 Graph API', 
+                description: 'FastAPI сервис с GraphQL, REST и MCP endpoints',
+                doc: 'docs/06-features/MCP_SERVER_GUIDE.md'
+            },
+            'RestGateway': { 
+                category: 'core', 
+                label: '⚡ Realtime Gateway', 
+                description: 'Starlette WebSocket gateway для realtime streaming и MCP сессий',
+                doc: 'docs/06-features/MCP_SERVER_GUIDE.md'
+            },
+            'Auth': { 
+                category: 'core', 
+                label: '🔐 Auth and RBAC', 
+                description: 'OAuth2, JWT аутентификация и авторизация',
+                doc: 'docs/security/policy_as_code.md'
+            },
+            'AdminPortal': { 
+                category: 'core', 
+                label: '🛡️ Admin Portal', 
+                description: 'React + FastAPI портал для управления безопасностью',
+                doc: 'docs/security/policy_as_code.md'
+            },
+            'Celery': { 
+                category: 'workers', 
+                label: '🔍 Analysis Workers', 
+                description: 'Celery workers для анализа BSL кода и аудитов',
+                doc: 'docs/06-features/EDT_PARSER_GUIDE.md'
+            },
+            'MLPipelines': { 
+                category: 'workers', 
+                label: '🤖 ML Pipelines', 
+                description: 'Prefect pipelines для обучения и оценки ML моделей',
+                doc: 'docs/06-features/ML_DATASET_GENERATOR_GUIDE.md'
+            },
+            'ITSScraper': { 
+                category: 'workers', 
+                label: '📰 ITS Scraper', 
+                description: 'Асинхронный парсер статей ITS',
+                doc: 'docs/03-integrations/ITS_SCRAPER.md'
+            },
+            'Orchestrator': { 
+                category: 'workers', 
+                label: '🎯 Task Orchestrator', 
+                description: 'Bash скрипты для композитных пайплайнов',
+                doc: 'docs/scripts/README.md'
+            },
+            'Postgres': { 
+                category: 'data', 
+                label: '🐘 PostgreSQL', 
+                description: 'Реляционная БД для конфигураций и аудита',
+                doc: 'docs/04-deployment/PRODUCTION_DEPLOYMENT.md'
+            },
+            'Neo4j': { 
+                category: 'data', 
+                label: '🕸️ Neo4j', 
+                description: 'Графовая БД для структуры кода и зависимостей',
+                doc: 'docs/architecture/README.md'
+            },
+            'Qdrant': { 
+                category: 'data', 
+                label: '🔍 Qdrant', 
+                description: 'Векторная БД для семантического поиска',
+                doc: 'docs/architecture/README.md'
+            },
+            'Redis': { 
+                category: 'data', 
+                label: '⚡ Redis', 
+                description: 'In-memory кэш и очереди',
+                doc: 'docs/04-deployment/PRODUCTION_DEPLOYMENT.md'
+            },
+            'Minio': { 
+                category: 'data', 
+                label: '📦 MinIO', 
+                description: 'Object storage для датасетов и моделей',
+                doc: 'docs/04-deployment/PRODUCTION_DEPLOYMENT.md'
+            },
+            'ClickHouse': { 
+                category: 'data', 
+                label: '📊 ClickHouse', 
+                description: 'Column store для долгосрочных метрик',
+                doc: 'docs/observability/SLO.md'
+            },
+            'EDTPlugin': { 
+                category: 'integration', 
+                label: '🔌 EDT Plugin', 
+                description: 'Java плагин для IDE',
+                doc: 'docs/05-development/edt-plugin/README.md'
+            },
+            'n8nNode': { 
+                category: 'integration', 
+                label: '🔄 n8n Node', 
+                description: 'TypeScript нода для автоматизации',
+                doc: 'docs/06-features/n8n-integration.md'
+            },
+            'TelegramBot': { 
+                category: 'integration', 
+                label: '💬 Telegram Bot', 
+                description: 'Python бот для алертов и chatops',
+                doc: 'docs/01-getting-started/telegram-setup.md'
+            },
+            'Marketplace': { 
+                category: 'integration', 
+                label: '🏪 Marketplace', 
+                description: 'BSL пакеты и шаблоны',
+                doc: null
+            },
+            'Prometheus': { 
+                category: 'ops', 
+                label: '📈 Prometheus', 
+                description: 'Мониторинг и сбор метрик',
+                doc: 'docs/observability/SLO.md'
+            },
+            'Grafana': { 
+                category: 'ops', 
+                label: '📊 Grafana', 
+                description: 'Дашборды и аналитика',
+                doc: 'docs/observability/SLO.md'
+            },
+            'Alertmanager': { 
+                category: 'ops', 
+                label: '🚨 Alertmanager', 
+                description: 'Маршрутизация алертов',
+                doc: 'docs/observability/SLO.md'
+            },
+            'GitHubActions': { 
+                category: 'ops', 
+                label: '⚙️ CI/CD', 
+                description: 'GitHub Actions для CI/CD',
+                doc: 'docs/ops/devops_platform.md'
+            },
+            'Faro': { 
+                category: 'ops', 
+                label: '🔍 Tracing/Logs', 
+                description: 'Tempo/Loki для трейсинга и логов',
+                doc: 'docs/observability/SLO.md'
+            }
+        };
+
+        // Создание узлов и связей
+        const nodes = [];
+        const edges = [];
+
+        // Цвета по категориям
+        const categoryColors = {
+            'user': { background: '#f9f9f9', border: '#666666' },
+            'core': { background: '#e8f4ff', border: '#0066cc' },
+            'workers': { background: '#fff4e6', border: '#ff9900' },
+            'data': { background: '#f0f7ff', border: '#0066cc' },
+            'integration': { background: '#fff4e6', border: '#ff9900' },
+            'ops': { background: '#f6fdf3', border: '#00cc66' }
+        };
+
+        // Создание узлов
+        Object.keys(components).forEach((id, index) => {
+            const comp = components[id];
+            const color = categoryColors[comp.category] || categoryColors.core;
+            
+            nodes.push({
+                id: id,
+                label: comp.label,
+                color: {
+                    background: color.background,
+                    border: color.border,
+                    highlight: { background: '#ffd700', border: '#ff9900' }
+                },
+                shape: comp.category === 'data' ? 'database' : 'box',
+                font: { size: 14 },
+                widthConstraint: { maximum: 200 },
+                category: comp.category
+            });
+        });
+
+        // Создание связей
+        const connections = [
+            { from: 'Developer', to: 'API', label: 'Graph queries, MCP' },
+            { from: 'Developer', to: 'EDTPlugin', label: 'IDE commands' },
+            { from: 'Operator', to: 'Grafana', label: 'Dashboards' },
+            { from: 'RestGateway', to: 'Redis', label: 'PubSub' },
+            { from: 'API', to: 'Auth', label: 'Auth' },
+            { from: 'API', to: 'Postgres', label: 'Persist' },
+            { from: 'API', to: 'Neo4j', label: 'Graph' },
+            { from: 'API', to: 'Qdrant', label: 'Vector search' },
+            { from: 'API', to: 'Redis', label: 'Cache' },
+            { from: 'API', to: 'Celery', label: 'Jobs' },
+            { from: 'API', to: 'ITSScraper', label: 'Trigger' },
+            { from: 'Celery', to: 'Postgres', label: 'Update' },
+            { from: 'Celery', to: 'Neo4j', label: 'Update' },
+            { from: 'Celery', to: 'Qdrant', label: 'Sync' },
+            { from: 'Celery', to: 'Minio', label: 'Store' },
+            { from: 'MLPipelines', to: 'Minio', label: 'Store' },
+            { from: 'MLPipelines', to: 'Qdrant', label: 'Embeddings' },
+            { from: 'MLPipelines', to: 'Postgres', label: 'Metadata' },
+            { from: 'ITSScraper', to: 'Minio', label: 'Store' },
+            { from: 'ITSScraper', to: 'Postgres', label: 'Metadata' },
+            { from: 'ITSScraper', to: 'Prometheus', label: 'Metrics' },
+            { from: 'EDTPlugin', to: 'API', label: 'Analysis' },
+            { from: 'n8nNode', to: 'API', label: 'Workflow' },
+            { from: 'TelegramBot', to: 'API', label: 'Chatops' },
+            { from: 'Marketplace', to: 'API', label: 'Listing' },
+            { from: 'Marketplace', to: 'Minio', label: 'Artifacts' },
+            { from: 'Prometheus', to: 'API', label: 'Scrape' },
+            { from: 'Prometheus', to: 'Celery', label: 'Scrape' },
+            { from: 'Prometheus', to: 'ITSScraper', label: 'Scrape' },
+            { from: 'Prometheus', to: 'Alertmanager', label: 'Alerts' },
+            { from: 'Alertmanager', to: 'TelegramBot', label: 'Escalate' },
+            { from: 'GitHubActions', to: 'API', label: 'Deploy' },
+            { from: 'GitHubActions', to: 'Celery', label: 'Deploy' },
+            { from: 'Faro', to: 'API', label: 'Traces' },
+            { from: 'Faro', to: 'Celery', label: 'Traces' }
+        ];
+
+        connections.forEach(conn => {
+            edges.push({
+                from: conn.from,
+                to: conn.to,
+                label: conn.label,
+                arrows: 'to',
+                smooth: { type: 'curvedCW', roundness: 0.2 },
+                font: { size: 10, align: 'middle' }
+            });
+        });
+
+        // Инициализация сети
+        const container = document.getElementById('network-container');
+        const data = { nodes: nodes, edges: edges };
+        
+        const options = {
+            nodes: {
+                shape: 'box',
+                font: {
+                    size: 14,
+                    face: 'Arial'
+                },
+                borderWidth: 2,
+                shadow: true
+            },
+            edges: {
+                width: 2,
+                color: { color: '#848484', highlight: '#ff9900' },
+                smooth: {
+                    type: 'curvedCW',
+                    roundness: 0.2
+                },
+                arrows: {
+                    to: { enabled: true, scaleFactor: 0.8 }
+                },
+                font: {
+                    size: 10,
+                    align: 'middle'
+                }
+            },
+            physics: {
+                enabled: true,
+                stabilization: { iterations: 200 },
+                barnesHut: {
+                    gravitationalConstant: -2000,
+                    centralGravity: 0.1,
+                    springLength: 200,
+                    springConstant: 0.04,
+                    damping: 0.09
+                }
+            },
+            interaction: {
+                dragNodes: true,
+                dragView: true,
+                zoomView: true,
+                hover: true,
+                tooltipDelay: 100,
+                navigationButtons: true,
+                keyboard: true
+            },
+            layout: {
+                improvedLayout: true,
+                hierarchical: {
+                    enabled: false
+                }
+            }
+        };
+
+        const network = new vis.Network(container, data, options);
+
+        // Обработка клика на узел
+        network.on('click', function(params) {
+            if (params.nodes.length > 0) {
+                const nodeId = params.nodes[0];
+                const comp = components[nodeId];
+                if (comp) {
+                    showInfoPanel(comp, nodeId);
+                }
+            } else {
+                closeInfoPanel();
+            }
+        });
+
+        // Обработка двойного клика для сброса масштаба
+        network.on('doubleClick', function(params) {
+            if (params.nodes.length === 0) {
+                network.fit();
+            }
+        });
+
+        // Функция показа информации о компоненте
+        function showInfoPanel(comp, nodeId) {
+            const panel = document.getElementById('info-panel');
+            const content = document.getElementById('info-content');
+            
+            let html = `<h2>${comp.label}</h2>`;
+            html += `<p><strong>Описание:</strong> ${comp.description}</p>`;
+            html += `<p><strong>Категория:</strong> ${comp.category}</p>`;
+            
+            if (comp.doc) {
+                html += `<p><strong>Документация:</strong> <a href="${comp.doc}" target="_blank">${comp.doc}</a></p>`;
+                html += `<p><a href="${comp.doc}" target="_blank" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; background: #667eea; color: white; border-radius: 4px; text-decoration: none;">📖 Открыть документацию</a></p>`;
+            } else {
+                html += `<p><em>Документация не доступна</em></p>`;
+            }
+            
+            // Показать связанные компоненты
+            const related = edges.filter(e => e.from === nodeId || e.to === nodeId)
+                .map(e => e.from === nodeId ? e.to : e.from);
+            const uniqueRelated = [...new Set(related)];
+            
+            if (uniqueRelated.length > 0) {
+                html += `<h3>Связанные компоненты:</h3><ul>`;
+                uniqueRelated.forEach(relId => {
+                    const relComp = components[relId];
+                    if (relComp) {
+                        html += `<li><a href="#" onclick="highlightNode('${relId}'); return false;">${relComp.label}</a></li>`;
+                    }
+                });
+                html += `</ul>`;
+            }
+            
+            content.innerHTML = html;
+            panel.classList.add('visible');
+        }
+
+        function closeInfoPanel() {
+            document.getElementById('info-panel').classList.remove('visible');
+        }
+
+        function highlightNode(nodeId) {
+            network.selectNodes([nodeId]);
+            network.focus(nodeId, {
+                scale: 1.5,
+                animation: {
+                    duration: 1000,
+                    easingFunction: 'easeInOutQuad'
+                }
+            });
+            const comp = components[nodeId];
+            if (comp) {
+                showInfoPanel(comp, nodeId);
+            }
+        }
+
+        // Фильтрация
+        let currentFilter = 'all';
+        let currentSearch = '';
+
+        function applyFilters() {
+            const filteredNodes = nodes.filter(node => {
+                const comp = components[node.id];
+                const matchesFilter = currentFilter === 'all' || node.category === currentFilter;
+                const matchesSearch = comp.label.toLowerCase().includes(currentSearch.toLowerCase()) ||
+                                    comp.description.toLowerCase().includes(currentSearch.toLowerCase());
+                return matchesFilter && matchesSearch;
+            });
+
+            const filteredNodeIds = new Set(filteredNodes.map(n => n.id));
+            const filteredEdges = edges.filter(e => 
+                filteredNodeIds.has(e.from) && filteredNodeIds.has(e.to)
+            );
+
+            network.setData({
+                nodes: filteredNodes,
+                edges: filteredEdges
+            });
+        }
+
+        // Обработчики фильтров
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            if (btn.id !== 'reset-view') {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => {
+                        if (b.id !== 'reset-view') b.classList.remove('active');
+                    });
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.filter;
+                    applyFilters();
+                });
+            }
+        });
+
+        // Поиск
+        document.getElementById('search').addEventListener('input', (e) => {
+            currentSearch = e.target.value;
+            applyFilters();
+        });
+
+        // Сброс вида
+        document.getElementById('reset-view').addEventListener('click', () => {
+            network.fit({
+                animation: {
+                    duration: 1000,
+                    easingFunction: 'easeInOutQuad'
+                }
+            });
+            closeInfoPanel();
+        });
+
+        // Инициализация
+        applyFilters();
+    </script>
+</body>
+</html>

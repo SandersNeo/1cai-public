@@ -1,17 +1,24 @@
 """
 Configuration Knowledge Base Service
 База знаний по типовым конфигурациям 1С
-Версия: 1.0.0
+Версия: 2.1.0
+
+Улучшения:
+- Input validation
+- Structured logging
+- Улучшена обработка ошибок
 """
 
 import os
 import json
 import logging
+import re
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 from datetime import datetime
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class ConfigurationKnowledgeBase:
@@ -72,9 +79,20 @@ class ConfigurationKnowledgeBase:
                 try:
                     with open(config_file, 'r', encoding='utf-8') as f:
                         self._cache[config] = json.load(f)
-                    logger.info(f"Загружена база знаний для {config}")
+                    logger.info(
+                        "Загружена база знаний для конфигурации",
+                        extra={"config": config}
+                    )
                 except Exception as e:
-                    logger.error(f"Ошибка загрузки базы знаний {config}: {e}")
+                    logger.error(
+                        "Ошибка загрузки базы знаний",
+                        extra={
+                            "error": str(e),
+                            "error_type": type(e).__name__,
+                            "config": config
+                        },
+                        exc_info=True
+                    )
     
     def get_configuration_info(self, config_name: str) -> Optional[Dict[str, Any]]:
         """
@@ -86,21 +104,63 @@ class ConfigurationKnowledgeBase:
         Returns:
             Словарь с информацией о конфигурации или None
         """
+        # Input validation
+        if not config_name or not isinstance(config_name, str):
+            logger.warning(
+                f"Invalid config_name: {config_name}",
+                extra={"config_name": config_name, "config_name_type": type(config_name).__name__}
+            )
+            return None
+        
+        # Sanitize config name (prevent injection)
+        config_name = re.sub(r'[^a-zA-Z0-9_.-]', '', config_name)
+        if not config_name:
+            logger.warning("Config name is empty after sanitization")
+            return None
+        
         config_key = config_name.lower()
         
         if config_key not in self.SUPPORTED_CONFIGURATIONS:
-            logger.warning(f"Неподдерживаемая конфигурация: {config_name}")
+            logger.warning(
+                f"Unsupported configuration: {config_name}",
+                extra={
+                    "config_name": config_name,
+                    "supported_configs": self.SUPPORTED_CONFIGURATIONS
+                }
+            )
             return None
         
-        return self._cache.get(config_key, {
-            "name": self.CONFIG_NAME_MAP.get(config_key, config_name),
-            "modules": [],
-            "best_practices": [],
-            "common_patterns": [],
-            "api_usage": [],
-            "performance_tips": [],
-            "known_issues": []
-        })
+        try:
+            result = self._cache.get(config_key, {
+                "name": self.CONFIG_NAME_MAP.get(config_key, config_name),
+                "modules": [],
+                "best_practices": [],
+                "common_patterns": [],
+                "api_usage": [],
+                "performance_tips": [],
+                "known_issues": []
+            })
+            
+            logger.debug(
+                f"Configuration info retrieved",
+                extra={
+                    "config_name": config_name,
+                    "config_key": config_key,
+                    "has_cache": config_key in self._cache
+                }
+            )
+            
+            return result
+        except Exception as e:
+            logger.error(
+                f"Error getting configuration info: {e}",
+                extra={
+                    "config_name": config_name,
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
+            return None
     
     def add_module_documentation(
         self,
@@ -109,20 +169,56 @@ class ConfigurationKnowledgeBase:
         documentation: Dict[str, Any]
     ) -> bool:
         """
-        Добавление документации модуля
+        Добавление документации модуля с input validation
         
         Args:
             config_name: Название конфигурации
-            config_name: Имя модуля
+            module_name: Имя модуля
             documentation: Документация модуля
             
         Returns:
             True если успешно добавлено
         """
+        # Input validation
+        if not config_name or not isinstance(config_name, str):
+            logger.warning(
+                "Invalid config_name in add_module_documentation",
+                extra={"config_name_type": type(config_name).__name__ if config_name else None}
+            )
+            return False
+        
+        if not module_name or not isinstance(module_name, str):
+            logger.warning(
+                "Invalid module_name in add_module_documentation",
+                extra={"module_name_type": type(module_name).__name__ if module_name else None}
+            )
+            return False
+        
+        if not isinstance(documentation, dict):
+            logger.warning(
+                "Invalid documentation type in add_module_documentation",
+                extra={"documentation_type": type(documentation).__name__}
+            )
+            return False
+        
+        # Sanitize config_name and module_name (prevent path traversal)
+        config_name = re.sub(r'[^a-zA-Z0-9_-]', '', config_name)
+        module_name = re.sub(r'[^a-zA-Z0-9_.-]', '', module_name)
+        
+        if not config_name or not module_name:
+            logger.warning(
+                "Config name or module name sanitized to empty",
+                extra={"original_config": config_name, "original_module": module_name}
+            )
+            return False
+        
         config_key = config_name.lower()
         
         if config_key not in self.SUPPORTED_CONFIGURATIONS:
-            logger.error(f"Неподдерживаемая конфигурация: {config_name}")
+            logger.error(
+                f"Неподдерживаемая конфигурация: {config_name}",
+                extra={"config_name": config_name, "supported_configs": self.SUPPORTED_CONFIGURATIONS}
+            )
             return False
         
         # Получаем или создаем конфигурацию
@@ -204,7 +300,7 @@ class ConfigurationKnowledgeBase:
         query: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """
-        Поиск паттернов в базе знаний
+        Поиск паттернов в базе знаний с input validation
         
         Args:
             config_name: Название конфигурации (опционально)
@@ -215,6 +311,43 @@ class ConfigurationKnowledgeBase:
             Список найденных паттернов
         """
         results = []
+        
+        # Input validation
+        if config_name and not isinstance(config_name, str):
+            logger.warning(
+                "Invalid config_name type in search_patterns",
+                extra={"config_name_type": type(config_name).__name__}
+            )
+            config_name = None
+        
+        if pattern_type and not isinstance(pattern_type, str):
+            logger.warning(
+                "Invalid pattern_type in search_patterns",
+                extra={"pattern_type_type": type(pattern_type).__name__}
+            )
+            pattern_type = None
+        
+        if query and not isinstance(query, str):
+            logger.warning(
+                "Invalid query type in search_patterns",
+                extra={"query_type": type(query).__name__}
+            )
+            query = None
+        
+        # Validate query length (prevent DoS)
+        if query and len(query) > 1000:
+            logger.warning(
+                "Query too long in search_patterns",
+                extra={"query_length": len(query), "max_length": 1000}
+            )
+            query = query[:1000]  # Truncate
+        
+        # Sanitize inputs
+        if config_name:
+            config_name = re.sub(r'[^a-zA-Z0-9_-]', '', config_name)
+        
+        if pattern_type:
+            pattern_type = re.sub(r'[^a-zA-Z0-9_.-]', '', pattern_type)
         
         configs_to_search = [config_name.lower()] if config_name else self.SUPPORTED_CONFIGURATIONS
         
@@ -307,11 +440,22 @@ class ConfigurationKnowledgeBase:
             with open(config_file, 'w', encoding='utf-8') as f:
                 json.dump(self._cache[config_key], f, indent=2, ensure_ascii=False)
             
-            logger.debug(f"Сохранена база знаний для {config_key}")
+            logger.debug(
+                "Сохранена база знаний для конфигурации",
+                extra={"config_key": config_key}
+            )
             return True
             
         except Exception as e:
-            logger.error(f"Ошибка сохранения базы знаний {config_key}: {e}")
+            logger.error(
+                "Ошибка сохранения базы знаний",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "config_key": config_key
+                },
+                exc_info=True
+            )
             return False
     
     def _get_default_config(self) -> Dict[str, Any]:
@@ -339,7 +483,10 @@ class ConfigurationKnowledgeBase:
         dir_path = Path(directory_path)
         
         if not dir_path.exists() or not dir_path.is_dir():
-            logger.error(f"Директория не найдена: {directory_path}")
+            logger.error(
+                "Директория не найдена",
+                extra={"directory_path": directory_path}
+            )
             return 0
         
         loaded_count = 0
@@ -349,12 +496,23 @@ class ConfigurationKnowledgeBase:
             try:
                 # TODO: Парсинг XML файлов 1С конфигурации
                 # Это требует специального парсера для формата 1С
-                logger.info(f"Найден файл конфигурации: {xml_file}")
+                logger.info(
+                    "Найден файл конфигурации",
+                    extra={"xml_file": str(xml_file)}
+                )
                 # Пока пропускаем
                 continue
                 
             except Exception as e:
-                logger.error(f"Ошибка обработки {xml_file}: {e}")
+                logger.error(
+                    "Ошибка обработки файла конфигурации",
+                    extra={
+                        "error": str(e),
+                        "error_type": type(e).__name__,
+                        "xml_file": str(xml_file)
+                    },
+                    exc_info=True
+                )
         
         # Поиск JSON файлов с документацией
         for json_file in dir_path.rglob("*.json"):
@@ -368,10 +526,21 @@ class ConfigurationKnowledgeBase:
                 if config_name in self.SUPPORTED_CONFIGURATIONS:
                     self._cache[config_name] = data
                     loaded_count += 1
-                    logger.info(f"Загружена конфигурация: {config_name}")
+                    logger.info(
+                        "Загружена конфигурация",
+                        extra={"config_name": config_name}
+                    )
                     
             except Exception as e:
-                logger.error(f"Ошибка загрузки {json_file}: {e}")
+                logger.error(
+                    "Ошибка загрузки конфигурации",
+                    extra={
+                        "error": str(e),
+                        "error_type": type(e).__name__,
+                        "json_file": str(json_file)
+                    },
+                    exc_info=True
+                )
         
         return loaded_count
 

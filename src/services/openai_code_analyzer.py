@@ -11,7 +11,9 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 import httpx
 
-logger = logging.getLogger(__name__)
+from src.utils.structured_logging import StructuredLogger
+
+logger = StructuredLogger(__name__).logger
 
 # Динамический импорт settings для избежания циклических зависимостей
 try:
@@ -31,7 +33,7 @@ class OpenAICodeAnalyzer:
         try:
             from src.config import settings as config_settings
             self.api_key = getattr(config_settings, 'openai_api_key', os.getenv("OPENAI_API_KEY", ""))
-        except:
+        except (ImportError, AttributeError, Exception):
             self.api_key = os.getenv("OPENAI_API_KEY", "")
         
         self.base_url = "https://api.openai.com/v1"
@@ -49,7 +51,7 @@ class OpenAICodeAnalyzer:
         context: Optional[Dict[str, Any]] = None
     ) -> List[Dict[str, Any]]:
         """
-        Анализ кода через OpenAI
+        Анализ кода через OpenAI с input validation
         
         Args:
             code: Исходный код для анализа
@@ -59,8 +61,35 @@ class OpenAICodeAnalyzer:
         Returns:
             Список предложений по улучшению кода
         """
+        # Input validation
+        if not isinstance(code, str) or not code.strip():
+            logger.warning(
+                "Invalid code in analyze_code",
+                extra={"code_type": type(code).__name__ if code else None}
+            )
+            return []
+        
+        # Limit code length (prevent DoS)
+        max_code_length = 100000  # 100KB max
+        if len(code) > max_code_length:
+            logger.warning(
+                "Code too long in analyze_code",
+                extra={"code_length": len(code), "max_length": max_code_length}
+            )
+            code = code[:max_code_length]
+        
+        if not isinstance(language, str) or not language.strip():
+            logger.warning(
+                "Invalid language in analyze_code",
+                extra={"language_type": type(language).__name__ if language else None}
+            )
+            language = "bsl"
+        
         if not self.enabled:
-            logger.debug("OpenAI недоступен, пропускаем AI анализ")
+            logger.debug(
+                "OpenAI недоступен, пропускаем AI анализ",
+                extra={"language": language}
+            )
             return []
         
         try:
@@ -68,11 +97,27 @@ class OpenAICodeAnalyzer:
             response = await self._make_request(prompt)
             suggestions = self._parse_response(response, code)
             
-            logger.info(f"AI анализ завершен: найдено {len(suggestions)} предложений")
+            logger.info(
+                "AI анализ завершен",
+                extra={
+                    "suggestions_count": len(suggestions),
+                    "language": language,
+                    "code_length": len(code)
+                }
+            )
             return suggestions
             
         except Exception as e:
-            logger.error(f"Ошибка AI анализа: {str(e)}", exc_info=True)
+            logger.error(
+                "Ошибка AI анализа",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "language": language,
+                    "code_length": len(code)
+                },
+                exc_info=True
+            )
             return []  # Возвращаем пустой список при ошибке
     
     def _build_analysis_prompt(
@@ -191,42 +236,153 @@ class OpenAICodeAnalyzer:
 
 Будь конкретным и практичным в рекомендациях."""
     
-    async def _make_request(self, prompt: Dict[str, str]) -> str:
-        """Отправка запроса к OpenAI API"""
+    async def _make_request(self, prompt: Dict[str, str], max_retries: int = 3) -> str:
+        """
+        Отправка запроса к OpenAI API с retry logic
         
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            headers = {
-                "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json"
-            }
-            
-            payload = {
-                "model": self.model,
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": prompt["system_prompt"]
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt["user_prompt"]
+        Best practices:
+        - Exponential backoff для retry
+        - Retry только для transient errors (5xx, timeout, connection errors)
+        - Timeout для всех запросов
+        """
+        import asyncio
+        
+        last_exception = None
+        
+        for attempt in range(max_retries):
+            try:
+                timeout = httpx.Timeout(self.timeout, connect=10.0)
+                async with httpx.AsyncClient(timeout=timeout) as client:
+                    headers = {
+                        "Authorization": f"Bearer {self.api_key}",
+                        "Content-Type": "application/json"
                     }
-                ],
-                "temperature": 0.3,  # Низкая температура для более детерминированных ответов
-                "max_tokens": 3000,   # Достаточно для детального анализа
-                "response_format": {"type": "json_object"}  # Требуем JSON формат
-            }
-            
-            response = await client.post(
-                f"{self.base_url}/chat/completions",
-                headers=headers,
-                json=payload
-            )
-            
-            response.raise_for_status()
-            data = response.json()
-            
-            return data["choices"][0]["message"]["content"]
+                    
+                    payload = {
+                        "model": self.model,
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": prompt["system_prompt"]
+                            },
+                            {
+                                "role": "user",
+                                "content": prompt["user_prompt"]
+                            }
+                        ],
+                        "temperature": 0.3,  # Низкая температура для более детерминированных ответов
+                        "max_tokens": 3000,   # Достаточно для детального анализа
+                        "response_format": {"type": "json_object"}  # Требуем JSON формат
+                    }
+                    
+                    response = await client.post(
+                        f"{self.base_url}/chat/completions",
+                        headers=headers,
+                        json=payload
+                    )
+                    
+                    response.raise_for_status()
+                    data = response.json()
+                    
+                    return data["choices"][0]["message"]["content"]
+                    
+            except httpx.TimeoutException as e:
+                last_exception = e
+                if attempt < max_retries - 1:
+                    wait_time = 2 ** attempt  # Exponential backoff: 1s, 2s, 4s
+                    logger.warning(
+                        "Timeout при запросе к OpenAI, повтор",
+                        extra={
+                            "attempt": attempt + 1,
+                            "max_retries": max_retries,
+                            "wait_time": wait_time
+                        }
+                    )
+                    await asyncio.sleep(wait_time)
+                else:
+                    logger.error(
+                        "Все попытки запроса к OpenAI завершились timeout",
+                        extra={
+                            "max_retries": max_retries,
+                            "timeout": self.timeout
+                        },
+                        exc_info=True
+                    )
+                    raise
+                    
+            except httpx.HTTPStatusError as e:
+                # Retry только для 5xx ошибок (server errors)
+                if e.response.status_code >= 500 and attempt < max_retries - 1:
+                    wait_time = 2 ** attempt
+                    logger.warning(
+                        "Server error при запросе к OpenAI, повтор",
+                        extra={
+                            "status_code": e.response.status_code,
+                            "attempt": attempt + 1,
+                            "max_retries": max_retries,
+                            "wait_time": wait_time
+                        }
+                    )
+                    await asyncio.sleep(wait_time)
+                    last_exception = e
+                else:
+                    # 4xx ошибки (client errors) не ретраим
+                    logger.error(
+                        "HTTP error при запросе к OpenAI",
+                        extra={
+                            "status_code": e.response.status_code,
+                            "response_text": e.response.text[:500] if e.response.text else None,
+                            "attempt": attempt + 1,
+                            "max_retries": max_retries
+                        },
+                        exc_info=True
+                    )
+                    raise
+                    
+            except httpx.ConnectError as e:
+                last_exception = e
+                if attempt < max_retries - 1:
+                    wait_time = 2 ** attempt
+                    logger.warning(
+                        "Connection error при запросе к OpenAI, повтор",
+                        extra={
+                            "attempt": attempt + 1,
+                            "max_retries": max_retries,
+                            "wait_time": wait_time,
+                            "error": str(e)
+                        }
+                    )
+                    await asyncio.sleep(wait_time)
+                else:
+                    logger.error(
+                        "Все попытки подключения к OpenAI завершились ошибкой",
+                        extra={
+                            "max_retries": max_retries,
+                            "error": str(e),
+                            "error_type": type(e).__name__
+                        },
+                        exc_info=True
+                    )
+                    raise
+                    
+            except Exception as e:
+                # Неожиданные ошибки не ретраим
+                logger.error(
+                    "Неожиданная ошибка при запросе к OpenAI",
+                    extra={
+                        "error": str(e),
+                        "error_type": type(e).__name__,
+                        "attempt": attempt + 1,
+                        "max_retries": max_retries
+                    },
+                    exc_info=True
+                )
+                raise
+        
+        # Если дошли сюда, все попытки исчерпаны
+        if last_exception:
+            raise last_exception
+        raise Exception("Все попытки запроса исчерпаны")
     
     def _parse_response(self, response: str, code: str) -> List[Dict[str, Any]]:
         """Парсинг ответа OpenAI"""
@@ -262,7 +418,10 @@ class OpenAICodeAnalyzer:
                 # Если ответ - массив
                 suggestions_raw = json.loads(response)
             else:
-                logger.warning(f"Неожиданный формат ответа OpenAI: {response[:100]}")
+                logger.warning(
+                    "Неожиданный формат ответа OpenAI",
+                    extra={"response_preview": response[:100]}
+                )
                 return []
             
             # Нормализация предложений
@@ -271,14 +430,34 @@ class OpenAICodeAnalyzer:
                 if normalized:
                     suggestions.append(normalized)
             
-            logger.debug(f"Распарсено {len(suggestions)} предложений из {len(suggestions_raw)}")
+            logger.debug(
+                "Распарсено предложений из ответа OpenAI",
+                extra={
+                    "suggestions_count": len(suggestions),
+                    "suggestions_raw_count": len(suggestions_raw)
+                }
+            )
             
         except json.JSONDecodeError as e:
-            logger.error(f"Ошибка парсинга JSON ответа: {e}")
-            logger.debug(f"Ответ OpenAI: {response[:500]}")
+            logger.error(
+                "Ошибка парсинга JSON ответа",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "response_preview": response[:500] if response else None
+                },
+                exc_info=True
+            )
             return []
         except Exception as e:
-            logger.error(f"Ошибка парсинга ответа: {e}", exc_info=True)
+            logger.error(
+                "Ошибка парсинга ответа",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return []
         
         return suggestions
@@ -334,7 +513,15 @@ class OpenAICodeAnalyzer:
             return normalized
             
         except Exception as e:
-            logger.error(f"Ошибка нормализации предложения: {e}")
+            logger.error(
+                "Ошибка нормализации предложения",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "suggestion_index": index
+                },
+                exc_info=True
+            )
             return None
     
     async def generate_test_cases(
@@ -360,11 +547,25 @@ class OpenAICodeAnalyzer:
             response = await self._make_request(prompt)
             test_cases = self._parse_test_cases_response(response)
             
-            logger.info(f"AI сгенерировано {len(test_cases)} тест-кейсов")
+            logger.info(
+                "AI сгенерировано тест-кейсов",
+                extra={
+                    "test_cases_count": len(test_cases),
+                    "function_name": function_name
+                }
+            )
             return test_cases
             
         except Exception as e:
-            logger.error(f"Ошибка генерации тест-кейсов: {e}", exc_info=True)
+            logger.error(
+                "Ошибка генерации тест-кейсов",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "function_name": function_name
+                },
+                exc_info=True
+            )
             return []
     
     def _build_test_generation_prompt(
@@ -448,7 +649,14 @@ class OpenAICodeAnalyzer:
             return normalized
             
         except Exception as e:
-            logger.error(f"Ошибка парсинга тест-кейсов: {e}")
+            logger.error(
+                "Ошибка парсинга тест-кейсов",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return []
 
 

@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 import pickle
 import joblib
-import logging
 from datetime import datetime
 import json
 
@@ -39,8 +38,9 @@ except ImportError:
 
 from src.config import settings
 from src.ml.experiments.mlflow_manager import MLFlowManager
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class PredictionType:
@@ -79,7 +79,10 @@ class MLPredictor(ABC):
             'created_at': datetime.utcnow().isoformat()
         }
         
-        logger.info(f"Инициализирован MLPredictor: {model_name}")
+        logger.info(
+            "Инициализирован MLPredictor",
+            extra={"model_name": model_name}
+        )
 
     @abstractmethod
     def fit(self, X: Union[pd.DataFrame, np.ndarray], y: Optional[Union[pd.Series, np.ndarray]] = None) -> 'MLPredictor':
@@ -110,10 +113,25 @@ class MLPredictor(ABC):
             with open(filepath, 'wb') as f:
                 pickle.dump(model_data, f)
                 
-            logger.info(f"Модель {self.model_name} сохранена в {filepath}")
+            logger.info(
+                "Модель сохранена",
+                extra={
+                    "model_name": self.model_name,
+                    "filepath": filepath
+                }
+            )
             
         except Exception as e:
-            logger.error(f"Ошибка сохранения модели {self.model_name}: {e}")
+            logger.error(
+                "Ошибка сохранения модели",
+                extra={
+                    "model_name": self.model_name,
+                    "filepath": filepath,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             raise
 
     def load_model(self, filepath: str):
@@ -128,10 +146,25 @@ class MLPredictor(ABC):
             self.features = model_data['features']
             self.target = model_data['target']
             
-            logger.info(f"Модель {self.model_name} загружена из {filepath}")
+            logger.info(
+                "Модель загружена",
+                extra={
+                    "model_name": self.model_name,
+                    "filepath": filepath
+                }
+            )
             
         except Exception as e:
-            logger.error(f"Ошибка загрузки модели {self.model_name}: {e}")
+            logger.error(
+                "Ошибка загрузки модели",
+                extra={
+                    "model_name": self.model_name,
+                    "filepath": filepath,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             raise
 
     def evaluate(self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.Series, np.ndarray]) -> Dict[str, float]:
@@ -159,7 +192,13 @@ class MLPredictor(ABC):
                 'r2_score': r2_score(y, predictions)
             })
         
-        logger.info(f"Оценка модели {self.model_name}: {metrics}")
+        logger.info(
+            "Оценка модели",
+            extra={
+                "model_name": self.model_name,
+                "metrics": metrics
+            }
+        )
         
         return metrics
 
@@ -226,7 +265,13 @@ class SklearnPredictor(MLPredictor):
         self.model_class = model_class or self._get_default_model_class(prediction_type)
         self.model_params = model_params or {}
         
-        logger.info(f"Инициализирован SklearnPredictor: {model_name} с моделью {self.model_class.__name__}")
+        logger.info(
+            "Инициализирован SklearnPredictor",
+            extra={
+                "model_name": model_name,
+                "model_class": self.model_class.__name__
+            }
+        )
 
     def _get_default_model_class(self, prediction_type: str) -> type:
         """Получение класса модели по умолчанию"""
@@ -254,12 +299,26 @@ class SklearnPredictor(MLPredictor):
             
             self.is_trained = True
             
-            logger.info(f"Модель {self.model_name} обучена на {len(X_processed)} образцах")
+            logger.info(
+                "Модель обучена",
+                extra={
+                    "model_name": self.model_name,
+                    "samples_count": len(X_processed)
+                }
+            )
             
             return self
             
         except Exception as e:
-            logger.error(f"Ошибка обучения модели {self.model_name}: {e}")
+            logger.error(
+                "Ошибка обучения модели",
+                extra={
+                    "model_name": self.model_name,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             raise
 
     def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> Union[np.ndarray, pd.DataFrame]:
@@ -277,12 +336,22 @@ class SklearnPredictor(MLPredictor):
             
             predictions = self.model.predict(X_processed)
             
-            logger.debug(f"Выполнено предсказание для {len(X_processed)} образцов")
+            logger.debug(
+                "Выполнено предсказание",
+                extra={"samples_count": len(X_processed)}
+            )
             
             return predictions
             
         except Exception as e:
-            logger.error(f"Ошибка предсказания: {e}")
+            logger.error(
+                "Ошибка предсказания",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             raise
 
     def predict_proba(self, X: Union[pd.DataFrame, np.ndarray]) -> Optional[np.ndarray]:
@@ -300,12 +369,22 @@ class SklearnPredictor(MLPredictor):
             
             probabilities = self.model.predict_proba(X_processed)
             
-            logger.debug(f"Вычислены вероятности для {len(X_processed)} образцов")
+            logger.debug(
+                "Вычислены вероятности",
+                extra={"samples_count": len(X_processed)}
+            )
             
             return probabilities
             
         except Exception as e:
-            logger.error(f"Ошибка вычисления вероятностей: {e}")
+            logger.error(
+                "Ошибка вычисления вероятностей",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return None
 
 
@@ -329,7 +408,10 @@ class TensorFlowPredictor(MLPredictor):
         if not TENSORFLOW_AVAILABLE:
             raise ImportError("TensorFlow не установлен")
         
-        logger.info(f"Инициализирован TensorFlowPredictor: {model_name}")
+        logger.info(
+            "Инициализирован TensorFlowPredictor",
+            extra={"model_name": model_name}
+        )
 
     def _build_model(self, input_shape: int) -> 'tf.keras.Model':
         """Построение модели TensorFlow"""
@@ -405,12 +487,26 @@ class TensorFlowPredictor(MLPredictor):
             
             self.is_trained = True
             
-            logger.info(f"Модель {self.model_name} обучена на {len(X_processed)} образцах")
+            logger.info(
+                "Модель обучена",
+                extra={
+                    "model_name": self.model_name,
+                    "samples_count": len(X_processed)
+                }
+            )
             
             return self
             
         except Exception as e:
-            logger.error(f"Ошибка обучения модели {self.model_name}: {e}")
+            logger.error(
+                "Ошибка обучения модели",
+                extra={
+                    "model_name": self.model_name,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             raise
 
     def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> Union[np.ndarray, pd.DataFrame]:
@@ -432,12 +528,22 @@ class TensorFlowPredictor(MLPredictor):
             if self.prediction_type == PredictionType.CLASSIFICATION:
                 predictions = np.argmax(predictions, axis=1)
             
-            logger.debug(f"Выполнено предсказание для {len(X_processed)} образцов")
+            logger.debug(
+                "Выполнено предсказание",
+                extra={"samples_count": len(X_processed)}
+            )
             
             return predictions
             
         except Exception as e:
-            logger.error(f"Ошибка предсказания: {e}")
+            logger.error(
+                "Ошибка предсказания",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             raise
 
     def predict_proba(self, X: Union[pd.DataFrame, np.ndarray]) -> Optional[np.ndarray]:
@@ -455,12 +561,22 @@ class TensorFlowPredictor(MLPredictor):
             
             probabilities = self.model.predict(X_processed)
             
-            logger.debug(f"Вычислены вероятности для {len(X_processed)} образцов")
+            logger.debug(
+                "Вычислены вероятности",
+                extra={"samples_count": len(X_processed)}
+            )
             
             return probabilities
             
         except Exception as e:
-            logger.error(f"Ошибка вычисления вероятностей: {e}")
+            logger.error(
+                "Ошибка вычисления вероятностей",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return None
 
     def save_model(self, filepath: str):
@@ -469,9 +585,24 @@ class TensorFlowPredictor(MLPredictor):
         try:
             self.model.save(f"{filepath}.h5")
             super().save_model(filepath)  # Сохраняем также конфигурацию
-            logger.info(f"Модель TensorFlow {self.model_name} сохранена в {filepath}")
+            logger.info(
+                "Модель TensorFlow сохранена",
+                extra={
+                    "model_name": self.model_name,
+                    "filepath": filepath
+                }
+            )
         except Exception as e:
-            logger.error(f"Ошибка сохранения модели TensorFlow: {e}")
+            logger.error(
+                "Ошибка сохранения модели TensorFlow",
+                extra={
+                    "model_name": self.model_name,
+                    "filepath": filepath,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             raise
 
     def load_model(self, filepath: str):
@@ -480,9 +611,24 @@ class TensorFlowPredictor(MLPredictor):
         try:
             self.model = keras.models.load_model(f"{filepath}.h5")
             super().load_model(filepath)  # Загружаем также конфигурацию
-            logger.info(f"Модель TensorFlow {self.model_name} загружена из {filepath}")
+            logger.info(
+                "Модель TensorFlow загружена",
+                extra={
+                    "model_name": self.model_name,
+                    "filepath": filepath
+                }
+            )
         except Exception as e:
-            logger.error(f"Ошибка загрузки модели TensorFlow: {e}")
+            logger.error(
+                "Ошибка загрузки модели TensorFlow",
+                extra={
+                    "model_name": self.model_name,
+                    "filepath": filepath,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             raise
 
 
@@ -493,7 +639,13 @@ class ModelEnsemble:
         self.models = models
         self.ensemble_method = ensemble_method
         
-        logger.info(f"Создан ансамбль из {len(models)} моделей с методом {ensemble_method}")
+        logger.info(
+            "Создан ансамбль моделей",
+            extra={
+                "models_count": len(models),
+                "ensemble_method": ensemble_method
+            }
+        )
 
     def fit(self, X: Union[pd.DataFrame, np.ndarray], y: Optional[Union[pd.Series, np.ndarray]] = None) -> 'ModelEnsemble':
         """Обучение всех моделей в ансамбле"""
@@ -558,7 +710,14 @@ class ModelEnsemble:
                 metrics = model.evaluate(X, y)
                 individual_metrics[f"model_{i}"] = metrics
             except Exception as e:
-                logger.warning(f"Ошибка оценки модели {i}: {e}")
+                logger.warning(
+                    "Ошибка оценки модели",
+                    extra={
+                        "model_index": i,
+                        "error": str(e),
+                        "error_type": type(e).__name__
+                    }
+                )
         
         # Оценка ансамбля
         try:
@@ -571,7 +730,14 @@ class ModelEnsemble:
                 ensemble_metrics['ensemble_rmse'] = np.sqrt(mean_squared_error(y, ensemble_pred))
                 
         except Exception as e:
-            logger.error(f"Ошибка оценки ансамбля: {e}")
+            logger.error(
+                "Ошибка оценки ансамбля",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
         
         # Сравнение с лучшей индивидуальной моделью
         if individual_metrics:

@@ -6,13 +6,13 @@ AI ассистент для DevOps инженеров с полным функ�
 import os
 import re
 import json
-import logging
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 from pathlib import Path
 import yaml
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class CICDPipelineOptimizer:
@@ -319,7 +319,10 @@ class LogAnalyzer:
         Returns:
             Детальный анализ с аномалиями и рекомендациями
         """
-        logger.info(f"Analyzing {log_type} logs")
+        logger.info(
+            "Analyzing logs",
+            extra={"log_type": log_type}
+        )
         
         # Read logs
         if Path(log_file).exists():

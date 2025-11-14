@@ -4,22 +4,16 @@ Telegram Bot - Main entry point
 """
 
 import asyncio
-import logging
 import sys
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from src.utils.structured_logging import StructuredLogger
 
 from src.telegram.config import config
 from src.telegram.handlers import router
 
-# Logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    stream=sys.stdout
-)
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 async def main():
@@ -48,21 +42,43 @@ async def main():
     # Startup message
     try:
         bot_info = await bot.get_me()
-        logger.info(f"✅ Bot started: @{bot_info.username}")
-        logger.info(f"📊 Rate limits: {config.max_requests_per_minute}/min, {config.max_requests_per_day}/day")
+        logger.info(
+            "Bot started",
+            extra={"bot_username": bot_info.username}
+        )
+        logger.info(
+            "Rate limits configured",
+            extra={
+                "max_per_minute": config.max_requests_per_minute,
+                "max_per_day": config.max_requests_per_day
+            }
+        )
         
         if config.admin_ids:
-            logger.info(f"👑 Admin IDs: {config.admin_ids}")
+            logger.info(
+                "Admin IDs configured",
+                extra={"admin_ids": config.admin_ids}
+            )
         
         if config.premium_user_ids:
-            logger.info(f"💎 Premium users: {len(config.premium_user_ids)}")
+            logger.info(
+                "Premium users configured",
+                extra={"premium_users_count": len(config.premium_user_ids)}
+            )
         
         # Start polling
-        logger.info("🔄 Starting polling...")
+        logger.info("Starting polling")
         await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
         
     except Exception as e:
-        logger.error(f"❌ Bot error: {e}")
+        logger.error(
+            "Bot error",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise
     finally:
         await bot.session.close()
@@ -74,7 +90,14 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         logger.info("👋 Bot stopped by user")
     except Exception as e:
-        logger.error(f"💥 Fatal error: {e}")
+        logger.error(
+            "Fatal error",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         sys.exit(1)
 
 

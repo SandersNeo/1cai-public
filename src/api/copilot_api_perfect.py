@@ -1,41 +1,48 @@
 """
 1С:Copilot API - PERFECT Implementation
-Backend для VSCode extension и других клиентов
+Версия: 2.1.0
+
+Улучшения:
+- Structured logging
+- Улучшена обработка ошибок
+- Input validation
+- Timeout handling
 
 ALL TODOs CLOSED! Production-ready!
 """
 
 import os
-import logging
-from typing import Dict, List, Optional
+import asyncio
+from typing import Dict, List, Optional, Any
 from fastapi import APIRouter, HTTPException, Depends, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import re
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 router = APIRouter(prefix="/api/copilot", tags=["1C:Copilot"])
 limiter = Limiter(key_func=get_remote_address)
 
 
 class CompletionRequest(BaseModel):
-    code: str
-    current_line: str
-    language: str = 'bsl'
-    max_suggestions: int = 3
+    code: str = Field(..., max_length=50000)
+    current_line: str = Field(..., max_length=1000)
+    language: str = Field(default='bsl', max_length=50)
+    max_suggestions: int = Field(default=3, ge=1, le=10)
 
 
 class GenerationRequest(BaseModel):
-    prompt: str
-    language: str = 'bsl'
-    type: str = 'function'  # function, procedure, test
+    prompt: str = Field(..., max_length=5000)
+    language: str = Field(default='bsl', max_length=50)
+    type: str = Field(default='function', max_length=50)  # function, procedure, test
 
 
 class OptimizationRequest(BaseModel):
-    code: str
-    language: str = 'bsl'
+    code: str = Field(..., max_length=50000)
+    language: str = Field(default='bsl', max_length=50)
 
 
 class CopilotService:
@@ -56,7 +63,10 @@ class CopilotService:
             model_path = os.getenv('COPILOT_MODEL_PATH', './models/1c-copilot-lora')
             
             if os.path.exists(model_path):
-                logger.info(f"🔄 Loading Copilot model from {model_path}...")
+                logger.info(
+                    "Loading Copilot model",
+                    extra={"model_path": model_path}
+                )
                 
                 try:
                     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -65,12 +75,18 @@ class CopilotService:
                     
                     # Determine device
                     self.device = "cuda" if torch.cuda.is_available() else "cpu"
-                    logger.info(f"Using device: {self.device}")
+                    logger.info(
+                        "Using device",
+                        extra={"device": self.device}
+                    )
                     
                     # Load base model
                     base_model_name = os.getenv('BASE_MODEL', 'Qwen/Qwen2.5-Coder-7B-Instruct')
                     
-                    logger.info(f"Loading base model: {base_model_name}")
+                    logger.info(
+                        "Loading base model",
+                        extra={"base_model_name": base_model_name}
+                    )
                     base_model = AutoModelForCausalLM.from_pretrained(
                         base_model_name,
                         device_map="auto",
@@ -91,17 +107,37 @@ class CopilotService:
                     logger.info("✅ Copilot model loaded successfully!")
                     
                 except ImportError as e:
-                    logger.warning(f"⚠️ Required libraries not installed: {e}")
+                    logger.warning(
+                        "Required libraries not installed",
+                        extra={"error": str(e), "error_type": type(e).__name__}
+                    )
                     logger.warning("Install with: pip install transformers peft torch")
                 except Exception as e:
-                    logger.error(f"❌ Failed to load model: {e}")
+                    logger.error(
+                        "Failed to load model",
+                        extra={
+                            "error": str(e),
+                            "error_type": type(e).__name__,
+                            "model_path": model_path
+                        },
+                        exc_info=True
+                    )
             else:
-                logger.info(f"📝 Model path {model_path} not found")
-                logger.info("Using rule-based fallback completion")
+                logger.info(
+                    "Model path not found, using rule-based fallback",
+                    extra={"model_path": model_path}
+                )
                 logger.info("To train model: python src/ai/copilot/lora_fine_tuning.py")
                 
         except Exception as e:
-            logger.error(f"Copilot initialization error: {e}")
+            logger.error(
+                "Copilot initialization error",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
     
     async def get_completions(
         self,
@@ -171,10 +207,23 @@ class CopilotService:
                         'score': 1.0 - (temp * 0.2)  # Higher temp = lower confidence
                     })
             
-            logger.info(f"Generated {len(suggestions)} model-based completions")
+            logger.info(
+                "Generated model-based completions",
+                extra={
+                    "suggestions_count": len(suggestions),
+                    "max_suggestions": max_suggestions
+                }
+            )
             
         except Exception as e:
-            logger.error(f"Model completion error: {e}")
+            logger.error(
+                "Model completion error, falling back to rules",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             # Fallback to rules
             return self._get_rule_based_completions(code, current_line, max_suggestions)
         
@@ -357,11 +406,25 @@ class CopilotService:
             # Extract only the new part
             code = generated[len(full_prompt):].strip()
             
-            logger.info(f"Generated {len(code)} chars of code")
+            logger.info(
+                "Generated code with model",
+                extra={
+                    "code_length": len(code),
+                    "code_type": code_type
+                }
+            )
             return code
             
         except Exception as e:
-            logger.error(f"Model generation error: {e}")
+            logger.error(
+                "Model generation error, falling back to template",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "code_type": code_type
+                },
+                exc_info=True
+            )
             # Fallback to template
             return self._generate_with_template(prompt, code_type)
     
@@ -548,7 +611,15 @@ class CopilotService:
             }
             
         except Exception as e:
-            logger.error(f"Optimization error: {e}")
+            logger.error(
+                "Optimization error",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "code_length": len(code) if code else 0
+                },
+                exc_info=True
+            )
             return {
                 'optimized_code': code,
                 'improvements': [],
@@ -586,18 +657,57 @@ copilot_service = CopilotService()
 # ==================== API ENDPOINTS ====================
 
 @router.post("/complete", tags=["Completions"])
-async def get_completions(request: CompletionRequest):
+@limiter.limit("60/minute")  # Rate limit: 60 completions per minute
+async def get_completions(api_request: Request, request: CompletionRequest):
     """
-    Get code completion suggestions
+    Get code completion suggestions с input validation и timeout handling
     
     Returns multiple suggestions ranked by confidence
     """
+    # Input validation
+    if not isinstance(request.code, str):
+        logger.warning(
+            "Invalid code type in get_completions",
+            extra={"code_type": type(request.code).__name__}
+        )
+        raise HTTPException(status_code=400, detail="Code must be a string")
+    
+    # Limit code length (prevent DoS)
+    max_code_length = 50000
+    if len(request.code) > max_code_length:
+        logger.warning(
+            "Code too long in get_completions",
+            extra={"code_length": len(request.code), "max_length": max_code_length}
+        )
+        raise HTTPException(status_code=413, detail="Code too large")
+    
+    if not isinstance(request.current_line, str):
+        logger.warning(
+            "Invalid current_line type in get_completions",
+            extra={"current_line_type": type(request.current_line).__name__}
+        )
+        raise HTTPException(status_code=400, detail="Current line must be a string")
+    
+    if len(request.current_line) > 1000:
+        request.current_line = request.current_line[:1000]
     
     try:
-        suggestions = await copilot_service.get_completions(
-            code=request.code,
-            current_line=request.current_line,
-            max_suggestions=request.max_suggestions
+        # Timeout для completion операции (30 секунд)
+        suggestions = await asyncio.wait_for(
+            copilot_service.get_completions(
+                code=request.code,
+                current_line=request.current_line,
+                max_suggestions=request.max_suggestions
+            ),
+            timeout=30.0
+        )
+        
+        logger.debug(
+            "Completions generated successfully",
+            extra={
+                "suggestions_count": len(suggestions),
+                "model_used": 'fine-tuned' if copilot_service.model_loaded else 'rule-based'
+            }
         )
         
         return {
@@ -606,8 +716,23 @@ async def get_completions(request: CompletionRequest):
             'count': len(suggestions)
         }
     
+    except asyncio.TimeoutError:
+        logger.error(
+            "Timeout in get_completions",
+            extra={"code_length": len(request.code)}
+        )
+        raise HTTPException(status_code=504, detail="Completion operation timed out")
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Completion error: {e}")
+        logger.error(
+            "Completion error",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -615,15 +740,51 @@ async def get_completions(request: CompletionRequest):
 @limiter.limit("10/minute")
 async def generate_code(api_request: Request, request: GenerationRequest):
     """
-    Generate code from natural language description
+    Generate code from natural language description с input validation и timeout handling
     
     Supports: function, procedure, test generation
     """
+    # Input validation
+    if not isinstance(request.prompt, str) or not request.prompt.strip():
+        logger.warning(
+            "Invalid prompt in generate_code",
+            extra={"prompt_type": type(request.prompt).__name__ if request.prompt else None}
+        )
+        raise HTTPException(status_code=400, detail="Prompt cannot be empty")
+    
+    # Limit prompt length (prevent DoS)
+    max_prompt_length = 5000
+    if len(request.prompt) > max_prompt_length:
+        logger.warning(
+            "Prompt too long in generate_code",
+            extra={"prompt_length": len(request.prompt), "max_length": max_prompt_length}
+        )
+        request.prompt = request.prompt[:max_prompt_length]
+    
+    if not isinstance(request.type, str) or request.type not in ['function', 'procedure', 'test']:
+        logger.warning(
+            "Invalid code type in generate_code",
+            extra={"code_type": request.type}
+        )
+        request.type = 'function'  # Default fallback
     
     try:
-        code = await copilot_service.generate_code(
-            prompt=request.prompt,
-            code_type=request.type
+        # Timeout для generation операции (60 секунд)
+        code = await asyncio.wait_for(
+            copilot_service.generate_code(
+                prompt=request.prompt,
+                code_type=request.type
+            ),
+            timeout=60.0
+        )
+        
+        logger.info(
+            "Code generated successfully",
+            extra={
+                "code_type": request.type,
+                "code_length": len(code),
+                "model_used": 'fine-tuned' if copilot_service.model_loaded else 'template-based'
+            }
         )
         
         return {
@@ -632,29 +793,91 @@ async def generate_code(api_request: Request, request: GenerationRequest):
             'model_used': 'fine-tuned' if copilot_service.model_loaded else 'template-based'
         }
     
+    except asyncio.TimeoutError:
+        logger.error(
+            "Timeout in generate_code",
+            extra={"prompt_length": len(request.prompt), "code_type": request.type}
+        )
+        raise HTTPException(status_code=504, detail="Code generation timed out")
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Generation error: {e}")
+        logger.error(
+            "Generation error",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "code_type": request.type
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/optimize", tags=["Optimization"])
 async def optimize_code(request: OptimizationRequest):
     """
-    Analyze and optimize code
+    Analyze and optimize code с input validation и timeout handling
     
     Returns optimized code with list of improvements
     """
+    # Input validation
+    if not isinstance(request.code, str):
+        logger.warning(
+            "Invalid code type in optimize_code",
+            extra={"code_type": type(request.code).__name__}
+        )
+        raise HTTPException(status_code=400, detail="Code must be a string")
+    
+    # Limit code length (prevent DoS)
+    max_code_length = 50000
+    if len(request.code) > max_code_length:
+        logger.warning(
+            "Code too long in optimize_code",
+            extra={"code_length": len(request.code), "max_length": max_code_length}
+        )
+        raise HTTPException(status_code=413, detail="Code too large")
+    
+    if not isinstance(request.language, str):
+        request.language = 'bsl'  # Default
     
     try:
-        result = await copilot_service.optimize_code(
-            code=request.code,
-            language=request.language
+        # Timeout для optimization операции (30 секунд)
+        result = await asyncio.wait_for(
+            copilot_service.optimize_code(
+                code=request.code,
+                language=request.language
+            ),
+            timeout=30.0
+        )
+        
+        logger.info(
+            "Code optimized successfully",
+            extra={
+                "code_length": len(request.code),
+                "improvements_count": len(result.get('improvements', []))
+            }
         )
         
         return result
     
+    except asyncio.TimeoutError:
+        logger.error(
+            "Timeout in optimize_code",
+            extra={"code_length": len(request.code)}
+        )
+        raise HTTPException(status_code=504, detail="Optimization operation timed out")
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Optimization error: {e}")
+        logger.error(
+            "Optimization error",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -662,15 +885,44 @@ async def optimize_code(request: OptimizationRequest):
 @limiter.limit("10/minute")
 async def generate_tests_for_code(api_request: Request, request: GenerationRequest):
     """
-    Generate tests for given code/function
+    Generate tests for given code/function с input validation и timeout handling
     
     Creates comprehensive Vanessa test suite
     """
+    # Input validation
+    if not isinstance(request.prompt, str) or not request.prompt.strip():
+        logger.warning(
+            "Invalid prompt in generate_tests_for_code",
+            extra={"prompt_type": type(request.prompt).__name__ if request.prompt else None}
+        )
+        raise HTTPException(status_code=400, detail="Prompt cannot be empty")
+    
+    # Limit prompt length (prevent DoS)
+    max_prompt_length = 5000
+    if len(request.prompt) > max_prompt_length:
+        logger.warning(
+            "Prompt too long in generate_tests_for_code",
+            extra={"prompt_length": len(request.prompt), "max_length": max_prompt_length}
+        )
+        request.prompt = request.prompt[:max_prompt_length]
     
     try:
-        tests = await copilot_service.generate_code(
-            prompt=request.prompt,
-            code_type='test'
+        # Timeout для test generation операции (60 секунд)
+        tests = await asyncio.wait_for(
+            copilot_service.generate_code(
+                prompt=request.prompt,
+                code_type='test'
+            ),
+            timeout=60.0
+        )
+        
+        logger.info(
+            "Tests generated successfully",
+            extra={
+                "tests_length": len(tests),
+                "framework": 'vanessa',
+                "model_used": 'fine-tuned' if copilot_service.model_loaded else 'template-based'
+            }
         )
         
         return {
@@ -679,8 +931,23 @@ async def generate_tests_for_code(api_request: Request, request: GenerationReque
             'model_used': 'fine-tuned' if copilot_service.model_loaded else 'template-based'
         }
     
+    except asyncio.TimeoutError:
+        logger.error(
+            "Timeout in generate_tests_for_code",
+            extra={"prompt_length": len(request.prompt)}
+        )
+        raise HTTPException(status_code=504, detail="Test generation timed out")
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Test generation error: {e}")
+        logger.error(
+            "Test generation error",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 

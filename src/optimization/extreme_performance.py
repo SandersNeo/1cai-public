@@ -3,14 +3,14 @@ Extreme Performance Optimization
 Advanced caching, query optimization, response streaming
 """
 
-import logging
 import asyncio
 from typing import Dict, Any, List, AsyncIterator
 from functools import lru_cache
 import hashlib
 import json
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class ExtremePerformanceOptimizer:
@@ -66,7 +66,10 @@ class ExtremePerformanceOptimizer:
             age = (datetime.now() - cached_at).total_seconds()
             if age < ttl_seconds:
                 self.cache_hits += 1
-                logger.debug(f"Cache HIT for query (age: {age:.1f}s)")
+                logger.debug(
+                    "Cache HIT for query",
+                    extra={"age_seconds": round(age, 1)}
+                )
                 return cached_data
         
         # Cache miss - execute query
@@ -135,7 +138,10 @@ class ExtremePerformanceOptimizer:
             import re
             where_cols = re.findall(r'WHERE\s+(\w+)', optimized, re.IGNORECASE)
             if where_cols:
-                logger.info(f"Suggest index on: {where_cols}")
+                logger.info(
+                    "Suggest index",
+                    extra={"columns": where_cols}
+                )
         
         return optimized
     
@@ -160,10 +166,20 @@ class ExtremePerformanceOptimizer:
             for query, params in common_queries:
                 await self.cached_query(conn, query, *params, ttl_seconds=600)
             
-            logger.info(f"Pre-warmed {len(common_queries)} cache entries")
+            logger.info(
+                "Pre-warmed cache entries",
+                extra={"entries_count": len(common_queries)}
+            )
             
         except Exception as e:
-            logger.error(f"Cache pre-warming error: {e}")
+            logger.error(
+                "Cache pre-warming error",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
     
     # ===== Connection Pool Tuning =====
     
@@ -262,6 +278,12 @@ async def batch_database_inserts(
         
         await conn.execute(query, *values)
     
-    logger.info(f"Batch inserted {len(records)} records into {table}")
+    logger.info(
+        "Batch inserted records",
+        extra={
+            "records_count": len(records),
+            "table": table
+        }
+    )
 
 

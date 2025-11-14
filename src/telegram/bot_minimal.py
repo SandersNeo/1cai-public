@@ -205,15 +205,25 @@ async def main():
     try:
         # Получаем информацию о боте
         bot_info = await bot.get_me()
-        logger.info(f"✅ Bot started: @{bot_info.username}")
-        logger.info("🔄 Polling started...")
-        logger.info("💡 Tip: Ctrl+C to stop\n")
+        logger.info(
+            "Bot started",
+            extra={"bot_username": bot_info.username}
+        )
+        logger.info("Polling started")
+        logger.info("Tip: Ctrl+C to stop")
         
         # Запускаем polling
         await dp.start_polling(bot)
         
     except Exception as e:
-        logger.error(f"❌ Error: {e}")
+        logger.error(
+            "Error",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
     finally:
         await bot.session.close()
 
@@ -224,6 +234,13 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         logger.info("\n👋 Bot stopped by user")
     except Exception as e:
-        logger.error(f"💥 Fatal error: {e}")
+        logger.error(
+            "Fatal error",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
 
 

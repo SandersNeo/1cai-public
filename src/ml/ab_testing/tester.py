@@ -4,7 +4,6 @@ A/B тестирование для ML моделей.
 """
 
 import asyncio
-import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Union, Tuple
 from dataclasses import dataclass, asdict
@@ -29,8 +28,9 @@ import uuid
 from src.ml.models.predictor import MLPredictor
 from src.ml.metrics.collector import MetricsCollector, MetricType, AssistantRole
 from src.ml.experiments.mlflow_manager import MLFlowManager
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 Base = declarative_base()
 
 
@@ -174,7 +174,10 @@ class ABTestingDatabase:
             session.add(test_record)
             session.commit()
             
-            logger.info(f"Создан A/B тест: {config.test_name}")
+            logger.info(
+                "Создан A/B тест",
+                extra={"test_name": config.test_name}
+            )
             return str(test_record.id)
         finally:
             session.close()
@@ -292,7 +295,13 @@ class ABTestManager:
         # Сохранение в активных тестах
         self.active_tests[test_id] = config
         
-        self.logger.info(f"Создан A/B тест '{config.test_name}' с ID: {test_id}")
+        logger.info(
+            "Создан A/B тест",
+            extra={
+                "test_name": config.test_name,
+                "test_id": test_id
+            }
+        )
         
         return test_id
 
@@ -474,7 +483,14 @@ class ABTestManager:
                 
                 self.mlflow_manager.log_metrics(metrics)
         except Exception as e:
-            self.logger.error(f"Ошибка логирования в MLflow: {e}")
+            logger.error(
+                "Ошибка логирования в MLflow",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
 
     def should_continue_test(self, test_id: str) -> Tuple[bool, str]:
         """Определение необходимости продолжения теста"""
@@ -520,7 +536,10 @@ class ABTestManager:
         # Здесь можно добавить логику продвижения модели в продакшен
         # Например, обновление конфигурации сервиса
         
-        self.logger.info(f"Продвижение модели: {message}")
+        logger.info(
+            "Продвижение модели",
+            extra={"message": message}
+        )
         
         # Обновление статуса теста
         session = self.db.SessionLocal()
@@ -548,7 +567,7 @@ class ABTestManager:
         result = None
         try:
             result = self.analyze_test_results(test_id)
-        except:
+        except (ValueError, KeyError, AttributeError):
             pass  # Тест может еще не иметь достаточно данных
         
         summary = {

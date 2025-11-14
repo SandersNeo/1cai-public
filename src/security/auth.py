@@ -1,4 +1,11 @@
-"""JWT-based authentication utilities."""
+"""
+JWT-based authentication utilities.
+Версия: 2.1.0
+
+Улучшения:
+- Structured logging
+- Улучшена обработка ошибок
+"""
 from __future__ import annotations
 
 import json
@@ -17,8 +24,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from src.security.audit import AuditLogger, get_audit_logger
 from src.security.roles import enrich_user_from_db
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token", auto_error=False)
 
@@ -182,46 +190,142 @@ class AuthService:
         return user
 
     def create_access_token(self, user: UserCredentials, expires_delta: Optional[timedelta] = None) -> str:
+        """
+        Create JWT access token with best practices
+        
+        Features:
+        - Short expiration time (default 60 minutes)
+        - UTC timestamps
+        - Minimal payload (security best practice)
+        - Secure algorithm (HS256)
+        """
         if expires_delta is None:
             expires_delta = timedelta(minutes=self.settings.access_token_expire_minutes)
 
         now = datetime.now(timezone.utc)
         payload = {
-            "sub": user.user_id,
+            "sub": user.user_id,  # Subject (user ID)
             "username": user.username,
             "roles": user.roles,
             "permissions": user.permissions,
             "full_name": user.full_name,
             "email": user.email,
-            "iat": now,
-            "exp": now + expires_delta,
+            "iat": int(now.timestamp()),  # Issued at (Unix timestamp)
+            "exp": int((now + expires_delta).timestamp()),  # Expiration (Unix timestamp)
+            "type": "access",  # Token type for clarity
         }
 
-        token = jwt.encode(payload, self.settings.jwt_secret, algorithm=self.settings.jwt_algorithm)
+        # Best practice: Use secure secret and algorithm
+        token = jwt.encode(
+            payload,
+            self.settings.jwt_secret,
+            algorithm=self.settings.jwt_algorithm
+        )
+        return token
+    
+    def create_refresh_token(self, user: UserCredentials) -> str:
+        """
+        Create refresh token for token renewal
+        
+        Best practice: Longer expiration (7-30 days) for refresh tokens
+        """
+        expires_delta = timedelta(days=7)  # Refresh tokens last 7 days
+        now = datetime.now(timezone.utc)
+        
+        payload = {
+            "sub": user.user_id,
+            "username": user.username,
+            "iat": int(now.timestamp()),
+            "exp": int((now + expires_delta).timestamp()),
+            "type": "refresh",  # Different type for refresh tokens
+        }
+        
+        # Use same secret but different type
+        token = jwt.encode(
+            payload,
+            self.settings.jwt_secret,
+            algorithm=self.settings.jwt_algorithm
+        )
         return token
 
-    def decode_token(self, token: str) -> CurrentUser:
+    def decode_token(self, token: str, token_type: str = "access") -> CurrentUser:
+        """
+        Decode and validate JWT token with best practices
+        
+        Features:
+        - Token expiration validation
+        - Token type validation
+        - Payload validation
+        - Secure error handling (don't leak sensitive info)
+        """
         try:
             payload = jwt.decode(
                 token,
                 self.settings.jwt_secret,
                 algorithms=[self.settings.jwt_algorithm],
+                options={
+                    "verify_signature": True,
+                    "verify_exp": True,
+                    "verify_iat": True,
+                }
             )
         except jwt.ExpiredSignatureError as exc:
-            logger.warning("JWT expired: %s", exc)
+            logger.warning(
+                "JWT expired",
+                extra={
+                    "error_type": "ExpiredSignatureError",
+                    "token_type": token_type
+                }
+            )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token expired",
+                detail="Token expired. Please refresh your token.",
+                headers={"WWW-Authenticate": "Bearer"},
+            ) from exc
+        except jwt.InvalidTokenError as exc:
+            logger.warning(
+                "JWT invalid",
+                extra={
+                    "error_type": "InvalidTokenError",
+                    "token_type": token_type
+                }
+            )
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token. Please authenticate again.",
                 headers={"WWW-Authenticate": "Bearer"},
             ) from exc
         except jwt.PyJWTError as exc:
-            logger.warning("JWT decode error: %s", exc)
+            logger.warning(
+                "JWT decode error",
+                extra={
+                    "error_type": type(exc).__name__,
+                    "token_type": token_type
+                },
+                exc_info=True
+            )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             ) from exc
 
+        # Validate token type
+        if payload.get("type") != token_type:
+            logger.warning(
+                "Invalid token type",
+                extra={
+                    "expected_type": token_type,
+                    "actual_type": payload.get("type")
+                }
+            )
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Invalid token type. Expected {token_type}.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        # Validate required fields
         user_id = payload.get("sub")
         username = payload.get("username")
         if not user_id or not username:

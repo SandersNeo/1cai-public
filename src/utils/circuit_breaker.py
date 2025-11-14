@@ -1,5 +1,11 @@
 """
 Circuit Breaker Pattern Implementation
+Версия: 2.1.0
+
+Улучшения:
+- Structured logging
+- Улучшена обработка ошибок
+
 TIER 1 Improvement: Prevents cascade failures
 """
 
@@ -8,8 +14,9 @@ import time
 from typing import Callable, Any
 from functools import wraps
 from enum import Enum
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class CircuitState(Enum):
@@ -39,6 +46,21 @@ class CircuitBreaker:
         recovery_timeout: int = 60,
         expected_exception: type = Exception
     ):
+        # Input validation
+        if not isinstance(failure_threshold, int) or failure_threshold < 1:
+            logger.warning(
+                "Invalid failure_threshold in CircuitBreaker.__init__",
+                extra={"failure_threshold": failure_threshold, "failure_threshold_type": type(failure_threshold).__name__}
+            )
+            failure_threshold = 5  # Default
+        
+        if not isinstance(recovery_timeout, int) or recovery_timeout < 1:
+            logger.warning(
+                "Invalid recovery_timeout in CircuitBreaker.__init__",
+                extra={"recovery_timeout": recovery_timeout, "recovery_timeout_type": type(recovery_timeout).__name__}
+            )
+            recovery_timeout = 60  # Default
+        
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.expected_exception = expected_exception
@@ -46,6 +68,14 @@ class CircuitBreaker:
         self.failure_count = 0
         self.last_failure_time = None
         self.state = CircuitState.CLOSED
+        
+        logger.debug(
+            "CircuitBreaker initialized",
+            extra={
+                "failure_threshold": failure_threshold,
+                "recovery_timeout": recovery_timeout
+            }
+        )
     
     def _should_attempt_reset(self) -> bool:
         """Check if should try to recover"""
@@ -56,17 +86,40 @@ class CircuitBreaker:
         )
     
     async def call(self, func: Callable, *args, **kwargs) -> Any:
-        """Execute function with circuit breaker protection"""
+        """Execute function with circuit breaker protection с input validation"""
+        # Input validation
+        if not callable(func):
+            logger.warning(
+                "Invalid func in CircuitBreaker.call",
+                extra={"func_type": type(func).__name__}
+            )
+            raise ValueError("func must be callable")
+        
+        func_name = getattr(func, '__name__', str(func))
         
         # Check if should attempt recovery
         if self._should_attempt_reset():
             self.state = CircuitState.HALF_OPEN
-            logger.info(f"Circuit breaker entering HALF_OPEN state for {func.__name__}")
+            logger.info(
+                "Circuit breaker entering HALF_OPEN state",
+                extra={
+                    "function": func_name,
+                    "state": "HALF_OPEN",
+                    "failure_count": self.failure_count
+                }
+            )
         
         # If circuit is OPEN, reject immediately
         if self.state == CircuitState.OPEN:
-            logger.warning(f"Circuit breaker OPEN for {func.__name__}, rejecting request")
-            raise Exception(f"Circuit breaker is OPEN for {func.__name__}. Service unavailable.")
+            logger.warning(
+                "Circuit breaker OPEN, rejecting request",
+                extra={
+                    "function": func_name,
+                    "state": "OPEN",
+                    "failure_count": self.failure_count
+                }
+            )
+            raise Exception(f"Circuit breaker is OPEN for {func_name}. Service unavailable.")
         
         try:
             # Execute function
@@ -74,7 +127,14 @@ class CircuitBreaker:
             
             # Success! Reset failure count
             if self.state == CircuitState.HALF_OPEN:
-                logger.info(f"Circuit breaker recovered for {func.__name__}, closing circuit")
+                logger.info(
+                    "Circuit breaker recovered, closing circuit",
+                    extra={
+                        "function": func_name,
+                        "state": "CLOSED",
+                        "previous_failures": self.failure_count
+                    }
+                )
                 self.state = CircuitState.CLOSED
                 self.failure_count = 0
             
@@ -86,13 +146,30 @@ class CircuitBreaker:
             self.last_failure_time = time.time()
             
             logger.error(
-                f"Circuit breaker failure {self.failure_count}/{self.failure_threshold} for {func.__name__}: {e}"
+                "Circuit breaker failure",
+                extra={
+                    "function": func_name,
+                    "failure_count": self.failure_count,
+                    "failure_threshold": self.failure_threshold,
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "state": self.state.value
+                },
+                exc_info=True
             )
             
             # Check if should open circuit
             if self.failure_count >= self.failure_threshold:
                 self.state = CircuitState.OPEN
-                logger.error(f"Circuit breaker OPENED for {func.__name__} after {self.failure_count} failures")
+                logger.error(
+                    "Circuit breaker OPENED after failures",
+                    extra={
+                        "function": func_name,
+                        "failure_count": self.failure_count,
+                        "failure_threshold": self.failure_threshold,
+                        "state": "OPEN"
+                    }
+                )
             
             raise
 

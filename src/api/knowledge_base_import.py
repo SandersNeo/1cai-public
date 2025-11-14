@@ -12,10 +12,12 @@ import io
 from pathlib import Path
 
 from src.services.configuration_knowledge_base import get_knowledge_base
+from src.utils.structured_logging import StructuredLogger
 
 router = APIRouter(prefix="/api/knowledge-base", tags=["Knowledge Base Import"])
 
 kb = get_knowledge_base()
+logger = StructuredLogger(__name__).logger
 
 
 class ImportRequest(BaseModel):
@@ -107,7 +109,14 @@ async def import_from_json(
                 )
                 imported_modules += 1
             except Exception as e:
-                print(f"Ошибка импорта модуля: {e}")
+                logger.error(
+                    "Ошибка импорта модуля",
+                    extra={
+                        "error": str(e),
+                        "error_type": type(e).__name__
+                    },
+                    exc_info=True
+                )
         
         # Импортируем best practices
         for practice_data in data.get("best_practices", []):
@@ -125,7 +134,14 @@ async def import_from_json(
                 )
                 imported_practices += 1
             except Exception as e:
-                print(f"Ошибка импорта practice: {e}")
+                logger.error(
+                    "Ошибка импорта practice",
+                    extra={
+                        "error": str(e),
+                        "error_type": type(e).__name__
+                    },
+                    exc_info=True
+                )
         
         return {
             "status": "success",
@@ -181,7 +197,14 @@ async def import_from_csv(
                     )
                     imported += 1
                 except Exception as e:
-                    print(f"Ошибка импорта модуля: {e}")
+                    logger.error(
+                        "Ошибка импорта модуля",
+                        extra={
+                            "error": str(e),
+                            "error_type": type(e).__name__
+                        },
+                        exc_info=True
+                    )
         
         elif type == "best_practices":
             for row in rows:
@@ -199,7 +222,14 @@ async def import_from_csv(
                     )
                     imported += 1
                 except Exception as e:
-                    print(f"Ошибка импорта practice: {e}")
+                    logger.error(
+                        "Ошибка импорта practice",
+                        extra={
+                            "error": str(e),
+                            "error_type": type(e).__name__
+                        },
+                        exc_info=True
+                    )
         
         return {
             "status": "success",
@@ -241,7 +271,15 @@ async def bulk_import(request: BulkImportRequest):
                 )
                 imported_modules += 1
             except Exception as e:
-                print(f"Ошибка импорта модуля {module.name}: {e}")
+                logger.error(
+                    "Ошибка импорта модуля",
+                    extra={
+                        "module_name": module.name,
+                        "error": str(e),
+                        "error_type": type(e).__name__
+                    },
+                    exc_info=True
+                )
         
         # Импортируем best practices
         for practice in request.best_practices:
@@ -259,7 +297,15 @@ async def bulk_import(request: BulkImportRequest):
                 )
                 imported_practices += 1
             except Exception as e:
-                print(f"Ошибка импорта practice {practice.title}: {e}")
+                logger.error(
+                    "Ошибка импорта practice",
+                    extra={
+                        "practice_title": practice.title,
+                        "error": str(e),
+                        "error_type": type(e).__name__
+                    },
+                    exc_info=True
+                )
         
         return {
             "status": "success",

@@ -6,9 +6,9 @@ Extended Architect AI Agent - Full Implementation
 from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 from dataclasses import dataclass
-import logging
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 @dataclass
@@ -46,7 +46,7 @@ class ArchitectAgentExtended:
             from src.db.neo4j_client import Neo4jClient
             self.neo4j = Neo4jClient()
             self.neo4j_available = True
-        except:
+        except (ImportError, Exception):
             self.neo4j = None
             self.neo4j_available = False
             logger.warning("Neo4j not available")
@@ -56,7 +56,7 @@ class ArchitectAgentExtended:
             from src.ai.agents.its_knowledge_integrator import ITSKnowledgeIntegrator
             self.its_knowledge = ITSKnowledgeIntegrator()
             self.its_integration = True
-        except:
+        except (ImportError, Exception):
             self.its_knowledge = None
             self.its_integration = False
             logger.warning("ITS Knowledge integration not available")
@@ -86,7 +86,10 @@ class ArchitectAgentExtended:
         Returns:
             Полный анализ архитектуры с метриками и рекомендациями
         """
-        logger.info(f"Starting graph analysis for {config_name}")
+        logger.info(
+            "Starting graph analysis",
+            extra={"config_name": config_name}
+        )
         
         if not self.neo4j_available:
             return {
@@ -151,7 +154,15 @@ class ArchitectAgentExtended:
             }
             
         except Exception as e:
-            logger.error(f"Graph analysis error: {e}")
+            logger.error(
+                "Graph analysis error",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "config_name": config_name if 'config_name' in locals() else None
+                },
+                exc_info=True
+            )
             return {"error": str(e)}
     
     async def _get_modules_count(self, config_name: str) -> int:
@@ -661,7 +672,10 @@ class ArchitectAgentExtended:
     async def _save_adr(self, adr: Dict):
         """Сохранение ADR в БД"""
         # TODO: Save to PostgreSQL
-        logger.info(f"ADR saved: {adr['adr_id']}")
+        logger.info(
+            "ADR saved",
+            extra={"adr_id": adr['adr_id']}
+        )
     
     # ==========================================
     # 3. ANTI-PATTERN DETECTION
@@ -683,7 +697,10 @@ class ArchitectAgentExtended:
                 "refactoring_roadmap": [...]
             }
         """
-        logger.info(f"Detecting anti-patterns for {config_name}")
+        logger.info(
+            "Detecting anti-patterns",
+            extra={"config_name": config_name}
+        )
         
         anti_patterns = []
         

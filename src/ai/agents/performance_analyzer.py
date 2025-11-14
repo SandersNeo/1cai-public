@@ -4,9 +4,9 @@ Performance Analyzer - Анализ производительности 1С к�
 
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
-import logging
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 @dataclass
@@ -55,7 +55,10 @@ class PerformanceAnalyzer:
                 "optimization_priorities": [...]
             }
         """
-        logger.info(f"Analyzing performance for {config_name}")
+        logger.info(
+            "Analyzing performance",
+            extra={"config_name": config_name}
+        )
         
         # 1. Поиск медленных запросов
         slow_queries = await self._find_slow_queries(config_name)

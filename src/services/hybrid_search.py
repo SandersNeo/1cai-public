@@ -1,14 +1,21 @@
 """
 Hybrid Search Service
-Combines vector search (Qdrant) + full-text search (Elasticsearch)
-Using Reciprocal Rank Fusion (RRF) for result merging
+Версия: 2.0.0
+
+Улучшения:
+- Улучшенная обработка ошибок
+- Timeout для параллельных запросов
+- Graceful degradation при ошибках
+- Structured logging
 """
 
 import logging
-from typing import List, Dict, Any, Optional
 import asyncio
+from typing import List, Dict, Any, Optional
 
-logger = logging.getLogger(__name__)
+from src.utils.structured_logging import StructuredLogger
+
+logger = StructuredLogger(__name__).logger
 
 
 class HybridSearchService:
@@ -31,7 +38,8 @@ class HybridSearchService:
                     query: str,
                     config_filter: Optional[str] = None,
                     limit: int = 10,
-                    rrf_k: int = 60) -> List[Dict[str, Any]]:
+                    rrf_k: int = 60,
+                    timeout: float = 30.0) -> List[Dict[str, Any]]:
         """
         Hybrid search combining vector and full-text
         
@@ -40,31 +48,88 @@ class HybridSearchService:
             config_filter: Filter by configuration
             limit: Number of results
             rrf_k: RRF k parameter (default 60)
+            timeout: Timeout in seconds (default 30.0)
             
         Returns:
             Merged and ranked results
         """
         try:
+            # Input validation
+            if not isinstance(query, str) or not query.strip():
+                logger.warning(
+                    "Invalid query in hybrid search",
+                    extra={"query_type": type(query).__name__ if query else None}
+                )
+                return []
+            
+            # Validate timeout
+            if not isinstance(timeout, (int, float)) or timeout <= 0:
+                logger.warning(
+                    "Invalid timeout in hybrid search",
+                    extra={"timeout": timeout, "timeout_type": type(timeout).__name__}
+                )
+                timeout = 30.0
+            
+            if timeout > 300:  # Max 5 minutes
+                logger.warning(
+                    "Timeout too large in hybrid search",
+                    extra={"timeout": timeout}
+                )
+                timeout = 300.0
+            
             # Generate query embedding for vector search
             query_vector = self.embeddings.encode(query)
             
-            # Execute both searches in parallel
+            # Execute both searches in parallel with timeout (best practice)
             vector_task = self._vector_search(query_vector, config_filter, limit * 2)
             text_task = self._fulltext_search(query, config_filter, limit * 2)
             
-            vector_results, text_results = await asyncio.gather(
-                vector_task,
-                text_task,
-                return_exceptions=True
-            )
+            try:
+                vector_results, text_results = await asyncio.wait_for(
+                    asyncio.gather(
+                        vector_task,
+                        text_task,
+                        return_exceptions=True
+                    ),
+                    timeout=timeout  # Use validated timeout
+                )
+            except asyncio.TimeoutError:
+                logger.error(
+                    "Timeout при hybrid search",
+                    extra={
+                        "query": query[:100] if query else None,
+                        "config_filter": config_filter,
+                        "limit": limit
+                    }
+                )
+                vector_results = []
+                text_results = []
             
-            # Handle errors
+            # Handle errors with structured logging (best practice)
             if isinstance(vector_results, Exception):
-                logger.error(f"Vector search failed: {vector_results}")
+                logger.error(
+                    "Vector search failed",
+                    exc_info=True,
+                    extra={
+                        "error": str(vector_results),
+                        "error_type": type(vector_results).__name__,
+                        "query": query[:100] if query else None,
+                        "config_filter": config_filter
+                    }
+                )
                 vector_results = []
             
             if isinstance(text_results, Exception):
-                logger.error(f"Text search failed: {text_results}")
+                logger.error(
+                    "Text search failed",
+                    exc_info=True,
+                    extra={
+                        "error": str(text_results),
+                        "error_type": type(text_results).__name__,
+                        "query": query[:100] if query else None,
+                        "config_filter": config_filter
+                    }
+                )
                 text_results = []
             
             # Merge results using RRF
@@ -78,7 +143,17 @@ class HybridSearchService:
             return merged[:limit]
             
         except Exception as e:
-            logger.error(f"Hybrid search error: {e}")
+            logger.error(
+                "Unexpected error in hybrid search",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "query": query[:100] if query else None,
+                    "config_filter": config_filter,
+                    "limit": limit
+                },
+                exc_info=True
+            )
             return []
     
     async def _vector_search(self, 
@@ -106,7 +181,16 @@ class HybridSearchService:
             return normalized
             
         except Exception as e:
-            logger.error(f"Vector search error: {e}")
+            logger.error(
+                "Vector search error",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "config_filter": config_filter,
+                    "limit": limit
+                },
+                exc_info=True
+            )
             return []
     
     async def _fulltext_search(self,
@@ -135,7 +219,17 @@ class HybridSearchService:
             return normalized
             
         except Exception as e:
-            logger.error(f"Full-text search error: {e}")
+            logger.error(
+                "Full-text search error",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "query": query[:100] if query else None,
+                    "config_filter": config_filter,
+                    "limit": limit
+                },
+                exc_info=True
+            )
             return []
     
     def _reciprocal_rank_fusion(self,

@@ -4,13 +4,13 @@ Iteration 2 Quick Win #5: Easier troubleshooting
 """
 
 import os
-import logging
 import psutil
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Dict, Any
 from src.config import settings
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 router = APIRouter(prefix="/debug", tags=["Debug"])
 
@@ -121,7 +121,14 @@ async def clear_cache(_=Depends(verify_dev_environment)) -> Dict[str, str]:
             "message": "All caches cleared"
         }
     except Exception as e:
-        logger.error(f"Failed to clear cache: {e}")
+        logger.error(
+            "Failed to clear cache",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 

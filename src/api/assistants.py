@@ -8,21 +8,23 @@ import logging
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
 
 from ..ai_assistants.base_assistant import AssistantMessage, AssistantResponse
 from ..ai_assistants.architect_assistant import ArchitectAssistant
 from ..config import settings
+from ..middleware.rate_limiter import limiter
+from src.utils.structured_logging import StructuredLogger
 
 
 # Pydantic модели для запросов и ответов
 class ChatRequest(BaseModel):
     """Запрос для чата с ассистентом"""
-    query: str = Field(..., description="Сообщение пользователя")
+    query: str = Field(..., max_length=5000, description="Сообщение пользователя")
     context: Optional[Dict[str, Any]] = Field(default=None, description="Дополнительный контекст")
-    conversation_id: Optional[str] = Field(default=None, description="ID диалога")
+    conversation_id: Optional[str] = Field(default=None, max_length=100, description="ID диалога")
 
 
 class ChatResponse(BaseModel):
@@ -38,20 +40,20 @@ class ChatResponse(BaseModel):
 
 class AnalyzeRequirementsRequest(BaseModel):
     """Запрос на анализ требований"""
-    requirements_text: str = Field(..., description="Текст с требованиями")
+    requirements_text: str = Field(..., max_length=10000, description="Текст с требованиями")
     context: Optional[Dict[str, Any]] = Field(default=None, description="Контекст проекта")
 
 
 class GenerateDiagramRequest(BaseModel):
     """Запрос на генерацию диаграммы"""
     architecture_proposal: Dict[str, Any] = Field(..., description="Предложение архитектуры")
-    diagram_type: str = Field(default="flowchart", description="Тип диаграммы")
+    diagram_type: str = Field(default="flowchart", max_length=50, description="Тип диаграммы")
     diagram_requirements: Optional[Dict[str, Any]] = Field(default=None, description="Требования к диаграмме")
 
 
 class ComprehensiveAnalysisRequest(BaseModel):
     """Запрос на комплексный анализ"""
-    requirements_text: str = Field(..., description="Текст с требованиями")
+    requirements_text: str = Field(..., max_length=10000, description="Текст с требованиями")
     context: Optional[Dict[str, Any]] = Field(default=None, description="Контекст проекта")
 
 
@@ -77,7 +79,7 @@ async def get_architect_assistant() -> ArchitectAssistant:
 
 
 # Инициализация логгера
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 @router.get("/health", summary="Проверка состояния API")
@@ -101,7 +103,9 @@ async def list_assistants():
 
 
 @router.post("/chat/{assistant_role}", response_model=ChatResponse, summary="Чат с ассистентом")
+@limiter.limit("20/minute")  # Rate limit: 20 chat messages per minute
 async def chat_with_assistant(
+    api_request: Request,
     assistant_role: str,
     request: ChatRequest,
     assistant = Depends(get_architect_assistant)  # Пока используем только архитектора
@@ -119,12 +123,48 @@ async def chat_with_assistant(
         if assistant_role not in settings.assistant_configs:
             raise HTTPException(status_code=404, detail=f"Ассистент с ролью '{assistant_role}' не найден")
         
-        # Обрабатываем запрос
-        response = await assistant.process_query(
-            query=request.query,
-            context=request.context,
-            user_id=request.conversation_id
-        )
+        # Input validation
+        if not isinstance(request.query, str) or not request.query.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="Query cannot be empty"
+            )
+        
+        # Limit query length (prevent DoS)
+        max_query_length = 5000
+        if len(request.query) > max_query_length:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Query too long. Maximum length: {max_query_length} characters"
+            )
+        
+        # Sanitize assistant_role (prevent injection)
+        assistant_role = assistant_role.strip()[:100]
+        
+        # Обрабатываем запрос с timeout
+        timeout = 30.0  # 30 seconds timeout
+        try:
+            response = await asyncio.wait_for(
+                assistant.process_query(
+                    query=request.query,
+                    context=request.context,
+                    user_id=request.conversation_id
+                ),
+                timeout=timeout
+            )
+        except asyncio.TimeoutError:
+            logger.warning(
+                "Timeout in chat_with_assistant",
+                extra={
+                    "assistant_role": assistant_role,
+                    "timeout": timeout,
+                    "query_length": len(request.query)
+                }
+            )
+            raise HTTPException(
+                status_code=504,
+                detail="Request timeout. Please try again with a shorter query."
+            )
         
         return ChatResponse(
             message_id=response.message.id,
@@ -139,13 +179,30 @@ async def chat_with_assistant(
             conversation_id=request.conversation_id or "default"
         )
         
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions as-is
     except Exception as e:
-        logger.error(f"Ошибка при обработке чата: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(
+            "Ошибка при обработке чата",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "assistant_role": assistant_role,
+                "conversation_id": request.conversation_id,
+                "path": api_request.url.path
+            },
+            exc_info=True
+        )
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while processing chat request"
+        )
 
 
 @router.post("/architect/analyze-requirements", summary="Анализ требований для архитектора")
+@limiter.limit("10/minute")  # Rate limit: 10 analysis requests per minute
 async def analyze_requirements(
+    api_request: Request,
     request: AnalyzeRequirementsRequest,
     assistant: ArchitectAssistant = Depends(get_architect_assistant)
 ):
@@ -160,9 +217,29 @@ async def analyze_requirements(
         Структурированный анализ требований
     """
     try:
-        result = await assistant.analyze_requirements(
-            requirements_text=request.requirements_text,
-            context=request.context
+        # Input validation
+        if not isinstance(request.requirements_text, str) or not request.requirements_text.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="Requirements text cannot be empty"
+            )
+        
+        # Limit requirements text length (prevent DoS)
+        max_length = 10000
+        if len(request.requirements_text) > max_length:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Requirements text too long. Maximum length: {max_length} characters"
+            )
+        
+        # Process with timeout
+        timeout = 60.0  # 60 seconds timeout for analysis
+        result = await asyncio.wait_for(
+            assistant.analyze_requirements(
+                requirements_text=request.requirements_text,
+                context=request.context
+            ),
+            timeout=timeout
         )
         
         return {
@@ -171,13 +248,33 @@ async def analyze_requirements(
             "timestamp": datetime.now()
         }
         
+    except asyncio.TimeoutError:
+        logger.warning(
+            "Timeout in analyze_requirements",
+            extra={"timeout": timeout, "requirements_length": len(request.requirements_text)}
+        )
+        raise HTTPException(
+            status_code=504,
+            detail="Analysis timeout. Please try again with shorter requirements."
+        )
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Ошибка при анализе требований: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(
+            f"Ошибка при анализе требований: {e}",
+            extra={
+                "error_type": type(e).__name__,
+                "requirements_length": len(request.requirements_text)
+            },
+            exc_info=True
+        )
+        raise HTTPException(status_code=500, detail="An error occurred while analyzing requirements")
 
 
 @router.post("/architect/generate-diagram", summary="Генерация архитектурной диаграммы")
+@limiter.limit("5/minute")  # Rate limit: 5 diagram generations per minute
 async def generate_diagram(
+    api_request: Request,
     request: GenerateDiagramRequest,
     assistant: ArchitectAssistant = Depends(get_architect_assistant)
 ):
@@ -205,12 +302,22 @@ async def generate_diagram(
         }
         
     except Exception as e:
-        logger.error(f"Ошибка при генерации диаграммы: {e}")
+        logger.error(
+            "Ошибка при генерации диаграммы",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "diagram_type": request.diagram_type if hasattr(request, 'diagram_type') else None
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/architect/comprehensive-analysis", summary="Комплексный анализ архитектора")
+@limiter.limit("5/minute")  # Rate limit: 5 comprehensive analyses per minute
 async def comprehensive_analysis(
+    api_request: Request,
     request: ComprehensiveAnalysisRequest,
     assistant: ArchitectAssistant = Depends(get_architect_assistant)
 ):
@@ -237,12 +344,21 @@ async def comprehensive_analysis(
         }
         
     except Exception as e:
-        logger.error(f"Ошибка при комплексном анализе: {e}")
+        logger.error(
+            "Ошибка при комплексном анализе",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/architect/assess-risks", summary="Оценка рисков архитектуры")
+@limiter.limit("10/minute")  # Rate limit: 10 risk assessments per minute
 async def assess_risks(
+    api_request: Request,
     request: RiskAssessmentRequest,
     assistant: ArchitectAssistant = Depends(get_architect_assistant)
 ):
@@ -269,7 +385,14 @@ async def assess_risks(
         }
         
     except Exception as e:
-        logger.error(f"Ошибка при оценке рисков: {e}")
+        logger.error(
+            "Ошибка при оценке рисков",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -311,7 +434,15 @@ async def get_conversation_history(
         }
         
     except Exception as e:
-        logger.error(f"Ошибка при получении истории: {e}")
+        logger.error(
+            "Ошибка при получении истории",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "limit": limit
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -338,7 +469,14 @@ async def clear_conversation_history(
         }
         
     except Exception as e:
-        logger.error(f"Ошибка при очистке истории: {e}")
+        logger.error(
+            "Ошибка при очистке истории",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -365,12 +503,21 @@ async def get_assistant_stats(
         }
         
     except Exception as e:
-        logger.error(f"Ошибка при получении статистики: {e}")
+        logger.error(
+            "Ошибка при получении статистики",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/knowledge/add", summary="Добавление знаний в базу ассистента")
+@limiter.limit("10/minute")  # Rate limit: 10 knowledge additions per minute
 async def add_knowledge(
+    api_request: Request,
     documents: List[Dict[str, Any]],
     role: str = "architect",
     user_id: str = "system",
@@ -399,7 +546,16 @@ async def add_knowledge(
         }
         
     except Exception as e:
-        logger.error(f"Ошибка при добавлении знаний: {e}")
+        logger.error(
+            "Ошибка при добавлении знаний",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "role": role,
+                "documents_count": len(documents) if documents else 0
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 

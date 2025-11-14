@@ -4,13 +4,13 @@ BSL Dataset Builder
 """
 
 import asyncio
-import logging
 import json
 from typing import List, Dict, Optional
 from pathlib import Path
 from datetime import datetime
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class BSLDatasetBuilder:
@@ -78,10 +78,20 @@ class BSLDatasetBuilder:
                 self.examples.append(example)
                 self._update_stats("postgres", row['configuration_name'])
             
-            logger.info(f"Extracted {len(rows)} examples from PostgreSQL")
+            logger.info(
+                "Extracted examples from PostgreSQL",
+                extra={"examples_count": len(rows)}
+            )
             
         except Exception as e:
-            logger.error(f"PostgreSQL extraction error: {e}")
+            logger.error(
+                "PostgreSQL extraction error",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
     
     async def build_from_github(self, repos: Optional[List[str]] = None):
         """
@@ -106,9 +116,20 @@ class BSLDatasetBuilder:
             try:
                 await self._process_github_repo(repo)
             except Exception as e:
-                logger.error(f"Failed to process repo {repo}: {e}")
+                logger.error(
+                    "Failed to process repo",
+                    extra={
+                        "repo": repo,
+                        "error": str(e),
+                        "error_type": type(e).__name__
+                    },
+                    exc_info=True
+                )
         
-        logger.info(f"Processed {len(repos_to_scan)} GitHub repos")
+        logger.info(
+            "Processed GitHub repos",
+            extra={"repos_count": len(repos_to_scan)}
+        )
     
     async def _process_github_repo(self, repo: str):
         """Обработка одного GitHub репозитория"""
@@ -119,7 +140,10 @@ class BSLDatasetBuilder:
         # 3. Parse functions with comments
         # 4. Create instruction-output pairs
         
-        logger.info(f"Processing repo: {repo}")
+        logger.info(
+            "Processing repo",
+            extra={"repo": repo}
+        )
     
     def add_common_patterns(self):
         """
@@ -371,7 +395,10 @@ class BSLDatasetBuilder:
             self.examples.append(pattern)
             self._update_stats("patterns", pattern.get("category", "other"))
         
-        logger.info(f"Added {len(patterns)} common patterns")
+        logger.info(
+            "Added common patterns",
+            extra={"patterns_count": len(patterns)}
+        )
     
     def add_refactoring_examples(self):
         """
@@ -534,7 +561,10 @@ class BSLDatasetBuilder:
             self.examples.append(example)
             self._update_stats("refactoring", example.get("category", "other"))
         
-        logger.info(f"Added {len(refactoring_examples)} refactoring examples")
+        logger.info(
+            "Added refactoring examples",
+            extra={"examples_count": len(refactoring_examples)}
+        )
     
     def add_optimization_examples(self):
         """Примеры оптимизации производительности"""
@@ -591,7 +621,10 @@ class BSLDatasetBuilder:
             self.examples.append(example)
             self._update_stats("optimization", example.get("category", "other"))
         
-        logger.info(f"Added {len(optimization_examples)} optimization examples")
+        logger.info(
+            "Added optimization examples",
+            extra={"examples_count": len(optimization_examples)}
+        )
     
     def _update_stats(self, source: str, category: str):
         """Обновить статистику"""
@@ -630,7 +663,10 @@ class BSLDatasetBuilder:
                     
                     f.write(json.dumps(alpaca_format, ensure_ascii=False) + '\n')
             
-            logger.info(f"Alpaca format saved to {output_file}")
+            logger.info(
+                "Alpaca format saved",
+                extra={"output_file": str(output_file), "format": "alpaca"}
+            )
         
         elif model_format == "openai":
             output_file = self.output_dir / "bsl_openai_train.jsonl"
@@ -656,7 +692,10 @@ class BSLDatasetBuilder:
                     
                     f.write(json.dumps(openai_format, ensure_ascii=False) + '\n')
             
-            logger.info(f"OpenAI format saved to {output_file}")
+            logger.info(
+                "OpenAI format saved",
+                extra={"output_file": str(output_file), "format": "openai"}
+            )
         
         elif model_format == "huggingface":
             output_file = self.output_dir / "bsl_hf_train.jsonl"
@@ -669,7 +708,10 @@ class BSLDatasetBuilder:
                     
                     f.write(json.dumps(hf_format, ensure_ascii=False) + '\n')
             
-            logger.info(f"HuggingFace format saved to {output_file}")
+            logger.info(
+                "HuggingFace format saved",
+                extra={"output_file": str(output_file), "format": "huggingface"}
+            )
         
         return str(output_file)
     
@@ -685,7 +727,10 @@ class BSLDatasetBuilder:
                 "examples": len(self.examples)
             }, f, ensure_ascii=False, indent=2)
         
-        logger.info(f"Statistics saved to {stats_file}")
+        logger.info(
+            "Statistics saved",
+            extra={"stats_file": str(stats_file)}
+        )
         
         return stats_file
     
@@ -723,7 +768,14 @@ class BSLDatasetBuilder:
                 for example in examples:
                     f.write(json.dumps(example, ensure_ascii=False) + '\n')
             
-            logger.info(f"{split_name}: {len(examples)} examples → {split_file}")
+            logger.info(
+                "Dataset split saved",
+                extra={
+                    "split_name": split_name,
+                    "examples_count": len(examples),
+                    "split_file": str(split_file)
+                }
+            )
         
         return splits
 

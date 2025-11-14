@@ -1,15 +1,22 @@
-# TODO: Интеграция экосистемы @alkoleft
+# TODO: Бэклог развития платформы
 
-- [ ] (Высокий) DevOps платформа (K8s/IaC/CI/GitOps)
-  - ✅ Kind кластер, Helm chart, Terraform шаблон, Jenkins/GitLab pipeline.
-  - ✅ GitOps: Argo CD manifests (`infrastructure/argocd`), скрипты `scripts/gitops/*`, make `gitops-*`.
-  - TODO: Argo CD ApplicationSet для multi-env, Terraform модуль Argo CD, Vault интеграция.
+> **Примечание:** Этот файл содержит общий бэклог задач проекта. Название файла исторически связано с тем, что часть задач касается интеграции внешних инструментов из экосистемы [@alkoleft](https://github.com/alkoleft) (открытые инструменты для разработки на 1С: MCP-серверы, тест-раннеры, парсеры BSL и др.). Подробнее о внешних зависимостях см. [`alkoleft_inventory.md`](./alkoleft_inventory.md) и ADR в [`docs/architecture/adr/`](../architecture/adr/).
+
+## Задачи по интеграции внешних инструментов
+
 - [ ] (Высокий) Реализация плана по `bsl-language-server` и `metadata.js` ([детали](./bsl_language_server_plan.md))
   - 👣 План сформирован, далее — выполнение шагов 1–6
 - [ ] (Средний) Подготовка Marketplace-пакетов (`onec-markdown-viewer`, `VAEditor`) — требования и публикация ([план](./marketplace_integration_plan.md))
 - [ ] (Низкий) Оценка архивных утилит (`cfg_tools`, `ones_universal_tools`) — перенос в CLI ([план оценки](./archive_tools_assessment.md))
 - [ ] (Средний) Мониторинг GitHub-репозиториев @alkoleft (webhook/API) ([план](./github_monitoring_plan.md))
   - ✅ CLI `scripts/monitoring/github_monitor.py` создаёт снимок и сравнивает релизы; далее — автоматизация (cron/CI, уведомления).
+
+## Общий бэклог платформы
+
+- [ ] (Высокий) DevOps платформа (K8s/IaC/CI/GitOps)
+  - ✅ Kind кластер, Helm chart, Terraform шаблон, Jenkins/GitLab pipeline.
+  - ✅ GitOps: Argo CD manifests (`infrastructure/argocd`), скрипты `scripts/gitops/*`, make `gitops-*`.
+  - TODO: Argo CD ApplicationSet для multi-env, Terraform модуль Argo CD, Vault интеграция.
 - [ ] (Средний) Spec-driven workflow: проверки заполнения шаблонов, интеграция с CI (TODO в `docs/research/spec_kit_analysis.md`).
   - ✅ Скрипты `init_feature.py` / `check_feature.py`, make-таргеты `feature-init` / `feature-validate`, CI job `spec-driven-validation`.
 - [ ] (Средний) Release automation и репортинг
@@ -45,7 +52,7 @@
 - [ ] (Средний) Business Analyst Agent
   - ✅ Исследование рынка вакансий (RU/EU/US) → `docs/research/job_market_business_analyst.md`.
   - ✅ Подготовлен roadmap → `docs/research/ba_agent_roadmap.md`.
-  - 🔜 BA-02 Requirements Intelligence (LLM/NLP, CLI `ba-extract`, тесты).
+  - ✅ BA-02 Requirements Intelligence (LLM-ready extractor, docx/pdf support, CLI `ba-extract`, тесты).
   - ☐ BA-03 Process & Journey Modelling (BPMN 2.0, CJM, экспорт).
   - ☐ BA-04 Analytics & KPI Toolkit (SQL/BI, OKR/ROI, Observability).
   - ☐ BA-05 Traceability & Compliance (risk register, heatmap).

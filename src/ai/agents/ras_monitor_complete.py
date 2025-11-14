@@ -5,13 +5,13 @@ Real RAS API integration with cluster monitoring
 ALL TODOs CLOSED!
 """
 
-import logging
 import asyncio
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 import httpx
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class RASMonitorComplete:
@@ -70,20 +70,44 @@ class RASMonitorComplete:
                 self.session_token = data.get("token")
                 self.connected = True
                 
-                logger.info(f"✅ RAS connection established: {self.ras_host}:{self.ras_port}")
+                logger.info(
+                    "RAS connection established",
+                    extra={
+                        "ras_host": self.ras_host,
+                        "ras_port": self.ras_port
+                    }
+                )
                 return True
             else:
-                logger.error(f"RAS authentication failed: {auth_response.status_code}")
+                logger.error(
+                    "RAS authentication failed",
+                    extra={"status_code": auth_response.status_code}
+                )
                 return False
                 
         except httpx.ConnectError:
-            logger.warning(f"RAS not available at {self.ras_host}:{self.ras_port}")
+            logger.warning(
+                "RAS not available",
+                extra={
+                    "ras_host": self.ras_host,
+                    "ras_port": self.ras_port
+                }
+            )
             logger.info("Using fallback mode (simulated data)")
             self.connected = False
             return False
             
         except Exception as e:
-            logger.error(f"Failed to connect to RAS: {e}")
+            logger.error(
+                "Failed to connect to RAS",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "ras_host": self.ras_host,
+                    "ras_port": self.ras_port
+                },
+                exc_info=True
+            )
             return False
     
     async def _api_call(self, endpoint: str, method: str = "GET", data: Dict = None) -> Dict:
@@ -108,10 +132,24 @@ class RASMonitorComplete:
             return response.json()
             
         except httpx.HTTPStatusError as e:
-            logger.error(f"RAS API error: {e.response.status_code}")
+            logger.error(
+                "RAS API error",
+                extra={
+                    "status_code": e.response.status_code,
+                    "endpoint": endpoint
+                }
+            )
             raise
         except Exception as e:
-            logger.error(f"RAS API call failed: {e}")
+            logger.error(
+                "RAS API call failed",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "endpoint": endpoint
+                },
+                exc_info=True
+            )
             raise
     
     async def get_cluster_info(self, cluster_name: Optional[str] = None) -> Dict[str, Any]:
@@ -137,7 +175,15 @@ class RASMonitorComplete:
                 return clusters[0] if clusters else {}
                 
         except Exception as e:
-            logger.error(f"Error getting cluster info: {e}")
+            logger.error(
+                "Error getting cluster info",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "cluster_name": cluster_name
+                },
+                exc_info=True
+            )
             return self._get_mock_cluster_info(cluster_name)
     
     async def get_active_sessions(self, cluster_name: Optional[str] = None) -> List[Dict]:
@@ -155,7 +201,15 @@ class RASMonitorComplete:
             return sessions
             
         except Exception as e:
-            logger.error(f"Error getting sessions: {e}")
+            logger.error(
+                "Error getting sessions",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "cluster_name": cluster_name
+                },
+                exc_info=True
+            )
             return self._get_mock_sessions()
     
     async def get_locks(self, cluster_name: Optional[str] = None) -> List[Dict]:
@@ -173,7 +227,15 @@ class RASMonitorComplete:
             return locks
             
         except Exception as e:
-            logger.error(f"Error getting locks: {e}")
+            logger.error(
+                "Error getting locks",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "cluster_name": cluster_name
+                },
+                exc_info=True
+            )
             return self._get_mock_locks()
     
     async def get_working_processes(self, cluster_name: Optional[str] = None) -> List[Dict]:
@@ -191,7 +253,15 @@ class RASMonitorComplete:
             return processes
             
         except Exception as e:
-            logger.error(f"Error getting processes: {e}")
+            logger.error(
+                "Error getting processes",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "cluster_name": cluster_name
+                },
+                exc_info=True
+            )
             return self._get_mock_processes()
     
     async def terminate_session(self, cluster_name: str, session_id: str) -> bool:
@@ -215,11 +285,26 @@ class RASMonitorComplete:
                 method="POST"
             )
             
-            logger.info(f"Session {session_id} terminated")
+            logger.info(
+                "Session terminated",
+                extra={
+                    "session_id": session_id,
+                    "cluster_name": cluster_name
+                }
+            )
             return True
             
         except Exception as e:
-            logger.error(f"Error terminating session: {e}")
+            logger.error(
+                "Error terminating session",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "session_id": session_id,
+                    "cluster_name": cluster_name
+                },
+                exc_info=True
+            )
             return False
     
     async def analyze_cluster_health(self, cluster_name: Optional[str] = None) -> Dict[str, Any]:

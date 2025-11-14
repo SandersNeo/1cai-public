@@ -1,31 +1,47 @@
 """
 API для сбора и анализа метрик 1C AI-экосистемы
+Версия: 2.1.0
+
+Улучшения:
+- Input validation
+- Structured logging
+- Улучшена обработка ошибок
 """
 
 from typing import Dict, List, Optional, Any, Union
 from datetime import datetime, timedelta
 import logging
 
-from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, APIRouter
-from pydantic import BaseModel, Field
+from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, APIRouter, Query
+from pydantic import BaseModel, Field, field_validator
 import time
+from src.utils.structured_logging import StructuredLogger
 
 # Создание router для API endpoints
 router = APIRouter()
 
 # Настройка логирования
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 # Pydantic модели
 class MetricRecord(BaseModel):
     """Запись метрики"""
-    metric_type: str = Field(..., description="Тип метрики")
-    service_name: str = Field(..., description="Название сервиса")
+    metric_type: str = Field(..., min_length=1, max_length=200, description="Тип метрики")
+    service_name: str = Field(..., min_length=1, max_length=100, description="Название сервиса")
     value: float = Field(..., description="Значение метрики")
     timestamp: datetime = Field(default_factory=datetime.now, description="Время записи")
     labels: Optional[Dict[str, str]] = Field(default=None, description="Дополнительные метки")
-    unit: Optional[str] = Field(default=None, description="Единица измерения")
+    unit: Optional[str] = Field(None, max_length=20, description="Единица измерения")
+    
+    @field_validator('metric_type', 'service_name')
+    @classmethod
+    def validate_name(cls, v: str) -> str:
+        """Sanitize name to prevent injection"""
+        import re
+        # Allow alphanumeric, underscore, dash, dot
+        if not re.match(r'^[a-zA-Z0-9_.-]+$', v):
+            raise ValueError("Invalid characters in name")
+        return v.strip()
 
 class MetricCollectionRequest(BaseModel):
     """Запрос на сбор метрики"""
@@ -83,44 +99,97 @@ async def health_check():
 
 @router.post("/collect")
 async def collect_metrics(request: MetricCollectionRequest):
-    """Сбор метрик от различных сервисов"""
+    """
+    Сбор метрик от различных сервисов
+    
+    Security: Input validation и sanitization
+    """
     try:
+        # Input validation
+        if not request.event or len(request.event) > 200:
+            raise HTTPException(status_code=400, detail="Invalid event name")
+        if not request.service or len(request.service) > 100:
+            raise HTTPException(status_code=400, detail="Invalid service name")
+        if not request.metrics or len(request.metrics) > 100:
+            raise HTTPException(status_code=400, detail="Too many metrics (max 100)")
+        
         timestamp = request.timestamp or datetime.now()
+        
+        collected_count = 0
         
         # Записываем каждую метрику
         for metric_name, value in request.metrics.items():
-            metric = MetricRecord(
-                metric_type=f"{request.event}.{metric_name}",
-                service_name=request.service,
-                value=float(value) if isinstance(value, (int, float, str)) else 0.0,
-                timestamp=timestamp,
-                labels={
-                    "event": request.event,
-                    "service": request.service,
-                    **(request.context or {})
-                }
-            )
+            # Validate metric name
+            if not metric_name or len(metric_name) > 200:
+                logger.warning(
+                    f"Invalid metric name skipped: {metric_name}",
+                    extra={"service": request.service, "event": request.event}
+                )
+                continue
             
-            metrics_storage.append(metric)
-            
-            # Сохраняем для быстрого доступа к performance метрикам
-            if metric_name in ["response_time", "processing_time", "latency"]:
-                if metric_name not in performance_metrics:
-                    performance_metrics[metric_name] = []
-                performance_metrics[metric_name].append(metric.value)
+            try:
+                metric = MetricRecord(
+                    metric_type=f"{request.event}.{metric_name}",
+                    service_name=request.service,
+                    value=float(value) if isinstance(value, (int, float, str)) else 0.0,
+                    timestamp=timestamp,
+                    labels={
+                        "event": request.event,
+                        "service": request.service,
+                        **(request.context or {})
+                    }
+                )
+                
+                metrics_storage.append(metric)
+                collected_count += 1
+                
+                # Сохраняем для быстрого доступа к performance метрикам
+                if metric_name in ["response_time", "processing_time", "latency"]:
+                    if metric_name not in performance_metrics:
+                        performance_metrics[metric_name] = []
+                    performance_metrics[metric_name].append(metric.value)
+            except Exception as e:
+                logger.warning(
+                    f"Failed to collect metric {metric_name}: {e}",
+                    extra={
+                        "service": request.service,
+                        "event": request.event,
+                        "metric_name": metric_name,
+                        "error_type": type(e).__name__
+                    }
+                )
+                continue
         
-        logger.info(f"Собрано {len(request.metrics)} метрик от сервиса {request.service}")
+        logger.info(
+            f"Collected {collected_count} metrics from service {request.service}",
+            extra={
+                "service": request.service,
+                "event": request.event,
+                "collected_count": collected_count,
+                "total_metrics": len(request.metrics)
+            }
+        )
         
         return {
             "status": "success",
-            "collected_metrics": len(request.metrics),
+            "collected_metrics": collected_count,
             "service": request.service,
             "timestamp": timestamp.isoformat()
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Ошибка сбора метрик: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(
+            f"Error collecting metrics: {e}",
+            extra={
+                "service": request.service if hasattr(request, 'service') else None,
+                "event": request.event if hasattr(request, 'event') else None,
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
+        raise HTTPException(status_code=500, detail=f"Failed to collect metrics: {str(e)}")
 
 
 @router.get("/metrics")
@@ -179,7 +248,14 @@ async def get_metrics(
         }
         
     except Exception as e:
-        logger.error(f"Ошибка получения метрик: {e}")
+        logger.error(
+            "Ошибка получения метрик",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -221,7 +297,15 @@ async def get_performance_metrics(service_name: str, hours_back: int = 1):
         }
         
     except Exception as e:
-        logger.error(f"Ошибка получения performance метрик: {e}")
+        logger.error(
+            "Ошибка получения performance метрик",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "service_name": service_name
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -279,7 +363,14 @@ async def get_dashboard_overview():
         }
         
     except Exception as e:
-        logger.error(f"Ошибка создания dashboard overview: {e}")
+        logger.error(
+            "Ошибка создания dashboard overview",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -325,7 +416,14 @@ async def get_alerts():
         }
         
     except Exception as e:
-        logger.error(f"Ошибка получения алертов: {e}")
+        logger.error(
+            "Ошибка получения алертов",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -342,7 +440,10 @@ async def clear_old_metrics(days_back: int = 30):
         
         removed_count = original_count - len(metrics_storage)
         
-        logger.info(f"Удалено {removed_count} старых метрик")
+        logger.info(
+            "Удалено старых метрик",
+            extra={"removed_count": removed_count}
+        )
         
         return {
             "status": "success",
@@ -352,7 +453,14 @@ async def clear_old_metrics(days_back: int = 30):
         }
         
     except Exception as e:
-        logger.error(f"Ошибка очистки метрик: {e}")
+        logger.error(
+            "Ошибка очистки метрик",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -388,7 +496,14 @@ async def get_stats():
         }
         
     except Exception as e:
-        logger.error(f"Ошибка получения статистики: {e}")
+        logger.error(
+            "Ошибка получения статистики",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 

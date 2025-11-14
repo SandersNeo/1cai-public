@@ -6,12 +6,12 @@ AI ассистент для технических писателей с пол
 import os
 import re
 import json
-import logging
 from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime
 from pathlib import Path
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class APIDocumentationGenerator:
@@ -37,7 +37,10 @@ class APIDocumentationGenerator:
                 "postman_collection": {...}
             }
         """
-        logger.info(f"Generating API documentation for {module_type}")
+        logger.info(
+            "Generating API documentation",
+            extra={"module_type": module_type}
+        )
         
         # Extract API endpoints
         endpoints = self._extract_endpoints(code)
@@ -61,7 +64,9 @@ class APIDocumentationGenerator:
             "examples": examples,
             "postman_collection": postman_collection,
             "endpoints_count": len(endpoints),
-            "generated_at": datetime.now().isoformat()
+            "generated_at": datetime.now().isoformat(),
+            "openapi": openapi_spec,
+            "documentation": markdown_docs,
         }
     
     def _extract_endpoints(self, code: str) -> List[Dict]:
@@ -308,7 +313,10 @@ class UserGuideGenerator:
                 "faq": [...]
             }
         """
-        logger.info(f"Generating user guide for: {feature}")
+        logger.info(
+            "Generating user guide",
+            extra={"feature": feature}
+        )
         
         # Generate sections based on audience
         sections = self._generate_sections(feature, target_audience)
@@ -446,7 +454,10 @@ class ReleaseNotesGenerator:
         Returns:
             Markdown release notes
         """
-        logger.info(f"Generating release notes for {version}")
+        logger.info(
+            "Generating release notes",
+            extra={"version": version}
+        )
         
         # Parse commits using Conventional Commits
         features = []

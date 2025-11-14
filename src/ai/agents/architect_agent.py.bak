@@ -1,0 +1,143 @@
+"""
+Lightweight architect agent used in unit tests.
+
+The real project contains a much richer implementation inside
+`architect_agent_extended.py`, however the unit test suite imports
+`ArchitectAgent` from this module.  In recent refactors the file was
+removed which made the tests fail with `ModuleNotFoundError`.  This
+module restores a simplified but fully functional version that focuses
+on deterministic, side-effect free logic so it can be safely exercised
+in tests without spinning up external services.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import re
+from dataclasses import dataclass
+from typing import Any, Dict, List
+
+
+@dataclass
+class ArchitectureComponent:
+    """Simple data container describing a logical component."""
+
+    name: str
+    responsibilities: List[str]
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "name": self.name,
+            "responsibilities": self.responsibilities,
+        }
+
+
+class ArchitectAgent:
+    """Provide high-level architecture suggestions for textual system briefs."""
+
+    def __init__(self) -> None:
+        self._default_components = [
+            ArchitectureComponent(
+                name="API Gateway",
+                responsibilities=[
+                    "Маршрутизация запросов",
+                    "Единая точка аутентификации",
+                ],
+            ),
+            ArchitectureComponent(
+                name="Application Service",
+                responsibilities=[
+                    "Бизнес-логика обработки заказов",
+                    "Взаимодействие с очередями",
+                ],
+            ),
+            ArchitectureComponent(
+                name="Data Storage",
+                responsibilities=[
+                    "Хранение заказов и пользователей",
+                    "Резервное копирование",
+                ],
+            ),
+        ]
+
+    async def analyze_system(self, description: str) -> Dict[str, Any]:
+        """
+        Build a structured architecture proposal based on a free-form text brief.
+
+        The routine purposefully stays deterministic and lightweight: it derives a
+        couple of metrics (scale and workload) from the text and augments the
+        default architecture template with corresponding rationales.
+        """
+
+        await asyncio.sleep(0)  # let the event loop breathe in async tests
+
+        if not description or not description.strip():
+            return {
+                "analysis": {
+                    "summary": "Недостаточно информации для анализа.",
+                    "recommendations": ["Уточните требования и ограничения системы."],
+                }
+            }
+
+        scale = _extract_number(description) or 0
+        workload = _extract_number(description, occurrence=2) or 0
+
+        components = [component.to_dict() for component in self._default_components]
+
+        if workload > 5000:
+            components.append(
+                ArchitectureComponent(
+                    name="Event Processing",
+                    responsibilities=[
+                        "Асинхронная обработка событий",
+                        "Поддержка очередей и ретраев",
+                    ],
+                ).to_dict()
+            )
+
+        non_functional = []
+        if scale > 1000:
+            non_functional.append(
+                "Рассмотрите горизонтальное масштабирование и балансировку нагрузки."
+            )
+        if workload > 10000:
+            non_functional.append(
+                "Добавьте отдельный слой кэширования для критичных операций."
+            )
+
+        if not non_functional:
+            non_functional.append("Выполните нагрузочное тестирование перед релизом.")
+
+        return {
+            "architecture": {
+                "components": components,
+                "scale": {"users": scale, "transactions_per_day": workload},
+                "non_functional_guidelines": non_functional,
+            },
+            "analysis": {
+                "summary": "Сформировано базовое предложение по архитектуре.",
+                "risks": [
+                    "Отсутствует информация о требованиях к отказоустойчивости.",
+                    "Нет данных о интеграциях с внешними системами.",
+                ],
+            },
+        }
+
+
+def _extract_number(text: str, occurrence: int = 1) -> int | None:
+    """
+    Extract the N-th numeric value from text, ignoring formatting noise.
+
+    Returns `None` when no number is found.
+    """
+
+    numbers = re.findall(r"\d+", text or "")
+    if occurrence <= 0 or occurrence > len(numbers):
+        return None
+    return int(numbers[occurrence - 1])
+
+
+__all__ = ["ArchitectAgent"]
+
+
+

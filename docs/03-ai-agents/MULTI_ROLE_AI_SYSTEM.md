@@ -108,6 +108,7 @@
 
 **Пробелы (по исследованию рынка):**
 - Нужны LLM/NLP для требований, user stories, acceptance criteria  
+- CLI: `python -m scripts.ba.requirements_cli extract <файл>` (`make ba-extract`)  
 - Расширенный BPMN/CJM/Service Blueprint + экспорт BPMN 2.0  
 - Интеграции Jira/Confluence/ServiceNow, sync артефактов  
 - SQL/BI, KPI/OKR, ROI/TCO, Risk & Compliance (GDPR/SOX)  

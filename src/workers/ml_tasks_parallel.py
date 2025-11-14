@@ -130,7 +130,10 @@ def retrain_single_model(self, model_type: str) -> Dict[str, Any]:
     """
     init_services()
     
-    task_logger.info(f"Starting training for {model_type} model...")
+    task_logger.info(
+        "Starting training for model",
+        extra={"model_type": model_type}
+    )
     start_time = datetime.utcnow()
     
     try:
@@ -138,7 +141,10 @@ def retrain_single_model(self, model_type: str) -> Dict[str, Any]:
         training_data = _get_training_data(model_type)
         
         if training_data is None or len(training_data) == 0:
-            task_logger.warning(f"No training data for {model_type}")
+            task_logger.warning(
+                "No training data for model",
+                extra={"model_type": model_type}
+            )
             return {
                 'model_type': model_type,
                 'status': 'skipped',
@@ -160,8 +166,12 @@ def retrain_single_model(self, model_type: str) -> Dict[str, Any]:
         duration = (end_time - start_time).total_seconds()
         
         task_logger.info(
-            f"✅ {model_type} model trained successfully in {duration:.1f}s "
-            f"(Score: {result.get('score', 0):.4f})"
+            "Model trained successfully",
+            extra={
+                "model_type": model_type,
+                "duration_seconds": round(duration, 1),
+                "score": round(result.get('score', 0), 4)
+            }
         )
         
         # Сохранить метрики
@@ -182,7 +192,15 @@ def retrain_single_model(self, model_type: str) -> Dict[str, Any]:
         }
         
     except Exception as exc:
-        task_logger.error(f"❌ Training failed for {model_type}: {exc}")
+        task_logger.error(
+            "Training failed",
+            extra={
+                "model_type": model_type,
+                "error": str(exc),
+                "error_type": type(exc).__name__
+            },
+            exc_info=True
+        )
         
         # Retry с exponential backoff
         raise self.retry(exc=exc, countdown=300 * (2 ** self.request.retries))
@@ -222,7 +240,10 @@ def retrain_all_models_parallel(self) -> Dict[str, Any]:
         'recommendation'
     ]
     
-    task_logger.info(f"Training {len(model_types)} models in parallel...")
+    task_logger.info(
+        "Training models in parallel",
+        extra={"models_count": len(model_types)}
+    )
     
     # Создаем группу параллельных задач
     training_group = group(
@@ -244,8 +265,14 @@ def retrain_all_models_parallel(self) -> Dict[str, Any]:
         total_duration = (end_time - start_time).total_seconds()
         
         task_logger.info("="*60)
-        task_logger.info("✅ PARALLEL ML TRAINING PIPELINE COMPLETE")
-        task_logger.info(f"Total time: {total_duration:.1f}s ({total_duration/60:.1f} min)")
+        task_logger.info("PARALLEL ML TRAINING PIPELINE COMPLETE")
+        task_logger.info(
+            "Total time",
+            extra={
+                "total_duration_seconds": round(total_duration, 1),
+                "total_duration_minutes": round(total_duration/60, 1)
+            }
+        )
         task_logger.info("="*60)
         
         return {
@@ -257,7 +284,14 @@ def retrain_all_models_parallel(self) -> Dict[str, Any]:
         }
         
     except Exception as exc:
-        task_logger.error(f"❌ Pipeline failed: {exc}")
+        task_logger.error(
+            "Pipeline failed",
+            extra={
+                "error": str(exc),
+                "error_type": type(exc).__name__
+            },
+            exc_info=True
+        )
         raise
 
 
@@ -279,10 +313,19 @@ def evaluate_all_models(training_results: List[Dict]) -> Dict[str, Any]:
     successful = [r for r in training_results if r['status'] == 'success']
     failed = [r for r in training_results if r['status'] != 'success']
     
-    task_logger.info(f"Models trained successfully: {len(successful)}/{len(training_results)}")
+    task_logger.info(
+        "Models trained successfully",
+        extra={
+            "successful_count": len(successful),
+            "total_count": len(training_results)
+        }
+    )
     
     if failed:
-        task_logger.warning(f"Failed models: {[r['model_type'] for r in failed]}")
+        task_logger.warning(
+            "Failed models",
+            extra={"failed_models": [r['model_type'] for r in failed]}
+        )
     
     # Оценка каждой модели
     evaluations = {}
@@ -294,9 +337,12 @@ def evaluate_all_models(training_results: List[Dict]) -> Dict[str, Any]:
         evaluations[model_type] = eval_result
         
         task_logger.info(
-            f"  {model_type}: "
-            f"Train={result.get('score', 0):.4f}, "
-            f"Test={eval_result.get('score', 0):.4f}"
+            "Model evaluation",
+            extra={
+                "model_type": model_type,
+                "train_score": round(result.get('score', 0), 4),
+                "test_score": round(eval_result.get('score', 0), 4)
+            }
         )
     
     return {
@@ -327,7 +373,10 @@ def cleanup_old_experiments(evaluation_results: Dict) -> Dict[str, Any]:
     
     deleted_count = mlflow_manager.cleanup_old_experiments(cutoff_date)
     
-    task_logger.info(f"✅ Cleanup complete: {deleted_count} old experiments deleted")
+    task_logger.info(
+        "Cleanup complete",
+        extra={"deleted_count": deleted_count}
+    )
     
     return {
         'deleted_count': deleted_count,
@@ -354,7 +403,13 @@ def update_feature_store() -> Dict[str, Any]:
         
         duration = (datetime.utcnow() - start_time).total_seconds()
         
-        task_logger.info(f"✅ Feature store updated: {updated_features} features in {duration:.1f}s")
+        task_logger.info(
+            "Feature store updated",
+            extra={
+                "updated_features": updated_features,
+                "duration_seconds": round(duration, 1)
+            }
+        )
         
         return {
             'status': 'success',
@@ -364,7 +419,14 @@ def update_feature_store() -> Dict[str, Any]:
         }
         
     except Exception as exc:
-        task_logger.error(f"❌ Feature store update failed: {exc}")
+        task_logger.error(
+            "Feature store update failed",
+            extra={
+                "error": str(exc),
+                "error_type": type(exc).__name__
+            },
+            exc_info=True
+        )
         raise
 
 
@@ -388,10 +450,19 @@ def check_model_drift() -> Dict[str, Any]:
                 'model': model_type,
                 'drift_score': drift_score
             })
-            task_logger.warning(f"⚠️ Drift detected in {model_type}: {drift_score:.2%}")
+            task_logger.warning(
+                "Drift detected",
+                extra={
+                    "model_type": model_type,
+                    "drift_score": round(drift_score, 4)
+                }
+            )
     
     if drift_detected:
-        task_logger.warning(f"Total models with drift: {len(drift_detected)}")
+        task_logger.warning(
+            "Total models with drift",
+            extra={"drift_count": len(drift_detected)}
+        )
         # TODO: Send alert to monitoring system
     else:
         task_logger.info("✅ No drift detected in any model")
@@ -410,7 +481,10 @@ def check_model_drift() -> Dict[str, Any]:
 def _get_training_data(model_type: str) -> Optional[pd.DataFrame]:
     """Получение тренировочных данных для модели"""
     # TODO: Implement actual data loading
-    task_logger.info(f"Loading training data for {model_type}...")
+    task_logger.info(
+        "Loading training data",
+        extra={"model_type": model_type}
+    )
     
     # Mock для примера
     return pd.DataFrame({
@@ -466,7 +540,10 @@ def retrain_specific_models(model_types: List[str]) -> Dict[str, Any]:
     Example:
         retrain_specific_models.delay(['classification', 'regression'])
     """
-    task_logger.info(f"Retraining specific models: {model_types}")
+    task_logger.info(
+        "Retraining specific models",
+        extra={"model_types": model_types}
+    )
     
     # Параллельное обучение выбранных моделей
     training_group = group(
@@ -496,5 +573,9 @@ if __name__ == '__main__':
         '--pool=prefork',
         '-Q', 'ml_heavy,ml_light'
     ])
+
+
+
+
 
 

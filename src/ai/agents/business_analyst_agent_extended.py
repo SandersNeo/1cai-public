@@ -1,214 +1,245 @@
 """
-Business Analyst AI Agent Extended
-AI ассистент для бизнес-аналитиков с полным функционалом
+Business Analyst AI Agent Extended.
+
+Provides requirement extraction, BPMN generation, gap analysis and traceability
+with optional LLM-based refinement (GigaChat / YandexGPT).
 """
 
-import os
-import re
+from __future__ import annotations
+
 import json
 import logging
-from typing import Dict, Any, List, Optional, Tuple
+import os
+import re
+from collections import Counter
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+from src.ai.clients import GigaChatClient, LLMCallError, LLMNotConfiguredError, YandexGPTClient
+from src.ai.utils.document_loader import read_document
 
 logger = logging.getLogger(__name__)
 
 
+def _normalize_whitespace(text: str) -> str:
+    return re.sub(r"\s+", " ", text).strip()
+
+
 class RequirementsExtractor:
-    """NLP извлечение требований из документов"""
-    
-    def __init__(self):
-        # TODO: Integration with GigaChat/YandexGPT
-        self.gigachat_api_key = os.getenv("GIGACHAT_API_KEY", "")
+    """Heuristic extraction of requirements and related artefacts."""
+
+    def __init__(self) -> None:
         self.requirement_patterns = self._load_requirement_patterns()
-    
-    def _load_requirement_patterns(self) -> List[Dict]:
-        """Паттерны для распознавания требований"""
+        self.user_story_patterns = [
+            r"как\s+(?P<role>[^,]+?),?\s+я\s+(?:хочу|должен|могу)\s+(?P<goal>[^,]+?)(?:,\s*чтобы\s+(?P<benefit>.+))?$",
+            r"как\s+(?P<role>[^,]+?)\s+мне\s+нужно\s+(?P<goal>[^,]+)",
+        ]
+
+    def _load_requirement_patterns(self) -> List[Dict[str, Any]]:
         return [
             {
                 "type": "functional",
                 "patterns": [
-                    r"система должна\s+(.*)",
-                    r"необходимо\s+(.*)",
-                    r"должен(?:а|о|ы)?\s+обеспечивать\s+(.*)",
-                    r"требуется\s+(.*)",
-                    r"пользователь\s+(?:может|должен)\s+(.*)"
+                    r"система должна\s+(?P<body>.+)",
+                    r"необходимо\s+(?P<body>.+)",
+                    r"должен(?:а|о|ы)?\s+обеспечивать\s+(?P<body>.+)",
+                    r"требуется\s+(?P<body>.+)",
+                    r"пользователь\s+(?:может|должен)\s+(?P<body>.+)",
                 ],
-                "priority_keywords": ["обязательно", "критично", "важно"]
             },
             {
                 "type": "non_functional",
                 "patterns": [
-                    r"производительность[:\s]+(.+)",
-                    r"(?:время|скорость)\s+(?:отклика|выполнения)[:\s]+(.+)",
-                    r"(?:количество|число)\s+пользователей[:\s]+(.+)",
-                    r"(?:доступность|uptime)[:\s]+(.+)",
-                    r"безопасность[:\s]+(.+)"
-                ]
+                    r"производительность[:\s]+(?P<body>.+)",
+                    r"(?:время|скорость)\s+(?:отклика|выполнения)[:\s]+(?P<body>.+)",
+                    r"(?:количество|число)\s+пользователей[:\s]+(?P<body>.+)",
+                    r"(?:доступность|uptime)[:\s]+(?P<body>.+)",
+                    r"безопасность[:\s]+(?P<body>.+)",
+                ],
             },
             {
                 "type": "constraint",
                 "patterns": [
-                    r"ограничение[:\s]+(.+)",
-                    r"не допускается\s+(.*)",
-                    r"запрещено\s+(.*)",
-                    r"в рамках\s+(?:бюджета|срока)\s+(.*)"
-                ]
-            }
+                    r"ограничение[:\s]+(?P<body>.+)",
+                    r"не допускается\s+(?P<body>.+)",
+                    r"запрещено\s+(?P<body>.+)",
+                    r"в рамках\s+(?:бюджета|срока)\s+(?P<body>.+)",
+                ],
+            },
         ]
-    
+
     async def extract_requirements(
         self,
         document_text: str,
-        document_type: str = "tz"
+        document_type: str = "tz",
+        *,
+        source_path: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """
-        NLP извлечение требований из документа
-        
-        Args:
-            document_text: Текст документа (ТЗ, email, протокол совещания)
-            document_type: Тип документа (tz, email, meeting_notes)
-        
-        Returns:
-            Структурированные требования с метаданными
-        """
-        logger.info(f"Extracting requirements from {document_type}")
-        
-        functional_requirements = []
-        non_functional_requirements = []
-        constraints = []
-        
-        # Split into sentences
-        sentences = re.split(r'[.!?]\s+', document_text)
-        
-        # Extract functional requirements
-        for pattern_info in self.requirement_patterns:
-            req_type = pattern_info["type"]
-            
-            for sentence in sentences:
+        logger.info("Extracting requirements (heuristics) for document type %s", document_type)
+
+        sentences = self._split_sentences(document_text)
+        functional: List[Dict[str, Any]] = []
+        non_functional: List[Dict[str, Any]] = []
+        constraints: List[Dict[str, Any]] = []
+
+        for idx, sentence in enumerate(sentences):
+            cleaned = sentence.strip()
+            if not cleaned:
+                continue
+            for pattern_info in self.requirement_patterns:
+                req_type = pattern_info["type"]
+                matched = False
                 for pattern in pattern_info["patterns"]:
-                    match = re.search(pattern, sentence, re.IGNORECASE)
-                    if match:
-                        requirement_text = match.group(1) if match.lastindex else match.group(0)
-                        
-                        # Determine priority
-                        priority = "medium"
-                        if any(kw in sentence.lower() for kw in ["обязательно", "критично", "высокий приоритет"]):
-                            priority = "high"
-                        elif any(kw in sentence.lower() for kw in ["желательно", "опционально"]):
-                            priority = "low"
-                        
-                        req_obj = {
-                            "id": f"REQ-{len(functional_requirements) + len(non_functional_requirements) + 1:03d}",
-                            "title": requirement_text[:100],
-                            "description": sentence,
-                            "priority": priority,
-                            "extracted_from": f"Document: {document_type}",
-                            "confidence": 0.85  # Simplified confidence score
-                        }
-                        
-                        if req_type == "functional":
-                            functional_requirements.append(req_obj)
-                        elif req_type == "non_functional":
-                            non_functional_requirements.append(req_obj)
-                        elif req_type == "constraint":
-                            constraints.append(req_obj)
-        
-        # Extract stakeholders (simplified)
+                    match = re.search(pattern, cleaned, re.IGNORECASE)
+                    if not match:
+                        continue
+                    body = match.groupdict().get("body") or match.group(0)
+                    requirement = self._build_requirement(req_type, body, cleaned, sentence_index=idx)
+                    if req_type == "functional":
+                        functional.append(requirement)
+                    elif req_type == "non_functional":
+                        non_functional.append(requirement)
+                    else:
+                        constraints.append(requirement)
+                    matched = True
+                    break
+                if matched:
+                    break
+
         stakeholders = self._extract_stakeholders(document_text)
-        
-        # Extract acceptance criteria
         acceptance_criteria = self._extract_acceptance_criteria(document_text)
-        
+        user_stories = self._extract_user_stories(document_text)
+
+        summary = self._build_summary(functional, non_functional, constraints)
+
         return {
             "document_type": document_type,
-            "functional_requirements": functional_requirements,
-            "non_functional_requirements": non_functional_requirements,
+            "source_path": source_path,
+            "functional_requirements": functional,
+            "non_functional_requirements": non_functional,
             "constraints": constraints,
             "stakeholders": stakeholders,
+            "user_stories": user_stories,
             "acceptance_criteria": acceptance_criteria,
-            "total_requirements": len(functional_requirements) + len(non_functional_requirements),
-            "extracted_at": datetime.now().isoformat()
+            "summary": summary,
         }
-    
+
+    def _build_requirement(
+        self,
+        req_type: str,
+        body: str,
+        sentence: str,
+        *,
+        sentence_index: int,
+    ) -> Dict[str, Any]:
+        body = _normalize_whitespace(body)
+        sentence = _normalize_whitespace(sentence)
+
+        prefix = {"functional": "FR", "non_functional": "NFR", "constraint": "CON"}[req_type]
+        requirement_id = f"{prefix}-{sentence_index + 1:03d}"
+
+        priority = "medium"
+        lowered = sentence.lower()
+        if any(keyword in lowered for keyword in ("обязательно", "критично", "срочно", "must")):
+            priority = "high"
+        elif any(keyword in lowered for keyword in ("желательно", "может", "опционально", "nice to have")):
+            priority = "low"
+
+        confidence = 0.65
+        if priority == "high":
+            confidence += 0.1
+        if len(sentence) > 120:
+            confidence += 0.05
+        confidence = min(confidence, 0.95)
+
+        return {
+            "id": requirement_id,
+            "title": body[:120],
+            "description": sentence,
+            "priority": priority,
+            "confidence": round(confidence, 2),
+            "category": req_type,
+            "source": f"sentence:{sentence_index + 1}",
+        }
+
+    def _split_sentences(self, document_text: str) -> List[str]:
+        return re.split(r"(?<=[.!?])\s+", document_text)
+
     def _extract_stakeholders(self, text: str) -> List[str]:
-        """Извлечение стейкхолдеров"""
-        stakeholders = []
-        
-        # Common stakeholder titles
         titles = [
-            "менеджер", "руководитель", "директор", "администратор",
-            "пользователь", "бухгалтер", "кладовщик", "продавец"
+            "менеджер",
+            "руководитель",
+            "директор",
+            "администратор",
+            "пользователь",
+            "бухгалтер",
+            "кладовщик",
+            "продавец",
+            "клиент",
+            "оператор",
         ]
-        
-        for title in titles:
-            if title in text.lower():
-                stakeholders.append(title.capitalize())
-        
-        return list(set(stakeholders))
-    
+        found = {title.capitalize() for title in titles if title in text.lower()}
+        return sorted(found)
+
     def _extract_acceptance_criteria(self, text: str) -> List[str]:
-        """Извлечение критериев приемки"""
-        criteria = []
-        
-        # Patterns for acceptance criteria
         patterns = [
-            r"критерий приемки[:\s]+(.+)",
+            r"критерий(?:и)? приемки[:\s]+(.+)",
             r"должно быть обеспечено[:\s]+(.+)",
-            r"результат(?:ом)?\s+(?:должен|является)[:\s]+(.+)"
+            r"результат(?:ом)?\s+(?:должен|является)[:\s]+(.+)",
+            r"принимается, если\s+(.+)",
         ]
-        
+        criteria: List[str] = []
         for pattern in patterns:
             matches = re.finditer(pattern, text, re.IGNORECASE)
             for match in matches:
-                criteria.append(match.group(1).strip())
-        
+                criteria.append(_normalize_whitespace(match.group(1)))
         return criteria
 
+    def _extract_user_stories(self, text: str) -> List[Dict[str, Any]]:
+        stories: List[Dict[str, Any]] = []
+        lines = [line.strip() for line in text.splitlines()]
+        counter = 1
+        for line in lines:
+            normalized = line.lower()
+            for pattern in self.user_story_patterns:
+                match = re.search(pattern, normalized, re.IGNORECASE)
+                if not match:
+                    continue
+                groups = match.groupdict()
+                role = groups.get("role", "").strip().strip(",.")
+                goal = groups.get("goal", "").strip().strip(",.")
+                benefit = groups.get("benefit", "").strip().strip(",.")
+                stories.append(
+                    {
+                        "id": f"US-{counter:03d}",
+                        "role": role.capitalize(),
+                        "goal": goal,
+                        "benefit": benefit or "",
+                        "acceptance_criteria": [],
+                    }
+                )
+                counter += 1
+                break
+        return stories
 
-class BPMNGenerator:
-    """Генератор BPMN диаграмм бизнес-процессов"""
-    
-    async def generate_bpmn(
+    def _build_summary(
         self,
-        process_description: str
+        functional: List[Dict[str, Any]],
+        non_functional: List[Dict[str, Any]],
+        constraints: List[Dict[str, Any]],
     ) -> Dict[str, Any]:
-        """
-        Генерация BPMN диаграммы
-        
-        Args:
-            process_description: Описание бизнес-процесса
-        
-        Returns:
-            {
-                "bpmn_xml": "...",  # BPMN 2.0 XML
-                "diagram_mermaid": "...",  # Mermaid diagram
-                "actors": [...],
-                "activities": [...],
-                "decision_points": [...]
-            }
-        """
-        logger.info("Generating BPMN diagram")
-        
-        # Extract process elements
-        actors = self._extract_actors(process_description)
-        activities = self._extract_activities(process_description)
-        decision_points = self._extract_decision_points(process_description)
-        
-        # Generate Mermaid diagram (simpler than BPMN XML)
-        mermaid_diagram = self._generate_mermaid(actors, activities, decision_points)
-        
-        # Generate BPMN XML (simplified)
-        bpmn_xml = self._generate_bpmn_xml(actors, activities, decision_points)
-        
+        total = len(functional) + len(non_functional) + len(constraints)
+        priorities = Counter(
+            [req["priority"] for req in functional + non_functional + constraints]
+        )
         return {
-            "process_name": "Бизнес-процесс",
-            "bpmn_xml": bpmn_xml,
-            "diagram_mermaid": mermaid_diagram,
-            "actors": actors,
-            "activities": activities,
-            "decision_points": decision_points,
-            "generated_at": datetime.now().isoformat()
+            "total_requirements": total,
+            "functional": len(functional),
+            "non_functional": len(non_functional),
+            "constraints": len(constraints),
+            "priority_distribution": dict(priorities),
+            "llm_used": False,
         }
     
     def _extract_actors(self, description: str) -> List[str]:
@@ -518,24 +549,57 @@ class BusinessAnalystAgentExtended:
     - Traceability Matrix
     """
     
-    def __init__(self):
+    def __init__(self) -> None:
         self.requirements_extractor = RequirementsExtractor()
         self.bpmn_generator = BPMNGenerator()
         self.gap_analyzer = GapAnalyzer()
         self.traceability_generator = TraceabilityMatrixGenerator()
-        
+
+        try:
+            self.gigachat_client = GigaChatClient()
+        except Exception as exc:  # pragma: no cover - initialization safety
+            logger.warning("Failed to initialize GigaChat client: %s", exc)
+            self.gigachat_client = None
+
+        try:
+            self.yandex_client = YandexGPTClient()
+        except Exception as exc:  # pragma: no cover - initialization safety
+            logger.warning("Failed to initialize YandexGPT client: %s", exc)
+            self.yandex_client = None
+
+        self.llm_enhancer = RequirementsLLMEnhancer(
+            self.gigachat_client,
+            self.yandex_client,
+        )
+
         logger.info("Business Analyst Agent Extended initialized")
-    
+
     async def extract_requirements(
         self,
         document_text: str,
-        document_type: str = "tz"
+        document_type: str = "tz",
+        *,
+        source_path: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """NLP извлечение требований"""
-        return await self.requirements_extractor.extract_requirements(
+        """Extract requirements from plain text."""
+        base = await self.requirements_extractor.extract_requirements(
             document_text,
-            document_type
+            document_type,
+            source_path=source_path,
         )
+        enhanced = await self.llm_enhancer.enhance(base, document_text)
+        enhanced["generated_at"] = datetime.now().isoformat()
+        return enhanced
+
+    async def extract_requirements_from_file(
+        self,
+        path: Union[str, Path],
+        document_type: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        file_path = Path(path)
+        text = read_document(file_path)
+        inferred_type = document_type or self._infer_document_type(file_path)
+        return await self.extract_requirements(text, inferred_type, source_path=str(file_path))
     
     async def generate_bpmn(
         self,
@@ -565,5 +629,93 @@ class BusinessAnalystAgentExtended:
             requirements,
             test_cases
         )
+
+    def _infer_document_type(self, path: Path) -> str:
+        suffix = path.suffix.lower()
+        mapping = {
+            ".docx": "tz",
+            ".pdf": "tz",
+            ".md": "notes",
+            ".txt": "notes",
+            ".json": "backlog",
+        }
+        return mapping.get(suffix, "tz")
+
+
+class RequirementsLLMEnhancer:
+    """Optional LLM enrichment for heuristic requirements."""
+
+    def __init__(
+        self,
+        gigachat: Optional[GigaChatClient],
+        yandex: Optional[YandexGPTClient],
+    ) -> None:
+        self.clients = [client for client in (gigachat, yandex) if client and client.is_configured]
+
+    async def enhance(self, data: Dict[str, Any], original_text: str) -> Dict[str, Any]:
+        if not self.clients:
+            data["summary"]["llm_used"] = False
+            return data
+
+        prompt = self._build_prompt(data, original_text)
+        for client in self.clients:
+            try:
+                response = await client.generate(prompt, response_format="json")
+            except (LLMNotConfiguredError, LLMCallError) as exc:
+                logger.warning("LLM enhancement failed for %s: %s", client.__class__.__name__, exc)
+                continue
+
+            message = response.get("text") or ""
+            try:
+                parsed = json.loads(message)
+                merged = self._merge(data, parsed)
+                merged["summary"]["llm_used"] = True
+                merged["summary"]["llm_provider"] = client.__class__.__name__
+                return merged
+            except json.JSONDecodeError:
+                logger.warning("Failed to parse LLM response as JSON, skipping provider %s", client)
+                continue
+
+        data["summary"]["llm_used"] = False
+        return data
+
+    def _build_prompt(self, data: Dict[str, Any], original_text: str) -> str:
+        summary = data.get("summary", {})
+        prompt = (
+            "Тебе дан текст технического задания. "
+            "Нужно проверить найденные требования и, при необходимости, дополнить их.\n"
+            "Формат ответа: JSON с полями functional_requirements, "
+            "non_functional_requirements, constraints, user_stories, acceptance_criteria, stakeholders."
+            "\nСохраняй идентификаторы, если корректируешь запись.\n"
+        )
+        prompt += f"\nТекст документа:\n\"\"\"\n{original_text[:4000]}\n\"\"\"\n"
+        prompt += f"\nТекущее резюме: {json.dumps(summary, ensure_ascii=False)}"
+        return prompt
+
+    def _merge(self, base: Dict[str, Any], llm_data: Dict[str, Any]) -> Dict[str, Any]:
+        def _merge_list(key: str) -> List[Any]:
+            existing = {item["id"]: item for item in base.get(key, []) if isinstance(item, dict) and "id" in item}
+            additional = []
+            for item in llm_data.get(key, []):
+                if isinstance(item, dict) and "id" in item:
+                    existing[item["id"]] = item
+                else:
+                    additional.append(item)
+            return list(existing.values()) + additional
+
+        merged = dict(base)
+        merged["functional_requirements"] = _merge_list("functional_requirements")
+        merged["non_functional_requirements"] = _merge_list("non_functional_requirements")
+        merged["constraints"] = _merge_list("constraints")
+        merged["user_stories"] = llm_data.get("user_stories", merged.get("user_stories", []))
+        merged["acceptance_criteria"] = llm_data.get(
+            "acceptance_criteria", merged.get("acceptance_criteria", [])
+        )
+        merged["stakeholders"] = list(
+            sorted(
+                set(merged.get("stakeholders", [])) | set(llm_data.get("stakeholders", []))
+            )
+        )
+        return merged
 
 

@@ -5,15 +5,15 @@ Registration, billing, usage tracking
 
 import os
 import uuid
-import logging
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, EmailStr
 import asyncpg
 import hashlib
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 router = APIRouter(prefix="/api/tenants")
 
@@ -39,7 +39,7 @@ class TenantManagementService:
             if stripe.api_key:
                 self.stripe = stripe
                 self.stripe_available = True
-        except:
+        except (ImportError, Exception):
             logger.warning("Stripe not available")
     
     async def create_tenant(
@@ -120,7 +120,13 @@ class TenantManagementService:
             )
         
         # 5. Send welcome email (TODO: implement email service)
-        logger.info(f"Tenant created: {tenant_id}, email: {registration.admin_email}")
+        logger.info(
+            "Tenant created",
+            extra={
+                "tenant_id": str(tenant_id),
+                "admin_email": registration.admin_email
+            }
+        )
         
         return {
             'tenant_id': str(tenant_id),
@@ -152,7 +158,10 @@ class TenantManagementService:
         # Qdrant: create collection
         # Elasticsearch: create index
         
-        logger.info(f"Initializing resources for tenant: {tenant_id}")
+        logger.info(
+            "Initializing resources for tenant",
+            extra={"tenant_id": str(tenant_id)}
+        )
         
         # TODO: Implement actual resource initialization
         # For now - placeholder
@@ -203,7 +212,14 @@ class TenantManagementService:
             }
             
         except Exception as e:
-            logger.error(f"Stripe error: {e}")
+            logger.error(
+                "Stripe error",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return {'error': str(e)}
     
     def _get_stripe_price_id(self, plan: str) -> str:
@@ -255,7 +271,14 @@ async def register_tenant(
         result = await service.create_tenant(registration)
         return result
     except Exception as e:
-        logger.error(f"Registration failed: {e}")
+        logger.error(
+            "Registration failed",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 

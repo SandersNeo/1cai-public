@@ -4,6 +4,7 @@ With Agents Rule of Two Security Integration
 """
 
 import sys
+import asyncio
 from contextlib import asynccontextmanager
 import logging
 import os
@@ -45,9 +46,6 @@ from src.api.security_monitoring import router as security_monitoring_router
 # NEW: Marketplace router
 from src.api.marketplace import router as marketplace_router
 
-# MCP Server (for Cursor/VSCode integration)
-from src.ai.mcp_server import app as mcp_app
-
 # Middleware
 from src.middleware.security_headers import SecurityHeadersMiddleware
 from src.middleware.metrics_middleware import MetricsMiddleware
@@ -55,98 +53,300 @@ from src.middleware.jwt_user_context import JWTUserContextMiddleware
 from src.middleware.user_rate_limit import UserRateLimitMiddleware
 from src.security.auth import get_auth_service
 from src.db.marketplace_repository import MarketplaceRepository
+from src.services.health_checker import get_health_checker
+from src.utils.structured_logging import StructuredLogger, set_request_context, get_request_context
+from src.monitoring.opentelemetry_setup import (
+    setup_opentelemetry,
+    instrument_fastapi_app,
+    instrument_asyncpg,
+    instrument_httpx,
+    instrument_redis,
+)
+from src.utils.error_handling import register_error_handlers
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Use structured logging
+logger = StructuredLogger(__name__).logger
+
+# MCP Server (for Cursor/VSCode integration) - optional
+try:
+    from src.ai.mcp_server import app as mcp_app
+    MCP_AVAILABLE = True
+except (ImportError, Exception) as e:
+    logger.warning(f"MCP server not available: {e}")
+    mcp_app = None
+    MCP_AVAILABLE = False
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Lifecycle management"""
-    logger.info("🚀 Starting 1C AI Stack...")
+    """
+    Lifecycle management with best practices
+    
+    Features:
+    - OpenTelemetry setup
+    - Database pool initialization
+    - Redis connection
+    - Graceful shutdown
+    """
+    pool = None
+    redis_client = None
+    marketplace_repo = None
+    scheduler = None
+    
+    try:
+        logger.info("Starting 1C AI Stack...")
+        
+        # Setup OpenTelemetry for distributed tracing
+        otlp_endpoint = os.getenv("OTLP_ENDPOINT")
+        if otlp_endpoint:
+            try:
+                setup_opentelemetry(
+                    service_name="1c-ai-stack",
+                    service_version="2.2.0",
+                    otlp_endpoint=otlp_endpoint,
+                    enable_console_exporter=os.getenv("OTEL_CONSOLE_EXPORTER", "false").lower() == "true",
+                )
+                instrument_fastapi_app(app)
+                instrument_asyncpg()
+                instrument_httpx()
+                instrument_redis()
+                logger.info("OpenTelemetry instrumentation enabled")
+            except Exception as e:
+                logger.warning(f"OpenTelemetry setup failed: {e}")
+        
+        # Database pool with error handling - make it completely non-blocking
+        pool = None
+        try:
+            logger.info("Attempting to create database pool (timeout: 5s)...")
+            # Set very short timeout for DB connection attempts to prevent hanging
+            pool = await asyncio.wait_for(create_pool(), timeout=5.0)
+            if pool:
+                logger.info("Database pool created successfully")
+            else:
+                logger.warning("Database pool creation returned None")
+        except asyncio.TimeoutError:
+            logger.warning("Database connection timeout after 5s, continuing without DB")
+            pool = None
+        except Exception as e:
+            logger.warning(
+                "Database not available, continuing without DB",
+                extra={"error": str(e), "error_type": type(e).__name__}
+            )
+            pool = None
+        
+        # Redis client with error handling - make it completely non-blocking
+        redis_client = None
+        try:
+            # Try to connect with very short timeout
+            redis_client = aioredis.Redis(
+                host=os.getenv("REDIS_HOST", "localhost"),
+                port=int(os.getenv("REDIS_PORT", "6379")),
+                password=os.getenv("REDIS_PASSWORD"),
+                db=int(os.getenv("REDIS_DB", "0")),
+                decode_responses=True,
+                socket_connect_timeout=2,  # Very short timeout
+                socket_timeout=2,
+            )
+            # Try ping with timeout, but don't fail if it doesn't work
+            try:
+                await asyncio.wait_for(redis_client.ping(), timeout=2.0)
+                app.state.redis = redis_client
+                logger.info("Redis client connected")
+            except Exception as ping_err:
+                logger.warning(f"Redis ping failed: {ping_err}, continuing without Redis")
+                try:
+                    await redis_client.close()
+                except:
+                    pass
+                redis_client = None
+                app.state.redis = None
+        except Exception as e:
+            logger.warning(
+                "Redis not available, continuing without cache",
+                extra={"error": str(e), "error_type": type(e).__name__}
+            )
+            redis_client = None
+            app.state.redis = None
 
-    pool = await create_pool()
-    logger.info("✅ Database pool created")
+        # Marketplace repository with error handling
+        if pool:
+            try:
+                bucket = os.getenv("AWS_S3_BUCKET") or os.getenv("MINIO_DEFAULT_BUCKET", "")
+                storage_config = {
+                    "bucket": bucket,
+                    "region": os.getenv("AWS_S3_REGION", ""),
+                    "endpoint": os.getenv("AWS_S3_ENDPOINT") or os.getenv("MINIO_ENDPOINT"),
+                    "access_key": os.getenv("AWS_ACCESS_KEY_ID") or os.getenv("MINIO_ROOT_USER"),
+                    "secret_key": os.getenv("AWS_SECRET_ACCESS_KEY") or os.getenv("MINIO_ROOT_PASSWORD"),
+                    "create_bucket": os.getenv("AWS_S3_CREATE_BUCKET", "true").lower() not in {"0", "false", "no"},
+                }
+                
+                marketplace_repo = MarketplaceRepository(
+                    pool,
+                    cache=redis_client,
+                    storage_config=storage_config,
+                )
+                await marketplace_repo.init()
+                app.state.marketplace_repo = marketplace_repo
+                logger.info("Marketplace repository ready")
+            except Exception as e:
+                logger.error(
+                    "Failed to initialize marketplace repository",
+                    extra={"error": str(e), "error_type": type(e).__name__},
+                    exc_info=True
+                )
+                marketplace_repo = None
+                app.state.marketplace_repo = None
+        else:
+            logger.warning("Marketplace repository skipped (no database pool)")
+            app.state.marketplace_repo = None
 
-    redis_client = aioredis.Redis(
-        host=os.getenv("REDIS_HOST", "localhost"),
-        port=int(os.getenv("REDIS_PORT", "6379")),
-        password=os.getenv("REDIS_PASSWORD"),
-        db=int(os.getenv("REDIS_DB", "0")),
-        decode_responses=True,
-    )
-    await redis_client.ping()
-    app.state.redis = redis_client
-    logger.info("✅ Redis client connected")
+        # Scheduler with error handling
+        if marketplace_repo:
+            try:
+                cache_refresh_minutes = int(os.getenv("MARKETPLACE_CACHE_REFRESH_MINUTES", "15"))
+                scheduler = AsyncIOScheduler()
+                scheduler.add_job(marketplace_repo.refresh_cached_views, "interval", minutes=cache_refresh_minutes)
+                scheduler.start()
+                app.state.scheduler = scheduler
+                logger.info(f"Marketplace cache refresh scheduler started (every {cache_refresh_minutes} min)")
+            except Exception as e:
+                logger.error(
+                    "Failed to start scheduler",
+                    extra={"error": str(e), "error_type": type(e).__name__},
+                    exc_info=True
+                )
+                scheduler = None
+                app.state.scheduler = None
 
-    bucket = os.getenv("AWS_S3_BUCKET") or os.getenv("MINIO_DEFAULT_BUCKET", "")
-    storage_config = {
-        "bucket": bucket,
-        "region": os.getenv("AWS_S3_REGION", ""),
-        "endpoint": os.getenv("AWS_S3_ENDPOINT") or os.getenv("MINIO_ENDPOINT"),
-        "access_key": os.getenv("AWS_ACCESS_KEY_ID") or os.getenv("MINIO_ROOT_USER"),
-        "secret_key": os.getenv("AWS_SECRET_ACCESS_KEY") or os.getenv("MINIO_ROOT_PASSWORD"),
-        "create_bucket": os.getenv("AWS_S3_CREATE_BUCKET", "true").lower() not in {"0", "false", "no"},
-    }
+        # User rate limit middleware (only if Redis available)
+        if redis_client:
+            try:
+                user_rate_limit = int(os.getenv("USER_RATE_LIMIT_PER_MINUTE", "60"))
+                user_rate_window = int(os.getenv("USER_RATE_LIMIT_WINDOW_SECONDS", "60"))
+                try:
+                    auth_service = get_auth_service()
+                except Exception as auth_err:
+                    logger.warning(f"Failed to get auth service: {auth_err}")
+                    auth_service = None
+                
+                if auth_service:
+                    app.add_middleware(
+                        UserRateLimitMiddleware,
+                        redis_client=redis_client,
+                        max_requests=user_rate_limit,
+                        window_seconds=user_rate_window,
+                        auth_service=auth_service,
+                    )
+                    logger.info("User rate limit middleware added")
+                else:
+                    logger.warning("Skipping user rate limit middleware (no auth service)")
+            except Exception as e:
+                logger.warning(
+                    "Failed to add user rate limit middleware",
+                    extra={"error": str(e), "error_type": type(e).__name__}
+                )
 
-    marketplace_repo = MarketplaceRepository(
-        pool,
-        cache=redis_client,
-        storage_config=storage_config,
-    )
-    await marketplace_repo.init()
-    app.state.marketplace_repo = marketplace_repo
-    logger.info("✅ Marketplace repository ready")
-
-    cache_refresh_minutes = int(os.getenv("MARKETPLACE_CACHE_REFRESH_MINUTES", "15"))
-    scheduler = AsyncIOScheduler()
-    scheduler.add_job(marketplace_repo.refresh_cached_views, "interval", minutes=cache_refresh_minutes)
-    scheduler.start()
-    app.state.scheduler = scheduler
-    logger.info("⏱️ Marketplace cache refresh scheduler started (every %s min)", cache_refresh_minutes)
-
-    user_rate_limit = int(os.getenv("USER_RATE_LIMIT_PER_MINUTE", "60"))
-    user_rate_window = int(os.getenv("USER_RATE_LIMIT_WINDOW_SECONDS", "60"))
-    app.add_middleware(
-        UserRateLimitMiddleware,
-        redis_client=redis_client,
-        max_requests=user_rate_limit,
-        window_seconds=user_rate_window,
-        auth_service=get_auth_service(),
-    )
-
-    logger.info("🔒 Security layer initialized (Agents Rule of Two)")
+        logger.info("Security layer initialized (Agents Rule of Two)")
+        logger.info("Application startup completed successfully")
+        
+    except Exception as e:
+        logger.error(
+            "Critical error during startup",
+            extra={"error": str(e), "error_type": type(e).__name__},
+            exc_info=True
+        )
+        # Continue anyway - app can run in degraded mode
+        logger.warning("Continuing startup in degraded mode...")
 
     try:
         yield
     finally:
-        logger.info("👋 Shutting down...")
-        scheduler.shutdown(wait=False)
-        await marketplace_repo.refresh_cached_views()
-        await redis_client.close()
-        await redis_client.wait_closed()
-        await close_pool()
-        logger.info("✅ Resources released")
+        logger.info("Shutting down...")
+        
+        # Shutdown scheduler
+        if scheduler:
+            try:
+                scheduler.shutdown(wait=False)
+            except Exception as e:
+                logger.warning(f"Error shutting down scheduler: {e}")
+        
+        # Refresh marketplace cache
+        if marketplace_repo:
+            try:
+                await marketplace_repo.refresh_cached_views()
+            except Exception as e:
+                logger.warning(f"Error refreshing marketplace cache: {e}")
+        
+        # Close Redis
+        if redis_client:
+            try:
+                await redis_client.close()
+                # wait_closed() may not exist in all aioredis versions
+                if hasattr(redis_client, 'wait_closed'):
+                    await redis_client.wait_closed()
+            except Exception as e:
+                logger.warning(f"Error closing Redis: {e}")
+        
+        # Close database pool
+        if pool:
+            try:
+                await close_pool()
+            except Exception as e:
+                logger.warning(f"Error closing database pool: {e}")
+        
+        logger.info("Resources released")
 
 
 # Application
 app = FastAPI(
     title="1C AI Stack API",
     description="AI-Powered Development Platform для 1C - WITH SECURITY",
-    version="2.1.0",
-    lifespan=lifespan
+    version="2.2.0",
+    lifespan=lifespan,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
+    openapi_tags=[
+        {"name": "Health", "description": "Health check endpoints"},
+        {"name": "Monitoring", "description": "Monitoring and metrics"},
+        {"name": "API", "description": "Core API endpoints"},
+    ],
+    swagger_ui_parameters={
+        "displayRequestDuration": True,
+        "filter": True,
+        "tryItOutEnabled": True,
+    },
 )
 
-# Metrics instrumentation (Prometheus)
-Instrumentator().instrument(app).expose(app, include_in_schema=False)
+# Metrics instrumentation (Prometheus) - with error handling
+try:
+    Instrumentator().instrument(app).expose(app, include_in_schema=False)
+except Exception as e:
+    logger.warning(f"Failed to instrument Prometheus metrics: {e}")
 
-# CORS
+# Register error handlers (best practice: centralized error handling) - with error handling
+try:
+    register_error_handlers(app)
+except Exception as e:
+    logger.warning(f"Failed to register error handlers: {e}")
+
+# CORS (Best Practice: Use environment variables, not hardcoded origins)
+cors_origins_env = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173")
+cors_origins = [origin.strip() for origin in cors_origins_env.split(",") if origin.strip()]
+
+# Security: In production, never use ["*"] for origins
+if os.getenv("ENVIRONMENT") == "development" and "*" in cors_origins_env:
+    logger.warning("CORS allows all origins in development mode. Restrict in production!")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["X-Request-ID", "X-RateLimit-Limit", "X-RateLimit-Remaining"],
+    max_age=3600,  # Cache preflight requests for 1 hour
 )
 
 # Security Headers (CRITICAL!)
@@ -157,81 +357,161 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # Metrics
 app.add_middleware(MetricsMiddleware)
-app.add_middleware(JWTUserContextMiddleware, auth_service=get_auth_service())
+
+# JWT User Context Middleware with error handling
+try:
+    auth_service = get_auth_service()
+    app.add_middleware(JWTUserContextMiddleware, auth_service=auth_service)
+except Exception as e:
+    logger.warning(f"Failed to add JWT middleware: {e}")
 
 
-# Logging middleware
+# Logging middleware with structured logging and context propagation
 @app.middleware("http")
 async def logging_middleware(request: Request, call_next):
-    """Log all requests with correlation ID"""
-    request_id = str(uuid.uuid4())
+    """
+    Enhanced logging middleware with best practices
+    
+    Features:
+    - Correlation ID generation/propagation
+    - Structured logging with contextvars
+    - Request/response timing
+    - Error tracking
+    """
+    # Get or generate request ID
+    request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
     start_time = time.time()
+    
+    # Set request context for structured logging
+    set_request_context(request_id=request_id)
     
     # Add request ID to state
     request.state.request_id = request_id
     
-    # Process request
-    response = await call_next(request)
+    # Extract user info if available (from JWT middleware)
+    user_id = getattr(request.state, "user_id", None)
+    tenant_id = getattr(request.state, "tenant_id", None)
+    if user_id:
+        set_request_context(user_id=user_id, tenant_id=tenant_id)
     
-    # Add request ID to response headers
-    response.headers["X-Request-ID"] = request_id
-    
-    # Log
-    process_time = time.time() - start_time
-    logger.info(
-        f"Request: {request.method} {request.url.path} "
-        f"| Status: {response.status_code} "
-        f"| Time: {process_time:.3f}s "
-        f"| Request-ID: {request_id}"
-    )
-    
-    return response
+    try:
+        # Process request
+        response = await call_next(request)
+        
+        # Add request ID to response headers
+        response.headers["X-Request-ID"] = request_id
+        
+        # Calculate processing time
+        process_time = time.time() - start_time
+        
+        # Structured logging
+        logger.info(
+            f"{request.method} {request.url.path}",
+            request_id=request_id,
+            user_id=user_id,
+            tenant_id=tenant_id,
+            method=request.method,
+            path=request.url.path,
+            status_code=response.status_code,
+            process_time_ms=round(process_time * 1000, 2),
+            client_ip=request.client.host if request.client else None,
+        )
+        
+        return response
+        
+    except Exception as e:
+        # Log errors with full context
+        process_time = time.time() - start_time
+        logger.error(
+            f"Request failed: {request.method} {request.url.path}",
+            request_id=request_id,
+            user_id=user_id,
+            tenant_id=tenant_id,
+            method=request.method,
+            path=request.url.path,
+            process_time_ms=round(process_time * 1000, 2),
+            error=str(e),
+            error_type=type(e).__name__,
+        )
+        raise
 
 
 # Health check
-@app.get("/health")
+@app.get("/health", tags=["Health"], summary="Health check endpoint")
 async def health_check():
-    """Health check endpoint"""
-    health = await check_health()
+    """
+    Health check endpoint
+    
+    Returns comprehensive health status of all system dependencies:
+    - PostgreSQL
+    - Redis
+    - Neo4j
+    - Qdrant
+    - Elasticsearch
+    - OpenAI API
+    """
+    health_checker = get_health_checker()
+    health = await health_checker.check_all()
     return health
 
 
-# Include routers
-app.include_router(dashboard_router)
-app.include_router(monitoring_router)
-app.include_router(copilot_router)
-app.include_router(marketplace_router)
-app.include_router(code_review_router)
-app.include_router(test_generation_router)
-app.include_router(websocket_router)
-app.include_router(bpmn_router)
-app.include_router(auth_router)
-app.include_router(admin_roles_router)
-app.include_router(admin_audit_router)
+# Include routers with error handling
+routers = [
+    ("dashboard", dashboard_router),
+    ("monitoring", monitoring_router),
+    ("copilot", copilot_router),
+    ("marketplace", marketplace_router),
+    ("code_review", code_review_router),
+    ("test_generation", test_generation_router),
+    ("websocket", websocket_router),
+    ("bpmn", bpmn_router),
+    ("auth", auth_router),
+    ("admin_roles", admin_roles_router),
+    ("admin_audit", admin_audit_router),
+    ("code_approval", code_approval_router),
+    ("security_monitoring", security_monitoring_router),
+]
 
-# NEW: Security routers
-app.include_router(code_approval_router)
-app.include_router(security_monitoring_router)
+for name, router in routers:
+    try:
+        app.include_router(router)
+    except Exception as e:
+        logger.warning(f"Failed to register {name} router: {e}")
 
-# Mount MCP server (для Cursor/VSCode)
-app.mount("/mcp", mcp_app)
+# Mount MCP server (для Cursor/VSCode) - only if available
+if MCP_AVAILABLE and mcp_app:
+    try:
+        app.mount("/mcp", mcp_app)
+        logger.info("MCP server mounted at /mcp")
+    except Exception as e:
+        logger.warning(f"Failed to mount MCP server: {e}")
 
 
 # Root
-@app.get("/")
+@app.get("/", tags=["API"], summary="API root endpoint")
 async def root():
-    """API root endpoint"""
+    """
+    API root endpoint
+    
+    Returns basic information about the API including:
+    - API name and version
+    - Security status
+    - Available integrations
+    - Links to documentation
+    """
     return {
         "name": "1C AI Stack API",
         "version": "2.2.0",
         "status": "running",
-        "security": "Agents Rule of Two Enabled ✅",
+        "security": "Agents Rule of Two Enabled",
         "integrations": {
             "mcp": "/mcp (Cursor/VSCode)",
             "telegram": "Available via bot"
         },
         "docs": "/docs",
-        "health": "/health"
+        "redoc": "/redoc",
+        "health": "/health",
+        "openapi": "/openapi.json"
     }
 
 

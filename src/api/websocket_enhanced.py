@@ -3,11 +3,11 @@ Enhanced WebSocket API
 Real-time updates for dashboards and notifications
 """
 
-import logging
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from src.services.real_time_service import real_time_manager
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 router = APIRouter()
 
@@ -63,7 +63,15 @@ async def websocket_endpoint(websocket: WebSocket, topic: str):
     except WebSocketDisconnect:
         await real_time_manager.disconnect(websocket)
     except Exception as e:
-        logger.error(f"WebSocket error: {e}")
+        logger.error(
+            "WebSocket error",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "topic": topic if 'topic' in locals() else None
+            },
+            exc_info=True
+        )
         await real_time_manager.disconnect(websocket)
 
 

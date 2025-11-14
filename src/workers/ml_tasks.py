@@ -5,7 +5,6 @@ Celery Worker для background обучения моделей и ML задач
 
 import os
 import sys
-import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 
@@ -23,6 +22,7 @@ from ml.training.trainer import ModelTrainer
 from ml.experiments.mlflow_manager import MLFlowManager
 from ml.metrics.collector import MetricsCollector
 from config import settings
+from src.utils.structured_logging import StructuredLogger
 
 # Настройка Celery
 celery_app = Celery(
@@ -85,7 +85,7 @@ celery_app.conf.update(
 )
 
 # Логгер
-task_logger = get_task_logger(__name__)
+task_logger = StructuredLogger(__name__).logger
 
 # Инициализация сервисов
 mlflow_manager = None
@@ -122,7 +122,10 @@ init_services()
 def train_model(self, config: Dict[str, Any]):
     """Обучение модели ML"""
     
-    task_logger.info(f"Начато обучение модели: {config.get('model_name')}")
+    task_logger.info(
+        "Начато обучение модели",
+        extra={"model_name": config.get('model_name')}
+    )
     
     try:
         # Преобразование данных
@@ -165,7 +168,15 @@ def train_model(self, config: Dict[str, Any]):
         }
         
     except Exception as e:
-        task_logger.error(f"Ошибка обучения модели {config.get('model_name')}: {e}")
+        task_logger.error(
+            "Ошибка обучения модели",
+            extra={
+                "model_name": config.get('model_name'),
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         
         self.update_state(
             state='FAILURE',
@@ -227,7 +238,14 @@ def hyperparameter_optimization(self, config: Dict[str, Any]):
         }
         
     except Exception as e:
-        task_logger.error(f"Ошибка оптимизации гиперпараметров: {e}")
+        task_logger.error(
+            "Ошибка оптимизации гиперпараметров",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         
         self.update_state(
             state='FAILURE',
@@ -267,7 +285,10 @@ def retrain_all_models():
                     
                     # Здесь можно инициировать переобучение
         
-        task_logger.info(f"Завершено периодическое переобучение. Моделей переобучено: {models_retrained}")
+        task_logger.info(
+            "Завершено периодическое переобучение",
+            extra={"models_retrained": models_retrained}
+        )
         
         return {
             'status': 'completed',
@@ -276,7 +297,14 @@ def retrain_all_models():
         }
         
     except Exception as e:
-        task_logger.error(f"Ошибка периодического переобучения: {e}")
+        task_logger.error(
+            "Ошибка периодического переобучения",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise
 
 
@@ -303,7 +331,10 @@ def update_feature_store():
                     'roles_tracked': len([k for k, v in recent_metrics.items() if v])
                 })
         
-        task_logger.info(f"Обновление Feature Store завершено. Фичей обновлено: {features_updated}")
+        task_logger.info(
+            "Обновление Feature Store завершено",
+            extra={"features_updated": features_updated}
+        )
         
         return {
             'status': 'completed',
@@ -312,7 +343,14 @@ def update_feature_store():
         }
         
     except Exception as e:
-        task_logger.error(f"Ошибка обновления Feature Store: {e}")
+        task_logger.error(
+            "Ошибка обновления Feature Store",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise
 
 
@@ -337,11 +375,24 @@ def cleanup_old_experiments():
                     try:
                         model_trainer.mlflow_manager.client.delete_experiment(experiment.experiment_id)
                         cleanup_count += 1
-                        task_logger.info(f"Удален старый эксперимент: {experiment.name}")
+                        task_logger.info(
+                            "Удален старый эксперимент",
+                            extra={"experiment_name": experiment.name}
+                        )
                     except Exception as e:
-                        task_logger.warning(f"Не удалось удалить эксперимент {experiment.name}: {e}")
+                        task_logger.warning(
+                            "Не удалось удалить эксперимент",
+                            extra={
+                                "experiment_name": experiment.name,
+                                "error": str(e),
+                                "error_type": type(e).__name__
+                            }
+                        )
         
-        task_logger.info(f"Очистка завершена. Удалено экспериментов: {cleanup_count}")
+        task_logger.info(
+            "Очистка завершена",
+            extra={"experiments_deleted": cleanup_count}
+        )
         
         return {
             'status': 'completed',
@@ -350,7 +401,14 @@ def cleanup_old_experiments():
         }
         
     except Exception as e:
-        task_logger.error(f"Ошибка очистки экспериментов: {e}")
+        task_logger.error(
+            "Ошибка очистки экспериментов",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise
 
 
@@ -388,12 +446,20 @@ def check_model_drift():
                         })
         
         if drift_detected:
-            task_logger.warning(f"Обнаружен дрейф моделей: {len(drift_details)} случаев")
+            task_logger.warning(
+                "Обнаружен дрейф моделей",
+                extra={"drift_cases": len(drift_details)}
+            )
             
             # Можно инициировать автоматическое переобучение
             for drift in drift_details:
                 task_logger.info(
-                    f"Дрейф в {drift['role']}:{drift['metric_type']} = {drift['drift_percent']:.1f}%"
+                    "Дрейф обнаружен",
+                    extra={
+                        "role": drift['role'],
+                        "metric_type": drift['metric_type'],
+                        "drift_percent": round(drift['drift_percent'], 1)
+                    }
                 )
         else:
             task_logger.info("Дрейф моделей не обнаружен")
@@ -406,7 +472,14 @@ def check_model_drift():
         }
         
     except Exception as e:
-        task_logger.error(f"Ошибка проверки дрейфа: {e}")
+        task_logger.error(
+            "Ошибка проверки дрейфа",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise
 
 
@@ -460,13 +533,25 @@ def retrain_underperforming_models():
                         
                         models_retrained += 1
                         
-                        task_logger.info(f"Инициировано переобучение модели {model_name}")
+                        task_logger.info(
+                            "Инициировано переобучение модели",
+                            extra={"model_name": model_name}
+                        )
                         
                     except Exception as e:
-                        task_logger.error(f"Ошибка переобучения {model_name}: {e}")
+                        task_logger.error(
+                            "Ошибка переобучения",
+                            extra={
+                                "model_name": model_name,
+                                "error": str(e),
+                                "error_type": type(e).__name__
+                            },
+                            exc_info=True
+                        )
         
         task_logger.info(
-            f"Переобучение слабых моделей завершено. Переобучено: {models_retrained}"
+            "Переобучение слабых моделей завершено",
+            extra={"models_retrained": models_retrained}
         )
         
         return {
@@ -477,7 +562,14 @@ def retrain_underperforming_models():
         }
         
     except Exception as e:
-        task_logger.error(f"Ошибка переобучения слабых моделей: {e}")
+        task_logger.error(
+            "Ошибка переобучения слабых моделей",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise
 
 
@@ -485,7 +577,10 @@ def retrain_underperforming_models():
 def process_metrics_batch(self, metrics_data: List[Dict[str, Any]]):
     """Пакетная обработка метрик"""
     
-    task_logger.info(f"Обработка пакета метрик: {len(metrics_data)} записей")
+    task_logger.info(
+        "Обработка пакета метрик",
+        extra={"records_count": len(metrics_data)}
+    )
     
     try:
         processed_count = 0
@@ -517,7 +612,14 @@ def process_metrics_batch(self, metrics_data: List[Dict[str, Any]]):
                 processed_count += 1
                 
             except Exception as e:
-                task_logger.error(f"Ошибка обработки метрики: {e}")
+                task_logger.error(
+                    "Ошибка обработки метрики",
+                    extra={
+                        "error": str(e),
+                        "error_type": type(e).__name__
+                    },
+                    exc_info=True
+                )
                 error_count += 1
         
         self.update_state(
@@ -541,7 +643,14 @@ def process_metrics_batch(self, metrics_data: List[Dict[str, Any]]):
         }
         
     except Exception as e:
-        task_logger.error(f"Ошибка пакетной обработки метрик: {e}")
+        task_logger.error(
+            "Ошибка пакетной обработки метрик",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise
 
 

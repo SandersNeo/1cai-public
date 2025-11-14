@@ -4,14 +4,14 @@ Billing Webhooks Handler
 """
 
 import os
-import logging
 import hmac
 import hashlib
 from typing import Dict
 from fastapi import APIRouter, Request, HTTPException, Header
 import asyncpg
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 router = APIRouter(prefix="/api/webhooks")
 
@@ -36,7 +36,7 @@ class BillingWebhookHandler:
             import stripe
             stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "")
             self.stripe = stripe
-        except:
+        except (ImportError, Exception):
             logger.warning("Stripe not available")
             self.stripe = None
     
@@ -52,7 +52,7 @@ class BillingWebhookHandler:
                     payload, signature, self.webhook_secret
                 )
                 return True
-        except:
+        except (stripe.error.StripeError, Exception):
             return False
         
         return False
@@ -63,7 +63,10 @@ class BillingWebhookHandler:
         event_type = event.get('type')
         data = event.get('data', {}).get('object', {})
         
-        logger.info(f"Processing Stripe event: {event_type}")
+        logger.info(
+            "Processing Stripe event",
+            extra={"event_type": event_type}
+        )
         
         handlers = {
             'customer.subscription.created': self._handle_subscription_created,
@@ -79,7 +82,10 @@ class BillingWebhookHandler:
             await handler(data, event)
             return {'status': 'handled'}
         
-        logger.info(f"Unhandled event type: {event_type}")
+        logger.info(
+            "Unhandled event type",
+            extra={"event_type": event_type}
+        )
         return {'status': 'skipped'}
     
     async def _handle_subscription_created(self, subscription: Dict, event: Dict):

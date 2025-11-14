@@ -1,16 +1,24 @@
 """
 Real-Time Service
-WebSocket manager for live updates to dashboards
+Версия: 2.1.0
+
+Улучшения:
+- Input validation
+- Structured logging
+- Улучшена обработка ошибок
+- Timeout handling
 """
 
 import asyncio
 import json
 import logging
-from typing import Dict, Set, Any
+import re
+from typing import Dict, Set, Any, Optional
 from datetime import datetime
 from fastapi import WebSocket
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class RealTimeManager:
@@ -29,34 +37,78 @@ class RealTimeManager:
         self.connections: Dict[str, Set[WebSocket]] = {}
         self.connection_metadata: Dict[WebSocket, Dict] = {}
     
-    async def connect(self, websocket: WebSocket, topic: str = "general"):
+    async def connect(self, websocket: WebSocket, topic: str = "general", timeout: float = 10.0):
         """
         Accept new WebSocket connection
         
         Args:
             websocket: WebSocket connection
             topic: Topic to subscribe to
+            timeout: Connection timeout (seconds)
         """
-        await websocket.accept()
+        # Input validation
+        if not topic or not isinstance(topic, str):
+            raise ValueError(f"Invalid topic: {topic}")
         
-        if topic not in self.connections:
-            self.connections[topic] = set()
+        # Sanitize topic (prevent injection)
+        topic = re.sub(r'[^a-zA-Z0-9_.-]', '', topic)
+        if not topic:
+            topic = "general"
         
-        self.connections[topic].add(websocket)
-        self.connection_metadata[websocket] = {
-            'topic': topic,
-            'connected_at': datetime.now(),
-            'messages_sent': 0
-        }
+        # Validate topic length
+        if len(topic) > 100:
+            logger.warning(
+                f"Topic too long, truncating: {topic}",
+                extra={"original_topic": topic, "topic_length": len(topic)}
+            )
+            topic = topic[:100]
         
-        logger.info(f"Client connected to topic '{topic}'. Total: {len(self.connections[topic])}")
-        
-        # Send welcome message
-        await self.send_to_client(websocket, {
-            'type': 'connected',
-            'topic': topic,
-            'timestamp': datetime.now().isoformat()
-        })
+        try:
+            await asyncio.wait_for(websocket.accept(), timeout=timeout)
+            
+            if topic not in self.connections:
+                self.connections[topic] = set()
+            
+            self.connections[topic].add(websocket)
+            self.connection_metadata[websocket] = {
+                'topic': topic,
+                'connected_at': datetime.now(),
+                'messages_sent': 0
+            }
+            
+            logger.info(
+                f"Client connected to topic '{topic}'",
+                extra={
+                    "topic": topic,
+                    "total_connections": len(self.connections[topic])
+                }
+            )
+            
+            # Send welcome message with timeout
+            await asyncio.wait_for(
+                self.send_to_client(websocket, {
+                    'type': 'connected',
+                    'topic': topic,
+                    'timestamp': datetime.now().isoformat()
+                }),
+                timeout=5.0
+            )
+        except asyncio.TimeoutError:
+            logger.error(
+                f"WebSocket connection timeout after {timeout}s",
+                extra={"topic": topic, "timeout": timeout}
+            )
+            raise
+        except Exception as e:
+            logger.error(
+                f"Error connecting WebSocket: {e}",
+                extra={
+                    "topic": topic,
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
+            raise
     
     async def disconnect(self, websocket: WebSocket):
         """Disconnect client"""
@@ -72,32 +124,110 @@ class RealTimeManager:
             if websocket in self.connection_metadata:
                 del self.connection_metadata[websocket]
             
-            logger.info(f"Client disconnected from '{topic}'")
+            logger.info(
+                "Client disconnected",
+                extra={"topic": topic}
+            )
             
         except Exception as e:
-            logger.error(f"Error during disconnect: {e}")
+            logger.error(
+                "Error during disconnect",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "topic": topic if 'topic' in locals() else None
+                },
+                exc_info=True
+            )
     
-    async def send_to_client(self, websocket: WebSocket, message: Dict[str, Any]):
-        """Send message to specific client"""
+    async def send_to_client(
+        self,
+        websocket: WebSocket,
+        message: Dict[str, Any],
+        timeout: float = 5.0
+    ):
+        """
+        Send message to specific client
+        
+        Args:
+            websocket: WebSocket connection
+            message: Message to send
+            timeout: Send timeout (seconds)
+        """
+        # Input validation
+        if not isinstance(message, dict):
+            logger.warning(
+                f"Invalid message type: {type(message)}",
+                extra={"message_type": type(message).__name__}
+            )
+            return
+        
         try:
-            await websocket.send_json(message)
+            await asyncio.wait_for(
+                websocket.send_json(message),
+                timeout=timeout
+            )
             
             if websocket in self.connection_metadata:
                 self.connection_metadata[websocket]['messages_sent'] += 1
                 
+        except asyncio.TimeoutError:
+            logger.warning(
+                f"Send message timeout after {timeout}s",
+                extra={"timeout": timeout}
+            )
+            await self.disconnect(websocket)
         except Exception as e:
-            logger.error(f"Error sending to client: {e}")
+            logger.error(
+                f"Error sending to client: {e}",
+                extra={
+                    "error_type": type(e).__name__,
+                    "message_type": message.get('type', 'unknown')
+                },
+                exc_info=True
+            )
             await self.disconnect(websocket)
     
-    async def broadcast_to_topic(self, topic: str, message: Dict[str, Any]):
+    async def broadcast_to_topic(
+        self,
+        topic: str,
+        message: Dict[str, Any],
+        timeout: float = 5.0
+    ):
         """
-        Broadcast message to all clients subscribed to topic
+        Broadcast message to all clients subscribed to topic с input validation
         
         Args:
             topic: Topic name
             message: Message to broadcast
+            timeout: Send timeout (seconds)
         """
+        # Input validation
+        if not topic or not isinstance(topic, str):
+            logger.warning(
+                "Invalid topic for broadcast_to_topic",
+                extra={"topic": topic, "topic_type": type(topic).__name__ if topic else None}
+            )
+            return
+        
+        if not isinstance(message, dict):
+            logger.warning(
+                "Invalid message type for broadcast_to_topic",
+                extra={"topic": topic, "message_type": type(message).__name__}
+            )
+            return
+        
+        # Sanitize topic
+        topic = re.sub(r'[^a-zA-Z0-9_.-]', '', topic)
+        if not topic:
+            logger.warning("Topic sanitized to empty, skipping broadcast")
+            return
+        
         if topic not in self.connections:
+            logger.debug(
+                "No connections for topic",
+                extra={"topic": topic}
+            )
             return
         
         # Add metadata
@@ -109,20 +239,42 @@ class RealTimeManager:
         
         for websocket in self.connections[topic].copy():
             try:
-                await websocket.send_json(message)
+                await asyncio.wait_for(
+                    websocket.send_json(message),
+                    timeout=timeout
+                )
                 
                 if websocket in self.connection_metadata:
                     self.connection_metadata[websocket]['messages_sent'] += 1
                     
+            except asyncio.TimeoutError:
+                logger.warning(
+                    f"Send timeout to client on topic '{topic}'",
+                    extra={"topic": topic, "timeout": timeout}
+                )
+                disconnected.append(websocket)
             except Exception as e:
-                logger.warning(f"Failed to send to client: {e}")
+                logger.warning(
+                    f"Failed to send to client: {e}",
+                    extra={
+                        "topic": topic,
+                        "error_type": type(e).__name__
+                    }
+                )
                 disconnected.append(websocket)
         
         # Clean up disconnected clients
         for ws in disconnected:
             await self.disconnect(ws)
         
-        logger.info(f"Broadcasted to {len(self.connections[topic])} clients on topic '{topic}'")
+        logger.info(
+            f"Broadcasted to {len(self.connections[topic])} clients on topic '{topic}'",
+            extra={
+                "topic": topic,
+                "clients_count": len(self.connections[topic]),
+                "disconnected_count": len(disconnected)
+            }
+        )
     
     async def broadcast_dashboard_update(self, dashboard_type: str, data: Dict[str, Any]):
         """
@@ -217,12 +369,27 @@ async def start_dashboard_updater():
                     await real_time_manager.broadcast_dashboard_update(dashboard_type, data)
                     
                 except Exception as e:
-                    logger.error(f"Error updating {dashboard_type} dashboard: {e}")
+                    logger.error(
+                        "Error updating dashboard",
+                        extra={
+                            "error": str(e),
+                            "error_type": type(e).__name__,
+                            "dashboard_type": dashboard_type
+                        },
+                        exc_info=True
+                    )
             
             logger.debug("Dashboard updates broadcasted")
             
         except Exception as e:
-            logger.error(f"Dashboard updater error: {e}")
+            logger.error(
+                "Dashboard updater error",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             await asyncio.sleep(60)  # Wait longer on error
 
 

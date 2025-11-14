@@ -4,10 +4,10 @@ ITS Knowledge Integrator
 """
 
 from typing import Dict, List, Any, Optional
-import logging
 from datetime import datetime
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class ITSKnowledgeIntegrator:
@@ -23,7 +23,13 @@ class ITSKnowledgeIntegrator:
             self.its = get_its_service()
             self.its_available = True
         except Exception as e:
-            logger.warning(f"ITS service not available: {e}")
+            logger.warning(
+                "ITS service not available",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                }
+            )
             self.its = None
             self.its_available = False
         
@@ -483,7 +489,10 @@ graph TD
         Returns:
             Список релевантных best practices с примерами кода
         """
-        logger.info(f"Getting ITS best practices for: {issue_type}")
+        logger.info(
+            "Getting ITS best practices",
+            extra={"issue_type": issue_type}
+        )
         
         practices = []
         
@@ -513,7 +522,14 @@ graph TD
                         practices.append(practice)
                         
             except Exception as e:
-                logger.warning(f"Failed to get ITS docs: {e}")
+                logger.warning(
+                    "Failed to get ITS docs",
+                    extra={
+                        "error": str(e),
+                        "error_type": type(e).__name__,
+                        "issue_type": issue_type if 'issue_type' in locals() else None
+                    }
+                )
         
         # Добавляем из встроенной базы знаний
         if issue_type == 'slow_query':

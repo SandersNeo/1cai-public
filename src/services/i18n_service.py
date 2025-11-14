@@ -1,7 +1,11 @@
 """
 Internationalization (i18n) Service
-Сервис мультиязычности для 1C AI Stack
-Поддержка: RU, EN (расширяемо)
+Версия: 2.1.0
+
+Улучшения:
+- Input validation
+- Structured logging
+- Улучшена обработка ошибок
 """
 
 import json
@@ -9,8 +13,9 @@ import logging
 from typing import Dict, Any, Optional
 from pathlib import Path
 from enum import Enum
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class Language(str, Enum):
@@ -42,7 +47,10 @@ class I18nService:
         translations_dir = Path(__file__).parent.parent.parent / "locales"
         
         if not translations_dir.exists():
-            logger.warning(f"Translations directory not found: {translations_dir}")
+            logger.warning(
+                "Translations directory not found",
+                extra={"translations_dir": str(translations_dir)}
+            )
             return
         
         # Загружаем все файлы переводов
@@ -53,11 +61,25 @@ class I18nService:
                 try:
                     with open(lang_file, 'r', encoding='utf-8') as f:
                         self.translations[lang.value] = json.load(f)
-                    logger.info(f"Loaded translations for {lang.value}")
+                    logger.info(
+                        "Loaded translations",
+                        extra={"language": lang.value}
+                    )
                 except Exception as e:
-                    logger.error(f"Failed to load {lang_file}: {e}")
+                    logger.error(
+                        "Failed to load translation file",
+                        extra={
+                            "error": str(e),
+                            "error_type": type(e).__name__,
+                            "lang_file": str(lang_file)
+                        },
+                        exc_info=True
+                    )
             else:
-                logger.warning(f"Translation file not found: {lang_file}")
+                logger.warning(
+                    "Translation file not found",
+                    extra={"lang_file": str(lang_file)}
+                )
     
     def t(
         self,
@@ -80,6 +102,22 @@ class I18nService:
             >>> i18n.t("bot.welcome", name="John")
             "Привет, John!"
         """
+        # Input validation
+        if not key or not isinstance(key, str):
+            logger.warning(
+                "Invalid translation key",
+                extra={"key": key, "key_type": type(key).__name__}
+            )
+            return key if isinstance(key, str) else str(key)
+        
+        # Validate key length (prevent DoS)
+        if len(key) > 500:
+            logger.warning(
+                "Translation key too long",
+                extra={"key_length": len(key), "max_length": 500}
+            )
+            return key[:500]
+        
         lang = (language or self.default_language).value
         
         # Получаем перевод
@@ -90,7 +128,25 @@ class I18nService:
             try:
                 translation = translation.format(**kwargs)
             except KeyError as e:
-                logger.warning(f"Missing parameter {e} for key {key}")
+                logger.warning(
+                    "Missing parameter for translation key",
+                    extra={
+                        "key": key,
+                        "missing_param": str(e),
+                        "error_type": type(e).__name__
+                    }
+                )
+            except Exception as e:
+                logger.error(
+                    "Error formatting translation",
+                    extra={
+                        "key": key,
+                        "error": str(e),
+                        "error_type": type(e).__name__,
+                        "kwargs": list(kwargs.keys())
+                    },
+                    exc_info=True
+                )
         
         return translation
     
@@ -113,7 +169,10 @@ class I18nService:
                     return self._get_translation(key, self.default_language.value)
                 
                 # Если и в default нет - возвращаем ключ
-                logger.warning(f"Translation not found: {key} (lang: {lang})")
+                logger.warning(
+                    "Translation not found",
+                    extra={"key": key, "language": lang}
+                )
                 return f"[{key}]"
         
         return str(value)
@@ -125,7 +184,10 @@ class I18nService:
     def set_default_language(self, language: Language):
         """Установить язык по умолчанию"""
         self.default_language = language
-        logger.info(f"Default language set to: {language.value}")
+        logger.info(
+            "Default language set",
+            extra={"language": language.value}
+        )
     
     def reload_translations(self):
         """Перезагрузить переводы (для hot reload)"""
@@ -157,7 +219,10 @@ class I18nService:
             current = current[k]
         
         current[keys[-1]] = value
-        logger.info(f"Added custom translation: {key} ({lang})")
+        logger.info(
+            "Added custom translation",
+            extra={"key": key, "language": lang}
+        )
 
 
 # Singleton instance

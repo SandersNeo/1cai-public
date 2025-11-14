@@ -154,7 +154,13 @@ class BaseAIAssistant(ABC):
         # Создание цепочки разговоров
         self.qa_chain = self._create_conversational_chain()
         
-        self.logger.info(f"Инициализирован ассистент {config.name} для роли {config.role}")
+        self.logger.info(
+            "Инициализирован ассистент",
+            extra={
+                "assistant_name": config.name,
+                "role": config.role
+            }
+        )
     
     def _setup_logger(self) -> logging.Logger:
         """Настройка логгера для ассистента"""
@@ -187,7 +193,14 @@ class BaseAIAssistant(ABC):
                 query_name='match_knowledge_base'
             )
         except Exception as e:
-            self.logger.warning(f"Не удалось инициализировать векторное хранилище: {e}")
+            self.logger.warning(
+                "Не удалось инициализировать векторное хранилище",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "role": self.config.role
+                }
+            )
             return None
     
     def _create_conversational_chain(self) -> Optional[ConversationalRetrievalChain]:
@@ -273,7 +286,15 @@ class BaseAIAssistant(ABC):
             )
             
         except Exception as e:
-            self.logger.error(f"Ошибка при обработке запроса: {e}")
+            self.logger.error(
+                "Ошибка при обработке запроса",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "role": self.config.role
+                },
+                exc_info=True
+            )
             error_message = AssistantMessage(
                 role="assistant",
                 content=f"Извините, произошла ошибка при обработке вашего запроса: {str(e)}",
@@ -346,7 +367,14 @@ class BaseAIAssistant(ABC):
             self.supabase.table("conversations").insert(conversation_data).execute()
             
         except Exception as e:
-            self.logger.warning(f"Не удалось сохранить диалог в базу данных: {e}")
+            self.logger.warning(
+                "Не удалось сохранить диалог в базу данных",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "role": self.config.role
+                }
+            )
     
     async def add_knowledge(self, documents: List[Dict[str, Any]], user_id: str):
         """
@@ -386,10 +414,24 @@ class BaseAIAssistant(ABC):
                     }
                     self.supabase.table("knowledge_base").insert(doc_record).execute()
                 
-                self.logger.info(f"Добавлено {len(docs)} документов в базу знаний ассистента {self.config.role}")
+                self.logger.info(
+                    "Добавлено документов в базу знаний",
+                    extra={
+                        "documents_count": len(docs),
+                        "role": self.config.role
+                    }
+                )
             
         except Exception as e:
-            self.logger.error(f"Ошибка при добавлении знаний: {e}")
+            self.logger.error(
+                "Ошибка при добавлении знаний",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "role": self.config.role
+                },
+                exc_info=True
+            )
             raise
     
     def get_conversation_history(self, limit: int = 50) -> List[AssistantMessage]:

@@ -5,9 +5,9 @@ Based on: Neural networks from 1c-parsing-tech-log
 
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
-import logging
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 @dataclass
@@ -130,7 +130,10 @@ class AIIssueClassifier:
         Returns:
             Классифицированная проблема с рекомендациями
         """
-        logger.info(f"Classifying issue: {issue_data.get('type')}")
+        logger.info(
+            "Classifying issue",
+            extra={"issue_type": issue_data.get('type')}
+        )
         
         # 1. Feature extraction
         features = self._extract_features(issue_data)

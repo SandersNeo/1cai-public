@@ -6,6 +6,7 @@
 - [`docs/setup/python_311.md`](setup/python_311.md) — установка Python 3.11.
 - `scripts/setup/check_runtime.py`, `make check-runtime` — валидация окружения.
 - [`docs/scripts/README.md`](scripts/README.md) — справочник CLI-скриптов.
+- `scripts/ba/requirements_cli.py` — извлечение требований (см. `make ba-extract`).
 
 ## 2. Infrastructure & Operations
 - Стратегия DevOps: [`docs/ops/devops_platform.md`](ops/devops_platform.md).

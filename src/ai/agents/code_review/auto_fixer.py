@@ -4,10 +4,10 @@ Auto-Fixer
 """
 
 import re
-import logging
 from typing import Dict, List, Optional
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class AutoFixer:
@@ -224,7 +224,15 @@ class AutoFixer:
                     unfixable.append(issue)
                     
             except Exception as e:
-                logger.error(f"Failed to fix {issue_type}: {e}")
+                logger.error(
+                    "Failed to fix issue",
+                    extra={
+                        "issue_type": issue_type,
+                        "error": str(e),
+                        "error_type": type(e).__name__
+                    },
+                    exc_info=True
+                )
                 unfixable.append(issue)
         
         return {

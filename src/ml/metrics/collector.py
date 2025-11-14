@@ -4,7 +4,6 @@
 """
 
 import asyncio
-import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, asdict
@@ -20,9 +19,9 @@ import uuid
 
 from pydantic import BaseModel
 from src.config import settings
+from src.utils.structured_logging import StructuredLogger
 
-# Настройка логирования
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 # SQLAlchemy модели для хранения метрик
 Base = declarative_base()
@@ -99,10 +98,24 @@ class MetricsDatabase:
             )
             session.add(event)
             session.commit()
-            logger.info(f"Сохранена метрика {record.metric_type.value}: {record.value}")
+            logger.info(
+                "Сохранена метрика",
+                extra={
+                    "metric_type": record.metric_type.value,
+                    "value": record.value
+                }
+            )
             return str(event.id)
         except Exception as e:
-            logger.error(f"Ошибка сохранения метрики: {e}")
+            logger.error(
+                "Ошибка сохранения метрики",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "metric_type": record.metric_type.value if hasattr(record, 'metric_type') else None
+                },
+                exc_info=True
+            )
             session.rollback()
             raise
         finally:

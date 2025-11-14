@@ -3,7 +3,6 @@ Telegram Bot Handlers
 Обработчики команд и сообщений
 """
 
-import logging
 from typing import Optional
 from aiogram import Router, F
 from aiogram.filters import Command
@@ -11,6 +10,7 @@ from aiogram.types import Message, FSInputFile
 from aiogram.enums import ParseMode
 import tempfile
 import os
+from src.utils.structured_logging import StructuredLogger
 
 from src.ai.orchestrator import AIOrchestrator
 from src.telegram.formatters import TelegramFormatter
@@ -19,7 +19,7 @@ from src.telegram.config import config
 from src.services.speech_to_text_service import get_stt_service
 from src.services.ocr_service import get_ocr_service, DocumentType
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 router = Router()
 
 # Services
@@ -123,10 +123,21 @@ async def cmd_search(message: Message):
         
         await message.reply(response, parse_mode=ParseMode.MARKDOWN)
         
-        logger.info(f"Search completed for user {message.from_user.id}")  # PII: не логируем query
+        logger.info(
+            "Search completed",
+            extra={"user_id": message.from_user.id}
+        )
         
     except Exception as e:
-        logger.error(f"Search error: {e}")
+        logger.error(
+            "Search error",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "user_id": message.from_user.id if message.from_user else None
+            },
+            exc_info=True
+        )
         await message.reply(
             formatter.format_error(str(e)),
             parse_mode=ParseMode.MARKDOWN
@@ -175,10 +186,21 @@ async def cmd_generate(message: Message):
         
         await message.reply(response, parse_mode=ParseMode.MARKDOWN)
         
-        logger.info(f"Code generated for user {message.from_user.id}")  # PII: не логируем description
+        logger.info(
+            "Code generated",
+            extra={"user_id": message.from_user.id}
+        )
         
     except Exception as e:
-        logger.error(f"Generation error: {e}")
+        logger.error(
+            "Generation error",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "user_id": message.from_user.id if message.from_user else None
+            },
+            exc_info=True
+        )
         await message.reply(
             formatter.format_error(str(e)),
             parse_mode=ParseMode.MARKDOWN
@@ -231,10 +253,21 @@ async def cmd_dependencies(message: Message):
         
         await message.reply(response, parse_mode=ParseMode.MARKDOWN)
         
-        logger.info(f"Dependencies analyzed for user {message.from_user.id}")
+        logger.info(
+            "Dependencies analyzed",
+            extra={"user_id": message.from_user.id}
+        )
         
     except Exception as e:
-        logger.error(f"Dependencies error: {e}")
+        logger.error(
+            "Dependencies error",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "user_id": message.from_user.id if message.from_user else None
+            },
+            exc_info=True
+        )
         await message.reply(
             formatter.format_error(str(e)),
             parse_mode=ParseMode.MARKDOWN
@@ -327,8 +360,11 @@ async def handle_voice(message: Message):
             await message.reply(response, parse_mode=ParseMode.MARKDOWN)
             
             logger.info(
-                f"Voice message processed for user {message.from_user.id}: "
-                f"{text[:50]}..."
+                "Voice message processed",
+                extra={
+                    "user_id": message.from_user.id,
+                    "text_preview": text[:50] if len(text) > 50 else text
+                }
             )
             
         finally:
@@ -336,10 +372,25 @@ async def handle_voice(message: Message):
             try:
                 os.unlink(tmp_path)
             except Exception as e:
-                logger.warning(f"Failed to delete temp file: {e}")
+                logger.warning(
+                    "Failed to delete temp file",
+                    extra={
+                        "error": str(e),
+                        "error_type": type(e).__name__,
+                        "tmp_path": tmp_path if 'tmp_path' in locals() else None
+                    }
+                )
         
     except Exception as e:
-        logger.error(f"Voice handling error: {e}")
+        logger.error(
+            "Voice handling error",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "user_id": message.from_user.id if message.from_user else None
+            },
+            exc_info=True
+        )
         await message.reply(
             "❌ Ошибка обработки голосового сообщения\n\n"
             "Попробуйте написать текстом или /help",
@@ -442,8 +493,12 @@ async def handle_photo(message: Message):
             await message.reply(response, parse_mode=ParseMode.MARKDOWN)
             
             logger.info(
-                f"OCR processed for user {message.from_user.id}: "
-                f"{len(ocr_result.text)} chars, confidence: {ocr_result.confidence:.2f}"
+                "OCR processed",
+                extra={
+                    "user_id": message.from_user.id,
+                    "text_length": len(ocr_result.text),
+                    "confidence": round(ocr_result.confidence, 2)
+                }
             )
             
         finally:
@@ -451,10 +506,25 @@ async def handle_photo(message: Message):
             try:
                 os.unlink(tmp_path)
             except Exception as e:
-                logger.warning(f"Failed to delete temp file: {e}")
+                logger.warning(
+                    "Failed to delete temp file",
+                    extra={
+                        "error": str(e),
+                        "error_type": type(e).__name__,
+                        "tmp_path": tmp_path if 'tmp_path' in locals() else None
+                    }
+                )
         
     except Exception as e:
-        logger.error(f"OCR handling error: {e}")
+        logger.error(
+            "OCR handling error",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "user_id": message.from_user.id if message.from_user else None
+            },
+            exc_info=True
+        )
         await message.reply(
             "❌ Ошибка обработки изображения\n\n"
             "Попробуйте:\n"
@@ -514,7 +584,15 @@ async def handle_document(message: Message):
                 os.unlink(tmp_path)
         
         except Exception as e:
-            logger.error(f"OCR document error: {e}")
+            logger.error(
+                "OCR document error",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "user_id": message.from_user.id if message.from_user else None
+                },
+                exc_info=True
+            )
             await message.reply(
                 "❌ Ошибка обработки документа\n\n"
                 "Попробуйте другой файл или формат",
@@ -544,7 +622,15 @@ async def handle_document(message: Message):
         )
         
     except Exception as e:
-        logger.error(f"File handling error: {e}")
+        logger.error(
+            "File handling error",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "user_id": message.from_user.id if message.from_user else None
+            },
+            exc_info=True
+        )
         await message.reply(formatter.format_error(str(e)))
 
 
@@ -590,7 +676,15 @@ async def handle_text(message: Message):
         await message.reply(response, parse_mode=ParseMode.MARKDOWN)
         
     except Exception as e:
-        logger.error(f"Text handling error: {e}")
+        logger.error(
+            "Text handling error",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "user_id": message.from_user.id if message.from_user else None
+            },
+            exc_info=True
+        )
         await message.reply(
             "🤔 Не совсем понял вопрос. Попробуйте:\n\n"
             "• `/search <что ищете>`\n"

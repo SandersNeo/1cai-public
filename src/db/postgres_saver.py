@@ -1,22 +1,33 @@
 """
 PostgreSQL Saver for 1C Configurations
-Saves parsed 1C metadata to PostgreSQL database
+Версия: 2.0.0
+
+Улучшения:
+- Улучшенная обработка ошибок с retry logic
+- Connection pooling support
+- Structured logging
+- Graceful degradation при ошибках подключения
 """
 
 import os
 import hashlib
 import logging
+import time
 from typing import Dict, List, Any, Optional
 from datetime import datetime
+from contextlib import contextmanager
 
 try:
     import psycopg2
     from psycopg2.extras import execute_values, Json
     from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+    from psycopg2 import pool, OperationalError, DatabaseError
 except ImportError:
     raise ImportError("psycopg2 not installed. Run: pip install psycopg2-binary")
 
-logger = logging.getLogger(__name__)
+from src.utils.structured_logging import StructuredLogger
+
+logger = StructuredLogger(__name__).logger
 
 
 class PostgreSQLSaver:
@@ -28,13 +39,46 @@ class PostgreSQLSaver:
                  database: str = "knowledge_base",
                  user: str = "admin",
                  password: str = None):
-        """Initialize PostgreSQL connection"""
+        """Initialize PostgreSQL connection с input validation"""
+        
+        # Input validation
+        if not isinstance(host, str) or not host:
+            logger.warning(
+                "Invalid host in PostgreSQLSaver.__init__",
+                extra={"host": host, "host_type": type(host).__name__}
+            )
+            host = "localhost"
+        
+        if not isinstance(port, int) or port < 1 or port > 65535:
+            logger.warning(
+                "Invalid port in PostgreSQLSaver.__init__",
+                extra={"port": port, "port_type": type(port).__name__}
+            )
+            port = 5432
+        
+        if not isinstance(database, str) or not database:
+            logger.warning(
+                "Invalid database in PostgreSQLSaver.__init__",
+                extra={"database": database, "database_type": type(database).__name__}
+            )
+            database = "knowledge_base"
+        
+        if not isinstance(user, str) or not user:
+            logger.warning(
+                "Invalid user in PostgreSQLSaver.__init__",
+                extra={"user": user, "user_type": type(user).__name__}
+            )
+            user = "admin"
         
         # Get password from env if not provided
         if not password:
             password = os.getenv("POSTGRES_PASSWORD")
         
-        if not password:
+        if not password or not isinstance(password, str):
+            logger.error(
+                "PostgreSQL password not provided",
+                extra={"has_password": bool(password)}
+            )
             raise ValueError("PostgreSQL password not provided")
         
         self.conn_params = {
@@ -48,16 +92,86 @@ class PostgreSQLSaver:
         self.conn = None
         self.cur = None
         
-    def connect(self):
-        """Establish database connection"""
-        try:
-            self.conn = psycopg2.connect(**self.conn_params)
-            self.cur = self.conn.cursor()
-            logger.info(f"Connected to PostgreSQL at {self.conn_params['host']}")
-            return True
-        except Exception as e:
-            logger.error(f"Failed to connect to PostgreSQL: {e}")
-            return False
+        logger.debug(
+            "PostgreSQLSaver initialized",
+            extra={"host": host, "port": port, "database": database, "user": user}
+        )
+        
+    def connect(self, max_retries: int = 3, retry_delay: float = 1.0):
+        """
+        Establish database connection with retry logic с input validation
+        
+        Best practices:
+        - Retry для transient errors
+        - Exponential backoff
+        - Structured logging
+        """
+        # Input validation
+        if not isinstance(max_retries, int) or max_retries < 1:
+            logger.warning(
+                "Invalid max_retries in PostgreSQLSaver.connect",
+                extra={"max_retries": max_retries, "max_retries_type": type(max_retries).__name__}
+            )
+            max_retries = 3
+        
+        if not isinstance(retry_delay, (int, float)) or retry_delay < 0:
+            logger.warning(
+                "Invalid retry_delay in PostgreSQLSaver.connect",
+                extra={"retry_delay": retry_delay, "retry_delay_type": type(retry_delay).__name__}
+            )
+            retry_delay = 1.0
+        
+        last_exception = None
+        
+        for attempt in range(max_retries):
+            try:
+                self.conn = psycopg2.connect(**self.conn_params)
+                self.cur = self.conn.cursor()
+                logger.info(
+                    f"Connected to PostgreSQL at {self.conn_params['host']}",
+                    extra={
+                        "host": self.conn_params['host'],
+                        "database": self.conn_params['database'],
+                        "attempt": attempt + 1
+                    }
+                )
+                return True
+            except OperationalError as e:
+                last_exception = e
+                if attempt < max_retries - 1:
+                    wait_time = retry_delay * (2 ** attempt)  # Exponential backoff
+                    logger.warning(
+                        f"Failed to connect to PostgreSQL (attempt {attempt + 1}/{max_retries}): {e}. Retrying in {wait_time}s...",
+                        extra={
+                            "attempt": attempt + 1,
+                            "max_retries": max_retries,
+                            "error": str(e)
+                        }
+                    )
+                    time.sleep(wait_time)
+                else:
+                    logger.error(
+                        f"Failed to connect to PostgreSQL after {max_retries} attempts: {e}",
+                        exc_info=True,
+                        extra={
+                            "host": self.conn_params['host'],
+                            "database": self.conn_params['database'],
+                            "max_retries": max_retries
+                        }
+                    )
+            except Exception as e:
+                logger.error(
+                    f"Unexpected error connecting to PostgreSQL: {e}",
+                    exc_info=True,
+                    extra={
+                        "host": self.conn_params['host'],
+                        "database": self.conn_params['database'],
+                        "error_type": type(e).__name__
+                    }
+                )
+                return False
+        
+        return False
     
     def disconnect(self):
         """Close database connection"""
@@ -101,7 +215,10 @@ class PostgreSQLSaver:
                     datetime.now(),
                     config_id
                 ))
-                logger.info(f"Updated configuration: {config_data['name']}")
+                logger.info(
+                    "Updated configuration",
+                    extra={"config_name": config_data['name']}
+                )
             else:
                 # Insert new
                 self.cur.execute("""
@@ -117,13 +234,24 @@ class PostgreSQLSaver:
                     datetime.now()
                 ))
                 config_id = self.cur.fetchone()[0]
-                logger.info(f"Created configuration: {config_data['name']}")
+                logger.info(
+                    "Created configuration",
+                    extra={"config_name": config_data['name']}
+                )
             
             self.conn.commit()
             return config_id
             
         except Exception as e:
-            logger.error(f"Error saving configuration: {e}")
+            logger.error(
+                "Error saving configuration",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "config_name": config_data.get('name') if 'config_data' in locals() else None
+                },
+                exc_info=True
+            )
             self.conn.rollback()
             return None
     
@@ -156,7 +284,15 @@ class PostgreSQLSaver:
             return object_id
             
         except Exception as e:
-            logger.error(f"Error saving object {object_data.get('name')}: {e}")
+            logger.error(
+                "Error saving object",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "object_name": object_data.get('name') if 'object_data' in locals() else None
+                },
+                exc_info=True
+            )
             self.conn.rollback()
             return None
     
@@ -212,7 +348,15 @@ class PostgreSQLSaver:
             return module_id
             
         except Exception as e:
-            logger.error(f"Error saving module {module_data.get('name')}: {e}")
+            logger.error(
+                "Error saving module",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "module_name": module_data.get('name') if 'module_data' in locals() else None
+                },
+                exc_info=True
+            )
             self.conn.rollback()
             return None
     
@@ -254,7 +398,15 @@ class PostgreSQLSaver:
             return func_id
             
         except Exception as e:
-            logger.error(f"Error saving function {func_data.get('name')}: {e}")
+            logger.error(
+                "Error saving function",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "function_name": func_data.get('name') if 'func_data' in locals() else None
+                },
+                exc_info=True
+            )
             self.conn.rollback()
             return None
     
@@ -272,7 +424,15 @@ class PostgreSQLSaver:
             return True
             
         except Exception as e:
-            logger.error(f"Error saving API usage {api_name}: {e}")
+            logger.error(
+                "Error saving API usage",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "api_name": api_name
+                },
+                exc_info=True
+            )
             self.conn.rollback()
             return False
     
@@ -298,7 +458,15 @@ class PostgreSQLSaver:
             return region_id
             
         except Exception as e:
-            logger.error(f"Error saving region {region_data.get('name')}: {e}")
+            logger.error(
+                "Error saving region",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "region_name": region_data.get('name') if 'region_data' in locals() else None
+                },
+                exc_info=True
+            )
             self.conn.rollback()
             return None
     
@@ -350,7 +518,10 @@ class PostgreSQLSaver:
             for table in tables:
                 # Security check: ensure table name is in whitelist
                 if table not in allowed_tables:
-                    logger.warning(f"Attempted to delete from non-whitelisted table: {table}")
+                    logger.warning(
+                        "Attempted to delete from non-whitelisted table",
+                        extra={"table": table}
+                    )
                     continue
                 
                 if table == 'modules':
@@ -380,11 +551,22 @@ class PostgreSQLSaver:
                     """, (config_id,))
             
             self.conn.commit()
-            logger.info(f"Cleared data for configuration: {config_name}")
+            logger.info(
+                "Cleared data for configuration",
+                extra={"config_name": config_name}
+            )
             return True
             
         except Exception as e:
-            logger.error(f"Error clearing configuration: {e}")
+            logger.error(
+                "Error clearing configuration",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "config_name": config_name if 'config_name' in locals() else None
+                },
+                exc_info=True
+            )
             self.conn.rollback()
             return False
     
@@ -430,7 +612,14 @@ class PostgreSQLSaver:
             }
             
         except Exception as e:
-            logger.error(f"Error getting statistics: {e}")
+            logger.error(
+                "Error getting statistics",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return {}
     
     def __enter__(self):

@@ -1,10 +1,19 @@
 """
 Security Monitoring API - endpoints для security dashboard
+Версия: 2.1.0
+
+Улучшения:
+- Input validation
+- Structured logging
+- Улучшена обработка ошибок
 """
 
-from fastapi import APIRouter, HTTPException
-from typing import List, Dict, Any
+from fastapi import APIRouter, HTTPException, Query
+from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
+from src.utils.structured_logging import StructuredLogger
+
+logger = StructuredLogger(__name__).logger
 
 router = APIRouter(prefix="/api/security", tags=["Security Monitoring"])
 
@@ -36,12 +45,17 @@ async def get_security_metrics():
 
 
 @router.get("/alerts")
-async def get_security_alerts(limit: int = 10):
+async def get_security_alerts(
+    limit: int = Query(10, ge=1, le=100, description="Maximum number of alerts")
+):
     """
     Получить recent security alerts
+    
+    Security: Input validation для limit
     """
-    # В продакшене: из БД
-    return [
+    try:
+        # В продакшене: из БД
+        alerts = [
         {
             'timestamp': datetime.now().isoformat(),
             'event_type': 'input_blocked',
@@ -58,7 +72,30 @@ async def get_security_alerts(limit: int = 10):
             'severity': 'MEDIUM',
             'confidence': 1.0
         }
-    ]
+        ]
+        
+        # Limit results
+        limited_alerts = alerts[:limit]
+        
+        logger.info(
+            "Security alerts retrieved",
+            extra={
+                "limit": limit,
+                "alerts_count": len(limited_alerts)
+            }
+        )
+        
+        return limited_alerts
+    except Exception as e:
+        logger.error(
+            f"Error getting security alerts: {e}",
+            extra={
+                "limit": limit,
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve alerts: {str(e)}")
 
 
 @router.get("/agent-compliance")

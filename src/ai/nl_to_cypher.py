@@ -1,13 +1,21 @@
 """
 Natural Language to Cypher Query Generator
+Версия: 2.1.0
+
+Улучшения:
+- Structured logging
+- Улучшена обработка ошибок
+- Input validation
+
 Converts plain language queries to Neo4j Cypher
 """
 
 import re
 import logging
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Any
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class NLToCypherConverter:
@@ -47,9 +55,29 @@ class NLToCypherConverter:
         Returns:
             Dict with cypher query, confidence, and explanation
         """
+        # Input validation
+        if not natural_query or not isinstance(natural_query, str):
+            logger.warning(
+                f"Invalid natural_query: {natural_query}",
+                extra={"query_type": type(natural_query).__name__}
+            )
+            raise ValueError("Natural query must be a non-empty string")
+        
+        # Validate query length (prevent DoS)
+        max_query_length = 5000
+        if len(natural_query) > max_query_length:
+            logger.warning(
+                f"Query too long: {len(natural_query)} characters",
+                extra={"query_length": len(natural_query), "max_length": max_query_length}
+            )
+            raise ValueError(f"Query too long. Maximum length: {max_query_length} characters")
+        
         query_lower = natural_query.lower().strip()
         
-        logger.info(f"Converting NL query: {natural_query}")
+        logger.info(
+            f"Converting NL query: {natural_query[:100]}",
+            extra={"query_length": len(natural_query)}
+        )
         
         # Try each pattern
         for pattern, cypher_template in self.PATTERNS:
@@ -61,7 +89,14 @@ class NLToCypherConverter:
                     for i, group in enumerate(match.groups(), 1):
                         cypher = cypher.replace(f'\\{i}', group.capitalize())
                     
-                    logger.info(f"Matched pattern, generated Cypher: {cypher}")
+                    logger.info(
+                        f"Matched pattern, generated Cypher",
+                        extra={
+                            "pattern": pattern,
+                            "cypher_length": len(cypher),
+                            "confidence": 0.85
+                        }
+                    )
                     
                     return {
                         "cypher": cypher,
@@ -71,10 +106,18 @@ class NLToCypherConverter:
                         "safe": True
                     }
                 except Exception as e:
-                    logger.error(f"Error applying pattern: {e}")
+                    logger.error(
+                        f"Error applying pattern: {e}",
+                        extra={
+                            "pattern": pattern,
+                            "error_type": type(e).__name__
+                        },
+                        exc_info=True
+                    )
                     continue
         
         # No pattern matched - try intelligent fallback
+        logger.debug("No pattern matched, using intelligent fallback")
         return self._intelligent_fallback(natural_query)
     
     def _intelligent_fallback(self, query: str) -> Dict[str, Any]:
@@ -104,7 +147,27 @@ class NLToCypherConverter:
                 name_match = re.search(r'["\']([^"\']+)["\']', query)
                 if name_match:
                     name = name_match.group(1)
-                    cypher = f"MATCH (n:{found_label}) WHERE n.name CONTAINS '{name}' RETURN n"
+                    # Sanitize name to prevent Cypher injection (escape single quotes)
+                    name_sanitized = name.replace("'", "\\'")
+                    # Use parameterized approach - validate label is safe
+                    if found_label.isalnum():  # Only alphanumeric labels allowed
+                        cypher = f"MATCH (n:{found_label}) WHERE n.name CONTAINS '{name_sanitized}' RETURN n"
+                    else:
+                        logger.warning(
+                            f"Invalid label detected: {found_label}",
+                            extra={"label": found_label}
+                        )
+                        # Fallback to safe query without WHERE
+                        cypher = f"MATCH (n:{found_label}) RETURN n LIMIT 50"
+            
+            logger.debug(
+                f"Intelligent fallback generated Cypher",
+                extra={
+                    "label": found_label,
+                    "cypher_length": len(cypher),
+                    "confidence": 0.6
+                }
+            )
             
             return {
                 "cypher": cypher,
@@ -115,6 +178,7 @@ class NLToCypherConverter:
             }
         
         # Ultimate fallback - safe generic query
+        logger.debug("Using ultimate fallback - generic query")
         return {
             "cypher": "MATCH (n) RETURN n LIMIT 10",
             "confidence": 0.3,
@@ -144,7 +208,13 @@ class NLToCypherConverter:
         
         for keyword in dangerous_keywords:
             if keyword in cypher_upper:
-                logger.warning(f"Dangerous keyword detected: {keyword}")
+                logger.warning(
+                    f"Dangerous keyword detected: {keyword}",
+                    extra={
+                        "keyword": keyword,
+                        "cypher_preview": cypher[:100] if len(cypher) > 100 else cypher
+                    }
+                )
                 return False
         
         return True

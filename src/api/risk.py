@@ -4,14 +4,12 @@ API для управления рисками в 1C AI-экосистеме
 
 from typing import Dict, List, Optional, Any
 from datetime import datetime
-import logging
+from src.utils.structured_logging import StructuredLogger
 
 from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, APIRouter
 from pydantic import BaseModel, Field
 
-# Настройка логирования
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 # Pydantic модели
 class RiskAssessmentRequest(BaseModel):
@@ -81,7 +79,10 @@ async def health_check():
 async def assess_risks(request: RiskAssessmentRequest):
     """Оценка рисков проекта"""
     try:
-        logger.info(f"Оценка рисков для проекта с требованиями: {len(request.requirements)} символов")
+        logger.info(
+            "Оценка рисков для проекта",
+            extra={"requirements_length": len(request.requirements)}
+        )
         
         # Простая логика анализа рисков (в реальности - ML модель)
         risk_factors = {
@@ -177,7 +178,14 @@ async def assess_risks(request: RiskAssessmentRequest):
         )
         
     except Exception as e:
-        logger.error(f"Ошибка при оценке рисков: {e}")
+        logger.error(
+            "Ошибка при оценке рисков",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -206,7 +214,10 @@ async def create_risk(risk: RiskRecord):
     """Создание новой записи о риске"""
     try:
         risk_database[risk.id] = risk
-        logger.info(f"Создан риск ID: {risk.id}")
+        logger.info(
+            "Создан риск",
+            extra={"risk_id": risk.id}
+        )
         
         return {
             "status": "success",
@@ -215,7 +226,14 @@ async def create_risk(risk: RiskRecord):
         }
         
     except Exception as e:
-        logger.error(f"Ошибка создания риска: {e}")
+        logger.error(
+            "Ошибка создания риска",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -248,7 +266,13 @@ async def update_risk_status(risk_id: str, status: str):
         raise HTTPException(status_code=404, detail="Риск не найден")
     
     risk_database[risk_id].status = status
-    logger.info(f"Обновлен статус риска {risk_id}: {status}")
+    logger.info(
+        "Обновлен статус риска",
+        extra={
+            "risk_id": risk_id,
+            "status": status
+        }
+    )
     
     return {
         "status": "success",

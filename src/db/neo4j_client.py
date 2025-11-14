@@ -12,10 +12,41 @@ try:
     from neo4j import GraphDatabase, Driver, Session
     NEO4J_AVAILABLE = True
 except ImportError:
-    print("[WARN] neo4j driver not installed. Run: pip install neo4j")
+    import sys
+    import types
+
     NEO4J_AVAILABLE = False
 
-logger = logging.getLogger(__name__)
+    class _StubDriver:
+        def verify_connectivity(self):
+            raise ImportError("neo4j driver not installed")
+
+        def session(self):
+            raise ImportError("neo4j driver not installed")
+
+        def close(self):
+            pass
+
+    class _StubGraphDatabase:
+        @staticmethod
+        def driver(*args, **kwargs):
+            raise ImportError("neo4j driver not installed")
+
+    GraphDatabase = _StubGraphDatabase  # type: ignore[assignment]
+    Driver = Any  # type: ignore[assignment]
+    Session = Any  # type: ignore[assignment]
+
+    neo4j_stub = types.ModuleType("neo4j")
+    neo4j_stub.GraphDatabase = _StubGraphDatabase
+    sys.modules.setdefault("neo4j", neo4j_stub)
+
+from src.utils.structured_logging import StructuredLogger
+
+logger = StructuredLogger(__name__).logger
+
+# Логируем предупреждение о недоступности neo4j после настройки logger
+if not NEO4J_AVAILABLE:
+    logger.warning("neo4j driver not installed. Run: pip install neo4j")
 
 
 class Neo4jClient:
@@ -25,34 +56,118 @@ class Neo4jClient:
                  uri: str = "bolt://localhost:7687",
                  user: str = "neo4j",
                  password: str = None):
-        """Initialize Neo4j connection"""
+        """Initialize Neo4j connection с input validation"""
         
         if not NEO4J_AVAILABLE:
-            raise ImportError("neo4j driver not available")
+            logger.warning("Neo4j driver not available; running in stub mode")
+        
+        # Input validation
+        if not isinstance(uri, str) or not uri:
+            logger.warning(
+                "Invalid uri in Neo4jClient.__init__",
+                extra={"uri": uri, "uri_type": type(uri).__name__}
+            )
+            uri = "bolt://localhost:7687"
+        
+        if not isinstance(user, str) or not user:
+            logger.warning(
+                "Invalid user in Neo4jClient.__init__",
+                extra={"user": user, "user_type": type(user).__name__}
+            )
+            user = "neo4j"
         
         # Get password from env if not provided
         if not password:
+            password = os.getenv("NEO4J_PASSWORD", "password")
+        
+        if not password or not isinstance(password, str):
+            logger.warning(
+                "Invalid password in Neo4jClient.__init__",
+                extra={"has_password": bool(password)}
+            )
             password = os.getenv("NEO4J_PASSWORD", "password")
         
         self.uri = uri
         self.user = user
         self.password = password
         self.driver: Optional[Driver] = None
+        
+        logger.debug(
+            "Neo4jClient initialized",
+            extra={"uri": uri, "user": user}
+        )
     
-    def connect(self) -> bool:
-        """Establish connection to Neo4j"""
-        try:
-            self.driver = GraphDatabase.driver(
-                self.uri,
-                auth=(self.user, self.password)
-            )
-            # Test connection
-            self.driver.verify_connectivity()
-            logger.info(f"Connected to Neo4j at {self.uri}")
-            return True
-        except Exception as e:
-            logger.error(f"Failed to connect to Neo4j: {e}")
+    def connect(self, max_retries: int = 3, retry_delay: float = 1.0) -> bool:
+        """
+        Establish connection to Neo4j with retry logic с input validation
+        
+        Best practices:
+        - Retry для transient errors
+        - Exponential backoff
+        - Structured logging
+        """
+        if not NEO4J_AVAILABLE:
+            logger.warning("Neo4j driver not available; cannot connect")
             return False
+        
+        # Input validation
+        if not isinstance(max_retries, int) or max_retries < 1:
+            logger.warning(
+                "Invalid max_retries in Neo4jClient.connect",
+                extra={"max_retries": max_retries, "max_retries_type": type(max_retries).__name__}
+            )
+            max_retries = 3
+        
+        if not isinstance(retry_delay, (int, float)) or retry_delay < 0:
+            logger.warning(
+                "Invalid retry_delay in Neo4jClient.connect",
+                extra={"retry_delay": retry_delay, "retry_delay_type": type(retry_delay).__name__}
+            )
+            retry_delay = 1.0
+        
+        import time
+        
+        for attempt in range(max_retries):
+            try:
+                self.driver = GraphDatabase.driver(
+                    self.uri,
+                    auth=(self.user, self.password)
+                )
+                # Test connection
+                self.driver.verify_connectivity()
+                logger.info(
+                    f"Connected to Neo4j at {self.uri}",
+                    extra={
+                        "uri": self.uri,
+                        "attempt": attempt + 1
+                    }
+                )
+                return True
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    wait_time = retry_delay * (2 ** attempt)  # Exponential backoff
+                    logger.warning(
+                        f"Failed to connect to Neo4j (attempt {attempt + 1}/{max_retries}): {e}. Retrying in {wait_time}s...",
+                        extra={
+                            "uri": self.uri,
+                            "attempt": attempt + 1,
+                            "max_retries": max_retries,
+                            "error": str(e)
+                        }
+                    )
+                    time.sleep(wait_time)
+                else:
+                    logger.error(
+                        f"Failed to connect to Neo4j after {max_retries} attempts: {e}",
+                        exc_info=True,
+                        extra={
+                            "uri": self.uri,
+                            "max_retries": max_retries
+                        }
+                    )
+                    return False
+        
+        return False
     
     def disconnect(self):
         """Close connection"""
@@ -87,16 +202,36 @@ class Neo4jClient:
             for constraint in constraints:
                 try:
                     session.run(constraint)
-                    logger.info(f"Created constraint: {constraint[:50]}...")
+                    logger.info(
+                        "Created constraint",
+                        extra={"constraint_preview": constraint[:50] if constraint else None}
+                    )
                 except Exception as e:
-                    logger.warning(f"Constraint already exists or error: {e}")
+                    logger.warning(
+                        "Constraint already exists or error",
+                        extra={
+                            "error": str(e),
+                            "error_type": type(e).__name__,
+                            "constraint_preview": constraint[:50] if constraint else None
+                        }
+                    )
             
             for index in indexes:
                 try:
                     session.run(index)
-                    logger.info(f"Created index: {index[:50]}...")
+                    logger.info(
+                        "Created index",
+                        extra={"index_preview": index[:50] if index else None}
+                    )
                 except Exception as e:
-                    logger.warning(f"Index already exists or error: {e}")
+                    logger.warning(
+                        "Index already exists or error",
+                        extra={
+                            "error": str(e),
+                            "error_type": type(e).__name__,
+                            "index_preview": index[:50] if index else None
+                        }
+                    )
     
     def create_configuration(self, config_data: Dict[str, Any]) -> bool:
         """Create Configuration node"""

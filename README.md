@@ -1,70 +1,155 @@
 # 🤖 1C AI Stack
 
-> Платформа DevOps + AI tooling для 1C:Enterprise: от парсинга конфигураций и MCP-интеграций до полноценных CI/CD, FinOps и процессов эксплуатации.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
+[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
+[![Kubernetes](https://img.shields.io/badge/kubernetes-ready-326CE5.svg)](https://kubernetes.io/)
+[![Status](https://img.shields.io/badge/status-production-green.svg)](CHANGELOG.md)
+[![Documentation](https://img.shields.io/badge/docs-complete-brightgreen.svg)](docs/README.md)
 
-| Что внутри | Где смотреть |
-|------------|--------------|
-| **Dev & AI tooling** — MCP сервер, bsl-language-server, spec-driven workflow | `src/`, `docs/06-features/`, `scripts/research/`, `templates/` |
-| **Инфраструктура** — Kubernetes/Helm, Argo CD, Linkerd, Vault, Terraform | `infrastructure/`, `docs/ops/**`, `scripts/service_mesh/linkerd/` |
-| **Надёжность** — on-call, DR rehearsal, chaos, runbooks, SLO | `docs/process/`, `docs/runbooks/`, `observability/`, GitHub Actions |
-| **Security & FinOps** — Rego policies, секреты, фоновые отчёты | `policy/`, `scripts/security/`, `scripts/secrets/`, `scripts/finops/` |
-| **Документация** — архитектура, ADR, исследования, TODO | `docs/architecture/`, `docs/research/`, `CHANGELOG.md`, `docs/README.md` |
+> Платформа, которая собирает DevOps-, AI- и эксплуатационные практики вокруг 1C:Enterprise в одну управляемую систему: разбор конфигураций, MCP-инструменты, CI/CD, безопасность и наблюдаемость.
+> Внутри — рабочие сервисы, make-таргеты и документация, которые мы используем каждый день для реальных 1С-ландшафтов.
+>
+> **С чего начать:**
+> - [`Makefile`](Makefile) — сценарии запуска инфраструктуры, MCP и тестов;
+> - [`docs/architecture/uml/`](docs/architecture/uml/) — PNG-диаграммы, обновляемые скриптами (`make render-uml`, [`scripts/docs/render_uml.py`](scripts/docs/render_uml.py));
+> - [`docs/research/constitution.md`](docs/research/constitution.md) — правила проверки и стандарты разработки.
 
-**Быстрые ссылки**
-- 📚 [Docs index](docs/README.md) — навигация по документации
-- 🧭 [Roadmap / TODO](docs/research/alkoleft_todo.md) · [Constitution](docs/research/constitution.md)
-- 🔁 [Runbooks & DR](docs/runbooks/dr_rehearsal_plan.md) · [On-call](docs/process/oncall_rotations.md)
-- ✅ [Changelog](CHANGELOG.md) · [Recent commits](https://github.com/DmitrL-dev/1cai/commits/main)
+**Кому полезно:** DevOps-командам 1С, архитекторам платформы и ML/аналитикам, которым нужно быстрее внедрять изменения в продуктивные 1С-ландшафты.
 
----
+### Что уже работает
+- **Многослойный анализ конфигураций.** Парсер EDT, `bsl-language-server` и диагностические скрипты из [`src/`](src/) и [`scripts/analysis/`](scripts/analysis/) превращают 1C-конфигурации в метаданные, отчёты и графы зависимостей (см. [`docs/06-features/EDT_PARSER_GUIDE.md`](docs/06-features/EDT_PARSER_GUIDE.md)).
+- **Автоматизация и MCP-инструменты.** [`src/ai/mcp_server.py`](src/ai/mcp_server.py), spec-driven workflow и готовые CLI помогают создавать задачи, генерировать код и запускать тесты из IDE или CI (см. [`docs/06-features/MCP_SERVER_GUIDE.md`](docs/06-features/MCP_SERVER_GUIDE.md)).
+- **Промышленный контур.** Helm charts, Argo CD, Linkerd, Vault и Terraform-модули в [`infrastructure/`](infrastructure/) + регламенты в [`docs/ops/`](docs/ops/README.md) позволяют разворачивать и поддерживать стек в облаке без ручных «магических» шагов.
 
-## 🚀 Быстрый старт
+### 🚀 Последние улучшения (v2.2.0)
 
-### Локальное окружение
-1. Установите Python 3.11, Docker, Docker Compose → см. [`docs/setup/python_311.md`](docs/setup/python_311.md).  
-2. Проверьте окружение: `make check-runtime`.
-3. Поднимите стэк:
+**Production-Ready улучшения на основе best practices топ-100 компаний:**
+
+- ✅ **OpenTelemetry** - Distributed tracing готов к интеграции
+- ✅ **Structured Logging** - JSON логирование с correlation IDs и contextvars
+- ✅ **Multi-Layer Cache** - LRU eviction, Circuit Breaker, Prometheus metrics
+- ✅ **Database Pooling** - Оптимизированный connection pool с exponential backoff
+- ✅ **Error Handling** - Централизованная обработка ошибок с структурированными ответами
+- ✅ **Security** - Улучшенные JWT токены, refresh tokens, security headers
+- ✅ **CI/CD** - Multi-stage Docker builds, кэширование зависимостей
+- ✅ **API Documentation** - Полная OpenAPI документация с примерами
+- ✅ **Testing** - Unit тесты для критических модулей
+
+**Подробнее:** [`IMPROVEMENTS_PROGRESS.md`](IMPROVEMENTS_PROGRESS.md) | [`docs/BEST_PRACTICES_IMPLEMENTED.md`](docs/BEST_PRACTICES_IMPLEMENTED.md)
+
+## Архитектура платформы
+
+```mermaid
+graph TB
+    subgraph Users["👥 Пользователи"]
+        Developer["👨‍💻 1C Developers<br/>Use IDE and automation"]
+        Operator["👔 Business Stakeholders<br/>Consume dashboards, reports"]
+    end
+
+    subgraph Core["🔵 Core Services"]
+        API["🌐 Graph API<br/>FastAPI<br/>GraphQL, REST, MCP endpoints"]
+        RestGateway["⚡ Realtime Gateway<br/>Starlette, WebSocket"]
+        Auth["🔐 Auth and RBAC<br/>OAuth2, JWT"]
+        AdminPortal["🛡️ Admin Portal<br/>React, FastAPI"]
+    end
+
+    subgraph Workers["⚙️ Worker Tier"]
+        Celery["🔍 Analysis Workers<br/>Celery"]
+        MLPipelines["🤖 ML Pipelines<br/>Prefect, PyTorch"]
+        ITSScraper["📰 ITS Scraper<br/>Async Python"]
+        Orchestrator["🎯 Task Orchestrator<br/>Bash, scripts"]
+    end
+
+    subgraph DataStores["💾 Data Stores"]
+        Postgres[("🐘 PostgreSQL<br/>Relational data, audit")]
+        Neo4j[("🕸️ Neo4j<br/>Graph DB")]
+        Qdrant[("🔍 Qdrant<br/>Vector DB")]
+        Redis[("⚡ Redis<br/>Cache, queues")]
+        Minio[("📦 MinIO<br/>Object Storage")]
+    end
+
+    subgraph Integrations["🔗 Integration Channels"]
+        EDTPlugin["🔌 EDT Plugin<br/>Java"]
+        n8nNode["🔄 n8n Node<br/>TypeScript"]
+        TelegramBot["💬 Telegram Bot<br/>Python"]
+        Marketplace["🏪 Marketplace<br/>BSL"]
+    end
+
+    subgraph Ops["📊 Operations"]
+        Prometheus["📈 Prometheus<br/>Monitoring"]
+        Grafana["📊 Grafana<br/>Dashboards"]
+        Alertmanager["🚨 Alertmanager"]
+        GitHubActions["⚙️ CI/CD<br/>GitHub Actions"]
+    end
+
+    Developer -->|Graph queries, MCP| API
+    Developer -->|IDE commands| EDTPlugin
+    Operator -->|Dashboards| Grafana
+
+    API -->|Auth| Auth
+    API -->|Persist| Postgres
+    API -->|Graph| Neo4j
+    API -->|Vector search| Qdrant
+    API -->|Cache| Redis
+    API -->|Jobs| Celery
+
+    Celery -->|Update| Postgres
+    Celery -->|Update| Neo4j
+    Celery -->|Sync| Qdrant
+    MLPipelines -->|Store| Minio
+
+    EDTPlugin -->|Analysis| API
+    n8nNode -->|Workflow| API
+    TelegramBot -->|Chatops| API
+
+    Prometheus -->|Metrics| API
+    Prometheus -->|Alerts| Alertmanager
+    Alertmanager -->|Escalations| TelegramBot
+
+    classDef coreStyle fill:#e8f4ff,stroke:#0066cc,stroke-width:2px
+    classDef integrationStyle fill:#fff4e6,stroke:#ff9900,stroke-width:2px
+    classDef storeStyle fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
+    classDef opsStyle fill:#f6fdf3,stroke:#00cc66,stroke-width:2px
+
+    class API,RestGateway,Auth,AdminPortal coreStyle
+    class EDTPlugin,n8nNode,TelegramBot,Marketplace integrationStyle
+    class Postgres,Neo4j,Qdrant,Redis,Minio storeStyle
+    class Prometheus,Grafana,Alertmanager,GitHubActions opsStyle
+```
+
+> **Подробная версия:** [Полная интерактивная карта](docs/architecture/interactive-architecture.html) с фильтрами и поиском
+
+## За 5 минут: пробный запуск
+
+1. Установить Python 3.11, Docker и Docker Compose — подробности в [`docs/setup/python_311.md`](docs/setup/python_311.md).
+2. Проверить окружение: `make check-runtime` (использует [`scripts/setup/check_runtime.py`](scripts/setup/check_runtime.py)).
+3. Запустить минимальный стенд:
    ```bash
-   make docker-up          # базы данных, брокеры, Neo4j, Qdrant
-   make migrate            # первичная миграция данных
-   make servers            # Graph API + MCP server
-   make bsl-ls-up          # bsl-language-server (AST)
-   make bsl-ls-check       # health-check AST сервиса
+   make docker-up      # инфраструктура: БД, брокеры, Neo4j, Qdrant
+   make migrate        # первичная миграция данных
+   make servers        # Graph API + MCP server
+   open http://localhost:6001/mcp
    ```
-   > На Windows используйте аналогичные скрипты из `scripts/windows/`.
-4. Подключите IDE:
-   - MCP: Cursor / VS Code → `http://localhost:6001/mcp`
-   - EDT плагин: сборка в `edt-plugin/`, инструкции внутри каталога.
+   > Для Windows есть аналоги в [`scripts/windows/`](scripts/windows/). После запуска доступен живой MCP endpoint, логи сервисов и тестовые данные — можно сразу проверять сценарии.
 
-### Облако и GitOps
-- `make gitops-apply` — применить Argo CD манифесты (1cai-stack, observability, linkerd).
-- `make vault-csi-apply` — настроить Vault + CSI.
-- `make linkerd-install`, `make linkerd-rotate-certs` — сервис-меш и ротация сертификатов.
-- `make finops-slack` — разовая отправка FinOps отчётов (Slack/Teams).
-- Подробный план — `docs/ops/devops_platform.md`, `docs/ops/gitops.md`.
+## Сценарии использования
 
----
+| Роль | Первое действие | Ключевые материалы |
+| ---- | ---------------- | ------------------ |
+| DevOps / SRE | Пройти `make gitops-apply`, подключить Vault/Linkerd | [`docs/ops/devops_platform.md`](docs/ops/devops_platform.md), [`docs/ops/gitops.md`](docs/ops/gitops.md), [`docs/ops/service_mesh.md`](docs/ops/service_mesh.md), [`infrastructure/helm/`](infrastructure/helm/) |
+| 1С-разработчик / архитектор | Разобрать конфигурацию и получить документацию | [`docs/06-features/EDT_PARSER_GUIDE.md`](docs/06-features/EDT_PARSER_GUIDE.md), [`scripts/analysis/generate_documentation.py`](scripts/analysis/generate_documentation.py), [`docs/architecture/README.md`](docs/architecture/README.md) |
+| ML / аналитика | Сформировать датасет и прогнать проверки качества | [`docs/06-features/ML_DATASET_GENERATOR_GUIDE.md`](docs/06-features/ML_DATASET_GENERATOR_GUIDE.md), [`docs/06-features/TESTING_GUIDE.md`](docs/06-features/TESTING_GUIDE.md), [`scripts/analysis/`](scripts/analysis/) |
+| Операционный менеджер / on-call | Подготовить регламенты и тренировки | [`docs/runbooks/dr_rehearsal_plan.md`](docs/runbooks/dr_rehearsal_plan.md), [`docs/process/oncall_rotations.md`](docs/process/oncall_rotations.md), [`docs/observability/SLO.md`](docs/observability/SLO.md) |
 
-## 🌟 Feature Highlights
+## Ключевые блоки платформы
 
-### Конфигурационный анализ
-- EDT-parser: статистика объектов, граф зависимостей, best practices.
-- Документация из парсинга: [`scripts/analysis/generate_documentation.py`](scripts/analysis/generate_documentation.py).
-- Гайды: [`docs/06-features/EDT_PARSER_GUIDE.md`](docs/06-features/EDT_PARSER_GUIDE.md), [`docs/06-features/ML_DATASET_GENERATOR_GUIDE.md`](docs/06-features/ML_DATASET_GENERATOR_GUIDE.md).
-
-### Автоматизация и оркестрация
-- MCP-сервер (`src/ai/mcp_server.py`) с инструментами для поиска метаданных, генерации кода, запуска тестов.
-- Интеграция с внешними MCP (platform context, тест-раннеры).
-- Workflow запуска анализа: `make docker-up` → `make migrate` → `make generate-docs`.
-
-### Документация и архитектура
-- Structurizr DSL + PlantUML (C4, динамика, операции, безопасность).
-- ADR-реестр (`docs/architecture/adr/`).
-- Автоматический рендер диаграмм (`make render-uml`, GitHub Actions).
-
-### AI & MCP tooling
-- MCP server, bsl-language-server, spec-driven workflow (см. ниже).
-- Создание задач и планов на основе спецификаций (совместимо с GitHub Spec Kit — см. анализ).
+| Направление | Что включено | Ссылки |
+|-------------|--------------|--------|
+| **MCP & AI tooling** | Генерация кода, анализ AST, MCP-инструменты | [`docs/06-features/AST_TOOLING_BSL_LANGUAGE_SERVER.md`](docs/06-features/AST_TOOLING_BSL_LANGUAGE_SERVER.md), [`docs/06-features/MCP_SERVER_GUIDE.md`](docs/06-features/MCP_SERVER_GUIDE.md) |
+| **Инфраструктура** | Helm charts, Terraform, Argo CD, Linkerd, Vault | [`docs/ops/devops_platform.md`](docs/ops/devops_platform.md), [`docs/ops/gitops.md`](docs/ops/gitops.md), [`docs/ops/service_mesh.md`](docs/ops/service_mesh.md) |
+| **Надёжность и наблюдаемость** | Runbooks, DR, DORA, Prometheus, Alertmanager | [`docs/runbooks/dr_rehearsal_plan.md`](docs/runbooks/dr_rehearsal_plan.md), [`docs/process/oncall_rotations.md`](docs/process/oncall_rotations.md), [`docs/observability/SLO.md`](docs/observability/SLO.md) |
+| **Безопасность и FinOps** | Политики, проверки, отчёты, FinOps-скрипты | [`docs/security/policy_as_code.md`](docs/security/policy_as_code.md), [`docs/ops/finops.md`](docs/ops/finops.md) |
 
 ---
 
@@ -186,4 +271,26 @@
   - [`docs/06-features/ITS_SCRAPER.md`](docs/03-integrations/ITS_SCRAPER.md) — сбор данных ITS и обновление базы знаний.
 - **Research & Plans**
   - [`docs/research/README_LOCAL.md`](docs/research/README_LOCAL.md) — ежедневные статусы и подготовка публикации.
-  - [`
+  - [`docs/research/alkoleft_todo.md`](docs/research/alkoleft_todo.md) — roadmap и планы развития.
+  - [`docs/research/constitution.md`](docs/research/constitution.md) — конституция правил проверки.
+
+## Чего ждать дальше
+
+- Расширение spec-driven практик и интеграции с GitHub Spec Kit — см. [`docs/research/spec_kit_analysis.md`](docs/research/spec_kit_analysis.md), [`docs/research/constitution.md`](docs/research/constitution.md).
+- Новые тестовые раннеры (YAxUnit, edt-test-runner) и сценарии — слежение в [`docs/06-features/TESTING_GUIDE.md`](docs/06-features/TESTING_GUIDE.md), [`docs/research/alkoleft_todo.md`](docs/research/alkoleft_todo.md).
+- UI/презентационный слой для быстрой навигации — наработки в [`docs/09-archive/ui-ux-backup/`](docs/09-archive/ui-ux-backup/).
+
+## Документация и ресурсы
+
+- Полный индекс: [`docs/README.md`](docs/README.md).
+- Архитектура: [`docs/architecture/README.md`](docs/architecture/README.md), Structurizr DSL и PlantUML лежат в [`docs/architecture/c4/`](docs/architecture/c4/) и [`docs/architecture/uml/`](docs/architecture/uml/).
+- Практики тестирования и качества: [`docs/06-features/TESTING_GUIDE.md`](docs/06-features/TESTING_GUIDE.md), тестовые сценарии — в [`scripts/tests/`](scripts/tests/).
+- Политики безопасности: [`docs/security/policy_as_code.md`](docs/security/policy_as_code.md), workflows [`.github/workflows/secret-scan.yml`](.github/workflows/secret-scan.yml), [`.github/workflows/trufflehog.yml`](.github/workflows/trufflehog.yml).
+- Наблюдаемость и метрики: [`observability/docker-compose.observability.yml`](observability/docker-compose.observability.yml), [`docs/observability/SLO.md`](docs/observability/SLO.md), [`docs/status/dora_history.md`](docs/status/dora_history.md).
+
+## Как взаимодействовать
+
+- Бэклог и актуальные задачи — [`docs/research/alkoleft_todo.md`](docs/research/alkoleft_todo.md).
+- Issues и pull-requests приветствуются; ориентируйтесь на [recent commits](https://github.com/DmitrL-dev/1cai/commits/main) и [`docs/05-development/README.md`](docs/05-development/README.md) + [`docs/05-development/CHANGELOG.md`](docs/05-development/CHANGELOG.md).
+- Перед изменением диаграмм обязательно запускайте `make render-uml` (workflow «PlantUML Render Check» использует те же скрипты).
+- Для оперативных вопросов — внутренний канал команды (контакты описаны в приватной документации).

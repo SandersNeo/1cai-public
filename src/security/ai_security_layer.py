@@ -1,5 +1,12 @@
 """
 AI Security Layer - Unified Security для всех AI агентов
+Версия: 2.1.0
+
+Улучшения:
+- Structured logging
+- Улучшена обработка ошибок
+- Input validation
+
 Based on Meta's Agents Rule of Two framework
 """
 
@@ -9,8 +16,9 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 @dataclass
@@ -107,9 +115,45 @@ class AISecurityLayer:
         """
         context = context or {}
         
+        # Input validation
+        if not user_input or not isinstance(user_input, str):
+            logger.warning(
+                f"Invalid user_input: {user_input}",
+                extra={
+                    "agent_id": agent_id,
+                    "input_type": type(user_input).__name__ if user_input else None
+                }
+            )
+            return SecurityCheck(
+                allowed=False,
+                reason="Invalid input: must be a non-empty string"
+            )
+        
+        # Validate input length (prevent DoS)
+        max_input_length = 100000  # 100KB max
+        if len(user_input) > max_input_length:
+            logger.warning(
+                f"Input too long: {len(user_input)} characters",
+                extra={
+                    "agent_id": agent_id,
+                    "input_length": len(user_input),
+                    "max_length": max_input_length
+                }
+            )
+            return SecurityCheck(
+                allowed=False,
+                reason=f"Input too long. Maximum length: {max_input_length} characters"
+            )
+        
         # Проверка 0: Валидация конфигурации Rule of Two
         if not agent_config.validate():
-            logger.error(f"Agent {agent_id} violates Rule of Two: {agent_config.get_config_code()}")
+            logger.error(
+                f"Agent {agent_id} violates Rule of Two: {agent_config.get_config_code()}",
+                extra={
+                    "agent_id": agent_id,
+                    "config_code": agent_config.get_config_code()
+                }
+            )
             return SecurityCheck(
                 allowed=False,
                 reason="Agent configuration violates Agents Rule of Two",
@@ -138,7 +182,13 @@ class AISecurityLayer:
                     details=sensitive_check.details
                 )
                 # Предупреждение, но разрешаем (может быть легитимно)
-                logger.warning(f"Sensitive data detected in input for {agent_id}")
+                logger.warning(
+                    f"Sensitive data detected in input for {agent_id}",
+                    extra={
+                        "agent_id": agent_id,
+                        "sensitive_types": sensitive_check.details.get('types', []) if sensitive_check.details else []
+                    }
+                )
         
         # Проверка 3: Rate Limiting
         user_id = context.get('user_id')
@@ -211,106 +261,202 @@ class AISecurityLayer:
         )
     
     def _check_prompt_injection(self, text: str) -> SecurityCheck:
-        """Детектирует попытки prompt injection"""
-        text_lower = text.lower()
+        """Детектирует попытки prompt injection с input validation"""
+        if not text or not isinstance(text, str):
+            logger.warning(
+                "Invalid text in _check_prompt_injection",
+                extra={"text_type": type(text).__name__ if text else None}
+            )
+            return SecurityCheck(allowed=False, reason="Invalid input")
         
-        for pattern in self.INJECTION_PATTERNS:
-            if re.search(pattern, text_lower, re.IGNORECASE):
-                return SecurityCheck(
-                    allowed=False,
-                    reason='Potential prompt injection detected',
-                    confidence=0.85,
-                    details={'pattern': pattern}
-                )
-        
-        return SecurityCheck(allowed=True)
+        try:
+            text_lower = text.lower()
+            
+            for pattern in self.INJECTION_PATTERNS:
+                if re.search(pattern, text_lower, re.IGNORECASE):
+                    logger.debug(
+                        "Prompt injection pattern detected",
+                        extra={"pattern": pattern}
+                    )
+                    return SecurityCheck(
+                        allowed=False,
+                        reason='Potential prompt injection detected',
+                        confidence=0.85,
+                        details={'pattern': pattern}
+                    )
+            
+            return SecurityCheck(allowed=True)
+        except Exception as e:
+            logger.error(
+                f"Error checking prompt injection: {e}",
+                extra={"error_type": type(e).__name__},
+                exc_info=True
+            )
+            # Fail safe: allow if check fails
+            return SecurityCheck(allowed=True, reason="Check failed, allowing by default")
     
     def _check_sensitive_data_in_input(self, text: str) -> SecurityCheck:
-        """Проверяет наличие чувствительных данных во входе"""
-        found_types = []
-        
-        for data_type, pattern in self.SENSITIVE_DATA_PATTERNS.items():
-            if re.search(pattern, text, re.IGNORECASE):
-                found_types.append(data_type)
-        
-        if found_types:
-            return SecurityCheck(
-                allowed=True,  # Предупреждение, но разрешаем
-                reason='Sensitive data detected in input',
-                details={'types': found_types}
+        """Проверяет наличие чувствительных данных во входе с input validation"""
+        if not text or not isinstance(text, str):
+            logger.warning(
+                "Invalid text in _check_sensitive_data_in_input",
+                extra={"text_type": type(text).__name__ if text else None}
             )
+            return SecurityCheck(allowed=True)
         
-        return SecurityCheck(allowed=True)
+        try:
+            found_types = []
+            
+            for data_type, pattern in self.SENSITIVE_DATA_PATTERNS.items():
+                if re.search(pattern, text, re.IGNORECASE):
+                    found_types.append(data_type)
+            
+            if found_types:
+                return SecurityCheck(
+                    allowed=True,  # Предупреждение, но разрешаем
+                    reason='Sensitive data detected in input',
+                    details={'types': found_types}
+                )
+            
+            return SecurityCheck(allowed=True)
+        except Exception as e:
+            logger.error(
+                f"Error checking sensitive data: {e}",
+                extra={"error_type": type(e).__name__},
+                exc_info=True
+            )
+            return SecurityCheck(allowed=True)
     
     def _check_data_leakage(self, text: str) -> Dict[str, Any]:
-        """Детектирует утечку чувствительных данных в выходе"""
-        leaked_types = []
+        """Детектирует утечку чувствительных данных в выходе с input validation"""
+        if not text or not isinstance(text, str):
+            logger.warning(
+                "Invalid text in _check_data_leakage",
+                extra={"text_type": type(text).__name__ if text else None}
+            )
+            return {'has_leakage': False, 'types': []}
         
-        for data_type, pattern in self.SENSITIVE_DATA_PATTERNS.items():
-            if re.search(pattern, text, re.IGNORECASE):
-                leaked_types.append(data_type)
-        
-        return {
-            'has_leakage': len(leaked_types) > 0,
-            'types': leaked_types
-        }
+        try:
+            leaked_types = []
+            
+            for data_type, pattern in self.SENSITIVE_DATA_PATTERNS.items():
+                if re.search(pattern, text, re.IGNORECASE):
+                    leaked_types.append(data_type)
+            
+            return {
+                'has_leakage': len(leaked_types) > 0,
+                'types': leaked_types
+            }
+        except Exception as e:
+            logger.error(
+                f"Error checking data leakage: {e}",
+                extra={"error_type": type(e).__name__},
+                exc_info=True
+            )
+            return {'has_leakage': False, 'types': []}
     
     def _redact_sensitive_data(self, text: str) -> str:
-        """Редактирует чувствительные данные"""
-        redacted = text
+        """Редактирует чувствительные данные с input validation"""
+        if not text or not isinstance(text, str):
+            logger.warning(
+                "Invalid text in _redact_sensitive_data",
+                extra={"text_type": type(text).__name__ if text else None}
+            )
+            return ""
         
-        # Email
-        redacted = re.sub(
-            self.SENSITIVE_DATA_PATTERNS['email'],
-            '[REDACTED_EMAIL]',
-            redacted
-        )
-        
-        # API Keys / Tokens
-        redacted = re.sub(
-            self.SENSITIVE_DATA_PATTERNS['api_key'],
-            r'\1[REDACTED_API_KEY]',
-            redacted,
-            flags=re.IGNORECASE
-        )
-        
-        # Passwords
-        redacted = re.sub(
-            self.SENSITIVE_DATA_PATTERNS['password'],
-            'password: [REDACTED]',
-            redacted,
-            flags=re.IGNORECASE
-        )
-        
-        # Credit Cards
-        redacted = re.sub(
-            self.SENSITIVE_DATA_PATTERNS['credit_card'],
-            '[REDACTED_CC]',
-            redacted
-        )
-        
-        # Private Keys
-        redacted = re.sub(
-            self.SENSITIVE_DATA_PATTERNS['private_key'],
-            '[REDACTED_PRIVATE_KEY]',
-            redacted
-        )
-        
-        # Bearer Tokens
-        redacted = re.sub(
-            self.SENSITIVE_DATA_PATTERNS['bearer_token'],
-            'Bearer [REDACTED_TOKEN]',
-            redacted
-        )
-        
-        return redacted
+        try:
+            redacted = text
+            
+            # Email
+            redacted = re.sub(
+                self.SENSITIVE_DATA_PATTERNS['email'],
+                '[REDACTED_EMAIL]',
+                redacted
+            )
+            
+            # API Keys / Tokens
+            redacted = re.sub(
+                self.SENSITIVE_DATA_PATTERNS['api_key'],
+                r'\1[REDACTED_API_KEY]',
+                redacted,
+                flags=re.IGNORECASE
+            )
+            
+            # Passwords
+            redacted = re.sub(
+                self.SENSITIVE_DATA_PATTERNS['password'],
+                'password: [REDACTED]',
+                redacted,
+                flags=re.IGNORECASE
+            )
+            
+            # Credit Cards
+            redacted = re.sub(
+                self.SENSITIVE_DATA_PATTERNS['credit_card'],
+                '[REDACTED_CC]',
+                redacted
+            )
+            
+            # Private Keys
+            redacted = re.sub(
+                self.SENSITIVE_DATA_PATTERNS['private_key'],
+                '[REDACTED_PRIVATE_KEY]',
+                redacted
+            )
+            
+            # Bearer Tokens
+            redacted = re.sub(
+                self.SENSITIVE_DATA_PATTERNS['bearer_token'],
+                'Bearer [REDACTED_TOKEN]',
+                redacted
+            )
+            
+            return redacted
+        except Exception as e:
+            logger.error(
+                f"Error redacting sensitive data: {e}",
+                extra={"error_type": type(e).__name__},
+                exc_info=True
+            )
+            # Return original text if redaction fails (better than empty string)
+            return text
     
     def _hash_input(self, text: str) -> str:
-        """Создаёт hash для логирования (не храним сам вход)"""
-        return hashlib.sha256(text.encode()).hexdigest()[:16]
+        """Создаёт hash для логирования (не храним сам вход) с input validation"""
+        if not text or not isinstance(text, str):
+            logger.warning(
+                "Invalid text in _hash_input",
+                extra={"text_type": type(text).__name__ if text else None}
+            )
+            return "invalid_input"
+        
+        try:
+            return hashlib.sha256(text.encode()).hexdigest()[:16]
+        except Exception as e:
+            logger.error(
+                f"Error hashing input: {e}",
+                extra={"error_type": type(e).__name__},
+                exc_info=True
+            )
+            return "hash_error"
     
     def _check_rate_limit(self, agent_id: str, user_id: str) -> bool:
-        """Проверка rate limit"""
+        """Проверка rate limit с input validation"""
+        # Input validation
+        if not agent_id or not isinstance(agent_id, str):
+            logger.warning(
+                "Invalid agent_id in _check_rate_limit",
+                extra={"agent_id_type": type(agent_id).__name__ if agent_id else None}
+            )
+            return False
+        
+        if not user_id or not isinstance(user_id, str):
+            logger.warning(
+                "Invalid user_id in _check_rate_limit",
+                extra={"user_id_type": type(user_id).__name__ if user_id else None}
+            )
+            return False
+        
         # Простая реализация - в продакшене использовать Redis
         key = f"{agent_id}:{user_id}"
         now = datetime.now()
@@ -326,6 +472,10 @@ class AISecurityLayer:
         
         # Проверяем лимит (100 запросов в минуту)
         if len(self._rate_limit_cache[key]) >= 100:
+            logger.debug(
+                "Rate limit exceeded",
+                extra={"agent_id": agent_id, "user_id": user_id, "requests": len(self._rate_limit_cache[key])}
+            )
             return False
         
         # Добавляем текущий запрос
@@ -341,7 +491,7 @@ class AuditLogger:
     """Comprehensive audit logging для AI операций"""
     
     def __init__(self):
-        self.logger = logging.getLogger('ai_security_audit')
+        self.logger = StructuredLogger('ai_security_audit').logger
     
     def log_ai_request(
         self,
@@ -362,7 +512,10 @@ class AuditLogger:
             'human_approved': approved_by_human,
         }
         
-        self.logger.info(f"AI Request: {entry}")
+        self.logger.info(
+            f"AI Request: {entry.get('agent_id', 'unknown')}",
+            extra=entry
+        )
         # В продакшене: сохранять в БД
     
     def log_blocked_input(
@@ -383,7 +536,10 @@ class AuditLogger:
             'severity': 'HIGH' if confidence > 0.8 else 'MEDIUM'
         }
         
-        self.logger.warning(f"Input Blocked: {entry}")
+        self.logger.warning(
+            f"Input Blocked: {entry.get('agent_id', 'unknown')}",
+            extra=entry
+        )
         
         # Alert SOC team для высокой confidence
         if confidence > 0.9:
@@ -405,7 +561,11 @@ class AuditLogger:
             'severity': 'CRITICAL'
         }
         
-        self.logger.error(f"Data Leakage Attempt: {entry}")
+        self.logger.error(
+            f"Data Leakage Attempt: {entry.get('agent_id', 'unknown')}",
+            extra=entry,
+            exc_info=True
+        )
         
         # CRITICAL alert
         self._alert_soc_team(entry, priority='CRITICAL')
@@ -425,12 +585,19 @@ class AuditLogger:
             'details': details
         }
         
-        self.logger.warning(f"Security Concern: {entry}")
+        self.logger.warning(
+            f"Security Concern: {entry.get('concern_type', 'unknown')}",
+            extra=entry
+        )
     
     def _alert_soc_team(self, entry: Dict[str, Any], priority: str = 'MEDIUM'):
         """Алерт SOC team (Security Operations Center)"""
         # В продакшене: отправка в SIEM, PagerDuty, etc.
-        self.logger.critical(f"SOC ALERT [{priority}]: {entry}")
+        self.logger.critical(
+            f"SOC ALERT [{priority}]: {entry.get('agent_id', 'unknown')}",
+            extra={**entry, "priority": priority},
+            exc_info=True
+        )
 
 
 # Примеры конфигураций для агентов

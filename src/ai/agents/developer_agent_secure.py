@@ -8,7 +8,7 @@ Based on Agents Rule of Two: [AB] Configuration
 """
 
 import uuid
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from datetime import datetime, timedelta
 
 from src.security.ai_security_layer import (

@@ -320,7 +320,14 @@ class ArchitectAssistant(BaseAIAssistant):
             }
             
         except Exception as e:
-            self.logger.error(f"Ошибка при анализе требований: {e}")
+            self.logger.error(
+                "Ошибка при анализе требований",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return {
                 "error": str(e),
                 "requirements": [],
@@ -379,7 +386,14 @@ class ArchitectAssistant(BaseAIAssistant):
             }
             
         except Exception as e:
-            self.logger.error(f"Ошибка при генерации диаграммы: {e}")
+            self.logger.error(
+                "Ошибка при генерации диаграммы",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return {
                 "error": str(e),
                 "mermaid_code": "",
@@ -498,7 +512,14 @@ class ArchitectAssistant(BaseAIAssistant):
             }
             
         except Exception as e:
-            self.logger.error(f"Ошибка при оценке рисков: {e}")
+            self.logger.error(
+                "Ошибка при оценке рисков",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return {
                 "error": str(e),
                 "risks": [],
@@ -563,8 +584,15 @@ class ArchitectAssistant(BaseAIAssistant):
             }
             
         except Exception as e:
-            self.logger.error(f"Ошибка при комплексном анализе: {e}")
-            return {"error": f"Комплексный анализ не удался: {str(e)}"}
+            self.logger.error(
+                "Ошибка при комплексном анализе",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
+            return {"error": "Комплексный анализ не удался"}
     
     async def _create_architecture_proposal(
         self, 
@@ -620,7 +648,13 @@ class ArchitectAssistant(BaseAIAssistant):
             else:
                 raise ValueError("JSON не найден в ответе")
         except (json.JSONDecodeError, ValueError) as e:
-            self.logger.warning(f"Не удалось распарсить архитектуру как JSON: {e}")
+            self.logger.warning(
+                "Не удалось распарсить архитектуру как JSON",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                }
+            )
             return {
                 "title": "Архитектурное решение",
                 "description": response.content,

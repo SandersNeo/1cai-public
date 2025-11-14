@@ -1,6 +1,11 @@
 """
 AI Response Caching with Semantic Similarity
-Iteration 2 Priority #1: -60% AI costs!
+Версия: 2.0.0
+
+Улучшения:
+- Улучшена обработка ошибок
+- Structured logging
+- Валидация входных данных
 """
 
 import logging
@@ -8,8 +13,9 @@ import hashlib
 import numpy as np
 from typing import Optional, Dict, Any
 import json
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class AIResponseCache:
@@ -67,10 +73,16 @@ class AIResponseCache:
                 best_match = cache_key
         
         if best_similarity >= self.similarity_threshold:
-            logger.info(f"Cache HIT: similarity={best_similarity:.3f}")
+            logger.info(
+                "Cache HIT",
+                extra={"similarity": best_similarity}
+            )
             return best_match
         
-        logger.info(f"Cache MISS: best_similarity={best_similarity:.3f}")
+        logger.info(
+            "Cache MISS",
+            extra={"best_similarity": best_similarity}
+        )
         return None
     
     async def get(self, query: str, context: Dict = None) -> Optional[Dict[str, Any]]:
@@ -84,22 +96,72 @@ class AIResponseCache:
         Returns:
             Cached response or None
         """
-        
-        # Create lookup key (query + context)
-        lookup_text = query
-        if context:
-            lookup_text += json.dumps(context, sort_keys=True)
-        
-        # Get embedding
-        query_embedding = self._get_embedding(lookup_text)
-        
-        # Find similar
-        similar_key = self._find_similar(query_embedding)
-        
-        if similar_key:
-            return self.cache.get(similar_key)
-        
-        return None
+        try:
+            # Input validation (best practice)
+            if not query or not isinstance(query, str):
+                logger.warning("Invalid query provided to cache")
+                return None
+            
+            # Limit query length (prevent DoS)
+            max_query_length = 10000  # 10KB max
+            if len(query) > max_query_length:
+                logger.warning(
+                    f"Query too long: {len(query)} characters",
+                    extra={"query_length": len(query)}
+                )
+                return None
+            
+            # Create lookup key (query + context)
+            lookup_text = query
+            if context:
+                try:
+                    lookup_text += json.dumps(context, sort_keys=True)
+                except (TypeError, ValueError) as e:
+                    logger.warning(
+                        f"Failed to serialize context: {e}",
+                        extra={"error_type": type(e).__name__}
+                    )
+                    # Continue without context
+                    lookup_text = query
+            
+            # Get embedding
+            query_embedding = self._get_embedding(lookup_text)
+            
+            # Find similar
+            similar_key = self._find_similar(query_embedding)
+            
+            if similar_key:
+                cached_response = self.cache.get(similar_key)
+                if cached_response:
+                    logger.info(
+                        "Cache HIT for query",
+                        extra={
+                            "query_preview": query[:50] if query else None,
+                            "query_length": len(query) if query else 0
+                        }
+                    )
+                return cached_response
+            
+            logger.debug(
+                "Cache MISS for query",
+                extra={
+                    "query_preview": query[:50] if query else None,
+                    "query_length": len(query) if query else 0
+                }
+            )
+            return None
+            
+        except Exception as e:
+            logger.error(
+                "Unexpected error getting from cache",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "query_length": len(query) if query else 0
+                },
+                exc_info=True
+            )
+            return None  # Graceful degradation
     
     async def set(
         self,
@@ -109,7 +171,7 @@ class AIResponseCache:
         ttl_seconds: int = 3600
     ):
         """
-        Cache AI response
+        Cache AI response с input validation
         
         Args:
             query: User query
@@ -117,28 +179,92 @@ class AIResponseCache:
             context: Additional context
             ttl_seconds: Time to live (default: 1 hour)
         """
-        
-        # Create key
-        lookup_text = query
-        if context:
-            lookup_text += json.dumps(context, sort_keys=True)
-        
-        # Get embedding
-        embedding = self._get_embedding(lookup_text)
-        
-        # Create hash key
-        cache_key = hashlib.md5(lookup_text.encode()).hexdigest()
-        
-        # Store
-        self.cache[cache_key] = {
-            'response': response,
-            'cached_at': np.datetime64('now'),
-            'ttl_seconds': ttl_seconds
-        }
-        
-        self.embeddings[cache_key] = embedding
-        
-        logger.info(f"Cached AI response: key={cache_key[:8]}...")
+        try:
+            # Input validation
+            if not query or not isinstance(query, str):
+                logger.warning(
+                    "Invalid query provided to cache.set",
+                    extra={"query_type": type(query).__name__ if query else None}
+                )
+                return
+            
+            # Limit query length (prevent DoS)
+            max_query_length = 10000  # 10KB max
+            if len(query) > max_query_length:
+                logger.warning(
+                    "Query too long for caching",
+                    extra={"query_length": len(query), "max_length": max_query_length}
+                )
+                return
+            
+            if not isinstance(response, dict):
+                logger.warning(
+                    "Invalid response type for caching",
+                    extra={"response_type": type(response).__name__}
+                )
+                return
+            
+            # Validate ttl_seconds
+            if not isinstance(ttl_seconds, int) or ttl_seconds < 0:
+                logger.warning(
+                    "Invalid ttl_seconds",
+                    extra={"ttl_seconds": ttl_seconds, "ttl_type": type(ttl_seconds).__name__}
+                )
+                ttl_seconds = 3600  # Default TTL
+            
+            # Create key
+            lookup_text = query
+            if context:
+                try:
+                    if not isinstance(context, dict):
+                        logger.warning(
+                            "Invalid context type",
+                            extra={"context_type": type(context).__name__}
+                        )
+                        context = None
+                    else:
+                        lookup_text += json.dumps(context, sort_keys=True)
+                except (TypeError, ValueError) as e:
+                    logger.warning(
+                        f"Failed to serialize context: {e}",
+                        extra={"error_type": type(e).__name__}
+                    )
+                    # Continue without context
+                    lookup_text = query
+            
+            # Get embedding
+            embedding = self._get_embedding(lookup_text)
+            
+            # Create hash key
+            cache_key = hashlib.md5(lookup_text.encode()).hexdigest()
+            
+            # Store
+            self.cache[cache_key] = {
+                'response': response,
+                'cached_at': np.datetime64('now'),
+                'ttl_seconds': ttl_seconds
+            }
+            
+            self.embeddings[cache_key] = embedding
+            
+            logger.info(
+                "Cached AI response",
+                extra={
+                    "cache_key": cache_key[:8],
+                    "query_length": len(query),
+                    "ttl_seconds": ttl_seconds
+                }
+            )
+        except Exception as e:
+            logger.error(
+                f"Unexpected error caching response: {e}",
+                extra={
+                    "query_length": len(query) if query else 0,
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
+            # Don't raise - graceful degradation
     
     def clear(self):
         """Clear all cached responses"""

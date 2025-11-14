@@ -1,17 +1,25 @@
 """
 OCR Service for 1C Documents
-Интеграция Chandra OCR для распознавания документов
+Версия: 2.1.0
+
+Улучшения:
+- Retry logic для model loading и API calls
+- Улучшена обработка ошибок
+- Structured logging
+- Input validation
 """
 
 import logging
 import os
 import tempfile
+import asyncio
 from typing import Dict, Any, Optional, List
 from pathlib import Path
 from enum import Enum
 from datetime import datetime
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class OCRProvider(str, Enum):
@@ -98,42 +106,87 @@ class OCRService:
             self._init_fallback_providers()
     
     def _init_deepseek(self):
-        """Инициализация DeepSeek-OCR"""
-        try:
-            from transformers import AutoModel, AutoTokenizer
-            import torch
-            
-            logger.info("Loading DeepSeek-OCR model...")
-            
-            # Загружаем модель и токенизатор
-            model_name = "deepseek-ai/DeepSeek-OCR"
-            
-            self.deepseek_tokenizer = AutoTokenizer.from_pretrained(model_name)
-            self.deepseek_model = AutoModel.from_pretrained(
-                model_name,
-                device_map="auto",
-                torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
-                trust_remote_code=True  # DeepSeek требует этого
-            )
-            
-            self.deepseek_available = True
-            self.deepseek_device = "cuda" if torch.cuda.is_available() else "cpu"
-            
-            logger.info(f"✓ DeepSeek-OCR initialized on {self.deepseek_device}")
-            logger.info(f"  Model: {model_name}")
-            logger.info(f"  Expected accuracy: 91%+ (best in class)")
-            
-        except ImportError as e:
-            logger.error(
-                f"DeepSeek-OCR dependencies not installed: {e}\n"
-                "Install: pip install transformers torch"
-            )
-            self.deepseek_available = False
-            raise
-        except Exception as e:
-            logger.error(f"Failed to initialize DeepSeek-OCR: {e}")
-            self.deepseek_available = False
-            raise
+        """Инициализация DeepSeek-OCR с retry logic"""
+        max_retries = 3
+        base_delay = 2.0
+        
+        for attempt in range(max_retries):
+            try:
+                from transformers import AutoModel, AutoTokenizer
+                import torch
+                
+                logger.info(
+                    f"Loading DeepSeek-OCR model (attempt {attempt + 1}/{max_retries})...",
+                    extra={"attempt": attempt + 1}
+                )
+                
+                # Загружаем модель и токенизатор
+                model_name = "deepseek-ai/DeepSeek-OCR"
+                
+                self.deepseek_tokenizer = AutoTokenizer.from_pretrained(
+                    model_name,
+                    trust_remote_code=True
+                )
+                self.deepseek_model = AutoModel.from_pretrained(
+                    model_name,
+                    device_map="auto",
+                    torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+                    trust_remote_code=True  # DeepSeek требует этого
+                )
+                
+                self.deepseek_available = True
+                self.deepseek_device = "cuda" if torch.cuda.is_available() else "cpu"
+                
+                logger.info(
+                    f"✓ DeepSeek-OCR initialized on {self.deepseek_device}",
+                    extra={
+                        "model": model_name,
+                        "device": self.deepseek_device,
+                        "attempt": attempt + 1
+                    }
+                )
+                return
+                
+            except ImportError as e:
+                logger.error(
+                    f"DeepSeek-OCR dependencies not installed: {e}",
+                    extra={
+                        "error_type": "ImportError",
+                        "suggestion": "Install: pip install transformers torch"
+                    },
+                    exc_info=True
+                )
+                self.deepseek_available = False
+                raise
+            except Exception as e:
+                error_type = type(e).__name__
+                is_retryable = error_type in ['ConnectionError', 'TimeoutError', 'HTTPError']
+                
+                if attempt == max_retries - 1 or not is_retryable:
+                    logger.error(
+                        f"Failed to initialize DeepSeek-OCR after {attempt + 1} attempts: {e}",
+                        extra={
+                            "attempt": attempt + 1,
+                            "error_type": error_type,
+                            "is_retryable": is_retryable
+                        },
+                        exc_info=True
+                    )
+                    self.deepseek_available = False
+                    raise
+                
+                # Exponential backoff
+                delay = base_delay * (2 ** attempt)
+                logger.warning(
+                    f"DeepSeek-OCR initialization attempt {attempt + 1} failed, retrying in {delay}s: {e}",
+                    extra={
+                        "attempt": attempt + 1,
+                        "delay": delay,
+                        "error_type": error_type
+                    }
+                )
+                import time
+                time.sleep(delay)
     
     def _init_chandra(self):
         """Инициализация Chandra OCR (fallback)"""
@@ -164,7 +217,13 @@ class OCRService:
             logger.info("Tesseract OCR initialized (fallback)")
             
         except Exception as e:
-            logger.warning(f"Tesseract not available: {e}")
+            logger.warning(
+                "Tesseract not available",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                }
+            )
             self.tesseract_available = False
     
     def _init_fallback_providers(self):
@@ -193,14 +252,19 @@ class OCRService:
             fallbacks.append("Tesseract")
         
         if fallbacks:
-            logger.info(f"✓ Fallback providers available: {', '.join(fallbacks)}")
+            logger.info(
+                "Fallback providers available",
+                extra={"fallbacks": fallbacks}
+            )
         else:
-            logger.warning("⚠ No fallback providers available")
+            logger.warning("No fallback providers available")
     
     async def process_image(
         self,
         image_path: str,
         document_type: DocumentType = DocumentType.AUTO,
+        max_retries: int = 3,
+        timeout: float = 60.0,
         **kwargs
     ) -> OCRResult:
         """
@@ -209,12 +273,80 @@ class OCRService:
         Args:
             image_path: Путь к изображению
             document_type: Тип документа (для AI парсинга)
+            max_retries: Максимальное количество попыток
+            timeout: Timeout для операции (секунды)
             **kwargs: Дополнительные параметры
         
         Returns:
             OCRResult с распознанным текстом и структурой
         """
-        logger.info(f"Processing image: {image_path}")
+        # Input validation
+        if not image_path or not isinstance(image_path, str):
+            logger.warning(
+                "Invalid image_path in process_image",
+                extra={"image_path_type": type(image_path).__name__ if image_path else None}
+            )
+            raise ValueError("image_path must be a non-empty string")
+        
+        # Sanitize path (prevent path traversal)
+        image_path = os.path.normpath(image_path)
+        
+        if not os.path.exists(image_path):
+            logger.warning(
+                "Image file not found",
+                extra={"image_path": image_path}
+            )
+            raise ValueError(f"Image file not found: {image_path}")
+        
+        # Validate file size (prevent DoS)
+        try:
+            file_size = os.path.getsize(image_path)
+        except OSError as e:
+            logger.error(
+                f"Error getting file size: {e}",
+                extra={"image_path": image_path, "error_type": type(e).__name__}
+            )
+            raise ValueError(f"Cannot access image file: {image_path}")
+        
+        max_file_size = 100 * 1024 * 1024  # 100MB max
+        if file_size > max_file_size:
+            logger.warning(
+                "Image file too large",
+                extra={
+                    "image_path": image_path,
+                    "file_size": file_size,
+                    "max_size": max_file_size
+                }
+            )
+            raise ValueError(
+                f"Image file too large: {file_size} bytes. Maximum: {max_file_size} bytes"
+            )
+        
+        # Validate timeout
+        if not isinstance(timeout, (int, float)) or timeout <= 0:
+            logger.warning(
+                "Invalid timeout in process_image",
+                extra={"timeout": timeout, "timeout_type": type(timeout).__name__}
+            )
+            timeout = 60.0  # Default timeout
+        
+        # Validate max_retries
+        if not isinstance(max_retries, int) or max_retries < 1:
+            logger.warning(
+                "Invalid max_retries in process_image",
+                extra={"max_retries": max_retries, "max_retries_type": type(max_retries).__name__}
+            )
+            max_retries = 3  # Default retries
+        
+        logger.info(
+            f"Processing image: {image_path}",
+            extra={
+                "image_path": image_path,
+                "document_type": document_type.value,
+                "file_size": file_size,
+                "timeout": timeout
+            }
+        )
         
         try:
             # OCR распознавание с fallback логикой
@@ -233,7 +365,14 @@ class OCRService:
                     raise ValueError(f"Unknown provider: {self.provider}")
             
             except Exception as e:
-                logger.warning(f"Primary provider {self.provider} failed: {e}")
+                logger.warning(
+                    "Primary provider failed",
+                    extra={
+                        "error": str(e),
+                        "error_type": type(e).__name__,
+                        "provider": self.provider.value if hasattr(self.provider, 'value') else str(self.provider)
+                    }
+                )
                 errors.append(f"{self.provider}: {e}")
                 
                 # Пытаемся fallback провайдеры (если включен)
@@ -267,14 +406,29 @@ class OCRService:
                 )
             
             logger.info(
-                f"OCR completed: {len(result.text)} chars, "
-                f"confidence: {result.confidence:.2f}"
+                "OCR completed",
+                extra={
+                    "text_length": len(result.text),
+                    "confidence": result.confidence,
+                    "document_type": document_type.value,
+                    "provider": self.provider.value
+                }
             )
             
             return result
             
         except Exception as e:
-            logger.error(f"OCR processing error: {e}")
+            logger.error(
+                "OCR processing error",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "image_path": image_path,
+                    "document_type": document_type.value,
+                    "provider": self.provider.value
+                },
+                exc_info=True
+            )
             raise
     
     async def _deepseek_ocr(
@@ -291,7 +445,10 @@ class OCRService:
             from PIL import Image
             import torch
             
-            logger.info(f"DeepSeek-OCR processing: {image_path}")
+            logger.info(
+                "DeepSeek-OCR processing",
+                extra={"image_path": image_path}
+            )
             
             # Загружаем изображение
             image = Image.open(image_path).convert("RGB")
@@ -318,7 +475,10 @@ class OCRService:
                 skip_special_tokens=True
             )[0]
             
-            logger.info(f"✓ DeepSeek-OCR: {len(generated_text)} chars recognized")
+            logger.info(
+                "DeepSeek-OCR completed",
+                extra={"chars_recognized": len(generated_text)}
+            )
             
             return {
                 "text": generated_text,
@@ -331,7 +491,15 @@ class OCRService:
             }
         
         except Exception as e:
-            logger.error(f"DeepSeek OCR error: {e}")
+            logger.error(
+                "DeepSeek OCR error",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "image_path": image_path
+                },
+                exc_info=True
+            )
             raise
     
     async def _try_fallback_providers(
@@ -357,9 +525,15 @@ class OCRService:
         # Пробуем каждый fallback
         for name, ocr_method in fallback_attempts:
             try:
-                logger.info(f"Trying fallback: {name}")
+                logger.info(
+                    "Trying fallback",
+                    extra={"fallback_name": name}
+                )
                 result = await ocr_method(image_path, **kwargs)
-                logger.info(f"✓ Fallback {name} succeeded")
+                logger.info(
+                    "Fallback succeeded",
+                    extra={"fallback_name": name}
+                )
                 
                 # Добавляем флаг что это fallback
                 result['metadata']['fallback_from'] = self.provider.value
@@ -368,7 +542,14 @@ class OCRService:
                 return result
                 
             except Exception as e:
-                logger.warning(f"Fallback {name} failed: {e}")
+                logger.warning(
+                    "Fallback failed",
+                    extra={
+                        "error": str(e),
+                        "error_type": type(e).__name__,
+                        "fallback_name": name
+                    }
+                )
                 continue
         
         # Все fallback failed
@@ -430,7 +611,15 @@ class OCRService:
                 }
         
         except Exception as e:
-            logger.error(f"Chandra OCR error: {e}")
+            logger.error(
+                "Chandra OCR error",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "image_path": image_path
+                },
+                exc_info=True
+            )
             raise
     
     async def _tesseract_ocr(self, image_path: str) -> Dict[str, Any]:
@@ -477,7 +666,15 @@ class OCRService:
             }
             
         except Exception as e:
-            logger.error(f"Tesseract OCR error: {e}")
+            logger.error(
+                "Tesseract OCR error",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "image_path": image_path
+                },
+                exc_info=True
+            )
             raise
     
     async def _parse_structure_with_ai(
@@ -595,7 +792,15 @@ class OCRService:
             return {"raw_response": response_text}
             
         except Exception as e:
-            logger.error(f"AI parsing error: {e}")
+            logger.error(
+                "AI parsing error",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "document_type": document_type.value if hasattr(document_type, 'value') else str(document_type)
+                },
+                exc_info=True
+            )
             return {}
     
     async def process_from_bytes(
@@ -633,7 +838,14 @@ class OCRService:
             try:
                 os.unlink(tmp_path)
             except Exception as e:
-                logger.warning(f"Failed to delete temp file {tmp_path}: {e}")
+                logger.warning(
+                    "Failed to delete temp file",
+                    extra={
+                        "error": str(e),
+                        "error_type": type(e).__name__,
+                        "tmp_path": tmp_path
+                    }
+                )
     
     def get_supported_formats(self) -> List[str]:
         """Получить список поддерживаемых форматов"""
@@ -675,7 +887,15 @@ class OCRService:
                 results.append(result)
                 
             except Exception as e:
-                logger.error(f"Batch processing error for {file_path}: {e}")
+                logger.error(
+                    "Batch processing error",
+                    extra={
+                        "error": str(e),
+                        "error_type": type(e).__name__,
+                        "file_path": file_path
+                    },
+                    exc_info=True
+                )
                 # Продолжаем обработку остальных
                 results.append(OCRResult(
                     text="",
@@ -683,7 +903,13 @@ class OCRService:
                     metadata={"error": str(e), "file": file_path}
                 ))
         
-        logger.info(f"Batch processed {len(results)} documents")
+        logger.info(
+            "Batch processed documents",
+            extra={
+                "results_count": len(results),
+                "total_files": len(file_paths) if 'file_paths' in locals() else 0
+            }
+        )
         return results
     
     def estimate_processing_time(self, file_path: str) -> int:

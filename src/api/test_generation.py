@@ -4,11 +4,14 @@ API endpoints для автоматической генерации тесто�
 """
 
 import logging
-from fastapi import APIRouter, HTTPException
+import asyncio
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
-from typing import Optional, List, Literal
+from typing import Optional, List, Literal, Any, Dict
 from datetime import datetime
 from src.services.openai_code_analyzer import get_openai_analyzer
+from src.middleware.rate_limiter import limiter
+from src.utils.structured_logging import StructuredLogger
 
 # Import TypeScript test generation (moved from conditional import)
 try:
@@ -16,7 +19,7 @@ try:
 except ImportError:
     generate_typescript_tests = None
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 router = APIRouter()
 
 
@@ -24,18 +27,18 @@ router = APIRouter()
 
 class TestGenerationRequest(BaseModel):
     """Запрос на генерацию тестов"""
-    code: str = Field(..., description="Исходный код для тестирования")
+    code: str = Field(..., max_length=50000, description="Исходный код для тестирования")
     language: Literal["bsl", "typescript", "python"] = Field(
         default="bsl",
         description="Язык программирования"
     )
-    functionName: Optional[str] = Field(None, description="Имя конкретной функции для тестирования")
+    functionName: Optional[str] = Field(None, max_length=200, description="Имя конкретной функции для тестирования")
     testType: Literal["unit", "integration", "e2e", "all"] = Field(
         default="unit",
         description="Тип тестов для генерации"
     )
     includeEdgeCases: bool = Field(default=True, description="Включать граничные случаи")
-    framework: Optional[str] = Field(None, description="Фреймворк для тестирования")
+    framework: Optional[str] = Field(None, max_length=100, description="Фреймворк для тестирования")
 
 
 class TestCase(BaseModel):
@@ -44,7 +47,7 @@ class TestCase(BaseModel):
     name: str
     description: str
     input: dict
-    expectedOutput: any
+    expectedOutput: Any
     type: Literal["unit", "integration", "e2e"]
     category: Literal["positive", "negative", "edge", "boundary"]
 
@@ -77,8 +80,55 @@ class TestGenerationResponse(BaseModel):
 
 # ==================== ГЕНЕРАТОР ТЕСТОВ ====================
 
-async def generate_bsl_tests(code: str, include_edge_cases: bool = True) -> List[dict]:
-    """Генерация тестов для BSL кода"""
+async def generate_bsl_tests(code: str, include_edge_cases: bool = True, timeout: float = 30.0) -> List[dict]:
+    """Генерация тестов для BSL кода с timeout handling"""
+    # Input validation
+    if not isinstance(code, str) or not code.strip():
+        logger.warning(
+            "Invalid code in generate_bsl_tests",
+            extra={"code_type": type(code).__name__ if code else None}
+        )
+        return []
+    
+    if not isinstance(include_edge_cases, bool):
+        logger.warning(
+            "Invalid include_edge_cases type in generate_bsl_tests",
+            extra={"include_edge_cases_type": type(include_edge_cases).__name__}
+        )
+        include_edge_cases = True
+    
+    if not isinstance(timeout, (int, float)) or timeout <= 0:
+        logger.warning(
+            "Invalid timeout in generate_bsl_tests",
+            extra={"timeout": timeout, "timeout_type": type(timeout).__name__}
+        )
+        timeout = 30.0
+    
+    try:
+        return await asyncio.wait_for(
+            _generate_bsl_tests_internal(code, include_edge_cases),
+            timeout=timeout
+        )
+    except asyncio.TimeoutError:
+        logger.warning(
+            "Timeout in generate_bsl_tests",
+            extra={"timeout": timeout, "code_length": len(code)}
+        )
+        return []
+    except Exception as e:
+        logger.error(
+            f"Error in generate_bsl_tests: {e}",
+            extra={
+                "error_type": type(e).__name__,
+                "code_length": len(code)
+            },
+            exc_info=True
+        )
+        return []
+
+
+async def _generate_bsl_tests_internal(code: str, include_edge_cases: bool) -> List[dict]:
+    """Internal method for generating BSL tests"""
     tests = []
     
     # Извлечение функций из кода
@@ -333,21 +383,52 @@ def extract_parameters(signature: str) -> List[str]:
     return [p['name'] for p in params_detailed]
 
 
-async def generate_test_cases(func: dict, include_edge_cases: bool) -> List[dict]:
-    """Генерация тест-кейсов (с поддержкой AI)"""
+async def generate_test_cases(func: dict, include_edge_cases: bool, timeout: float = 10.0) -> List[dict]:
+    """Генерация тест-кейсов (с поддержкой AI) с timeout handling"""
+    # Input validation
+    if not isinstance(func, dict) or 'code' not in func or 'name' not in func:
+        logger.warning(
+            "Invalid func in generate_test_cases",
+            extra={"func_type": type(func).__name__}
+        )
+        return []
+    
+    if not isinstance(include_edge_cases, bool):
+        logger.warning(
+            "Invalid include_edge_cases type in generate_test_cases",
+            extra={"include_edge_cases_type": type(include_edge_cases).__name__}
+        )
+        include_edge_cases = True
+    
+    if not isinstance(timeout, (int, float)) or timeout <= 0:
+        logger.warning(
+            "Invalid timeout in generate_test_cases",
+            extra={"timeout": timeout, "timeout_type": type(timeout).__name__}
+        )
+        timeout = 10.0
+    
     test_cases = []
     
     # Попытка AI генерации тест-кейсов
     ai_test_cases = []
     try:
         openai_analyzer = get_openai_analyzer()
-        ai_test_cases = await openai_analyzer.generate_test_cases(
-            code=func['code'],
-            function_name=func['name']
+        ai_test_cases = await asyncio.wait_for(
+            openai_analyzer.generate_test_cases(
+                code=func['code'],
+                function_name=func['name']
+            ),
+            timeout=timeout
         )
         
         if ai_test_cases:
-            logger.info(f"AI сгенерировано {len(ai_test_cases)} тест-кейсов для {func['name']}")
+            logger.info(
+                "AI сгенерировано тест-кейсов",
+                extra={
+                    "test_cases_count": len(ai_test_cases),
+                    "function_name": func['name']
+                }
+            )
             # Используем AI тест-кейсы как основные
             for ai_case in ai_test_cases:
                 test_cases.append({
@@ -360,7 +441,14 @@ async def generate_test_cases(func: dict, include_edge_cases: bool) -> List[dict
                     "category": ai_case.get("category", "positive")
                 })
     except Exception as e:
-        logger.warning(f"AI генерация тест-кейсов недоступна, используем базовые: {e}")
+        logger.warning(
+            "AI генерация тест-кейсов недоступна, используем базовые",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "function_name": func['name'] if 'func' in locals() else None
+            }
+        )
     
     # Если AI не сгенерировал тесты, используем базовые
     if not test_cases:
@@ -448,7 +536,7 @@ def generate_bsl_test_code(func: dict, test_cases: List[dict]) -> str:
     return test_code
 
 
-def format_value(value: any) -> str:
+def format_value(value: Any) -> str:
     """Форматирование значения для BSL"""
     if value is None:
         return "Неопределено"
@@ -698,55 +786,133 @@ describe('{function_name}', () => {{
     summary="Генерация тестов для кода",
     description="Автоматическая генерация тестов для указанного кода"
 )
-async def generate_tests(request: TestGenerationRequest):
-    """Генерация тестов"""
+@limiter.limit("10/minute")  # Rate limit: 10 test generations per minute
+async def generate_tests(request: Request, request_data: TestGenerationRequest):
+    """
+    Генерация тестов с валидацией входных данных
+    
+    Best practices:
+    - Валидация длины кода
+    - Sanitization входных данных
+    - Улучшенная обработка ошибок
+    - Структурированное логирование
+    """
     
     try:
-        if request.language == "bsl":
-            tests = await generate_bsl_tests(request.code, request.includeEdgeCases)
-        elif request.language == "typescript":
+        # Input validation and sanitization (best practice)
+        code = request_data.code.strip()
+        if not code:
+            raise HTTPException(
+                status_code=400,
+                detail="Code cannot be empty"
+            )
+        
+        # Limit code length (prevent DoS)
+        max_code_length = 100000  # 100KB max
+        if len(code) > max_code_length:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Code too long. Maximum length: {max_code_length} characters"
+            )
+        
+        # Validate language
+        supported_languages = ["bsl", "typescript", "python", "javascript"]
+        if request_data.language not in supported_languages:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unsupported language: {request_data.language}. Supported: {', '.join(supported_languages)}"
+            )
+        
+        # Generate tests based on language with timeout
+        timeout = 30.0  # 30 seconds timeout for test generation
+        
+        if request_data.language == "bsl":
+            tests = await generate_bsl_tests(code, request_data.includeEdgeCases, timeout=timeout)
+        elif request_data.language == "typescript":
             if generate_typescript_tests is None:
                 raise HTTPException(
                     status_code=500,
                     detail="TypeScript test generation module not available"
                 )
-            tests = await generate_typescript_tests(request.code, request.includeEdgeCases)
-        elif request.language == "python":
-            tests = await generate_python_tests(request.code, request.includeEdgeCases)
-        elif request.language == "javascript":
-            tests = await generate_javascript_tests(request.code, request.includeEdgeCases)
+            tests = await generate_typescript_tests(code, request_data.includeEdgeCases)
+        elif request_data.language == "python":
+            tests = await generate_python_tests(code, request_data.includeEdgeCases)
+        elif request_data.language == "javascript":
+            tests = await generate_javascript_tests(code, request_data.includeEdgeCases)
         else:
+            # This should never happen due to validation above, but keep for safety
             raise HTTPException(
                 status_code=400,
-                detail=f"Язык {request.language} пока не поддерживается. Поддерживаются: bsl, typescript, python, javascript"
+                detail=f"Language {request_data.language} not supported"
             )
         
-        # Формирование summary
-        total_functions = len([t for t in tests])
-        total_test_cases = sum(len(t['testCases']) for t in tests)
-        avg_coverage = sum(t['coverage']['lines'] for t in tests) / len(tests) if tests else 0
+        # Формирование summary с безопасной обработкой (best practice: handle edge cases)
+        total_functions = len([t for t in tests if isinstance(t, dict)])
+        total_test_cases = sum(
+            len(t.get('testCases', [])) if isinstance(t, dict) else 0 
+            for t in tests
+        )
+        
+        # Safe average coverage calculation
+        coverage_values = [
+            t.get('coverage', {}).get('lines', 0) 
+            for t in tests 
+            if isinstance(t, dict) and 'coverage' in t
+        ]
+        avg_coverage = sum(coverage_values) / len(coverage_values) if coverage_values else 0
         
         summary = {
             "totalTests": len(tests),
             "totalTestCases": total_test_cases,
             "totalFunctions": total_functions,
             "averageCoverage": round(avg_coverage, 2),
-            "language": request.language,
-            "framework": tests[0]['framework'] if tests else None
+            "language": request_data.language,
+            "framework": tests[0].get('framework') if tests and isinstance(tests[0], dict) else None
         }
         
         generation_id = f"gen-{datetime.now().timestamp()}"
         
+        # Safe conversion to GeneratedTest (best practice: validate data)
+        try:
+            test_objects = [GeneratedTest(**t) for t in tests if isinstance(t, dict)]
+        except Exception as e:
+            logger.error(
+                "Failed to convert tests to GeneratedTest objects",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "tests_count": len(tests) if tests else 0
+                },
+                exc_info=True
+            )
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to format test results"
+            )
+        
         return TestGenerationResponse(
-            tests=[GeneratedTest(**t) for t in tests],
+            tests=test_objects,
             summary=summary,
             generationId=generation_id
         )
     
     except HTTPException:
-        raise
+        raise  # Re-raise HTTP exceptions as-is
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Ошибка генерации тестов: {str(e)}")
+        logger.error(
+            "Unexpected error in test generation",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "language": request_data.language if hasattr(request_data, 'language') else None,
+                "code_length": len(request_data.code) if hasattr(request_data, 'code') else 0
+            },
+            exc_info=True
+        )
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while generating tests"
+        )
 
 
 @router.get(

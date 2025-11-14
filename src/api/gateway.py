@@ -1,5 +1,11 @@
 """
 Единый API Gateway для 1C AI-экосистемы
+Версия: 2.1.0
+
+Улучшения:
+- Structured logging
+- Улучшена обработка ошибок
+
 Объединяет все микросервисы в единую точку входа
 """
 
@@ -28,13 +34,9 @@ import redis
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from src.utils.structured_logging import StructuredLogger
 
-# Настройка логирования
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 # Конфигурация сервисов
 SERVICES_CONFIG = {
@@ -119,34 +121,91 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
             "/openapi.json",
             "/api/gateway/health"
         ]
-        # В продакшене использовать переменные окружения
-        self.valid_api_keys = [
-            "demo-key-12345",
-            "admin-key-67890"
-        ]
+        # Использовать переменные окружения для API ключей
+        import os
+        api_keys_env = os.getenv("GATEWAY_API_KEYS", "")
+        if api_keys_env:
+            self.valid_api_keys = [key.strip() for key in api_keys_env.split(",") if key.strip()]
+        else:
+            # Fallback для development (в production должно быть через env)
+            self.valid_api_keys = [
+                "demo-key-12345",
+                "admin-key-67890"
+            ]
+            logger.warning("Using default API keys. Set GATEWAY_API_KEYS environment variable for production!")
     
     async def dispatch(self, request: Request, call_next):
-        # Проверка разрешенных путей
-        if request.url.path in self.allowed_paths:
+        """Middleware для аутентификации с input validation"""
+        try:
+            # Проверка разрешенных путей
+            if request.url.path in self.allowed_paths:
+                return await call_next(request)
+            
+            # Проверка API ключа
+            api_key = request.headers.get("X-API-Key") or request.headers.get("Authorization")
+            
+            # Если Authorization header содержит "Bearer ", извлекаем токен
+            if api_key and api_key.startswith("Bearer "):
+                api_key = api_key[7:].strip()
+            
+            if not api_key:
+                logger.warning(
+                    "API key not provided",
+                    extra={
+                        "path": request.url.path,
+                        "method": request.method
+                    }
+                )
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"detail": "API ключ не предоставлен"}
+                )
+            
+            # Validate API key length (prevent DoS)
+            max_key_length = 500
+            if len(api_key) > max_key_length:
+                logger.warning(
+                    "API key too long",
+                    extra={
+                        "path": request.url.path,
+                        "method": request.method,
+                        "key_length": len(api_key)
+                    }
+                )
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"detail": "Недействительный API ключ"}
+                )
+            
+            # Простая проверка API ключа (в продакшене использовать JWT или OAuth)
+            if api_key not in self.valid_api_keys:
+                logger.warning(
+                    "Invalid API key",
+                    extra={
+                        "path": request.url.path,
+                        "method": request.method,
+                        "key_preview": api_key[:10] + "..." if len(api_key) > 10 else api_key
+                    }
+                )
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content={"detail": "Недействительный API ключ"}
+                )
+            
             return await call_next(request)
-        
-        # Проверка API ключа
-        api_key = request.headers.get("X-API-Key") or request.headers.get("Authorization")
-        
-        if not api_key:
-            return JSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content={"detail": "API ключ не предоставлен"}
+        except Exception as e:
+            logger.error(
+                f"Error in AuthenticationMiddleware: {e}",
+                extra={
+                    "path": request.url.path if 'request' in locals() else None,
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
             )
-        
-        # Простая проверка API ключа (в продакшене использовать JWT или OAuth)
-        if api_key not in self.valid_api_keys:
             return JSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content={"detail": "Недействительный API ключ"}
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={"detail": "Internal server error"}
             )
-        
-        return await call_next(request)
 
 
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
@@ -166,7 +225,14 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         start_time = time.time()
         
         # Логирование входящего запроса
-        logger.info(f"Входящий запрос: {request.method} {request.url.path}")
+        logger.info(
+            f"Входящий запрос: {request.method} {request.url.path}",
+            extra={
+                "method": request.method,
+                "path": request.url.path,
+                "query_params": str(request.url.query) if request.url.query else None
+            }
+        )
         
         self.request_stats["total_requests"] += 1
         
@@ -185,13 +251,28 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             
             # Логирование ответа
             logger.info(
-                f"Ответ: {response.status_code}, время: {response_time:.2f}ms"
+                f"Ответ: {response.status_code}, время: {response_time:.2f}ms",
+                extra={
+                    "status_code": response.status_code,
+                    "response_time_ms": response_time,
+                    "method": request.method,
+                    "path": request.url.path
+                }
             )
             
             return response
             
         except Exception as e:
-            logger.error(f"Ошибка обработки запроса: {e}")
+            logger.error(
+                "Ошибка обработки запроса",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "endpoint": endpoint if 'endpoint' in locals() else None,
+                    "method": request.method if 'request' in locals() else None
+                },
+                exc_info=True
+            )
             self.request_stats["failed_requests"] += 1
             raise
 
@@ -204,14 +285,63 @@ class ServiceHealthChecker:
         self.last_check_times = {}
         
     async def check_service_health(self, service_name: str, config: Dict[str, Any]) -> ServiceHealthResponse:
-        """Проверка здоровья конкретного сервиса"""
+        """Проверка здоровья конкретного сервиса с input validation"""
+        # Input validation
+        if not service_name or not isinstance(service_name, str):
+            logger.warning(
+                "Invalid service_name in check_service_health",
+                extra={"service_name_type": type(service_name).__name__ if service_name else None}
+            )
+            return ServiceHealthResponse(
+                service_name=service_name or "unknown",
+                status="unknown",
+                response_time_ms=0,
+                last_check=datetime.now(),
+                error="Invalid service name"
+            )
+        
+        if not config or not isinstance(config, dict):
+            logger.warning(
+                "Invalid config in check_service_health",
+                extra={"config_type": type(config).__name__ if config else None}
+            )
+            return ServiceHealthResponse(
+                service_name=service_name,
+                status="unknown",
+                response_time_ms=0,
+                last_check=datetime.now(),
+                error="Invalid config"
+            )
+        
+        # Validate required config fields
+        if "url" not in config or "health_endpoint" not in config:
+            logger.warning(
+                "Missing required config fields in check_service_health",
+                extra={"service_name": service_name, "config_keys": list(config.keys())}
+            )
+            return ServiceHealthResponse(
+                service_name=service_name,
+                status="unknown",
+                response_time_ms=0,
+                last_check=datetime.now(),
+                error="Missing required config fields"
+            )
+        
         start_time = time.time()
         
         try:
-            async with httpx.AsyncClient(timeout=config["timeout"]) as client:
-                response = await client.get(
-                    f"{config['url']}{config['health_endpoint']}"
+            timeout = config.get("timeout", 30.0)
+            if not isinstance(timeout, (int, float)) or timeout <= 0:
+                timeout = 30.0  # Default timeout
+            
+            async with httpx.AsyncClient(timeout=timeout) as client:
+                health_url = f"{config['url']}{config['health_endpoint']}"
+                logger.debug(
+                    "Checking health for service",
+                    extra={"service_name": service_name, "health_url": health_url}
                 )
+                
+                response = await client.get(health_url)
                 
                 response_time = (time.time() - start_time) * 1000
                 
@@ -222,17 +352,42 @@ class ServiceHealthChecker:
                     status = "unhealthy"
                     error = f"HTTP {response.status_code}"
                 
-        except httpx.TimeoutException:
+        except httpx.TimeoutException as e:
+            logger.warning(
+                "Timeout checking health for service",
+                extra={
+                    "service_name": service_name,
+                    "timeout": timeout,
+                    "error_type": "TimeoutException"
+                }
+            )
             status = "unhealthy"
             error = "Timeout"
-            response_time = config["timeout"] * 1000
+            response_time = timeout * 1000
             
-        except httpx.ConnectError:
+        except httpx.ConnectError as e:
+            logger.warning(
+                "Connection error checking health for service",
+                extra={
+                    "service_name": service_name,
+                    "url": config.get("url"),
+                    "error_type": "ConnectError"
+                }
+            )
             status = "unhealthy"
             error = "Connection failed"
             response_time = (time.time() - start_time) * 1000
             
         except Exception as e:
+            logger.error(
+                "Unexpected error checking health for service",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "service_name": service_name
+                },
+                exc_info=True
+            )
             status = "unhealthy"
             error = str(e)
             response_time = (time.time() - start_time) * 1000
@@ -257,7 +412,22 @@ class ServiceHealthChecker:
             task = self.check_service_health(service_name, config)
             tasks.append(task)
         
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+        # Optimized: Use asyncio.gather with timeout (best practice)
+        try:
+            results = await asyncio.wait_for(
+                asyncio.gather(*tasks, return_exceptions=True),
+                timeout=30.0  # Timeout для всех health checks
+            )
+        except asyncio.TimeoutError:
+            logger.error(
+                "Timeout при проверке health всех сервисов",
+                extra={
+                    "services_count": len(tasks),
+                    "timeout": 30.0
+                }
+            )
+            # Возвращаем частичные результаты
+            results = [{"error": "timeout"} for _ in tasks]
         
         health_status = {}
         for i, (service_name, _) in enumerate(SERVICES_CONFIG.items()):
@@ -278,7 +448,7 @@ class ProxyService:
     """Сервис для проксирования запросов к микросервисам"""
     
     def __init__(self):
-        self.client = httpx.AsyncClient()
+        self.client = httpx.AsyncClient(timeout=httpx.Timeout(30.0, connect=10.0))
         
     async def proxy_request(
         self, 
@@ -289,15 +459,78 @@ class ProxyService:
         data: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None
     ) -> httpx.Response:
-        """Проксирование запроса к сервису"""
+        """Проксирование запроса к сервису с input validation"""
+        # Input validation
+        if not service or not isinstance(service, str):
+            logger.warning(
+                "Invalid service in proxy_request",
+                extra={"service_type": type(service).__name__ if service else None}
+            )
+            raise HTTPException(
+                status_code=400,
+                detail="Service name is required and must be a non-empty string"
+            )
+        
+        if not endpoint or not isinstance(endpoint, str):
+            logger.warning(
+                "Invalid endpoint in proxy_request",
+                extra={"endpoint_type": type(endpoint).__name__ if endpoint else None}
+            )
+            raise HTTPException(
+                status_code=400,
+                detail="Endpoint is required and must be a non-empty string"
+            )
+        
+        # Validate endpoint length (prevent DoS)
+        max_endpoint_length = 2000
+        if len(endpoint) > max_endpoint_length:
+            logger.warning(
+                "Endpoint too long in proxy_request",
+                extra={"endpoint_length": len(endpoint), "max_length": max_endpoint_length}
+            )
+            raise HTTPException(
+                status_code=400,
+                detail=f"Endpoint too long. Maximum length: {max_endpoint_length} characters"
+            )
+        
+        # Validate method
+        valid_methods = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+        method_upper = method.upper() if method else "GET"
+        if method_upper not in valid_methods:
+            logger.warning(
+                "Invalid method in proxy_request",
+                extra={"method": method, "valid_methods": valid_methods}
+            )
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid HTTP method: {method}. Valid methods: {', '.join(valid_methods)}"
+            )
         
         if service not in SERVICES_CONFIG:
+            logger.warning(
+                f"Service not found: {service}",
+                extra={"service": service, "available_services": list(SERVICES_CONFIG.keys())}
+            )
             raise HTTPException(
                 status_code=404, 
                 detail=f"Сервис '{service}' не найден"
             )
         
         service_config = SERVICES_CONFIG[service]
+        
+        # Валидация входных данных (best practice: sanitize inputs)
+        if endpoint and not endpoint.startswith('/'):
+            endpoint = '/' + endpoint
+        
+        # Sanitize endpoint path (prevent path traversal)
+        endpoint_original = endpoint
+        endpoint = endpoint.replace('..', '').replace('//', '/')
+        
+        if endpoint != endpoint_original:
+            logger.warning(
+                "Endpoint sanitized (path traversal attempt?)",
+                extra={"original": endpoint_original, "sanitized": endpoint}
+            )
         
         # Подготовка URL
         url = f"{service_config['url']}{endpoint}"
@@ -309,7 +542,7 @@ class ProxyService:
             "X-Forwarded-For": "1C-AI-Gateway"
         })
         
-        # Проксирование запроса
+        # Проксирование запроса с улучшенной обработкой ошибок
         try:
             response = await self.client.request(
                 method=method,
@@ -322,20 +555,69 @@ class ProxyService:
             
             return response
             
-        except httpx.TimeoutException:
+        except httpx.TimeoutException as e:
+            logger.error(
+                f"Timeout при обращении к сервису '{service}': {e}",
+                extra={
+                    "service": service,
+                    "endpoint": endpoint,
+                    "method": method,
+                    "timeout": service_config.get("timeout", 30.0),
+                    "error_type": "TimeoutException"
+                }
+            )
             raise HTTPException(
                 status_code=504,
                 detail=f"Таймаут при обращении к сервису '{service}'"
             )
-        except httpx.ConnectError:
+        except httpx.ConnectError as e:
+            logger.error(
+                f"Connection error при обращении к сервису '{service}': {e}",
+                extra={
+                    "service": service,
+                    "endpoint": endpoint,
+                    "method": method,
+                    "url": url,
+                    "error_type": "ConnectError"
+                }
+            )
             raise HTTPException(
                 status_code=503,
                 detail=f"Сервис '{service}' недоступен"
             )
+        except httpx.HTTPStatusError as e:
+            logger.warning(
+                f"HTTP error {e.response.status_code} от сервиса '{service}'",
+                extra={
+                    "service": service,
+                    "endpoint": endpoint,
+                    "method": method,
+                    "status_code": e.response.status_code,
+                    "response_preview": e.response.text[:200],
+                    "error_type": "HTTPStatusError"
+                }
+            )
+            # Пробрасываем статус код от upstream сервиса
+            raise HTTPException(
+                status_code=e.response.status_code,
+                detail=f"Ошибка от сервиса '{service}': {e.response.text[:200]}"
+            )
         except Exception as e:
+            logger.error(
+                "Неожиданная ошибка проксирования к сервису",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "service": service,
+                    "endpoint": endpoint,
+                    "method": method,
+                    "url": url
+                },
+                exc_info=True
+            )
             raise HTTPException(
                 status_code=500,
-                detail=f"Ошибка проксирования к сервису '{service}': {str(e)}"
+                detail=f"Ошибка проксирования к сервису '{service}'"
             )
 
 # Глобальные экземпляры
@@ -347,7 +629,7 @@ try:
     redis_client = redis.Redis(host='localhost', port=6379, decode_responses=True)
     redis_client.ping()
     redis_available = True
-except:
+except (redis.RedisError, ConnectionError, Exception):
     redis_available = False
     redis_client = None
 
@@ -358,14 +640,29 @@ router = APIRouter()
 async def lifespan(app: FastAPI):
     """Lifecycle manager для FastAPI приложения"""
     # Startup
-    logger.info("🚀 Запуск API Gateway для 1C AI-экосистемы")
+    logger.info(
+        "🚀 Запуск API Gateway для 1C AI-экосистемы",
+        extra={"services_count": len(SERVICES_CONFIG)}
+    )
     
     # Проверка начального состояния сервисов
     try:
         initial_health = await health_checker.check_all_services()
-        logger.info(f"Начальное состояние сервисов: {initial_health}")
+        healthy_count = sum(1 for s in initial_health.values() if s.status == "healthy")
+        logger.info(
+            f"Начальное состояние сервисов: {healthy_count}/{len(initial_health)} healthy",
+            extra={
+                "healthy_count": healthy_count,
+                "total_services": len(initial_health),
+                "services_status": {k: v.status for k, v in initial_health.items()}
+            }
+        )
     except Exception as e:
-        logger.error(f"Ошибка при начальной проверке сервисов: {e}")
+        logger.error(
+            f"Ошибка при начальной проверке сервисов: {e}",
+            extra={"error_type": type(e).__name__},
+            exc_info=True
+        )
     
     yield
     
@@ -443,7 +740,14 @@ async def gateway_health():
         )
         
     except Exception as e:
-        logger.error(f"Ошибка при проверке здоровья: {e}")
+        logger.error(
+            "Ошибка при проверке здоровья",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         return GatewayHealthResponse(
             gateway_status="degraded",
             timestamp=datetime.now(),
@@ -519,7 +823,15 @@ async def proxy_to_service(request: ServiceRequest):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Ошибка проксирования: {e}")
+        logger.error(
+            "Ошибка проксирования",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "service": request.service if hasattr(request, 'service') else None
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -623,16 +935,60 @@ async def comprehensive_analysis(
     request: Dict[str, Any],
     background_tasks: BackgroundTasks
 ):
-    """Комплексный анализ через все сервисы"""
-    
-    requirements_text = request.get("requirements_text", "")
-    context = request.get("context", {})
-    
-    results = {}
-    errors = {}
-    
-    # Параллельные запросы к сервисам
-    tasks = []
+    """Комплексный анализ через все сервисы с input validation"""
+    try:
+        # Input validation
+        if not request or not isinstance(request, dict):
+            logger.warning(
+                "Invalid request in comprehensive_analysis",
+                extra={"request_type": type(request).__name__ if request else None}
+            )
+            raise HTTPException(
+                status_code=400,
+                detail="Request must be a valid dictionary"
+            )
+        
+        requirements_text = request.get("requirements_text", "")
+        context = request.get("context", {})
+        
+        # Validate requirements_text
+        if not isinstance(requirements_text, str):
+            logger.warning(
+                "Invalid requirements_text type in comprehensive_analysis",
+                extra={"requirements_text_type": type(requirements_text).__name__}
+            )
+            requirements_text = str(requirements_text) if requirements_text else ""
+        
+        # Validate requirements_text length (prevent DoS)
+        max_requirements_length = 50000  # 50KB max
+        if len(requirements_text) > max_requirements_length:
+            logger.warning(
+                "Requirements text too long in comprehensive_analysis",
+                extra={"requirements_length": len(requirements_text), "max_length": max_requirements_length}
+            )
+            raise HTTPException(
+                status_code=400,
+                detail=f"Requirements text too long. Maximum length: {max_requirements_length} characters"
+            )
+        
+        # Validate context
+        if not isinstance(context, dict):
+            logger.warning(
+                "Invalid context type in comprehensive_analysis",
+                extra={"context_type": type(context).__name__}
+            )
+            context = {}
+        
+        logger.debug(
+            "Starting comprehensive analysis",
+            extra={"requirements_length": len(requirements_text)}
+        )
+        
+        results = {}
+        errors = {}
+        
+        # Параллельные запросы к сервисам
+        tasks = []
     
     # Анализ требований через AI Assistants
     tasks.append(
@@ -674,27 +1030,78 @@ async def comprehensive_analysis(
         )
     )
     
-    try:
-        responses = await asyncio.gather(*tasks, return_exceptions=True)
+        try:
+            # Optimized: Use asyncio.gather with timeout (best practice)
+            responses = await asyncio.wait_for(
+                asyncio.gather(*tasks, return_exceptions=True),
+                timeout=60.0  # Timeout для batch requests
+            )
+        except asyncio.TimeoutError:
+            logger.error(
+                "Timeout при batch запросах к сервисам",
+                extra={
+                    "tasks_count": len(tasks),
+                    "timeout": 60.0
+                }
+            )
+            # Возвращаем частичные результаты с ошибками
+            responses = [{"error": "timeout", "status": 504} for _ in tasks]
         
         # Обработка ответов
         for i, response in enumerate(responses):
-            if isinstance(response, Exception):
-                service_name = ["assistants", "risk", "metrics"][i]
-                errors[service_name] = str(response)
-            elif hasattr(response, 'status_code'):
-                if response.status_code == 200:
+            try:
+                if isinstance(response, Exception):
                     service_name = ["assistants", "risk", "metrics"][i]
-                    try:
-                        results[service_name] = response.json()
-                    except:
-                        results[service_name] = response.text
-                else:
+                    errors[service_name] = str(response)
+                    logger.warning(
+                        f"Exception from service {service_name}",
+                        extra={
+                            "service_name": service_name,
+                            "error_type": type(response).__name__
+                        }
+                    )
+                elif hasattr(response, 'status_code'):
                     service_name = ["assistants", "risk", "metrics"][i]
-                    errors[service_name] = f"HTTP {response.status_code}"
+                    if response.status_code == 200:
+                        try:
+                            results[service_name] = response.json()
+                        except Exception as json_error:
+                            logger.warning(
+                                f"Failed to parse JSON from {service_name}",
+                                extra={
+                                    "service_name": service_name,
+                                    "error_type": type(json_error).__name__
+                                }
+                            )
+                            results[service_name] = response.text
+                    else:
+                        errors[service_name] = f"HTTP {response.status_code}"
+                        logger.warning(
+                            f"Non-200 status from {service_name}",
+                            extra={
+                                "service_name": service_name,
+                                "status_code": response.status_code
+                            }
+                        )
+            except Exception as process_error:
+                logger.error(
+                    f"Error processing response from service {i}: {process_error}",
+                    extra={
+                        "service_index": i,
+                        "error_type": type(process_error).__name__
+                    },
+                    exc_info=True
+                )
+                errors[f"service_{i}"] = str(process_error)
     
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions as-is
     except Exception as e:
-        logger.error(f"Ошибка комплексного анализа: {e}")
+        logger.error(
+            f"Ошибка комплексного анализа: {e}",
+            extra={"error_type": type(e).__name__},
+            exc_info=True
+        )
         errors["general"] = str(e)
     
     return {

@@ -4,12 +4,12 @@ API для генерации TypeScript тестов
 """
 
 import re
-import logging
 from typing import List, Dict, Any
 from datetime import datetime
 from src.services.openai_code_analyzer import get_openai_analyzer
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 def extract_typescript_functions(code: str) -> List[Dict[str, Any]]:
@@ -169,7 +169,13 @@ async def generate_typescript_tests(code: str, include_edge_cases: bool = True) 
                     }
                 ]
         except Exception as e:
-            logger.warning(f"AI генерация недоступна: {e}")
+            logger.warning(
+                "AI генерация недоступна",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                }
+            )
             test_cases = [
                 {
                     "id": f"test-{func['name']}-positive",

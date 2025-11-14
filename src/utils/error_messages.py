@@ -1,12 +1,24 @@
 """
 Standardized Error Messages
-Quick Win #3: Better error messages for users
+Версия: 2.0.0
+
+Улучшения:
+- Полный набор сообщений об ошибках
+- Поддержка форматирования
+- Мультиязычность (готовность)
 """
 
 from typing import Dict, Optional
 
 class ErrorMessages:
-    """Centralized error messages (English)"""
+    """
+    Centralized error messages (English)
+    
+    Best practices:
+    - User-friendly messages
+    - Consistent formatting
+    - Support for parameter substitution
+    """
     
     # Authentication
     AUTH_INVALID_CREDENTIALS = "Invalid email or password. Please check your credentials and try again."
@@ -29,6 +41,11 @@ class ErrorMessages:
     VALIDATION_REQUIRED_FIELD = "{field} is required."
     VALIDATION_MIN_LENGTH = "{field} must be at least {min} characters."
     VALIDATION_MAX_LENGTH = "{field} must not exceed {max} characters."
+    VALIDATION_CODE_TOO_LONG = "Code is too long. Maximum length: {max_length} characters."
+    VALIDATION_CODE_EMPTY = "Code cannot be empty."
+    VALIDATION_INVALID_LANGUAGE = "Unsupported language: {language}. Supported: {supported}."
+    VALIDATION_INVALID_CONFIG_NAME = "Invalid configuration name."
+    VALIDATION_PATH_TRAVERSAL = "Invalid path detected. Path traversal is not allowed."
     
     # External Services
     EXTERNAL_API_ERROR = "External service temporarily unavailable. Please try again later."
@@ -39,11 +56,11 @@ class ErrorMessages:
     TENANT_NOT_FOUND = "Organization not found."
     PROJECT_NOT_FOUND = "Project not found."
     USER_NOT_FOUND = "User not found."
-    INSUFFICIENT_QUOTA = "You've reached your plan limit. Please upgrade to continue."
+    INSUFFICIENT_QUOTA = "Insufficient quota. Please upgrade your plan."
     
-    # File Operations
-    FILE_TOO_LARGE = "File size exceeds the maximum allowed ({max_size} MB)."
-    FILE_TYPE_NOT_SUPPORTED = "File type not supported. Supported types: {types}."
+    # ML/AI
+    ML_MODEL_NOT_LOADED = "ML model is not loaded. Please try again later."
+    AI_SERVICE_UNAVAILABLE = "AI service is temporarily unavailable. Please try again later."
     
     # Generic
     INTERNAL_ERROR = "An unexpected error occurred. We've been notified and are working on it."
@@ -51,8 +68,35 @@ class ErrorMessages:
     
     @staticmethod
     def format(message: str, **kwargs) -> str:
-        """Format error message with parameters"""
-        return message.format(**kwargs)
+        """
+        Format error message with parameters с input validation
+        
+        Best practice: Safe string formatting with validation
+        """
+        # Input validation
+        if not isinstance(message, str):
+            return str(message) if message else ""
+        
+        # Limit message length (prevent DoS)
+        max_message_length = 10000
+        if len(message) > max_message_length:
+            message = message[:max_message_length]
+        
+        # Validate kwargs (prevent injection)
+        safe_kwargs = {}
+        for key, value in kwargs.items():
+            if isinstance(key, str) and len(key) <= 100:
+                # Convert value to string and limit length
+                str_value = str(value)
+                if len(str_value) > 1000:
+                    str_value = str_value[:1000]
+                safe_kwargs[key] = str_value
+        
+        try:
+            return message.format(**safe_kwargs)
+        except (KeyError, ValueError) as e:
+            # If formatting fails, return original message
+            return message
     
     @staticmethod
     def with_suggestion(error: str, suggestion: str, action_url: Optional[str] = None) -> Dict:

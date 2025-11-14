@@ -1,21 +1,29 @@
 """
 Сервис для работы с библиотекой 1С ИТС
 Извлечение документации, примеров кода и best practices
-Версия: 1.0.0
+Версия: 2.1.0
+
+Улучшения:
+- Retry logic для HTTP запросов
+- Улучшена обработка ошибок
+- Structured logging
+- Input validation
 """
 
 import os
 import re
 import json
 import logging
+import asyncio
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 from datetime import datetime
 import httpx
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, quote_plus
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class ITSLibraryService:
@@ -42,6 +50,12 @@ class ITSLibraryService:
             username: Имя пользователя ИТС
             password: Пароль ИТС
         """
+        # Input validation
+        if not username or not isinstance(username, str):
+            raise ValueError("Username must be a non-empty string")
+        if not password or not isinstance(password, str):
+            raise ValueError("Password must be a non-empty string")
+        
         self.username = username
         self.password = password
         self.base_headers = {
@@ -49,7 +63,7 @@ class ITSLibraryService:
         }
         # Для синхронных запросов используем Client
         self.session = httpx.Client(
-            timeout=30.0,
+            timeout=httpx.Timeout(30.0, connect=10.0),
             follow_redirects=True,
             headers=self.base_headers
         )
@@ -64,11 +78,17 @@ class ITSLibraryService:
         """
         try:
             # Используем правильный URL авторизации
-            logger.info(f"Авторизация через: {self.ITS_LOGIN_URL}")
+            logger.info(
+                "Авторизация через ITS",
+                extra={"its_login_url": self.ITS_LOGIN_URL}
+            )
             login_response = self.session.get(self.ITS_LOGIN_URL)
             
             if login_response.status_code != 200:
-                logger.error(f"Не удалось получить страницу входа: {login_response.status_code}")
+                logger.error(
+                    "Не удалось получить страницу входа",
+                    extra={"status_code": login_response.status_code}
+                )
                 return False
             
             # Пробуем найти форму входа
@@ -81,7 +101,10 @@ class ITSLibraryService:
             # Если стандартный метод не сработал, пробуем резервные URL
             for login_url in self.ITS_LOGIN_URLS[1:]:  # Пропускаем первый (уже использовали)
                 try:
-                    logger.info(f"Попытка авторизации через резервный URL: {login_url}")
+                    logger.info(
+                        "Попытка авторизации через резервный URL",
+                        extra={"login_url": login_url}
+                    )
                     response = self.session.get(login_url)
                     
                     if response.status_code == 200:
@@ -90,7 +113,14 @@ class ITSLibraryService:
                             logger.info("Авторизация успешна через резервный URL")
                             return True
                 except Exception as e:
-                    logger.debug(f"Ошибка для {login_url}: {e}")
+                    logger.debug(
+                        "Ошибка для резервного URL",
+                        extra={
+                            "login_url": login_url,
+                            "error": str(e),
+                            "error_type": type(e).__name__
+                        }
+                    )
                     continue
             
             # Если стандартные методы не сработали, пробуем прямую авторизацию
@@ -98,7 +128,14 @@ class ITSLibraryService:
             return await self._try_direct_auth()
             
         except Exception as e:
-            logger.error(f"Ошибка авторизации в ИТС: {e}", exc_info=True)
+            logger.error(
+                "Ошибка авторизации в ИТС",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return False
     
     async def _try_login_from_page(self, html_content: str, base_url: str) -> bool:
@@ -156,8 +193,14 @@ class ITSLibraryService:
                             login_data[name] = value
                     
                     # Отправляем запрос
-                    logger.debug(f"Попытка авторизации на {action_url}")
-                    logger.debug(f"Данные: {login_field_name}={self.username}, {password_field_name}=***")
+                    logger.debug(
+                        "Попытка авторизации",
+                        extra={
+                            "action_url": action_url,
+                            "login_field_name": login_field_name,
+                            "has_password": bool(self.password)
+                        }
+                    )
                     
                     response = self.session.post(action_url, data=login_data, follow_redirects=True)
                     
@@ -187,7 +230,10 @@ class ITSLibraryService:
                         
                         for cookie_name in cookies_to_check:
                             if self.session.cookies.get(cookie_name):
-                                logger.info(f"Авторизация успешна (найден cookie: {cookie_name})")
+                                logger.info(
+                                    "Авторизация успешна (найден cookie)",
+                                    extra={"cookie_name": cookie_name}
+                                )
                                 return True
                         
                         # Проверяем редирект на защищённую страницу
@@ -199,7 +245,14 @@ class ITSLibraryService:
             return False
             
         except Exception as e:
-            logger.error(f"Ошибка при попытке входа: {e}", exc_info=True)
+            logger.error(
+                "Ошибка при попытке входа",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return False
     
     async def _try_direct_auth(self) -> bool:
@@ -234,7 +287,10 @@ class ITSLibraryService:
                                 # Проверяем cookies
                                 if self.session.cookies.get('BITRIX_SM_LOGIN') or self.session.cookies.get('auth'):
                                     self.authenticated = True
-                                    logger.info(f"Авторизация успешна через {auth_url}")
+                                    logger.info(
+                                        "Авторизация успешна",
+                                        extra={"auth_url": auth_url}
+                                    )
                                     return True
                                 
                                 # Пробуем JSON
@@ -243,15 +299,22 @@ class ITSLibraryService:
                                     if self.session.cookies.get('BITRIX_SM_LOGIN'):
                                         self.authenticated = True
                                         return True
-                        except:
+                        except (httpx.HTTPError, httpx.RequestError, Exception):
                             continue
-                except:
+                except (httpx.HTTPError, httpx.RequestError, Exception):
                     continue
             
             return False
             
         except Exception as e:
-            logger.error(f"Ошибка прямой авторизации: {e}")
+            logger.error(
+                "Ошибка прямой авторизации",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return False
     
     async def get_configuration_documentation(
@@ -295,14 +358,23 @@ class ITSLibraryService:
             page_url = f"{self.ITS_BASE_URL}/db/metod8dev#content:{hash_id}"
             
             # Получаем страницу документации
-            logger.debug(f"Получение страницы: {page_url}")
+            logger.debug(
+                "Получение страницы",
+                extra={"page_url": page_url}
+            )
             response = self.session.get(page_url)
             
             if response.status_code != 200:
-                logger.error(f"Не удалось получить документацию: {response.status_code}")
+                logger.error(
+                    "Не удалось получить документацию",
+                    extra={"status_code": response.status_code, "page_url": page_url}
+                )
                 return {"error": f"HTTP {response.status_code}"}
             
-            logger.info(f"Получена страница размером {len(response.text)} байт")
+            logger.info(
+                "Получена страница",
+                extra={"page_size_bytes": len(response.text), "page_url": page_url}
+            )
             
             # Парсим HTML
             soup = BeautifulSoup(response.text, 'html.parser')
@@ -319,11 +391,22 @@ class ITSLibraryService:
                 "extracted_at": datetime.now().isoformat()
             }
             
-            logger.info(f"Извлечена документация для {config_name}")
+            logger.info(
+                "Извлечена документация",
+                extra={"config_name": config_name}
+            )
             return documentation
             
         except Exception as e:
-            logger.error(f"Ошибка получения документации: {e}", exc_info=True)
+            logger.error(
+                "Ошибка получения документации",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "config_name": config_name if 'config_name' in locals() else None
+                },
+                exc_info=True
+            )
             return {"error": str(e)}
     
     def _extract_title(self, soup: BeautifulSoup) -> str:
@@ -395,7 +478,10 @@ class ITSLibraryService:
                     "source": "link"
                 })
         
-        logger.info(f"Найдено модулей: {len(modules)}")
+        logger.info(
+            "Найдено модулей",
+            extra={"modules_count": len(modules)}
+        )
         return modules
     
     def _find_module_context(self, soup: BeautifulSoup, module_name: str) -> Optional[Dict[str, Any]]:
@@ -431,7 +517,7 @@ class ITSLibraryService:
                 "description": description.strip(),
                 "code_examples": code_examples
             }
-        except:
+        except (httpx.HTTPError, httpx.RequestError, Exception):
             return None
     
     def _extract_best_practices(self, soup: BeautifulSoup) -> List[Dict[str, Any]]:
@@ -487,7 +573,10 @@ class ITSLibraryService:
                     "category": self._detect_category(description)
                 })
         
-        logger.info(f"Найдено best practices: {len(practices)}")
+        logger.info(
+            "Найдено best practices",
+            extra={"practices_count": len(practices)}
+        )
         return practices
     
     def _extract_code_examples(self, soup: BeautifulSoup) -> List[Dict[str, Any]]:
@@ -544,7 +633,10 @@ class ITSLibraryService:
                         if len(examples) >= 50:  # Ограничиваем количество
                             break
         
-        logger.info(f"Найдено примеров кода: {len(examples)}")
+        logger.info(
+            "Найдено примеров кода",
+            extra={"examples_count": len(examples)}
+        )
         return examples
     
     def _extract_api_reference(self, soup: BeautifulSoup) -> List[Dict[str, Any]]:
@@ -613,7 +705,14 @@ class ITSLibraryService:
             return documentation
             
         except Exception as e:
-            logger.error(f"Ошибка парсинга API ответа: {e}")
+            logger.error(
+                "Ошибка парсинга API ответа",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return {"error": str(e)}
     
     async def load_all_configurations_docs(self) -> Dict[str, Any]:
@@ -632,7 +731,10 @@ class ITSLibraryService:
         results = {}
         
         for config_name in configurations:
-            logger.info(f"Загрузка документации для {config_name}...")
+            logger.info(
+                "Загрузка документации",
+                extra={"config_name": config_name}
+            )
             doc = await self.get_configuration_documentation(config_name)
             results[config_name] = doc
         

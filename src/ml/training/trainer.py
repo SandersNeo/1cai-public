@@ -4,7 +4,6 @@
 """
 
 import asyncio
-import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Union, Tuple
 from dataclasses import dataclass
@@ -30,8 +29,9 @@ from src.ml.models.predictor import MLPredictor, SklearnPredictor, TensorFlowPre
 from src.ml.metrics.collector import MetricsCollector, MetricType, AssistantRole
 from src.ml.experiments.mlflow_manager import MLFlowManager
 from src.config import settings
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class TrainingStatus(Enum):
@@ -139,7 +139,13 @@ class DataPreprocessor:
             X = pd.DataFrame(X_selected, columns=selected_features, index=X.index)
             self.feature_selectors['k_best'] = selector
             
-            logger.info(f"Отобрано {len(selected_features)} признаков из {len(features)}")
+            logger.info(
+                "Отобрано признаков",
+                extra={
+                    "selected_count": len(selected_features),
+                    "total_count": len(features)
+                }
+            )
         
         return X, y
     
@@ -208,7 +214,10 @@ class ModelTrainer:
             )
             job.celery_task_id = task.id
             
-            self.logger.info(f"Создан Celery task для обучения: {task.id}")
+            logger.info(
+                "Создан Celery task для обучения",
+                extra={"task_id": task.id}
+            )
         
         return job_id
 
@@ -334,12 +343,26 @@ class ModelTrainer:
                 context={'model_name': model_name, 'training_duration': training_duration}
             )
             
-            self.logger.info(f"Модель {model_name} обучена за {training_duration:.2f} сек")
+            logger.info(
+                "Модель обучена",
+                extra={
+                    "model_name": model_name,
+                    "training_duration_seconds": round(training_duration, 2)
+                }
+            )
             
             return result
             
         except Exception as e:
-            self.logger.error(f"Ошибка обучения модели {model_name}: {e}")
+            logger.error(
+                "Ошибка обучения модели",
+                extra={
+                    "model_name": model_name,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             raise
 
     def hyperparameter_tuning(
@@ -458,12 +481,25 @@ class ModelTrainer:
                         model_type=model_type
                     )
             
-            self.logger.info(f"Гиперпараметры оптимизированы за {tuning_duration:.2f} сек, лучший скор: {study.best_value:.4f}")
+            logger.info(
+                "Гиперпараметры оптимизированы",
+                extra={
+                    "tuning_duration_seconds": round(tuning_duration, 2),
+                    "best_score": round(study.best_value, 4)
+                }
+            )
             
             return result
             
         except Exception as e:
-            self.logger.error(f"Ошибка оптимизации гиперпараметров: {e}")
+            logger.error(
+                "Ошибка оптимизации гиперпараметров",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             raise
 
     def create_ensemble(
@@ -492,7 +528,13 @@ class ModelTrainer:
         
         ensemble = ModelEnsemble(models=models, ensemble_method=ensemble_method)
         
-        self.logger.info(f"Создан ансамбль из {len(models)} моделей с методом {ensemble_method}")
+        logger.info(
+            "Создан ансамбль моделей",
+            extra={
+                "models_count": len(models),
+                "ensemble_method": ensemble_method
+            }
+        )
         
         return ensemble
 

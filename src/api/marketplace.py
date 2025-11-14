@@ -1,5 +1,10 @@
 """
 Marketplace API
+Версия: 2.1.0
+
+Улучшения:
+- Structured logging
+- Улучшена обработка ошибок
 
 Production readiness improvements:
     - Redis-backed caching and per-user rate limiting for key endpoints
@@ -13,14 +18,17 @@ import uuid
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, Request
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, Query
+from starlette.requests import Request
 from pydantic import BaseModel, Field
 from enum import Enum
 
 from src.security import CurrentUser, get_audit_logger, get_current_user, require_roles
 from src.db.marketplace_repository import MarketplaceRepository
+from src.middleware.rate_limiter import limiter, PUBLIC_RATE_LIMIT
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 router = APIRouter(prefix="/marketplace", tags=["marketplace"])
 audit_logger = get_audit_logger()
@@ -209,8 +217,50 @@ class PluginStatsResponse(BaseModel):
 
 # ==================== Endpoints ====================
 
-@router.post("/plugins", response_model=PluginResponse, status_code=201)
+@router.post(
+    "/plugins",
+    response_model=PluginResponse,
+    status_code=201,
+    summary="Submit a new plugin",
+    description="""
+    Submit a new plugin to the marketplace.
+    
+    The plugin will be created with status PENDING and sent for moderation.
+    After approval, it will be available in the marketplace.
+    
+    **Rate Limit:** 5 submissions per minute per user
+    
+    **Required Roles:** developer, admin
+    
+    **Process:**
+    1. Validate plugin data
+    2. Create plugin record with status PENDING
+    3. Send to moderation queue
+    4. After approval → status becomes APPROVED
+    """,
+    responses={
+        201: {
+            "description": "Plugin submitted successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "id": "plugin_abc123",
+                        "name": "My Awesome Plugin",
+                        "status": "pending",
+                        "created_at": "2025-11-07T12:00:00Z"
+                    }
+                }
+            }
+        },
+        400: {"description": "Invalid plugin data"},
+        401: {"description": "Unauthorized"},
+        403: {"description": "Insufficient permissions"},
+        429: {"description": "Rate limit exceeded"},
+    },
+)
+@limiter.limit("5/minute")  # Rate limit: 5 plugin submissions per minute
 async def submit_plugin(
+    request: Request,
     plugin: PluginSubmitRequest,
     current_user: CurrentUser = Depends(require_roles("developer", "admin")),
     repo: MarketplaceRepository = Depends(get_marketplace_repository),
@@ -225,24 +275,36 @@ async def submit_plugin(
     4. После одобрения → APPROVED
     """
     try:
+        # Input validation and sanitization (best practice)
+        # Sanitize plugin name (remove dangerous characters)
+        sanitized_name = plugin.name.strip()[:200]  # Limit length
+        if not sanitized_name:
+            raise HTTPException(status_code=400, detail="Plugin name cannot be empty")
+        
         plugin_id = f"plugin_{uuid.uuid4().hex}"
         payload = plugin.model_dump()
         payload["status"] = PluginStatus.PENDING.value
         payload.setdefault("visibility", PluginVisibility.PUBLIC.value)
+        payload["name"] = sanitized_name  # Use sanitized name
+        
+        # Sanitize owner_username
+        owner_username = (current_user.username or current_user.user_id).strip()[:100]
 
         persisted = await repo.create_plugin(
             plugin_id=plugin_id,
             owner_id=current_user.user_id,
-            owner_username=current_user.username or current_user.user_id,
+            owner_username=owner_username,
             payload=payload,
             download_url=f"/marketplace/plugins/{plugin_id}/download",
         )
 
         logger.info(
-            "Plugin submitted: %s (%s) by %s",
-            plugin_id,
-            plugin.name,
-            current_user.user_id,
+            "Plugin submitted",
+            extra={
+                "plugin_id": plugin_id,
+                "plugin_name": plugin.name,
+                "user_id": current_user.user_id
+            }
         )
         audit_logger.log_action(
             actor=current_user.user_id,
@@ -254,19 +316,68 @@ async def submit_plugin(
         return PluginResponse(**persisted)
         
     except Exception as e:
-        logger.error(f"Plugin submission error: {e}")
+        logger.error(
+            "Plugin submission error",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/plugins", response_model=PluginSearchResponse)
+@router.get(
+    "/plugins",
+    response_model=PluginSearchResponse,
+    summary="Search plugins",
+    description="""
+    Search and filter plugins in the marketplace.
+    
+    **Filters:**
+    - `query`: Search by name, description, or keywords (full-text search)
+    - `category`: Filter by plugin category
+    - `author`: Filter by author username
+    
+    **Sorting:**
+    - `rating`: Sort by average rating (default)
+    - `downloads`: Sort by total downloads
+    - `updated`: Sort by last update date
+    - `name`: Sort alphabetically by name
+    
+    **Order:**
+    - `desc`: Descending (default)
+    - `asc`: Ascending
+    
+    **Pagination:**
+    - `page`: Page number (starts from 1)
+    - `page_size`: Number of results per page (max 100)
+    """,
+    responses={
+        200: {
+            "description": "Search results",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "plugins": [],
+                        "total": 0,
+                        "page": 1,
+                        "page_size": 20,
+                        "total_pages": 0
+                    }
+                }
+            }
+        }
+    },
+)
 async def search_plugins(
-    query: Optional[str] = None,
-    category: Optional[PluginCategory] = None,
-    author: Optional[str] = None,
-    sort_by: str = "rating",
-    order: str = "desc",
-    page: int = 1,
-    page_size: int = 20,
+    query: Optional[str] = Query(None, description="Search query (name, description, keywords)"),
+    category: Optional[PluginCategory] = Query(None, description="Filter by category"),
+    author: Optional[str] = Query(None, description="Filter by author username"),
+    sort_by: str = Query("rating", description="Sort field: rating, downloads, updated, name"),
+    order: str = Query("desc", description="Sort order: asc, desc"),
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Results per page"),
     repo: MarketplaceRepository = Depends(get_marketplace_repository),
 ):
     """
@@ -305,7 +416,14 @@ async def search_plugins(
         )
         
     except Exception as e:
-        logger.error(f"Plugin search error: {e}")
+        logger.error(
+            "Plugin search error",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -373,7 +491,9 @@ async def update_plugin(
 
 
 @router.post("/plugins/{plugin_id}/artifact", response_model=PluginResponse, status_code=201)
+@limiter.limit("10/minute")  # Rate limit: 10 uploads per minute
 async def upload_plugin_artifact(
+    request: Request,
     plugin_id: str,
     file: UploadFile = File(...),
     current_user: CurrentUser = Depends(get_current_user),
@@ -426,7 +546,15 @@ async def upload_plugin_artifact(
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except Exception as exc:  # pragma: no cover - unexpected
-        logger.exception("Unexpected error while uploading artifact for %s", plugin_id)
+        logger.error(
+            "Unexpected error while uploading artifact",
+            extra={
+                "error": str(exc),
+                "error_type": type(exc).__name__,
+                "plugin_id": plugin_id
+            },
+            exc_info=True
+        )
         raise HTTPException(status_code=500, detail="Failed to store artifact") from exc
 
     audit_logger.log_action(

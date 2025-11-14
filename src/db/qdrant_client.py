@@ -1,174 +1,191 @@
 """
-Qdrant Client for Vector Search
-Semantic search for 1C code and documentation
+Qdrant Client wrapper used in tests and development.
+
+Реализация не зависит от официального SDK: во время unit-тестов мы замещаем
+`qdrant_client.QdrantClient` при помощи `unittest.mock`. Чтобы интеграция
+оставалась прозрачной, класс ниже выполняет импорты лениво и не требует
+наличия настоящей библиотеки в окружении.
 """
 
-import os
+import importlib
 import logging
-from typing import Dict, List, Any, Optional
+import os
+from typing import Any, Dict, List, Optional
 
-try:
-    from qdrant_client import QdrantClient as QdrantSDK
-    from qdrant_client.models import (
-        Distance, VectorParams, PointStruct,
-        Filter, FieldCondition, MatchValue
-    )
-    QDRANT_AVAILABLE = True
-except ImportError:
-    print("[WARN] qdrant-client not installed. Run: pip install qdrant-client")
-    QDRANT_AVAILABLE = False
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class QdrantClient:
-    """Qdrant client for vector search"""
-    
+    """Минималистичная обертка над Qdrant SDK."""
+
     COLLECTION_CODE = "1c_code"
     COLLECTION_DOCS = "1c_documentation"
-    VECTOR_SIZE = 384  # For sentence-transformers/all-MiniLM-L6-v2
-    
-    def __init__(self, 
-                 host: str = "localhost",
-                 port: int = 6333,
-                 api_key: Optional[str] = None):
-        """Initialize Qdrant client"""
+    VECTOR_SIZE = 384
+
+    def __init__(self, host: str = "localhost", port: int = 6333, api_key: Optional[str] = None):
+        """Initialize Qdrant client с input validation"""
+        # Input validation
+        if not isinstance(host, str) or not host:
+            logger.warning(
+                "Invalid host in QdrantClient.__init__",
+                extra={"host": host, "host_type": type(host).__name__}
+            )
+            host = "localhost"
         
-        if not QDRANT_AVAILABLE:
-            raise ImportError("qdrant-client not available")
+        if not isinstance(port, int) or port < 1 or port > 65535:
+            logger.warning(
+                "Invalid port in QdrantClient.__init__",
+                extra={"port": port, "port_type": type(port).__name__}
+            )
+            port = 6333
+        
+        if api_key is not None and not isinstance(api_key, str):
+            logger.warning(
+                "Invalid api_key type in QdrantClient.__init__",
+                extra={"api_key_type": type(api_key).__name__}
+            )
+            api_key = None
         
         self.host = host
         self.port = port
         self.api_key = api_key or os.getenv("QDRANT_API_KEY")
-        self.client: Optional[QdrantSDK] = None
-    
-    def connect(self) -> bool:
-        """Establish connection to Qdrant"""
-        try:
-            self.client = QdrantSDK(
-                host=self.host,
-                port=self.port,
-                api_key=self.api_key
+        self.client: Optional[Any] = None
+        
+        logger.debug(
+            "QdrantClient initialized",
+            extra={"host": host, "port": port, "has_api_key": bool(self.api_key)}
+        )
+
+    def _load_sdk(self):
+        """Импортирует модуль `qdrant_client` в момент обращения."""
+        return importlib.import_module("qdrant_client")
+
+    def connect(self, max_retries: int = 3, retry_delay: float = 1.0) -> bool:
+        """
+        Connect to Qdrant with retry logic с input validation
+        
+        Best practices:
+        - Retry для transient errors
+        - Exponential backoff
+        - Structured logging
+        """
+        # Input validation
+        if not isinstance(max_retries, int) or max_retries < 1:
+            logger.warning(
+                "Invalid max_retries in QdrantClient.connect",
+                extra={"max_retries": max_retries, "max_retries_type": type(max_retries).__name__}
             )
-            # Test connection
-            self.client.get_collections()
-            logger.info(f"Connected to Qdrant at {self.host}:{self.port}")
-            return True
-        except Exception as e:
-            logger.error(f"Failed to connect to Qdrant: {e}")
-            return False
-    
-    def create_collections(self):
-        """Create collections for code and documentation"""
-        try:
-            # Collection for code
-            self.client.recreate_collection(
-                collection_name=self.COLLECTION_CODE,
-                vectors_config=VectorParams(
-                    size=self.VECTOR_SIZE,
-                    distance=Distance.COSINE
+            max_retries = 3
+        
+        if not isinstance(retry_delay, (int, float)) or retry_delay < 0:
+            logger.warning(
+                "Invalid retry_delay in QdrantClient.connect",
+                extra={"retry_delay": retry_delay, "retry_delay_type": type(retry_delay).__name__}
+            )
+            retry_delay = 1.0
+        
+        import time
+        
+        for attempt in range(max_retries):
+            try:
+                sdk = self._load_sdk()
+                client_cls = getattr(sdk, "QdrantClient")
+                self.client = client_cls(host=self.host, port=self.port, api_key=self.api_key)
+                self.client.get_collections()
+                logger.info(
+                    "Connected to Qdrant at %s:%s",
+                    self.host,
+                    self.port,
+                    extra={
+                        "host": self.host,
+                        "port": self.port,
+                        "attempt": attempt + 1
+                    }
                 )
-            )
-            logger.info(f"Created collection: {self.COLLECTION_CODE}")
-            
-            # Collection for documentation
-            self.client.recreate_collection(
-                collection_name=self.COLLECTION_DOCS,
-                vectors_config=VectorParams(
-                    size=self.VECTOR_SIZE,
-                    distance=Distance.COSINE
-                )
-            )
-            logger.info(f"Created collection: {self.COLLECTION_DOCS}")
-            
-        except Exception as e:
-            logger.error(f"Error creating collections: {e}")
-    
-    def add_code(self, code_id: str, embedding: List[float], metadata: Dict[str, Any]):
-        """Add code embedding to collection"""
+                return True
+            except Exception as exc:  # noqa: BLE001
+                if attempt < max_retries - 1:
+                    wait_time = retry_delay * (2 ** attempt)  # Exponential backoff
+                    logger.warning(
+                        "Failed to connect to Qdrant, retrying",
+                        extra={
+                            "host": self.host,
+                            "port": self.port,
+                            "attempt": attempt + 1,
+                            "max_retries": max_retries,
+                            "error": str(exc),
+                            "wait_time": wait_time
+                        }
+                    )
+                    time.sleep(wait_time)
+                else:
+                    logger.error(
+                        "Failed to connect to Qdrant after all attempts",
+                        exc_info=True,
+                        extra={
+                            "host": self.host,
+                            "port": self.port,
+                            "max_retries": max_retries,
+                            "error": str(exc)
+                        }
+                    )
+                    return False
+        
+        return False
+
+    def create_collections(self) -> None:
+        if not self.client:
+            raise RuntimeError("Qdrant client is not connected")
+
         try:
-            point = PointStruct(
-                id=code_id,
-                vector=embedding,
-                payload=metadata
-            )
-            
-            self.client.upsert(
-                collection_name=self.COLLECTION_CODE,
-                points=[point]
-            )
+            vectors_config = {"size": self.VECTOR_SIZE, "distance": "Cosine"}
+            self.client.recreate_collection(collection_name=self.COLLECTION_CODE, vectors_config=vectors_config)
+            self.client.recreate_collection(collection_name=self.COLLECTION_DOCS, vectors_config=vectors_config)
+        except Exception as exc:  # noqa: BLE001
+            logger.error("Error creating collections: %s", exc)
+
+    def add_code(self, code_id: str, embedding: List[float], metadata: Dict[str, Any]) -> bool:
+        if not self.client:
+            raise RuntimeError("Qdrant client is not connected")
+
+        try:
+            point = {"id": code_id, "vector": embedding, "payload": metadata}
+            self.client.upsert(collection_name=self.COLLECTION_CODE, points=[point])
             return True
-        except Exception as e:
-            logger.error(f"Error adding code: {e}")
+        except Exception as exc:  # noqa: BLE001
+            logger.error("Error adding code: %s", exc)
             return False
-    
-    def search_code(self, query_vector: List[float], 
-                    config_filter: Optional[str] = None,
-                    limit: int = 10) -> List[Dict[str, Any]]:
-        """Search for similar code"""
+
+    def search_code(
+        self,
+        query_vector: List[float],
+        config_filter: Optional[str] = None,
+        limit: int = 10,
+    ) -> List[Dict[str, Any]]:
+        if not self.client:
+            raise RuntimeError("Qdrant client is not connected")
+
         try:
-            query_filter = None
+            kwargs = {
+                "collection_name": self.COLLECTION_CODE,
+                "query_vector": query_vector,
+                "limit": limit,
+            }
             if config_filter:
-                query_filter = Filter(
-                    must=[
-                        FieldCondition(
-                            key="configuration",
-                            match=MatchValue(value=config_filter)
-                        )
-                    ]
-                )
-            
-            results = self.client.search(
-                collection_name=self.COLLECTION_CODE,
-                query_vector=query_vector,
-                query_filter=query_filter,
-                limit=limit
-            )
-            
-            return [
-                {
-                    'id': hit.id,
-                    'score': hit.score,
-                    'payload': hit.payload
-                }
-                for hit in results
-            ]
-        except Exception as e:
-            logger.error(f"Error searching code: {e}")
+                kwargs["query_filter"] = {"must": [{"key": "configuration", "match": {"value": config_filter}}]}
+
+            hits = self.client.search(**kwargs)
+            return [{"id": hit.id, "score": hit.score, "payload": hit.payload} for hit in hits]
+        except Exception as exc:  # noqa: BLE001
+            logger.error("Error searching code: %s", exc)
             return []
-    
-    def get_statistics(self) -> Dict[str, Any]:
-        """Get collection statistics"""
-        try:
-            collections = self.client.get_collections()
-            
-            stats = {}
-            for collection in collections.collections:
-                info = self.client.get_collection(collection.name)
-                stats[collection.name] = {
-                    'vectors_count': info.vectors_count,
-                    'points_count': info.points_count,
-                    'status': info.status
-                }
-            
-            return stats
-        except Exception as e:
-            logger.error(f"Error getting statistics: {e}")
-            return {}
-    
+
     def __enter__(self):
-        """Context manager entry"""
         self.connect()
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """Context manager exit"""
-        # Qdrant client doesn't need explicit disconnect
-        pass
-
-
-
-
-
-
-
+        # Qdrant SDK не требует явного закрытия соединения
+        return False

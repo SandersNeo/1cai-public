@@ -6,12 +6,12 @@ Configuration Knowledge Base Service
 
 import os
 import json
-import logging
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 from datetime import datetime
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class ConfigurationKnowledgeBase:
@@ -66,9 +66,20 @@ class ConfigurationKnowledgeBase:
                 try:
                     with open(config_file, 'r', encoding='utf-8') as f:
                         self._cache[config] = json.load(f)
-                    logger.info(f"Загружена база знаний для {config}")
+                    logger.info(
+                        "Загружена база знаний",
+                        extra={"config": config}
+                    )
                 except Exception as e:
-                    logger.error(f"Ошибка загрузки базы знаний {config}: {e}")
+                    logger.error(
+                        "Ошибка загрузки базы знаний",
+                        extra={
+                            "config": config,
+                            "error": str(e),
+                            "error_type": type(e).__name__
+                        },
+                        exc_info=True
+                    )
     
     def get_configuration_info(self, config_name: str) -> Optional[Dict[str, Any]]:
         """
@@ -83,7 +94,10 @@ class ConfigurationKnowledgeBase:
         config_key = config_name.lower()
         
         if config_key not in self.SUPPORTED_CONFIGURATIONS:
-            logger.warning(f"Неподдерживаемая конфигурация: {config_name}")
+            logger.warning(
+                "Неподдерживаемая конфигурация",
+                extra={"config_name": config_name}
+            )
             return None
         
         return self._cache.get(config_key, {
@@ -116,7 +130,10 @@ class ConfigurationKnowledgeBase:
         config_key = config_name.lower()
         
         if config_key not in self.SUPPORTED_CONFIGURATIONS:
-            logger.error(f"Неподдерживаемая конфигурация: {config_name}")
+            logger.error(
+                "Неподдерживаемая конфигурация",
+                extra={"config_name": config_name}
+            )
             return False
         
         # Получаем или создаем конфигурацию
@@ -301,11 +318,22 @@ class ConfigurationKnowledgeBase:
             with open(config_file, 'w', encoding='utf-8') as f:
                 json.dump(self._cache[config_key], f, indent=2, ensure_ascii=False)
             
-            logger.debug(f"Сохранена база знаний для {config_key}")
+            logger.debug(
+                "Сохранена база знаний",
+                extra={"config_key": config_key}
+            )
             return True
             
         except Exception as e:
-            logger.error(f"Ошибка сохранения базы знаний {config_key}: {e}")
+            logger.error(
+                "Ошибка сохранения базы знаний",
+                extra={
+                    "config_key": config_key,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return False
     
     def _get_default_config(self) -> Dict[str, Any]:
@@ -333,7 +361,10 @@ class ConfigurationKnowledgeBase:
         dir_path = Path(directory_path)
         
         if not dir_path.exists() or not dir_path.is_dir():
-            logger.error(f"Директория не найдена: {directory_path}")
+            logger.error(
+                "Директория не найдена",
+                extra={"directory_path": str(directory_path)}
+            )
             return 0
         
         loaded_count = 0
@@ -343,12 +374,23 @@ class ConfigurationKnowledgeBase:
             try:
                 # TODO: Парсинг XML файлов 1С конфигурации
                 # Это требует специального парсера для формата 1С
-                logger.info(f"Найден файл конфигурации: {xml_file}")
+                logger.info(
+                    "Найден файл конфигурации",
+                    extra={"xml_file": str(xml_file)}
+                )
                 # Пока пропускаем
                 continue
                 
             except Exception as e:
-                logger.error(f"Ошибка обработки {xml_file}: {e}")
+                logger.error(
+                    "Ошибка обработки файла конфигурации",
+                    extra={
+                        "xml_file": str(xml_file),
+                        "error": str(e),
+                        "error_type": type(e).__name__
+                    },
+                    exc_info=True
+                )
         
         # Поиск JSON файлов с документацией
         for json_file in dir_path.rglob("*.json"):
@@ -362,10 +404,21 @@ class ConfigurationKnowledgeBase:
                 if config_name in self.SUPPORTED_CONFIGURATIONS:
                     self._cache[config_name] = data
                     loaded_count += 1
-                    logger.info(f"Загружена конфигурация: {config_name}")
+                    logger.info(
+                        "Загружена конфигурация",
+                        extra={"config_name": config_name}
+                    )
                     
             except Exception as e:
-                logger.error(f"Ошибка загрузки {json_file}: {e}")
+                logger.error(
+                    "Ошибка загрузки JSON файла",
+                    extra={
+                        "json_file": str(json_file),
+                        "error": str(e),
+                        "error_type": type(e).__name__
+                    },
+                    exc_info=True
+                )
         
         return loaded_count
 

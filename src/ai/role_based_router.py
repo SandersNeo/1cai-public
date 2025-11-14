@@ -7,9 +7,9 @@ import re
 from enum import Enum
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
-import logging
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class UserRole(Enum):
@@ -135,7 +135,7 @@ class RoleBasedRouter:
         try:
             from src.ai.qwen_client import QwenClient
             self.qwen_client = QwenClient()
-        except:
+        except (ImportError, Exception):
             self.qwen_client = None
             logger.warning("QwenClient not available")
         
@@ -145,28 +145,52 @@ class RoleBasedRouter:
             self.devops_agent = DevOpsAgentExtended()
         except Exception as e:
             self.devops_agent = None
-            logger.warning(f"DevOpsAgentExtended not available: {e}")
+            logger.warning(
+                "DevOpsAgentExtended not available",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                }
+            )
         
         try:
             from src.ai.agents.qa_engineer_agent_extended import QAEngineerAgentExtended
             self.qa_agent = QAEngineerAgentExtended()
         except Exception as e:
             self.qa_agent = None
-            logger.warning(f"QAEngineerAgentExtended not available: {e}")
+            logger.warning(
+                "QAEngineerAgentExtended not available",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                }
+            )
         
         try:
             from src.ai.agents.business_analyst_agent_extended import BusinessAnalystAgentExtended
             self.ba_agent = BusinessAnalystAgentExtended()
         except Exception as e:
             self.ba_agent = None
-            logger.warning(f"BusinessAnalystAgentExtended not available: {e}")
+            logger.warning(
+                "BusinessAnalystAgentExtended not available",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                }
+            )
         
         try:
             from src.ai.agents.technical_writer_agent_extended import TechnicalWriterAgentExtended
             self.tw_agent = TechnicalWriterAgentExtended()
         except Exception as e:
             self.tw_agent = None
-            logger.warning(f"TechnicalWriterAgentExtended not available: {e}")
+            logger.warning(
+                "TechnicalWriterAgentExtended not available",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                }
+            )
     
     def _load_role_configs(self) -> Dict[UserRole, RoleConfig]:
         """Загружает конфигурации для ролей"""
@@ -242,7 +266,13 @@ class RoleBasedRouter:
         role = self.detector.detect_role(query, context)
         config = self.role_configs[role]
         
-        logger.info(f"Detected role: {role.value}, primary agent: {config.primary_agent}")
+        logger.info(
+            "Detected role",
+            extra={
+                "role": role.value,
+                "primary_agent": config.primary_agent
+            }
+        )
         
         # Маршрутизируем к соответствующему обработчику
         if role == UserRole.DEVELOPER:
@@ -286,8 +316,14 @@ class RoleBasedRouter:
             
             # Requirements extraction
             if any(kw in query_lower for kw in ["требования", "извлечь", "tz", "техническое задание"]):
-                document_text = context.get("document_text", query) if context else query
-                result = await self.ba_agent.extract_requirements(document_text, "tz")
+                document_path = context.get("document_path") if context else None
+                document_type = context.get("document_type") if context else None
+                if document_path:
+                    result = await self.ba_agent.extract_requirements_from_file(document_path, document_type)
+                else:
+                    document_text = context.get("document_text", query) if context else query
+                    doc_type = document_type or "tz"
+                    result = await self.ba_agent.extract_requirements(document_text, doc_type)
                 return {
                     "role": "business_analyst",
                     "agent": "ba_agent_extended",

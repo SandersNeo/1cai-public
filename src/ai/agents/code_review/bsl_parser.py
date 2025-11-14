@@ -25,6 +25,10 @@ class BSLParser:
         self.variables = []
         self.queries = []
     
+    def parse(self, code: str) -> Dict[str, Any]:
+        """Совместимость с упрощённым интерфейсом (`parse` == `parse_file`)."""
+        return self.parse_file(code)
+
     def parse_file(self, code: str) -> Dict[str, Any]:
         """
         Парсит BSL файл

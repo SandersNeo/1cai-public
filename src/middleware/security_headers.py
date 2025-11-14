@@ -1,10 +1,36 @@
 """
 Security Headers Middleware
-Iteration 2 Quick Win #1: Enhanced browser security
+Версия: 2.1.0
+
+Улучшения:
+- Structured logging
+- Улучшена обработка ошибок
+- Input validation для CSP policy
+
+Features:
+- Content Security Policy (CSP)
+- XSS Protection
+- Clickjacking Protection
+- MIME Sniffing Protection
+- HSTS (HTTP Strict Transport Security)
+- Referrer Policy
+- Permissions Policy
 """
 
+import os
 from fastapi import Request, Response
 from typing import Callable
+from starlette.middleware.base import BaseHTTPMiddleware
+from src.utils.structured_logging import StructuredLogger
+
+logger = StructuredLogger(__name__).logger
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Middleware для добавления security headers ко всем ответам"""
+    
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        return await security_headers_middleware(request, call_next)
 
 
 async def security_headers_middleware(request: Request, call_next: Callable) -> Response:
@@ -19,41 +45,76 @@ async def security_headers_middleware(request: Request, call_next: Callable) -> 
     - Referrer-Policy: Controls referrer info
     - Permissions-Policy: Controls browser features
     """
-    
-    response = await call_next(request)
-    
-    # Content Security Policy
-    response.headers['Content-Security-Policy'] = (
-        "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-        "style-src 'self' 'unsafe-inline'; "
-        "img-src 'self' data: https:; "
-        "font-src 'self' data:; "
-        "connect-src 'self' https://api.openai.com; "
-        "frame-ancestors 'none';"
-    )
-    
-    # Prevent clickjacking
-    response.headers['X-Frame-Options'] = 'DENY'
-    
-    # Prevent MIME sniffing
-    response.headers['X-Content-Type-Options'] = 'nosniff'
-    
-    # Force HTTPS (only in production)
-    if request.url.scheme == 'https':
-        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-    
-    # Referrer policy
-    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
-    
-    # Permissions policy (disable unnecessary features)
-    response.headers['Permissions-Policy'] = (
-        'camera=(), microphone=(), geolocation=(), interest-cohort=()'
-    )
-    
-    # XSS Protection (legacy, but doesn't hurt)
-    response.headers['X-XSS-Protection'] = '1; mode=block'
-    
-    return response
+    try:
+        response = await call_next(request)
+        
+        # Content Security Policy (CSP)
+        # Best practice: Strict CSP, allow only necessary sources
+        csp_policy = os.getenv(
+            "CSP_POLICY",
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "  # TODO: Remove unsafe-inline/eval in production
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data: https:; "
+            "font-src 'self' data:; "
+            "connect-src 'self' https://api.openai.com https://api.deepseek.com; "
+            "frame-ancestors 'none'; "
+            "base-uri 'self'; "
+            "form-action 'self';"
+        )
+        
+        # Validate CSP policy length (prevent DoS)
+        if len(csp_policy) > 2000:
+            logger.warning(
+                "CSP policy too long, truncating",
+                extra={"csp_length": len(csp_policy), "max_length": 2000}
+            )
+            csp_policy = csp_policy[:2000]
+        
+        response.headers['Content-Security-Policy'] = csp_policy
+        
+        # Prevent clickjacking
+        response.headers['X-Frame-Options'] = 'DENY'
+        
+        # Prevent MIME sniffing
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        
+        # Force HTTPS (only in production)
+        if request.url.scheme == 'https':
+            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+        
+        # Referrer policy
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        
+        # Permissions policy (disable unnecessary features)
+        response.headers['Permissions-Policy'] = (
+            'camera=(), microphone=(), geolocation=(), interest-cohort=()'
+        )
+        
+        # XSS Protection (legacy, but doesn't hurt)
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        
+        logger.debug(
+            "Security headers added",
+            extra={
+                "path": str(request.url.path),
+                "method": request.method,
+                "has_csp": 'Content-Security-Policy' in response.headers
+            }
+        )
+        
+        return response
+    except Exception as e:
+        logger.error(
+            "Error in security headers middleware",
+            extra={
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "path": str(request.url.path) if request else None
+            },
+            exc_info=True
+        )
+        # Continue without security headers rather than failing
+        return await call_next(request)
 
 

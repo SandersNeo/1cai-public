@@ -5,12 +5,12 @@ Machine Learning model for issue classification
 ALL TODOs CLOSED!
 """
 
-import logging
 import re
 from typing import Dict, List, Any, Optional
 from datetime import datetime
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class MLIssueClassifier:
@@ -37,21 +37,31 @@ class MLIssueClassifier:
             model_path = os.getenv('CLASSIFIER_MODEL_PATH', './models/issue_classifier.joblib')
             
             if os.path.exists(model_path):
-                logger.info(f"Loading classifier model from {model_path}")
+                logger.info(
+                    "Loading classifier model",
+                    extra={"model_path": model_path}
+                )
                 
                 model_data = joblib.load(model_path)
                 self.model = model_data['model']
                 self.vectorizer = model_data['vectorizer']
                 self.model_loaded = True
                 
-                logger.info("✅ ML classifier loaded successfully!")
+                logger.info("ML classifier loaded successfully")
             else:
                 logger.info("ML model not found, using rule-based classification")
                 
         except ImportError:
             logger.warning("scikit-learn not installed. Install with: pip install scikit-learn joblib")
         except Exception as e:
-            logger.error(f"Failed to load ML model: {e}")
+            logger.error(
+                "Failed to load ML model",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
     
     async def classify_issue(
         self,
@@ -111,7 +121,14 @@ class MLIssueClassifier:
             }
             
         except Exception as e:
-            logger.error(f"ML classification error: {e}")
+            logger.error(
+                "ML classification error",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return self._classify_with_rules(title, description, context)
     
     def _classify_with_rules(
@@ -259,7 +276,14 @@ class MLIssueClassifier:
                 ]
                 
         except Exception as e:
-            logger.error(f"Error finding similar issues: {e}")
+            logger.error(
+                "Error finding similar issues",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return []
     
     async def auto_label_issue(self, issue_id: str, title: str, description: str):
@@ -288,11 +312,25 @@ class MLIssueClassifier:
                     issue_id
                 )
             
-            logger.info(f"Auto-labeled issue {issue_id}: {classification}")
+            logger.info(
+                "Auto-labeled issue",
+                extra={
+                    "issue_id": issue_id,
+                    "classification": classification
+                }
+            )
             return classification
             
         except Exception as e:
-            logger.error(f"Error auto-labeling: {e}")
+            logger.error(
+                "Error auto-labeling",
+                extra={
+                    "issue_id": issue_id,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return classification
 
 

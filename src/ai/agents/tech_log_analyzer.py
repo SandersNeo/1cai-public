@@ -15,9 +15,9 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
 from datetime import datetime, timedelta
 from dataclasses import dataclass
-import logging
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 @dataclass
@@ -100,7 +100,10 @@ class TechLogAnalyzer:
         Returns:
             Структурированные данные из журнала
         """
-        logger.info(f"Parsing tech log: {log_path}")
+        logger.info(
+            "Parsing tech log",
+            extra={"log_path": str(log_path)}
+        )
         
         events = []
         log_files = self._find_log_files(log_path, time_period)
@@ -116,7 +119,10 @@ class TechLogAnalyzer:
                 if time_period[0] <= e.timestamp <= time_period[1]
             ]
         
-        logger.info(f"Parsed {len(events)} events")
+        logger.info(
+            "Parsed events",
+            extra={"events_count": len(events)}
+        )
         
         return {
             "events": events,
@@ -140,7 +146,10 @@ class TechLogAnalyzer:
             # Ищем все .log файлы
             return list(path.glob('*.log'))
         else:
-            logger.warning(f"Path not found: {log_path}")
+            logger.warning(
+                "Path not found",
+                extra={"log_path": str(log_path)}
+            )
             return []
     
     async def _parse_log_file(self, log_file: Path) -> List[TechLogEvent]:
@@ -184,7 +193,15 @@ class TechLogAnalyzer:
                         events.append(event)
         
         except Exception as e:
-            logger.error(f"Error parsing {log_file}: {e}")
+            logger.error(
+                "Error parsing log file",
+                extra={
+                    "log_file": str(log_file),
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
         
         return events
     
@@ -237,7 +254,7 @@ class TechLogAnalyzer:
                     second=time_obj.second,
                     microsecond=0
                 )
-            except:
+            except (ValueError, TypeError):
                 timestamp = datetime.now()
             
             return TechLogEvent(
@@ -256,7 +273,13 @@ class TechLogAnalyzer:
             )
             
         except Exception as e:
-            logger.debug(f"Error parsing event: {e}")
+            logger.debug(
+                "Error parsing event",
+                extra={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                }
+            )
             return None
     
     def _parse_attributes(self, parts: List[str]) -> Dict[str, str]:

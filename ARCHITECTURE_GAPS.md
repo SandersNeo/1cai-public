@@ -31,12 +31,16 @@
 - ✅ Настроить Alembic миграции (первый пакет); ➡️ добавить unit/integration тесты для marketplace и миграций.
 
 ### 5. Тестирование
-- ⚙️ Написать unit-тесты для ключевых сервисов marketplace (создание, обновление, жалобы) — частично (Auth/S3 helper покрыты).
-- Добавить e2e для авторизации и ролевого доступа (pytest + httpx.AsyncClient).
-- Использовать фикстуры с временной БД (pytest-postgresql) и Redis (fakeredis).
+- ✅ Написать unit-тесты для ключевых сервисов marketplace (создание, обновление, жалобы) — `tests/unit/test_marketplace_api.py`.
+- ✅ Добавить e2e для авторизации и ролевого доступа — `tests/integration/test_marketplace_e2e.py`.
+- ✅ Использовать фикстуры с временной БД (pytest-postgresql) и Redis (fakeredis) — реализовано в CI.
 
 ### 6. Документация / DevOps
 - ✅ Обновить `README`, `docs/06-features` с указанием требований к auth & storage.
 - ✅ Добавить переменные окружения в `env.example` (JWT_SECRET, STORAGE_BUCKET, RATE_LIMITS_*).
-- ➡️ Обновить docker-compose (поднять PostgreSQL/Redis/S3/watcher для миграций).
-- ➡️ Добавить чек в CI: прогон миграций + unit/e2e тестов.
+- ✅ Обновить docker-compose (поднять PostgreSQL/Redis/MinIO для миграций и marketplace).
+- ✅ Добавить rate limiting к критическим endpoints (/plugins POST, /artifact POST, /models/create, /ab-tests/create).
+- ✅ Добавить чек в CI: прогон миграций + unit/e2e тестов — добавлен job `migrations-check` и marketplace тесты в CI.
+- ✅ Code Review — добавлена поддержка TypeScript, Python, JavaScript (`src/api/code_analyzers.py`).
+- ✅ Copilot API — реализована оптимизация кода и генерация процедур.
+- ✅ Gateway — улучшена аутентификация (использование переменных окружения для API ключей).

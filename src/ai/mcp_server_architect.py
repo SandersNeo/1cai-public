@@ -10,7 +10,7 @@ sys.path.insert(0, str(project_root))
 
 import asyncio
 from typing import Dict, Any, List
-import logging
+from src.utils.structured_logging import StructuredLogger
 
 from src.ai.agents.architect_agent_extended import ArchitectAgentExtended
 from src.ai.agents.technology_selector import TechnologySelector
@@ -18,7 +18,7 @@ from src.ai.agents.performance_analyzer import PerformanceAnalyzer
 from src.ai.agents.sql_optimizer import SQLOptimizer
 from src.ai.agents.onec_server_optimizer import OneCServerOptimizer
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class ArchitectMCPServer:
@@ -369,12 +369,26 @@ class ArchitectMCPServer:
             return result
             
         except Exception as e:
-            logger.error(f"Error handling {tool_name}: {e}")
+            logger.error(
+                "Error handling tool",
+                extra={
+                    "tool_name": tool_name,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return {"error": str(e)}
     
     def start(self):
         """Запуск MCP Server для архитектора"""
-        logger.info(f"Starting Architect MCP Server on {self.host}:{self.port}")
+        logger.info(
+            "Starting Architect MCP Server",
+            extra={
+                "host": self.host,
+                "port": self.port
+            }
+        )
         
         print("="*70)
         print("AI Architect MCP Server Started")

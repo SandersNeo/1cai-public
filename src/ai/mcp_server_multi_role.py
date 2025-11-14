@@ -5,13 +5,13 @@ Extended MCP Server with Multi-Role Support
 
 import asyncio
 from typing import Dict, Any, List
-import logging
+from src.utils.structured_logging import StructuredLogger
 
 from src.ai.role_based_router import RoleBasedRouter, UserRole
 from src.ai.agents.business_analyst_agent import BusinessAnalystAgent
 from src.ai.agents.qa_engineer_agent import QAEngineerAgent
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 
 class MultiRoleMCPServer:
@@ -304,13 +304,33 @@ class MultiRoleMCPServer:
             result = await handler(**args)
             return result
         except Exception as e:
-            logger.error(f"Error handling tool {tool_name}: {e}")
+            logger.error(
+                "Error handling tool",
+                extra={
+                    "tool_name": tool_name,
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                exc_info=True
+            )
             return {"error": str(e)}
     
     def start(self):
         """Запускает MCP Server"""
-        logger.info(f"Starting Multi-Role MCP Server on {self.host}:{self.port}")
-        logger.info(f"Registered {len(self.tools)} tools for 6 roles")
+        logger.info(
+            "Starting Multi-Role MCP Server",
+            extra={
+                "host": self.host,
+                "port": self.port
+            }
+        )
+        logger.info(
+            "Registered tools",
+            extra={
+                "tools_count": len(self.tools),
+                "roles_count": 6
+            }
+        )
         
         # TODO: Implement actual MCP protocol server
         # For now, this is a placeholder

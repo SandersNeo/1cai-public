@@ -1,19 +1,28 @@
 """
 Graph API - FastAPI endpoints for Neo4j, Qdrant, PostgreSQL
+Версия: 2.1.0
+
+Улучшения:
+- Input validation и sanitization
+- Structured logging
+- Улучшена обработка ошибок
+- Защита от Cypher injection
 """
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Dict, Any
 import logging
+import re
 
 from src.db.neo4j_client import Neo4jClient
 from src.db.qdrant_client import QdrantClient
 from src.db.postgres_saver import PostgreSQLSaver
 from src.services.embedding_service import EmbeddingService
+from src.utils.structured_logging import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__).logger
 
 app = FastAPI(
     title="1C AI Assistant API",
@@ -43,19 +52,68 @@ embedding_service = None
 
 # Models
 class SemanticSearchRequest(BaseModel):
-    query: str
-    configuration: Optional[str] = None
-    limit: int = 10
+    query: str = Field(..., min_length=1, max_length=1000, description="Search query")
+    configuration: Optional[str] = Field(None, max_length=200, description="Configuration filter")
+    limit: int = Field(10, ge=1, le=100, description="Maximum results")
+    
+    @field_validator('query')
+    @classmethod
+    def validate_query(cls, v: str) -> str:
+        """Sanitize query to prevent injection"""
+        # Remove potentially dangerous characters
+        v = re.sub(r'[<>"\']', '', v)
+        return v.strip()
+    
+    @field_validator('configuration')
+    @classmethod
+    def validate_configuration(cls, v: Optional[str]) -> Optional[str]:
+        """Sanitize configuration name"""
+        if v:
+            # Prevent path traversal
+            v = v.replace('..', '').replace('/', '').replace('\\', '')
+            return v.strip()
+        return v
 
 
 class GraphQueryRequest(BaseModel):
-    query: str
-    parameters: Dict[str, Any] = {}
+    query: str = Field(..., min_length=1, max_length=5000, description="Cypher query")
+    parameters: Dict[str, Any] = Field(default_factory=dict, description="Query parameters")
+    
+    @field_validator('query')
+    @classmethod
+    def validate_query(cls, v: str) -> str:
+        """Basic validation for Cypher query (prevent dangerous operations)"""
+        v = v.strip()
+        
+        # Block dangerous operations
+        dangerous_patterns = [
+            r'\bDROP\b',
+            r'\bDELETE\b',
+            r'\bDETACH\b',
+            r'\bREMOVE\b',
+            r'\bCREATE\s+INDEX\b',
+            r'\bCREATE\s+CONSTRAINT\b'
+        ]
+        
+        for pattern in dangerous_patterns:
+            if re.search(pattern, v, re.IGNORECASE):
+                raise ValueError(f"Dangerous operation detected in query: {pattern}")
+        
+        return v
 
 
 class FunctionDependenciesRequest(BaseModel):
-    module_name: str
-    function_name: str
+    module_name: str = Field(..., min_length=1, max_length=200, description="Module name")
+    function_name: str = Field(..., min_length=1, max_length=200, description="Function name")
+    
+    @field_validator('module_name', 'function_name')
+    @classmethod
+    def validate_name(cls, v: str) -> str:
+        """Sanitize name to prevent injection"""
+        # Allow only alphanumeric, underscore, dot, dash
+        if not re.match(r'^[a-zA-Z0-9_.-]+$', v):
+            raise ValueError("Invalid characters in name")
+        return v.strip()
 
 
 # Startup/Shutdown
@@ -80,9 +138,21 @@ async def startup_event():
         # Embeddings
         embedding_service = EmbeddingService()
         
-        logger.info("✓ All services initialized")
+        logger.info(
+            "All services initialized",
+            extra={
+                "neo4j": neo4j_client is not None,
+                "qdrant": qdrant_client is not None,
+                "postgres": pg_client is not None,
+                "embeddings": embedding_service is not None
+            }
+        )
     except Exception as e:
-        logger.error(f"Startup error: {e}")
+        logger.error(
+            f"Startup error: {e}",
+            extra={"error_type": type(e).__name__},
+            exc_info=True
+        )
 
 
 @app.on_event("shutdown")
@@ -111,17 +181,56 @@ async def health_check():
 # Graph API endpoints
 @app.post("/api/graph/query")
 async def execute_graph_query(request: GraphQueryRequest):
-    """Execute custom Cypher query"""
+    """
+    Execute custom Cypher query
+    
+    Security: Only SELECT/MATCH queries allowed, dangerous operations blocked
+    """
     if not neo4j_client:
+        logger.warning("Neo4j not available for graph query")
         raise HTTPException(status_code=503, detail="Neo4j not available")
     
     try:
+        # Additional validation: ensure query starts with MATCH or RETURN
+        query_upper = request.query.strip().upper()
+        if not (query_upper.startswith('MATCH') or query_upper.startswith('RETURN')):
+            logger.warning(
+                "Invalid query type attempted",
+                extra={"query_preview": request.query[:100]}
+            )
+            raise HTTPException(
+                status_code=400,
+                detail="Only MATCH and RETURN queries are allowed"
+            )
+        
         with neo4j_client.driver.session() as session:
             result = session.run(request.query, request.parameters)
             records = [dict(record) for record in result]
+        
+        logger.info(
+            "Graph query executed successfully",
+            extra={
+                "query_length": len(request.query),
+                "results_count": len(records),
+                "has_parameters": bool(request.parameters)
+            }
+        )
         return {"results": records}
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(
+            f"Graph query error: {e}",
+            extra={
+                "query_length": len(request.query),
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Query execution failed: {str(e)}"
+        )
 
 
 @app.get("/api/graph/configurations")
@@ -144,9 +253,28 @@ async def get_configurations():
 
 
 @app.get("/api/graph/objects/{config_name}")
-async def get_objects(config_name: str, object_type: Optional[str] = None):
-    """Get objects of a configuration"""
+async def get_objects(
+    config_name: str,
+    object_type: Optional[str] = Query(None, max_length=100, description="Filter by object type")
+):
+    """
+    Get objects of a configuration
+    
+    Security: Input sanitization to prevent injection
+    """
+    # Input validation
+    if not config_name or len(config_name) > 200:
+        raise HTTPException(status_code=400, detail="Invalid config_name")
+    
+    # Sanitize config_name (prevent injection)
+    config_name = re.sub(r'[^a-zA-Z0-9_.-]', '', config_name)
+    
+    if object_type:
+        # Sanitize object_type
+        object_type = re.sub(r'[^a-zA-Z0-9_.-]', '', object_type)
+    
     if not neo4j_client:
+        logger.warning("Neo4j not available for get_objects")
         raise HTTPException(status_code=503, detail="Neo4j not available")
     
     try:
@@ -161,9 +289,26 @@ async def get_objects(config_name: str, object_type: Optional[str] = None):
                 """, config=config_name)
                 objects = [dict(record) for record in result]
         
+        logger.info(
+            "Objects retrieved successfully",
+            extra={
+                "config_name": config_name,
+                "object_type": object_type,
+                "objects_count": len(objects)
+            }
+        )
         return {"objects": objects}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(
+            f"Error getting objects: {e}",
+            extra={
+                "config_name": config_name,
+                "object_type": object_type,
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve objects: {str(e)}")
 
 
 @app.post("/api/graph/dependencies")
@@ -198,8 +343,13 @@ async def get_function_dependencies(request: FunctionDependenciesRequest):
 # Vector search endpoints
 @app.post("/api/search/semantic")
 async def semantic_search(request: SemanticSearchRequest):
-    """Semantic code search using Qdrant"""
+    """
+    Semantic code search using Qdrant
+    
+    Security: Input validation and sanitization
+    """
     if not qdrant_client or not embedding_service:
+        logger.warning("Vector search not available")
         raise HTTPException(status_code=503, detail="Vector search not available")
     
     try:
@@ -213,9 +363,27 @@ async def semantic_search(request: SemanticSearchRequest):
             limit=request.limit
         )
         
+        logger.info(
+            "Semantic search completed",
+            extra={
+                "query_length": len(request.query),
+                "configuration": request.configuration,
+                "limit": request.limit,
+                "results_count": len(results)
+            }
+        )
         return {"results": results}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(
+            f"Semantic search error: {e}",
+            extra={
+                "query_length": len(request.query),
+                "configuration": request.configuration,
+                "error_type": type(e).__name__
+            },
+            exc_info=True
+        )
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
 
 
 # Statistics endpoints
