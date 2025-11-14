@@ -2,6 +2,9 @@
 
 > **Примечание:** Этот файл содержит общий бэклог задач проекта. Название файла исторически связано с тем, что часть задач касается интеграции внешних инструментов из экосистемы [@alkoleft](https://github.com/alkoleft) (открытые инструменты для разработки на 1С: MCP-серверы, тест-раннеры, парсеры BSL и др.). Подробнее о внешних зависимостях см. [`alkoleft_inventory.md`](./alkoleft_inventory.md) и ADR в [`docs/architecture/adr/`](../architecture/adr/).
 
+> **Последнее обновление:** Январь 2025  
+> **Версия платформы:** 5.2.0
+
 ## Задачи по интеграции внешних инструментов
 
 - [ ] (Высокий) Реализация плана по `bsl-language-server` и `metadata.js` ([детали](./bsl_language_server_plan.md))
@@ -10,6 +13,45 @@
 - [ ] (Низкий) Оценка архивных утилит (`cfg_tools`, `ones_universal_tools`) — перенос в CLI ([план оценки](./archive_tools_assessment.md))
 - [ ] (Средний) Мониторинг GitHub-репозиториев @alkoleft (webhook/API) ([план](./github_monitoring_plan.md))
   - ✅ CLI `scripts/monitoring/github_monitor.py` создаёт снимок и сравнивает релизы; далее — автоматизация (cron/CI, уведомления).
+
+## 🎯 ПРИОРИТЕТНЫЕ ЗАДАЧИ (Следующие шаги)
+
+### 🔥 Высокий приоритет (делаем сейчас):
+
+1. **[ ] Завершить EDT Plugin**
+   - ☐ MetadataGraphView (визуализация графа метаданных)
+   - ☐ SemanticSearchView (семантический поиск в IDE)
+   - ☐ Context menu интеграция
+   - ☐ Build .jar файла для установки в EDT
+
+2. **[ ] Улучшить тестовое покрытие**
+   - ✅ Unit tests для Kimi client (выполнено)
+   - ✅ Integration tests для AI Orchestrator (выполнено)
+   - ☐ E2E тесты для критических путей (API → AI → Response)
+   - ☐ Performance benchmarks для Kimi-K2-Thinking
+
+3. **[ ] Мониторинг и наблюдаемость**
+   - ✅ Prometheus метрики для AI сервисов (выполнено)
+   - ✅ Grafana дашборды для AI (выполнено)
+   - ✅ Alert правила (выполнено)
+   - ☐ Интеграция с Telegram уведомлениями
+   - ☐ Настроить реальный alert канал (prod)
+
+### 🟡 Средний приоритет (ближайшие недели):
+
+4. **[ ] Расширить AI интеграции**
+   - ✅ Kimi-K2-Thinking (API + local) (выполнено)
+   - ☐ 1C:Напарник (реальная интеграция, не только структура)
+   - ☐ GigaChat / YandexGPT (полная интеграция)
+   - ☐ Локальные модели через Ollama (расширить список)
+
+5. **[ ] Production readiness**
+   - ☐ Load testing (API endpoints)
+   - ☐ Security audit (penetration testing)
+   - ☐ Performance optimization (кэширование, connection pooling)
+   - ☐ Kubernetes deployment (полное развертывание)
+
+---
 
 ## Общий бэклог платформы
 
@@ -27,10 +69,14 @@
   - TODO: внедрить OPA/Conftest для Terraform планов и GitOps; формализовать исключения.
 - [ ] (Низкий) Сбор и публикация DORA-метрик
   - ✅ `scripts/metrics/collect_dora.py`, workflow `dora-metrics.yml`; настроить визуализацию (следующий шаг).
-- [ ] (Средний) Observability & Runbooks
+- [x] (Средний) Observability & Runbooks **[ОБНОВЛЕНО: Январь 2025]**
   - ✅ `docs/observability/SLO.md`, `docs/runbooks/alert_slo_runbook.md`, `docs/runbooks/postmortem_template.md`; внедрить автоматический экспорт метрик и alert канал.
   - ✅ Инфраструктура: `observability/docker-compose.observability.yml` (локально), `infrastructure/helm/observability-stack` (K8s), правила `observability/alerts.yml`, конфиг `observability/alertmanager.yml`.
-  - TODO: Интеграция с Prometheus/Grafana (`observability.yml`) и Telegram (workflow `telegram-alert.yaml`) + секреты в CI/CD.
+  - ✅ **Prometheus метрики для AI сервисов** (Kimi-K2-Thinking, AI Orchestrator) **[NEW]**
+  - ✅ **Grafana дашборды** (`monitoring/grafana/dashboards/ai_services.json`) **[NEW]**
+  - ✅ **Alert правила** (`monitoring/prometheus/alerts/ai_alerts.yml`) **[NEW]**
+  - ✅ **Документация мониторинга** (`monitoring/AI_SERVICES_MONITORING.md`) **[NEW]**
+  - TODO: Интеграция с Telegram (workflow `telegram-alert.yaml`) + секреты в CI/CD.
 - [ ] (Высокий) AWS/Azure Cloud readiness
   - ✅ Terraform модуль `infrastructure/terraform/aws-eks`.
   - ✅ Terraform модуль `infrastructure/terraform/azure-aks`, Azure DevOps pipeline (`infrastructure/azure/azure-pipelines.yml`).
@@ -60,6 +106,9 @@
   - ☐ BA-07 Documentation & Enablement (guides, примеры, дашборды).
 - [ ] (Высокий) Runtime & Compliance
   - ✅ `scripts/setup/check_runtime.py`, make `check-runtime`, инструкция `docs/setup/python_311.md`.
+  - ✅ **Структурированное логирование** (100% миграция на StructuredLogger) **[NEW]**
+  - ✅ **Централизованная обработка ошибок** (ErrorHandler) **[NEW]**
+  - ✅ **Retry logic с exponential backoff** (для всех внешних вызовов) **[NEW]**
   - TODO: Обновить конституцию правилами по установленной версии Python; автоматизировать проверку наличия `make`, `docker compose`.
 - [ ] (Средний) DR/Resilience
   - ✅ План `docs/runbooks/dr_rehearsal_plan.md`, скрипт `scripts/runbooks/dr_rehearsal_runner.py`, workflow `dr-rehearsal.yml`.
