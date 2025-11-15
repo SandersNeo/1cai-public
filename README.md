@@ -181,50 +181,51 @@ graph TB
   - Конституция правил проверки: [`docs/research/constitution.md`](docs/research/constitution.md).
   - Шаблоны и CLI: `templates/`, `scripts/research/init_feature.py`, make-таргеты `feature-init` и `feature-validate`.
 - **MCP инструменты**: поиск метаданных, генерация кода, запуск тестов.
-- **Automation scripts**: `scripts/context/export_platform_context.py`, `scripts/context/generate_docs.py`, `scripts/docs/create_adr.py`.
-- **Monitoring automation**: `scripts/monitoring/github_monitor.py` + workflow `github-monitor.yml` — ежедневный snapshot зависимостей.
-- **Release automation**: `scripts/release/create_release.py`, make `release-*`, workflow `release.yml` — генерация заметок, тегов, публикация релизов.
-- **Quality metrics**: `scripts/metrics/collect_dora.py`, workflow `dora-metrics.yml` — еженедельные DORA-показатели.
+- **Automation scripts**: [`scripts/context/export_platform_context.py`](scripts/context/export_platform_context.py), [`scripts/context/generate_docs.py`](scripts/context/generate_docs.py), [`scripts/docs/create_adr.py`](scripts/docs/create_adr.py).
+- **Monitoring automation**: [`scripts/monitoring/github_monitor.py`](scripts/monitoring/github_monitor.py) + workflow [`.github/workflows/github-monitor.yml`](.github/workflows/github-monitor.yml) — ежедневный snapshot зависимостей.
+- **Release automation**: [`scripts/release/create_release.py`](scripts/release/create_release.py), make `release-*`, workflow [`.github/workflows/release.yml`](.github/workflows/release.yml) — генерация заметок, тегов, публикация релизов.
+- **Quality metrics**: [`scripts/metrics/collect_dora.py`](scripts/metrics/collect_dora.py), workflow [`.github/workflows/dora-metrics.yml`](.github/workflows/dora-metrics.yml) — еженедельные DORA-показатели.
 
 ---
 
 ## 🏛 Architecture & Documentation
 - **High-Level Design**: [`docs/architecture/01-high-level-design.md`](docs/architecture/01-high-level-design.md)
 - **Structurizr DSL**: [`docs/architecture/c4/workspace.dsl`](docs/architecture/c4/workspace.dsl)
-- **Диаграммы (PNG)**: `docs/architecture/uml/**` (C4, data, dynamics, operations, security)
-- **ADR**: `docs/architecture/adr/`, см. `ADR-0001… ADR-0005`
-- **Automated render**: `make render-uml`, workflow `.github/workflows/uml-render-check.yml`
+- **Диаграммы (PNG)**: [`docs/architecture/uml/`](docs/architecture/uml/) (C4, data, dynamics, operations, security)
+- **ADR**: [`docs/architecture/adr/`](docs/architecture/adr/), см. `ADR-0001… ADR-0005`
+- **Automated render**: `make render-uml`, workflow [`.github/workflows/uml-render-check.yml`](.github/workflows/uml-render-check.yml)
 
 ---
 
 ## ✅ Testing & Quality
 - **YAxUnit + EDT runner** (в планах расширения через репозитории BIA: yaxunit, edt-test-runner).
-- `make test-bsl` (см. `scripts/tests/run_bsl_tests.py`).
+- `make test-bsl` (см. [`scripts/tests/run_bsl_tests.py`](scripts/tests/run_bsl_tests.py)).
 - Статический анализ, best practices, проверка зависимостей.
-- Сторожевые скрипты: `scripts/audit/*`, `scripts/analysis/*`.
+- Сторожевые скрипты: [`scripts/audit/`](scripts/audit/), [`scripts/analysis/`](scripts/analysis/).
 - Справочник по тестам: [`docs/06-features/TESTING_GUIDE.md`](docs/06-features/TESTING_GUIDE.md).
-- Smoke проверки: `make smoke-tests`, CI job `smoke-tests`, артефакты pytest (`output/test-results`).
+
+- Smoke проверки: `make smoke-tests`, CI job `smoke-tests`, артефакты pytest — см. [`output/tests`](output/tests/).
 - Наблюдаемость: `/metrics` (Prometheus), SLO/Runbooks (`docs/observability/SLO.md`, `docs/runbooks/alert_slo_runbook.md`), автоматические отчёты DORA.
 - **Secret scanning & Security**
-  - Workflows `secret-scan.yml` (Gitleaks) и `trufflehog.yml` (Trufflehog) — регулярное сканирование репозитория на утечки токенов.
-  - Policy-as-code: `policy/` (Rego) + `scripts/security/run_policy_checks.sh` (Conftest Kubernetes + Terraform, Semgrep, Checkov/Trivy) → `make policy-check` / CI стадии.
-  - Infrastructure scanners: `scripts/security/run_checkov.sh` (Checkov + Trivy) подключён в Jenkins/GitLab/Azure pipeline.
-  - GitOps: `infrastructure/argocd/`, `scripts/gitops/*.sh`, make `gitops-apply`, `gitops-sync`.
-  - Cloud readiness: `infrastructure/terraform/aws-eks/`, `infrastructure/terraform/azure-aks/`, Ansible bootstrap (`infrastructure/ansible/`).
-  - Secrets: `scripts/secrets/aws_sync_to_vault.py`, `scripts/secrets/azure_sync_to_vault.py`, `scripts/secrets/apply_vault_csi.sh`.
-  - Self-control: `scripts/checklists/preflight.sh`, make `preflight`.
+  - Workflows [`.github/workflows/secret-scan.yml`](.github/workflows/secret-scan.yml) (Gitleaks) и [`.github/workflows/trufflehog.yml`](.github/workflows/trufflehog.yml) — регулярное сканирование репозитория на утечки токенов.
+  - Policy-as-code: [`policy/`](policy/) (Rego) + [`scripts/security/run_policy_checks.sh`](scripts/security/run_policy_checks.sh) (Conftest Kubernetes + Terraform, Semgrep, Checkov/Trivy) → `make policy-check` / CI стадии.
+  - Infrastructure scanners: [`scripts/security/run_checkov.sh`](scripts/security/run_checkov.sh) (Checkov + Trivy) подключён в Jenkins/GitLab/Azure pipeline.
+  - GitOps: [`infrastructure/argocd/`](infrastructure/argocd/), [`scripts/gitops/`](scripts/gitops/), make `gitops-apply`, `gitops-sync`.
+  - Cloud readiness: [`infrastructure/terraform/aws-eks/`](infrastructure/terraform/aws-eks/), [`infrastructure/terraform/azure-aks/`](infrastructure/terraform/azure-aks/), Ansible bootstrap ([`infrastructure/ansible/`](infrastructure/ansible/)).
+  - Secrets: [`scripts/secrets/aws_sync_to_vault.py`](scripts/secrets/aws_sync_to_vault.py), [`scripts/secrets/azure_sync_to_vault.py`](scripts/secrets/azure_sync_to_vault.py), [`scripts/secrets/apply_vault_csi.sh`](scripts/secrets/apply_vault_csi.sh).
+  - Self-control: [`scripts/checklists/preflight.sh`](scripts/checklists/preflight.sh), make `preflight`.
 - **FinOps**
-  - Скрипты `scripts/finops/aws_cost_*`, `scripts/finops/azure_cost_to_slack.py`, `scripts/finops/aws_budget_check.py`, `scripts/finops/azure_budget_check.py`, `scripts/finops/teams_notify.py` — отчёты, бюджеты и Slack/Teams уведомления; дашборд `observability/grafana/dashboards/finops_cost.json`.
-  - Workflow `.github/workflows/finops-report.yml` — ежедневный отчёт.
-  - DR rehearsal: `docs/runbooks/dr_rehearsal_plan.md`, script `scripts/runbooks/dr_rehearsal_runner.py`, workflow `dr-rehearsal.yml`.
+  - Скрипты [`scripts/finops/aws_cost_*`](scripts/finops/), [`scripts/finops/azure_cost_to_slack.py`](scripts/finops/azure_cost_to_slack.py), [`scripts/finops/aws_budget_check.py`](scripts/finops/aws_budget_check.py), [`scripts/finops/azure_budget_check.py`](scripts/finops/azure_budget_check.py), [`scripts/finops/teams_notify.py`](scripts/finops/teams_notify.py) — отчёты, бюджеты и Slack/Teams уведомления; дашборд [`observability/grafana/dashboards/finops_cost.json`](observability/grafana/dashboards/finops_cost.json).
+  - Workflow [`.github/workflows/finops-report.yml`](.github/workflows/finops-report.yml) — ежедневный отчёт.
+  - DR rehearsal: [`docs/runbooks/dr_rehearsal_plan.md`](docs/runbooks/dr_rehearsal_plan.md), скрипт [`scripts/runbooks/dr_rehearsal_runner.py`](scripts/runbooks/dr_rehearsal_runner.py), workflow [`.github/workflows/dr-rehearsal.yml`](.github/workflows/dr-rehearsal.yml).
 
 ---
 
 ## 🔗 Integrations
-- **IDE**: MCP сервер (Cursor/VS Code), EDT плагин (`edt-plugin/`).
+- **IDE**: MCP сервер (Cursor/VS Code), EDT плагин ([`edt-plugin/`](edt-plugin/)).
 - **Внешние инструменты**: alkoleft платформенные сервисы, yaxunit, GitHub Spec Kit (в работе).
-- **ITS Scraper**: асинхронный сбор статей, версионирование (`integrations/its_scraper`).
-- **Telegram / n8n / OCR**: дополнительные модули в `src/` и `integrations/`.
+- **ITS Scraper**: асинхронный сбор статей, версионирование ([`integrations/its_scraper`](integrations/its_scraper)).
+- **Telegram / n8n / OCR**: дополнительные модули в [`src/`](src/) и [`integrations/`](integrations/).
 
 ---
 
@@ -233,7 +234,7 @@ graph TB
 Полный индекс: [`docs/README.md`](docs/README.md). Ключевые разделы:
 - **Setup & Runtime**
   - [`docs/setup/python_311.md`](docs/setup/python_311.md) — установка Python 3.11 и проверка среды.
-  - `scripts/setup/check_runtime.py` + `make check-runtime` — автоматическая проверка версии Python.
+  - [`scripts/setup/check_runtime.py`](scripts/setup/check_runtime.py) + `make check-runtime` — автоматическая проверка версии Python.
 - **Infrastructure & DevOps**
   - [`docs/ops/devops_platform.md`](docs/ops/devops_platform.md) — стратегия DevOps-платформы.
   - [`docs/ops/gitops.md`](docs/ops/gitops.md) — GitOps с Argo CD.
@@ -245,23 +246,23 @@ graph TB
   - [`docs/ops/azure_devops.md`](docs/ops/azure_devops.md) — Azure DevOps pipeline.
   - [`docs/ops/finops.md`](docs/ops/finops.md) — FinOps и контроль затрат (`make finops-slack`, workflow `finops-report.yml`).
   - [`docs/ops/self_control.md`](docs/ops/self_control.md) — самоконтроль инженера (`make preflight`).
-  - `infrastructure/kind/cluster.yaml` — локальный Kubernetes.
-  - `infrastructure/helm/1cai-stack` — Helm chart приложения.
-  - `infrastructure/helm/observability-stack` — Prometheus/Loki/Tempo/Grafana/OTEL.
-  - `infrastructure/service-mesh/istio` — IstioOperator профиль.
-  - `infrastructure/chaos/litmus` — Litmus Chaos эксперименты.
-  - `infrastructure/argocd/` — manifests для Argo CD (GitOps, Linkerd ApplicationSet).
-  - `infrastructure/terraform` — Terraform конфигурация для Helm релиза.
-  - `infrastructure/terraform/aws-eks` — Terraform модуль EKS (AWS).
-  - `infrastructure/terraform/azure-aks` — Terraform модуль AKS (Azure).
-  - `infrastructure/terraform/azure-keyvault` — Terraform модуль Key Vault.
-  - `scripts/service_mesh/linkerd/bootstrap_certs.sh` — генерация trust anchors/issuer.
-  - `scripts/service_mesh/linkerd/` — bootstrap/rotate certs, managed identity, CI smoke (`linkerd-smoke.yml`).
+  - [`infrastructure/kind/cluster.yaml`](infrastructure/kind/cluster.yaml) — локальный Kubernetes.
+  - [`infrastructure/helm/1cai-stack`](infrastructure/helm/1cai-stack) — Helm chart приложения.
+  - [`infrastructure/helm/observability-stack`](infrastructure/helm/observability-stack) — Prometheus/Loki/Tempo/Grafana/OTEL.
+  - [`infrastructure/service-mesh/istio`](infrastructure/service-mesh/istio) — IstioOperator профиль.
+  - [`infrastructure/chaos/litmus`](infrastructure/chaos/litmus) — Litmus Chaos эксперименты.
+  - [`infrastructure/argocd/`](infrastructure/argocd/) — manifests для Argo CD (GitOps, Linkerd ApplicationSet).
+  - [`infrastructure/terraform`](infrastructure/terraform) — Terraform конфигурация для Helm релиза.
+  - [`infrastructure/terraform/aws-eks`](infrastructure/terraform/aws-eks) — Terraform модуль EKS (AWS).
+  - [`infrastructure/terraform/azure-aks`](infrastructure/terraform/azure-aks) — Terraform модуль AKS (Azure).
+  - [`infrastructure/terraform/azure-keyvault`](infrastructure/terraform/azure-keyvault) — Terraform модуль Key Vault.
+  - [`scripts/service_mesh/linkerd/bootstrap_certs.sh`](scripts/service_mesh/linkerd/bootstrap_certs.sh) — генерация trust anchors/issuer.
+  - [`scripts/service_mesh/linkerd/`](scripts/service_mesh/linkerd/) — bootstrap/rotate certs, managed identity, CI smoke ([`.github/workflows/linkerd-smoke.yml`](.github/workflows/linkerd-smoke.yml)).
   - Make: `linkerd-install`, `linkerd-rotate-certs`, `linkerd-smoke`.
-  - `infrastructure/azure/azure-pipelines.yml` — Azure DevOps pipeline.
-  - `infrastructure/vault/` — политики, скрипты, SecretProviderClass для Vault (`make vault-csi-apply`, sync скрипты).
-  - `scripts/secrets/aws_sync_to_vault.py` — синхронизация AWS Secrets Manager → Vault.
-  - `infrastructure/jenkins/Jenkinsfile`, `infrastructure/gitlab/.gitlab-ci.yml` — многостадийные pipeline.
+  - [`infrastructure/azure/azure-pipelines.yml`](infrastructure/azure/azure-pipelines.yml) — Azure DevOps pipeline.
+  - [`infrastructure/vault/`](infrastructure/vault/) — политики, скрипты, SecretProviderClass для Vault (`make vault-csi-apply`, sync скрипты).
+  - [`scripts/secrets/aws_sync_to_vault.py`](scripts/secrets/aws_sync_to_vault.py) — синхронизация AWS Secrets Manager → Vault.
+  - [`infrastructure/jenkins/Jenkinsfile`](infrastructure/jenkins/Jenkinsfile), [`infrastructure/gitlab/.gitlab-ci.yml`](infrastructure/gitlab/.gitlab-ci.yml) — многостадийные pipeline.
   - [`docs/security/policy_as_code.md`](docs/security/policy_as_code.md) — Rego-политики, Conftest, Semgrep.
 - **Feature Guides**
   - [`docs/06-features/AST_TOOLING_BSL_LANGUAGE_SERVER.md`](docs/06-features/AST_TOOLING_BSL_LANGUAGE_SERVER.md) — запуск и диагностика bsl-language-server, fallback сценарии.
@@ -275,11 +276,11 @@ graph TB
   - [`docs/observability/SLO.md`](docs/observability/SLO.md) — целевые показатели доступности и латентности.
   - [`docs/runbooks/alert_slo_runbook.md`](docs/runbooks/alert_slo_runbook.md) — действия при нарушении SLO.
   - [`docs/status/dora_history.md`](docs/status/dora_history.md) — автоматическая история DORA метрик (weekly).
-  - Workflow `observability.yml` — напоминание об интеграции SLO/метрик.
-  - `make observability-up` → локальный Prometheus/Grafana/Alertmanager стек (см. `observability/docker-compose.observability.yml`), проверяется CI (`observability-test.yml`).
-  - `make helm-observability` → установка Kubernetes-стека наблюдаемости (Prometheus + Loki + Tempo + Grafana + OTEL) из `infrastructure/helm/observability-stack`.
-  - Alertmanager конфигурация: `observability/alertmanager.yml` + правила `observability/alerts.yml` (Telegram; требуются `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`).
-  - Telegram оповещения: workflow `telegram-alert.yaml` (требует `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`).
+  - Workflow [`.github/workflows/observability.yml`](.github/workflows/observability.yml) — напоминание об интеграции SLO/метрик.
+  - `make observability-up` → локальный Prometheus/Grafana/Alertmanager стек (см. [`observability/docker-compose.observability.yml`](observability/docker-compose.observability.yml)), проверяется CI ([`.github/workflows/observability-test.yml`](.github/workflows/observability-test.yml)).
+  - `make helm-observability` → установка Kubernetes-стека наблюдаемости (Prometheus + Loki + Tempo + Grafana + OTEL) из [`infrastructure/helm/observability-stack`](infrastructure/helm/observability-stack).
+  - Alertmanager конфигурация: [`observability/alertmanager.yml`](observability/alertmanager.yml) + правила [`observability/alerts.yml`](observability/alerts.yml) (Telegram; требуются `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`).
+  - Telegram оповещения: workflow [`.github/workflows/telegram-alert.yaml`](.github/workflows/telegram-alert.yaml) (требует `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`).
 - **Architecture**
   - [`docs/architecture/README.md`](docs/architecture/README.md) — обзор C4, операции и ссылки на ADR.
   - [`docs/architecture/adr/`](docs/architecture/adr/) — реестр решений, статусы и история изменений.
