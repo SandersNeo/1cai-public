@@ -274,6 +274,7 @@ output/edt_parser/*.txt
 output/bsl-tests/**
 output/context/**
 output/docs/generated/**
+output/code_review_test_results.json
 COMPREHENSIVE_AUDIT_FINAL.txt
 SECURITY_AUDIT_REPORT.txt
 README_CODE_VERIFICATION.txt
