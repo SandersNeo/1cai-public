@@ -154,6 +154,7 @@ TECH_DEBT_PROGRESS.md
 
 # Local AI progress memory (НЕ ДОЛЖНО попадать в git)
 analysis/progress_memory.json
+analysis/git_ls_files.txt
 
 # 1C Commercial Configurations (protection against accidental commits)
 1c_configurations/*/*.xml
