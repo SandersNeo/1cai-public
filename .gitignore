@@ -157,6 +157,7 @@ handover_summary.json
 ARCHITECTURE_GAPS.md
 TECH_DEBT_PROGRESS.md
 output/audit/unused_files_second_pass.txt
+output/audit/unused_files_third_pass.txt
 
 # Local AI progress memory (НЕ ДОЛЖНО попадать в git)
 analysis/progress_memory.json

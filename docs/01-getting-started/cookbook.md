@@ -110,6 +110,12 @@ python scripts/runbooks/run_playbook.py playbooks/ba_dev_qa_example.yaml --auton
 python scripts/runbooks/run_playbook.py playbooks/dr_vault_example.yaml --autonomy A2_non_prod_changes
 ```
 
+И для сценария security-audit:
+
+```bash
+python scripts/runbooks/run_playbook.py playbooks/security_audit_example.yaml --autonomy A1_safe_automation
+```
+
 Скрипт не выполняет реальные действия — только печатает отчёт по шагам
 и уровню риска/автономности сценария.
 

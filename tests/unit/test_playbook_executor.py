@@ -46,4 +46,14 @@ def test_dry_run_playbook_with_autonomy_level() -> None:
     assert any("decision=" in entry for entry in report.timeline)
 
 
+def test_security_audit_playbook_loads() -> None:
+    """Плейбук security-audit должен корректно загружаться и иметь read_only риск."""
+    playbook_path = Path("playbooks/security_audit_example.yaml")
+    plan = load_playbook(playbook_path)
+
+    assert isinstance(plan, ScenarioPlan)
+    assert plan.id == "plan-security-audit"
+    assert plan.overall_risk.value == "read_only"
+
+
 

@@ -17,7 +17,7 @@ from dataclasses import dataclass, asdict
 
 from fastapi import FastAPI, HTTPException, Query
 from src.utils.structured_logging import StructuredLogger
-from src.ai.scenario_hub import AutonomyLevel
+from src.ai.scenario_hub import AutonomyLevel, ScenarioRiskLevel
 from src.ai.scenario_policy import assess_plan_execution
 
 logger = StructuredLogger(__name__).logger
@@ -79,6 +79,48 @@ async def get_scenario_examples(
     return {"scenarios": scenarios_payload}
 
 
+@app.get("/api/scenarios/dry-run")
+async def dry_run_playbook_endpoint(
+    path: str = Query(
+        ...,
+        description="Путь до YAML-плейбука (по умолчанию ожидается внутри playbooks/).",
+    ),
+    autonomy: Optional[str] = Query(
+        default=None,
+        description="Уровень автономности для применения Scenario Policy (например, A1_safe_automation).",
+    ),
+) -> Dict[str, Any]:
+    """
+    Экспериментальный endpoint для dry-run YAML-плейбуков Scenario Hub.
+
+    Не выполняет реальных действий, только:
+    - загружает плейбук;
+    - применяет Scenario Policy (если указан autonomy);
+    - возвращает отчёт в формате ScenarioExecutionReport as dict.
+    """
+    try:
+        from src.ai.playbook_executor import dry_run_playbook_to_dict
+    except Exception as e:  # pragma: no cover - защитный fallback
+        logger.warning(
+            "Playbook executor not available",
+            extra={"error": str(e), "error_type": type(e).__name__},
+        )
+        raise HTTPException(status_code=500, detail="Playbook executor not available")
+
+    try:
+        report = dry_run_playbook_to_dict(path, autonomy=autonomy)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Playbook not found: {path}")
+    except Exception as e:  # pragma: no cover - защитный fallback
+        logger.warning(
+            "Playbook dry-run failed",
+            extra={"error": str(e), "error_type": type(e).__name__, "path": path},
+        )
+        raise HTTPException(status_code=500, detail="Playbook dry-run failed")
+
+    return {"report": report}
+
+
 @app.get("/api/tools/registry/examples")
 async def get_tool_registry_examples() -> Dict[str, Any]:
     """
@@ -129,6 +171,8 @@ class QueryIntent:
     keywords: List[str]
     context_type: Optional[str]
     preferred_services: List[AIService]
+    # Экспериментальное поле: список id инструментов/skills, которые могут быть полезны
+    suggested_tools: List[str]
 
 
 class QueryClassifier:
@@ -236,7 +280,8 @@ class QueryClassifier:
                 confidence=0.0,
                 keywords=[],
                 context_type=None,
-                preferred_services=[AIService.NAPARNIK]
+                preferred_services=[AIService.NAPARNIK],
+                suggested_tools=[],
             )
         
         # Validate query length
@@ -292,13 +337,36 @@ class QueryClassifier:
             preferred_services = self.RULES[best_type]['services']
         else:
             preferred_services = self.RULES.get(QueryType.UNKNOWN, {}).get('services', [])
-        
+
+        # Экспериментально подбираем подходящие инструменты из ToolRegistry
+        suggested_tools: List[str] = []
+        try:  # не ломаем основной flow при ошибках примеров
+            from src.ai.tool_registry_examples import build_example_tool_registry
+
+            registry = build_example_tool_registry()
+            if best_type == QueryType.STANDARD_1C or best_type == QueryType.ARCHITECTURE:
+                suggested_tools = ["ba_requirements_extract"]
+            elif best_type == QueryType.CODE_GENERATION:
+                # Низкорисковые/неprod-инструменты
+                tools = registry.list_tools(risk=ScenarioRiskLevel.NON_PROD_CHANGE)
+                suggested_tools = [t.id for t in tools]
+            elif best_type == QueryType.OPTIMIZATION:
+                suggested_tools = ["security_audit"]
+            elif best_type == QueryType.GRAPH_QUERY:
+                suggested_tools = ["scenario_ba_dev_qa"]
+        except Exception as e:  # pragma: no cover - чисто защитный лог
+            logger.warning(
+                "Tool suggestions failed",
+                extra={"error": str(e), "error_type": type(e).__name__},
+            )
+
         return QueryIntent(
             query_type=best_type,
             confidence=confidence,
             keywords=matched_keywords,
             context_type=context.get('type') if context else None,
-            preferred_services=preferred_services
+            preferred_services=preferred_services,
+            suggested_tools=suggested_tools,
         )
 
 

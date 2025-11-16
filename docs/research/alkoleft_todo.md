@@ -120,5 +120,5 @@
   - ✅ Reference-слой Scenario Hub: цели/сценарии/плейбуки, уровни риска и автономности, trust-score (`src/ai/scenario_hub.py`, `docs/architecture/AI_SCENARIO_HUB_REFERENCE.md`).
   - ✅ Tool / Skill Registry как протокол-независимый реестр инструментов/skills (`src/ai/tool_registry.py`, `docs/architecture/TOOL_REGISTRY_REFERENCE.md`).
   - ✅ Примерные планы BA→Dev→QA и DR rehearsal + read-only API `/api/scenarios/examples` (`src/ai/scenario_examples.py`, `src/ai/orchestrator.py`).
-  - TODO: YAML/JSON-плейбуки для ключевых сценариев (BA→Dev→QA, DR rehearsal, security-audit) и связка с существующими скриптами/CI.
+  - ☑ YAML/JSON-плейбуки для ключевых сценариев (BA→Dev→QA, DR rehearsal, security-audit) и связка с существующими скриптами/CI (реализованы dry-run playbooks `playbooks/ba_dev_qa_example.yaml`, `playbooks/dr_vault_example.yaml`, `playbooks/security_audit_example.yaml` + CLI `scripts/runbooks/run_playbook.py`; интеграция с CI остаётся planned).
   - TODO: интеграция Scenario Hub / ToolRegistry в Orchestrator и агентов (выбор маршрута по риску, автономности и метрикам).

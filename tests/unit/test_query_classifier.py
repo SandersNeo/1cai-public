@@ -10,6 +10,8 @@ def test_classify_standard_1c_query():
     assert intent.query_type == QueryType.STANDARD_1C
     assert intent.confidence > 0
     assert AIService.NAPARNIK in intent.preferred_services
+    # Для стандартных 1С-вопросов должен предлагаться BA requirements extractor
+    assert "ba_requirements_extract" in intent.suggested_tools
 
 
 def test_classify_graph_query():
@@ -18,6 +20,8 @@ def test_classify_graph_query():
 
     assert intent.query_type == QueryType.GRAPH_QUERY
     assert AIService.NEO4J in intent.preferred_services
+    # Для графовых запросов ожидаем сценарный инструмент BA→Dev→QA
+    assert "scenario_ba_dev_qa" in intent.suggested_tools
 
 
 def test_classify_code_generation():
@@ -26,6 +30,8 @@ def test_classify_code_generation():
 
     assert intent.query_type == QueryType.CODE_GENERATION
     assert AIService.QWEN_CODER in intent.preferred_services
+    # Для кодогенерации должен предлагаться хотя бы один non-prod инструмент
+    assert intent.suggested_tools
 
 
 def test_classify_semantic_search():
@@ -43,5 +49,6 @@ def test_invalid_query_returns_unknown():
     assert intent.query_type == QueryType.UNKNOWN
     assert intent.confidence == 0.0
     assert intent.preferred_services  # есть хотя бы naparnik по умолчанию
+    assert intent.suggested_tools == []
 
 

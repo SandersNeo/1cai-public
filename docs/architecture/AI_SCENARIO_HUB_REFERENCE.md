@@ -146,11 +146,14 @@ reference-слой типов, который можно использоват�
    DR rehearsal, security-audit). Базовые примеры уже описаны
    в `src/ai/scenario_examples.py`, а endpoint реализован в
    `src/ai/orchestrator.py` (read-only, experimental).
-2. Описать 1–2 сценария в виде YAML/JSON-плейбуков и связать их
+2. Описать ключевые сценарии в виде YAML/JSON-плейбуков и связать их
    с существующими скриптами (`scripts/runbooks/*`, security-audit).
-   Базовые YAML-плейбуки добавлены в `playbooks/ba_dev_qa_example.yaml`
-   и `playbooks/dr_vault_example.yaml`, dry-run исполнитель реализован
-   в `src/ai/playbook_executor.py` и `scripts/runbooks/run_playbook.py`
+   Базовые YAML-плейбуки добавлены в
+   `playbooks/ba_dev_qa_example.yaml`,
+   `playbooks/dr_vault_example.yaml`
+   и `playbooks/security_audit_example.yaml`, dry-run исполнитель
+   реализован в `src/ai/playbook_executor.py` и
+   `scripts/runbooks/run_playbook.py`
    (поддерживаются уровни автономности и применение Scenario Policy).
 3. Внедрить расчёт `TrustScore` в отчёты DR/postmortem (как поле
    «уровень доверия к сценарию до/после»).
