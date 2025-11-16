@@ -35,12 +35,24 @@
 
 #### 2025‑11‑16 — AI агенты, тесты, безопасность, DevEx
 
-- **AI Agents & E2E**: сквозной сценарий BA → Developer AI Secure → QA Engineer AI (`tests/system/test_e2e_ba_dev_qa.py`, `docs/08-e2e-tests/BA_DEV_QA_E2E.md`), расширенные тесты для Business Analyst/SQL Optimizer/TechLogAnalyzer/RAS Monitor/Issue Classifier.  
-- **Orchestrator & Performance**: дополнительные unit‑тесты Orchestrator (валидация, cache hits/misses, graceful‑ошибки без Kimi/Qwen), latency smoke‑тест (`scripts/testing/orchestrator_latency_smoke.py`), Kimi benchmark (`scripts/testing/kimi_benchmark.py`), гайд `docs/06-features/AI_PERFORMANCE_GUIDE.md`.  
-- **Security & Audit**: скрипты `scripts/audit/check_hidden_dirs.py`, `check_secrets.py`, составной `make security-audit` + `scripts/windows/security-audit.ps1`, обновлённые `SECURITY_IMPROVEMENTS.md` и политика `docs/research/constitution.md`.  
-- **BA & Documentation**: новые BA‑гайды (BA‑03…BA‑07), обновлён `alkoleft_todo.md`, Usage Cookbook (`docs/01-getting-started/cookbook.md`) и Windows Quickstart, шаблон DORA weekly summary (`docs/status/weekly_summary_template.md`).  
-- **DR/Resilience**: автоматизация DR rehearsal постмортемов (`scripts/runbooks/generate_dr_postmortem.py`, `docs/runbooks/postmortems/*`), YAML-плейбуки (`playbooks/*.yaml`), dry-run исполнитель (`src/ai/playbook_executor.py`, `scripts/runbooks/run_playbook.py`), актуализирован `dr_rehearsal_plan.md`.  
-- **Scenario Hub & Tool Registry (experimental)**: добавлен reference-слой Scenario Hub/ToolRegistry (`src/ai/scenario_hub.py`, `src/ai/tool_registry.py`, `docs/architecture/AI_SCENARIO_HUB_REFERENCE.md`, `docs/architecture/TOOL_REGISTRY_REFERENCE.md`), read-only endpoints `/api/scenarios/examples` (с поддержкой уровней автономности и policy_decisions) и `/api/tools/registry/examples`, YAML-плейбуки (`playbooks/*`), dry-run исполнитель с Scenario Policy и готовые рецепты в Cookbook.
+- **AI Agents & E2E**
+  - Код/тесты: `tests/system/test_e2e_ba_dev_qa.py`, `tests/unit/test_business_analyst_integrations.py`, `tests/unit/test_sql_optimizer*.py`, тесты TechLogAnalyzer/RAS Monitor/Issue Classifier.  
+  - Документация: `docs/08-e2e-tests/BA_DEV_QA_E2E.md`, BA‑гайды BA‑03…BA‑07 (`docs/06-features/*BA_*_GUIDE.md`).  
+- **Orchestrator & Performance**
+  - Код/тесты: `tests/unit/test_ai_orchestrator_basic.py`, `tests/unit/test_query_classifier.py`, `scripts/testing/orchestrator_latency_smoke.py`, `scripts/testing/kimi_benchmark.py`.  
+  - Документация: `docs/06-features/AI_PERFORMANCE_GUIDE.md`.  
+- **Security & Audit**
+  - Код/скрипты: `scripts/audit/check_hidden_dirs.py`, `scripts/audit/check_secrets.py`, `scripts/audit/check_git_safety.py`, make‑таргет `security-audit`, `scripts/windows/security-audit.ps1`.  
+  - Документация/политики: `SECURITY_IMPROVEMENTS.md`, `docs/research/constitution.md`.  
+- **BA & Documentation / DevEx**
+  - Документация: BA‑гайды BA‑03…BA‑07, обновлён `docs/research/alkoleft_todo.md`, Usage Cookbook (`docs/01-getting-started/cookbook.md`), Windows Quickstart (`docs/01-getting-started/windows_quickstart.md`), шаблон DORA weekly summary (`docs/status/weekly_summary_template.md`).  
+- **DR / Resilience**
+  - Скрипты/артефакты: `scripts/runbooks/generate_dr_postmortem.py`, `docs/runbooks/postmortems/*`, DR‑план `docs/runbooks/dr_rehearsal_plan.md`.  
+  - Плейбуки: `playbooks/ba_dev_qa_example.yaml`, `playbooks/dr_vault_example.yaml`, dry‑run исполнитель (`src/ai/playbook_executor.py`, `scripts/runbooks/run_playbook.py`).  
+- **Scenario Hub & Tool Registry (experimental)**
+  - Слой типов: `src/ai/scenario_hub.py`, `src/ai/scenario_policy.py`, `src/ai/tool_registry.py`, `src/ai/scenario_examples.py`, `src/ai/tool_registry_examples.py`.  
+  - API: `/api/scenarios/examples` (поддержка уровней автономности и policy_decisions) и `/api/tools/registry/examples` в `src/ai/orchestrator.py`.  
+  - Документация/UX: `docs/architecture/AI_SCENARIO_HUB_REFERENCE.md`, `docs/architecture/TOOL_REGISTRY_REFERENCE.md`, рецепты в `docs/01-getting-started/cookbook.md`.
 
 #### 2025‑11‑15 — Orchestrator & AI‑контур
 
