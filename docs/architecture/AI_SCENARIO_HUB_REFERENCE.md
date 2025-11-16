@@ -144,7 +144,8 @@ reference-слой типов, который можно использоват�
 1. Добавить экспериментальный API `GET /api/scenarios/examples`,
    который возвращает несколько примерных `ScenarioPlan` (BA→Dev→QA,
    DR rehearsal, security-audit). Базовые примеры уже описаны
-   в `src/ai/scenario_examples.py`.
+   в `src/ai/scenario_examples.py`, а endpoint реализован в
+   `src/ai/orchestrator.py` (read-only, experimental).
 2. Описать 1–2 сценария в виде YAML/JSON-плейбуков и связать их
    с существующими скриптами (`scripts/runbooks/*`, security-audit).
 3. Внедрить расчёт `TrustScore` в отчёты DR/postmortem (как поле

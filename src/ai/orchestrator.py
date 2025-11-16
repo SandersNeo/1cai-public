@@ -13,7 +13,7 @@ import logging
 import asyncio
 from typing import Dict, List, Any, Optional, Tuple
 from enum import Enum
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 
 from fastapi import FastAPI, HTTPException
 from src.utils.structured_logging import StructuredLogger
@@ -22,6 +22,38 @@ logger = StructuredLogger(__name__).logger
 
 
 app = FastAPI(title="AI Orchestrator API")
+
+
+@app.get("/api/scenarios/examples")
+async def get_scenario_examples() -> Dict[str, Any]:
+    """
+    Экспериментальный read-only endpoint, возвращающий
+    примерные сценарии ScenarioPlan для BA→Dev→QA и DR rehearsal.
+
+    Нужен как витрина для Scenario Hub, не влияет на основной
+    routing process_query / AI-контур.
+    """
+    try:
+        from src.ai.scenario_examples import (
+            example_ba_dev_qa_scenario,
+            example_dr_rehearsal_scenario,
+        )
+    except Exception as e:  # pragma: no cover - защитный fallback
+        logger.warning(
+            "Scenario examples not available",
+            extra={"error": str(e), "error_type": type(e).__name__},
+        )
+        raise HTTPException(status_code=500, detail="Scenario examples not available")
+
+    ba_plan = example_ba_dev_qa_scenario("DEMO_FEATURE")
+    dr_plan = example_dr_rehearsal_scenario("vault")
+
+    return {
+        "scenarios": [
+            asdict(ba_plan),
+            asdict(dr_plan),
+        ]
+    }
 
 
 class QueryType(Enum):

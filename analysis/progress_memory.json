@@ -50,7 +50,8 @@
     "T45: Добавлен экспериментальный слой типов Scenario Hub (src/ai/scenario_hub.py) для целей/сценариев/плейбуков, уровней риска и автономности, trust-score.",
     "T46: Создан docs/architecture/AI_SCENARIO_HUB_REFERENCE.md и раздел \"Scenario Hub & Execution Plans (experimental)\" в docs/06-features/README.md.",
     "T47: Добавлен экспериментальный слой ToolRegistry (src/ai/tool_registry.py) и reference-документ docs/architecture/TOOL_REGISTRY_REFERENCE.md; docs/06-features/README.md дополнен разделом \"Tool / Skill Registry (experimental)\".",
-    "T48: Добавлены примеры сценариев BA→Dev→QA и DR rehearsal в src/ai/scenario_examples.py и отражены в AI_SCENARIO_HUB_REFERENCE.md как база для будущего API / YAML-плейбуков."
+    "T48: Добавлены примеры сценариев BA→Dev→QA и DR rehearsal в src/ai/scenario_examples.py и отражены в AI_SCENARIO_HUB_REFERENCE.md как база для будущего API / YAML-плейбуков.",
+    "T49: В src/ai/orchestrator.py добавлен экспериментальный read-only endpoint /api/scenarios/examples, отдающий примерные ScenarioPlan (BA→Dev→QA и DR rehearsal); AI_SCENARIO_HUB_REFERENCE.md обновлён."
   ],
   "open_risks": [
     {
@@ -358,6 +359,12 @@
       "title": "Scenario Hub: примерные планы BA→Dev→QA и DR rehearsal",
       "status": "completed",
       "details": "В src/ai/scenario_examples.py добавлены функции example_ba_dev_qa_scenario/example_dr_rehearsal_scenario/example_empty_execution_report, AI_SCENARIO_HUB_REFERENCE.md обновлён с упоминанием этих примеров как базы для будущего API / YAML-плейбуков."
+    },
+    {
+      "id": "T49",
+      "title": "Scenario Hub: экспериментальный API /api/scenarios/examples",
+      "status": "completed",
+      "details": "В src/ai/orchestrator.py добавлен read-only endpoint /api/scenarios/examples, который использует example_ba_dev_qa_scenario и example_dr_rehearsal_scenario; AI_SCENARIO_HUB_REFERENCE.md дополнен ссылкой на реализацию."
     }
   ]
 }
