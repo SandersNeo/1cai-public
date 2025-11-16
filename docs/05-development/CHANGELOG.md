@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - TechLogAnalyzer / RAS Monitor / Issue Classifier: unit-тесты для анализа техлога, мониторинга кластера и ML/rule-based классификатора инцидентов.
 - AI Orchestrator: базовые unit-тесты для QueryClassifier и process_query (валидация, кэш, offline-мультисервис) + дополнительные тесты graceful-ошибок.
 - BA → Developer AI Secure → QA Engineer AI: сквозной system-тест `tests/system/test_e2e_ba_dev_qa.py` и гайд `docs/08-e2e-tests/BA_DEV_QA_E2E.md`.
+- GigaChat / YandexGPT: асинхронные клиенты `src/ai/clients/gigachat_client.py`, `src/ai/clients/yandexgpt_client.py` и unit-тесты конфигурации/поведения при отсутствии кредов (`tests/unit/test_gigachat_client.py`, `tests/unit/test_yandexgpt_client.py`).
 
 ### Observability / Performance
 - Добавлен `docs/06-features/AI_PERFORMANCE_GUIDE.md` с обзором метрик Orchestrator/Kimi/Qwen, promql-запросами и рекомендациями по latency/cache hit rate.
