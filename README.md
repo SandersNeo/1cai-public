@@ -29,25 +29,19 @@
 - **Observability.** Пошаговое руководство по Prometheus/Grafana находится в [`docs/06-features/OBSERVABILITY_GUIDE.md`](docs/06-features/OBSERVABILITY_GUIDE.md).
 - **Feature Flags / Progressive Rollouts.** Управление включением функционала для пользователей или доли трафика — см. [`docs/06-features/FEATURE_FLAGS_GUIDE.md`](docs/06-features/FEATURE_FLAGS_GUIDE.md) и `src/services/feature_flags.py`.
 
-### 🚀 Последние улучшения (v2.2.0)
+### 🚀 Последние улучшения
 
-**Production-Ready улучшения на основе best practices топ-100 компаний:**
+Журнал **последних 7 релизов** (новые сверху). Детали по каждому релизу см. в `docs/05-development/CHANGELOG.md`.
 
-- ✅ **Kimi-K2-Thinking Integration** - State-of-the-art thinking model (1T params, 256k context) с поддержкой API и local режимов
-- ✅ **Comprehensive Testing** - Unit и integration тесты для Kimi, structured logging, AI Orchestrator
-- ✅ **Prometheus Metrics** - Детальные метрики для AI сервисов (Kimi, Orchestrator, cache, fallbacks)
-- ✅ **Grafana Dashboards** - Готовые дашборды для мониторинга AI сервисов
-- ✅ **Alert Rules** - Настроенные алерты для критических компонентов
-- ✅ **OpenTelemetry** - Distributed tracing готов к интеграции
-- ✅ **Structured Logging** - JSON логирование с correlation IDs и contextvars (100% миграция)
-- ✅ **Multi-Layer Cache** - LRU eviction, Circuit Breaker, Prometheus metrics
-- ✅ **Database Pooling** - Оптимизированный connection pool с exponential backoff
-- ✅ **Error Handling** - Централизованная обработка ошибок с структурированными ответами
-- ✅ **Security** - Улучшенные JWT токены, refresh tokens, security headers
-- ✅ **CI/CD** - Multi-stage Docker builds, кэширование зависимостей
-- ✅ **API Documentation** - Полная OpenAPI документация с примерами
+#### 2025‑11‑16 — AI агенты, тесты, безопасность, DevEx
 
-**Подробнее:** [`IMPROVEMENTS_PROGRESS.md`](IMPROVEMENTS_PROGRESS.md) | [`docs/BEST_PRACTICES_IMPLEMENTED.md`](docs/BEST_PRACTICES_IMPLEMENTED.md) | [`monitoring/AI_SERVICES_MONITORING.md`](monitoring/AI_SERVICES_MONITORING.md)
+- **AI Agents & E2E**: сквозной сценарий BA → Developer AI Secure → QA Engineer AI (`tests/system/test_e2e_ba_dev_qa.py`, `docs/08-e2e-tests/BA_DEV_QA_E2E.md`), расширенные тесты для Business Analyst/SQL Optimizer/TechLogAnalyzer/RAS Monitor/Issue Classifier.  
+- **Orchestrator & Performance**: дополнительные unit‑тесты Orchestrator (валидация, cache hits/misses, graceful‑ошибки без Kimi/Qwen), latency smoke‑тест (`scripts/testing/orchestrator_latency_smoke.py`), Kimi benchmark (`scripts/testing/kimi_benchmark.py`), гайд `docs/06-features/AI_PERFORMANCE_GUIDE.md`.  
+- **Security & Audit**: скрипты `scripts/audit/check_hidden_dirs.py`, `check_secrets.py`, составной `make security-audit` + `scripts/windows/security-audit.ps1`, обновлённые `SECURITY_IMPROVEMENTS.md` и политика `docs/research/constitution.md`.  
+- **BA & Documentation**: новые BA‑гайды (BA‑03…BA‑07), обновлён `alkoleft_todo.md`, Usage Cookbook (`docs/01-getting-started/cookbook.md`) и Windows Quickstart, шаблон DORA weekly summary (`docs/status/weekly_summary_template.md`).  
+- **DR/Resilience**: автоматизация DR rehearsal постмортемов (`scripts/runbooks/generate_dr_postmortem.py`, `docs/runbooks/postmortems/*`), актуализирован `dr_rehearsal_plan.md`.
+
+*(Слоты для ещё 6 релизов будут автоматически заполняться по мере появления дат в CHANGELOG.)*
 
 ## Архитектура платформы
 

@@ -13,7 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security / Tooling
 - Добавлен скрипт `scripts/audit/check_secrets.py` и make-таргет `audit-secrets` для лёгкого локального сканирования возможных секретов (`analysis/secret_scan_report.json`).
- - Добавлен составной make-таргет `security-audit`, объединяющий `audit-hidden-dirs`, `audit-secrets`, `check_git_safety.py` и `comprehensive_project_audit.py` для полного security-аудита перед релизом.
+- Добавлен составной make-таргет `security-audit`, объединяющий `audit-hidden-dirs`, `audit-secrets`, `check_git_safety.py` и `comprehensive_project_audit.py` для полного security-аудита перед релизом.
+- Добавлен Windows-скрипт `scripts/windows/security-audit.ps1` для эквивалентного security-audit в PowerShell.
 
 ### AI Agents / Testing
 - Developer AI Secure: девгид и unit-тесты безопасности (approve flow, токены).
@@ -22,20 +23,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - LLM Diagnostics: скрипт и юнит-тесты для проверки доступности LLM-провайдеров.
 - SQL Optimizer: unit-тесты и отдельный гайд (SQL_OPTIMIZER_GUIDE).
 - TechLogAnalyzer / RAS Monitor / Issue Classifier: unit-тесты для анализа техлога, мониторинга кластера и ML/rule-based классификатора инцидентов.
- - AI Orchestrator: базовые unit-тесты для QueryClassifier и process_query (валидация, кэш, offline-мультисервис).
- - BA → Developer AI Secure → QA Engineer AI: добавлен сквозной system-тест `tests/system/test_e2e_ba_dev_qa.py` и гайд `docs/08-e2e-tests/BA_DEV_QA_E2E.md`.
+- AI Orchestrator: базовые unit-тесты для QueryClassifier и process_query (валидация, кэш, offline-мультисервис) + дополнительные тесты graceful-ошибок.
+- BA → Developer AI Secure → QA Engineer AI: сквозной system-тест `tests/system/test_e2e_ba_dev_qa.py` и гайд `docs/08-e2e-tests/BA_DEV_QA_E2E.md`.
 
 ### Observability / Performance
 - Добавлен `docs/06-features/AI_PERFORMANCE_GUIDE.md` с обзором метрик Orchestrator/Kimi/Qwen, promql-запросами и рекомендациями по latency/cache hit rate.
-- Тесты `tests/unit/test_ai_orchestrator_basic.py` дополнены проверкой метрик `orchestrator_cache_hits_total` и `orchestrator_cache_misses_total`.
- - Добавлен скрипт `scripts/testing/kimi_benchmark.py` для простых performance-бенчмарков Kimi-K2-Thinking.
+- Тесты `tests/unit/test_ai_orchestrator_basic.py` дополнены проверкой метрик `orchestrator_cache_hits_total` и `orchestrator_cache_misses_total`, а также поведением без Kimi/Qwen.
+- Добавлены скрипты `scripts/testing/kimi_benchmark.py` (performance Kimi) и `scripts/testing/orchestrator_latency_smoke.py` (latency smoke Orchestrator).
 
 ### DevEx / Windows
 - Добавлен Windows Quickstart (`docs/01-getting-started/windows_quickstart.md`) с шагами локального запуска AI-стека, тестов и security-аудита без GNU Make.
-- README дополнен ссылкой на Windows Quickstart в разделе Usage/Быстрый старт.
+- Добавлен Usage Cookbook (`docs/01-getting-started/cookbook.md`) с типовыми сценариями.
+- README дополнен ссылками на Quickstart и Cookbook в разделе Usage/Documentation Hub.
 
 ### Spec-Driven Workflow
 - В `comprehensive-testing.yml` добавлен job `spec-driven-validation`, выполняющий `make feature-validate` для проверки заполнения feature-спек на CI.
+
+### BA Agents
+- Подготовлены гайды BA-03…BA-07 (`BA_PROCESS_MODELLING_GUIDE`, `BA_ANALYTICS_KPI_GUIDE`, `BA_TRACEABILITY_COMPLIANCE_GUIDE`, `BA_INTEGRATIONS_COLLAB_GUIDE`, `BA_ENABLEMENT_GUIDE`) и отражены в `docs/06-features/README.md` и `docs/research/alkoleft_todo.md`.
+
+### DR / Resilience
+- Добавлен `scripts/runbooks/generate_dr_postmortem.py` для автоматической генерации черновиков постмортемов после DR rehearsal (`docs/runbooks/postmortems/`), обновлён `docs/runbooks/dr_rehearsal_plan.md`.
+
+### DORA / Status
+- Добавлен шаблон `docs/status/weekly_summary_template.md` и обновлён `docs/status/README.md` (weekly summary + DORA history).
 
 ### Added
 - Initial project structure

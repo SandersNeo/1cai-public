@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-11-16T01:55:00Z",
+  "updated_at": "2025-11-16T06:10:00Z",
   "notes": [
     "Baseline автоматические проверки выполнены: check_all_links, check_readme_vs_code, check_security_comprehensive (grade=B), comprehensive_project_audit_final (warning: README usage).",
     "git ls-files выгружен в analysis/git_ls_files.txt для будущих проверок скрытых директорий.",
@@ -42,7 +42,10 @@
     "T37: Добавлен scripts/runbooks/generate_dr_postmortem.py, обновлён dr_rehearsal_plan.md и alkoleft_todo.md (DR/Resilience: авто-черновики постмортемов реализованы, TODO остался только по Litmus интеграции).",
     "T38: Расширены unit-тесты tests/unit/test_ai_orchestrator_basic.py (проверка graceful-ошибок _handle_code_generation и _handle_optimization при отсутствии Kimi/Qwen), покрытие orchestrator.py выросло до ~39%.",
     "T39: Добавлен scripts/testing/orchestrator_latency_smoke.py как лёгкий латентностный smoke-тест для Orchestrator; описан в AI_PERFORMANCE_GUIDE.",
-    "T40: Добавлен docs/01-getting-started/cookbook.md (Usage Cookbook) и ссылка в README (Documentation Hub / Setup & Runtime)."
+    "T40: Добавлен docs/01-getting-started/cookbook.md (Usage Cookbook) и ссылка в README (Documentation Hub / Setup & Runtime).",
+    "T41: README.md: блок \"Последние улучшения\" переписан в формат ежедневного дайджеста (2025-11-16) с привязкой к реальным скриптам/тестам/докам и ссылкой на docs/05-development/CHANGELOG.md.",
+    "T42: docs/05-development/CHANGELOG.md дополнен секциями по новым скриптам (orchestrator_latency_smoke, Windows security-audit), BA-гаидам, DR postmortem-автоматизации и DORA/status.",
+    "T43: README.md: \"Последние улучшения\" превращён в журнал последних 7 релизов (новые сверху) с явной отсылкой к CHANGELOG; пока заполнена только дата 2025-11-16, остальные слоты будут заполняться по мере релизов."
   ],
   "open_risks": [
     {
@@ -302,6 +305,24 @@
       "title": "Usage Cookbook",
       "status": "completed",
       "details": "Создан docs/01-getting-started/cookbook.md с типовыми сценариями (тесты, security-audit, BA→Dev→QA, Orchestrator latency, DR rehearsal); в README добавлена ссылка в раздел Setup & Runtime."
+    },
+    {
+      "id": "T41",
+      "title": "Обновить блок \"Последние улучшения\" в README",
+      "status": "completed",
+      "details": "Сделан дневной дайджест за 2025-11-16 (AI агенты, E2E, Orchestrator performance, security-audit, BA/DR/DORA) с ссылкой на подробный CHANGELOG."
+    },
+    {
+      "id": "T42",
+      "title": "Расширить CHANGELOG под новые скрипты/гайды",
+      "status": "completed",
+      "details": "docs/05-development/CHANGELOG.md дополнен по Windows security-audit.ps1, orchestrator_latency_smoke.py, BA-* гайдам, DR postmortem automation и DORA/status."
+    },
+    {
+      "id": "T43",
+      "title": "Сделать журнал последних 7 релизов в README",
+      "status": "completed",
+      "details": "Раздел \"Последние улучшения\" в README теперь описывает последний релиз (2025-11-16) и явно задекларирован как журнал последних 7 дат релизов; остальные слоты будут постепенно заполняться на основе CHANGELOG."
     }
   ]
 }
