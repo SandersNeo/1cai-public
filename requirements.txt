@@ -94,3 +94,21 @@ cryptography==44.0.1
 python-dateutil==2.8.2
 pytz==2023.3
 urllib3==1.26.19
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Revolutionary Components Dependencies ⭐ NEW
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Event-Driven Architecture
+nats-py>=2.6.0  # NATS client for event bus
+
+# Property-Based Testing
+hypothesis>=6.92.0  # Property-based testing framework
+
+# Performance Monitoring
+psutil>=5.9.0  # System and process utilities for benchmarks
+
+# NumPy for ML models (Predictive Generation)
+numpy>=1.24.0  # Required for time series forecasting
+
+# PyYAML already included above, but ensuring it's available for config

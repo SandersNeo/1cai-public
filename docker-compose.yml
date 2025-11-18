@@ -140,11 +140,95 @@ services:
       timeout: 5s
       retries: 3
 
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # NATS - Event-Driven Architecture для революционных компонентов ⭐ NEW
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  nats:
+    image: nats:2.10-alpine
+    container_name: 1c-ai-nats
+    ports:
+      - "4222:4222"  # Client connections
+      - "8222:8222"  # HTTP monitoring
+      - "6222:6222"  # Cluster routing
+    command:
+      - "-js"  # Enable JetStream
+      - "-m"   # Enable monitoring
+      - "8222"
+    volumes:
+      - nats_data:/data
+      - nats_js_data:/data/jetstream
+    networks:
+      - 1c-ai-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - revolutionary
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Prometheus - Мониторинг революционных компонентов ⭐ NEW
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: 1c-ai-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - 1c-ai-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    profiles:
+      - revolutionary
+      - monitoring
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Grafana - Визуализация метрик ⭐ NEW
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  grafana:
+    image: grafana/grafana:latest
+    container_name: 1c-ai-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    networks:
+      - 1c-ai-network
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    profiles:
+      - revolutionary
+      - monitoring
+
 volumes:
   postgres_data:
     name: 1c-ai-postgres-data
   redis_data:
     name: 1c-ai-redis-data
+  nats_data:
+    name: 1c-ai-nats-data
+  nats_js_data:
+    name: 1c-ai-nats-js-data
+  prometheus_data:
+    name: 1c-ai-prometheus-data
+  grafana_data:
+    name: 1c-ai-grafana-data
 
 networks:
   1c-ai-network:

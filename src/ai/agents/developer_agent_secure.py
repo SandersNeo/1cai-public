@@ -7,6 +7,7 @@ Based on Agents Rule of Two: [AB] Configuration
 [C] CANNOT change state automatically (requires human approval!)
 """
 
+import re
 import uuid
 from typing import Dict, Any, Optional, List
 from datetime import datetime, timedelta
