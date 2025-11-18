@@ -49,6 +49,7 @@
 
 Полная архитектура платформы со схемами:
 
+- **📊 Интерактивная карта архитектуры:** [GitHub Pages](https://dmitrl-dev.github.io/1cai-public/architecture/interactive-architecture.html) | [Mermaid диаграмма](docs/architecture/interactive-architecture.md)
 - **HLD документ:** [`docs/architecture/01-high-level-design.md`](docs/architecture/01-high-level-design.md)
 - **C4 диаграммы:** [`docs/architecture/uml/c4/`](docs/architecture/uml/c4/)
 - **UML диаграммы:** [`docs/architecture/uml/`](docs/architecture/uml/)

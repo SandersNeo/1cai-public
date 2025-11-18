@@ -74,11 +74,12 @@ docs/architecture/
 Интерактивная HTML карта (`interactive-architecture.html`) позволяет визуально исследовать архитектуру с возможностью фильтрации, поиска и перехода к документации.
 
 **Как открыть:**
+- **GitHub Pages** (рекомендуется): https://dmitrl-dev.github.io/1cai-public/architecture/interactive-architecture.html
 - Через JSDelivr: https://cdn.jsdelivr.net/gh/DmitrL-dev/1cai-public@main/docs/architecture/interactive-architecture.html
 - Через RawGit: https://raw.githack.com/DmitrL-dev/1cai-public/main/docs/architecture/interactive-architecture.html
 - Локально: откройте файл в браузере после клонирования репозитория
 
-**Примечание:** GitHub отображает HTML файлы как исходный код. Для просмотра интерактивной карты используйте один из способов выше.
+**Примечание:** GitHub отображает HTML файлы как исходный код при прямом просмотре. Интерактивная карта автоматически публикуется на GitHub Pages при каждом обновлении.
 
 ## Практики сопровождения
 
