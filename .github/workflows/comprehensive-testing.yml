@@ -12,11 +12,14 @@ jobs:
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -56,6 +59,8 @@ jobs:
   integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     services:
       postgres:
@@ -115,6 +120,8 @@ jobs:
   system-tests:
     name: System & E2E Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     services:
       postgres:
@@ -146,11 +153,14 @@ jobs:
   performance-tests:
     name: Performance Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -178,11 +188,14 @@ jobs:
   security-tests:
     name: Security Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -210,11 +223,14 @@ jobs:
   acceptance-tests:
     name: Acceptance Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -232,11 +248,14 @@ jobs:
   spec-driven-validation:
     name: Spec-Driven Validation
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -260,11 +279,14 @@ jobs:
   bsl-tests:
     name: BSL Tests
     runs-on: windows-latest
+    permissions:
+      contents: read
 
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -285,11 +307,14 @@ jobs:
   whitebox-analysis:
     name: White-box Analysis
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -323,11 +348,14 @@ jobs:
   smoke-tests:
     name: Smoke Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -365,11 +393,14 @@ jobs:
   full-project-audit:
     name: Full Project Audit
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Python
       uses: actions/setup-python@v4
