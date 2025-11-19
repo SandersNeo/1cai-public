@@ -193,8 +193,18 @@ analysis/functionality_review/
 analysis/project_architecture/
 analysis/offline-exercises/
 
-# Research documents in docs/research/ (технические исследования можно публиковать)
-# docs/research/MCP_SERVERS_APPLICABILITY_ANALYSIS.md - технический анализ, можно публиковать
+# Research documents (исследования НЕ должны попадать в git, только локально)
+docs/research/*_APPLICABILITY*.md
+docs/research/*_ANALYSIS*.md
+docs/research/*_RESEARCH*.md
+docs/research/*_STUDY*.md
+docs/research/*_INVESTIGATION*.md
+docs/research/*_EVALUATION*.md
+docs/research/*_COMPARISON*.md
+docs/research/*_REVIEW*.md
+# Исключения: только техническая документация (не исследования)
+!docs/research/README.md
+!docs/research/constitution.md
 
 # 1C Commercial Configurations (protection against accidental commits)
 1c_configurations/*/*.xml
