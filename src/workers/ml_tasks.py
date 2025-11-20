@@ -5,6 +5,7 @@ Celery Worker для background обучения моделей и ML задач
 Обрабатывает асинхронные ML задачи: обучение, переобучение, оптимизация гиперпараметров.
 """
 
+import asyncio
 import os
 import sys
 from datetime import datetime
@@ -16,15 +17,17 @@ import pandas as pd
 # Celery
 from celery import Celery
 from celery.schedules import crontab
-from celery.schedules import crontab
 
-# Локальные импорты
+# Локальные импорты (хак для sys.path)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# isort: off
 from config import settings
 from ml.experiments.mlflow_manager import MLFlowManager
-from ml.metrics.collector import MetricsCollector
+from ml.metrics.collector import MetricsCollector, AssistantRole, MetricType
 from ml.training.trainer import ModelTrainer
 from src.utils.structured_logging import StructuredLogger
+# isort: on
 
 # Настройка Celery
 celery_app = Celery(
@@ -258,8 +261,7 @@ def retrain_all_models():
 
     try:
         models_retrained = 0
-        retrain_results = []
-
+        
         # Здесь можно добавить логику автоматического переобучения
         # на основе новых данных или деградации качества
 
@@ -590,15 +592,10 @@ def process_metrics_batch(self, metrics_data: List[Dict[str, Any]]):
 
         for metric_data in metrics_data:
             try:
-                # Преобразование enum
-                from ml.metrics.collector import AssistantRole, MetricType
-
                 metric_type = MetricType(metric_data["metric_type"].lower())
                 assistant_role = AssistantRole(metric_data["assistant_role"].lower())
 
                 # Запись метрики
-                import asyncio
-
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
 

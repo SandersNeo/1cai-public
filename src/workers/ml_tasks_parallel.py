@@ -29,10 +29,13 @@ from celery.utils.log import get_task_logger
 
 # Локальные импорты
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# isort: off
 from config import settings
 from ml.experiments.mlflow_manager import MLFlowManager
 from ml.metrics.collector import MetricsCollector
 from ml.training.trainer import ModelTrainer
+# isort: on
 
 # Настройка Celery
 celery_app = Celery(

@@ -38,7 +38,7 @@ jobs:
         continue-on-error: true
 
       - name: Flake8 linting
-        run: flake8 src/ --max-line-length=120
+        run: flake8 src/ --max-line-length=120 --ignore=E203,W503
 
       - name: MyPy type checking
         run: mypy src/ --ignore-missing-imports
