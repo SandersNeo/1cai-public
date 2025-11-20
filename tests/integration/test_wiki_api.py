@@ -1,12 +1,13 @@
+from datetime import datetime
+from unittest.mock import AsyncMock
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import AsyncMock
-from datetime import datetime
 
+from src.api.wiki import get_wiki_service
 from src.main import app
 from src.services.wiki.models import WikiPage
 from src.services.wiki.service import WikiService
-from src.api.wiki import get_wiki_service
 
 # Mock Data
 MOCK_PAGE_ID = "test-page-id"

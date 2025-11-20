@@ -4,9 +4,10 @@
 Integration test for full data migration
 """
 
-import pytest
 import json
 from pathlib import Path
+
+import pytest
 
 # These tests require running databases
 

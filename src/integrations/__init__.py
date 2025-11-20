@@ -4,10 +4,10 @@
 Integration clients for external systems used by the BA module.
 """
 
-from .jira import JiraClient
 from .confluence import ConfluenceClient
-from .powerbi import PowerBIClient
+from .jira import JiraClient
 from .onedocflow import OneCDocflowClient
+from .powerbi import PowerBIClient
 
 __all__ = [
     "JiraClient",

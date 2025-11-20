@@ -6,11 +6,12 @@ Integration tests for ConnectionPool with AI clients.
 
 import pytest
 
-from src.ai.connection_pool import ConnectionPool, get_global_pool, close_global_pool
 from src.ai.clients.gigachat_client import GigaChatClient, GigaChatConfig
-from src.ai.clients.yandexgpt_client import YandexGPTClient, YandexGPTConfig
 from src.ai.clients.naparnik_client import NaparnikClient, NaparnikConfig
 from src.ai.clients.ollama_client import OllamaClient, OllamaConfig
+from src.ai.clients.yandexgpt_client import YandexGPTClient, YandexGPTConfig
+from src.ai.connection_pool import (ConnectionPool, close_global_pool,
+                                    get_global_pool)
 
 
 @pytest.mark.asyncio

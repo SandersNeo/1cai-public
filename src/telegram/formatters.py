@@ -69,7 +69,7 @@ class TelegramFormatter:
         explanation = result.get("explanation", "")
         function_name = result.get("function_name", "")
 
-        text = f"✨ **Сгенерирован код**\n\n"
+        text = "✨ **Сгенерирован код**\n\n"
 
         if function_name:
             text += f"📝 Функция: `{function_name}`\n\n"
@@ -89,7 +89,7 @@ class TelegramFormatter:
         function_name = result.get("function", "")
         module_name = result.get("module", "")
 
-        text = f"🔗 **Анализ зависимостей**\n\n"
+        text = "🔗 **Анализ зависимостей**\n\n"
         text += f"📌 Функция: `{function_name}`\n"
         text += f"📁 Модуль: `{module_name}`\n\n"
 
@@ -134,7 +134,7 @@ class TelegramFormatter:
 🔍 `/search <запрос>` — семантический поиск кода
 Пример: `/search расчет НДС`
 
-💻 `/generate <описание>` — генерация BSL кода  
+💻 `/generate <описание>` — генерация BSL кода
 Пример: `/generate функция для расчета скидки`
 
 🔗 `/deps <модуль> <функция>` — анализ зависимостей

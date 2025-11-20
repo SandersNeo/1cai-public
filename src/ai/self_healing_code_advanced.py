@@ -22,8 +22,8 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
-from src.ai.self_healing_code import SelfHealingCode, CodeError, CodeFix
 from src.ai.llm_provider_abstraction import LLMProviderAbstraction
+from src.ai.self_healing_code import CodeError, CodeFix, SelfHealingCode
 from src.infrastructure.event_bus import EventBus
 
 logger = logging.getLogger(__name__)

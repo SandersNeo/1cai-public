@@ -6,11 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from scripts.ba_pipeline.orchestrator import (
-    available_collectors,
-    instantiate_collectors,
-    run_pipeline,
-)
+from scripts.ba_pipeline.orchestrator import (available_collectors,
+                                              instantiate_collectors,
+                                              run_pipeline)
 
 
 def test_available_collectors_contains_expected():

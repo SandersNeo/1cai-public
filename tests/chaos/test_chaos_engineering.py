@@ -12,14 +12,13 @@ Chaos engineering тесты для проверки устойчивости:
 - Time skew
 """
 
-import pytest
 import asyncio
-from src.infrastructure.event_bus import EventBus, Event, EventType
-from src.ai.distributed_agent_network import (
-    DistributedAgentNetwork,
-    AgentNode,
-    AgentRole,
-)
+
+import pytest
+
+from src.ai.distributed_agent_network import (AgentNode, AgentRole,
+                                              DistributedAgentNetwork)
+from src.infrastructure.event_bus import Event, EventBus, EventType
 
 
 @pytest.mark.asyncio
@@ -88,9 +87,10 @@ async def test_chaos_distributed_network_byzantine():
 @pytest.mark.asyncio
 async def test_chaos_self_healing_cascade_failures():
     """Chaos: каскадные отказы в Self-Healing"""
-    from src.ai.self_healing_code import SelfHealingCode
+    from unittest.mock import AsyncMock, MagicMock
+
     from src.ai.llm_provider_abstraction import LLMProviderAbstraction
-    from unittest.mock import MagicMock, AsyncMock
+    from src.ai.self_healing_code import SelfHealingCode
 
     llm_provider = MagicMock(spec=LLMProviderAbstraction)
 

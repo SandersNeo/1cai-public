@@ -5,6 +5,7 @@ Integration-style tests for HybridSearchService with mocked backends.
 """
 
 import asyncio
+
 import pytest
 
 from src.services.hybrid_search import HybridSearchService

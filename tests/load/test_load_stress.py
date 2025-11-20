@@ -13,11 +13,11 @@ Load & Stress Testing - Нагрузочное тестирование
 
 import asyncio
 import logging
+import statistics
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List
-import statistics
 
 import pytest
 
@@ -281,7 +281,7 @@ class LoadTester:
 @pytest.mark.asyncio
 async def test_event_bus_load():
     """Нагрузочный тест Event Bus"""
-    from src.infrastructure.event_bus import EventBus, Event, EventType
+    from src.infrastructure.event_bus import Event, EventBus, EventType
 
     bus = EventBus()
     await bus.start()
@@ -305,7 +305,7 @@ async def test_event_bus_load():
 @pytest.mark.asyncio
 async def test_event_bus_stress():
     """Стресс-тест Event Bus"""
-    from src.infrastructure.event_bus import EventBus, Event, EventType
+    from src.infrastructure.event_bus import Event, EventBus, EventType
 
     bus = EventBus()
     await bus.start()

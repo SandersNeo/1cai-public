@@ -12,7 +12,7 @@ Hybrid Search Service
 """
 
 import asyncio
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
 
 from src.utils.structured_logging import StructuredLogger
 

@@ -5,9 +5,10 @@
 Тестирование основной логики без внешних зависимостей.
 """
 
-import pytest
-import numpy as np
 from datetime import datetime
+
+import numpy as np
+import pytest
 
 # Тестирование основных функций без внешних зависимостей
 
@@ -274,7 +275,7 @@ def test_ml_pipeline_simulation():
     assert 0 <= results["recall"] <= 1, "Recall должна быть в диапазоне [0, 1]"
     assert 0 <= results["f1_score"] <= 1, "F1-score должна быть в диапазоне [0, 1]"
 
-    print(f"Симуляция ML пайплайна завершена:")
+    print("Симуляция ML пайплайна завершена:")
     print(f"  Точность: {results['accuracy']:.3f}")
     print(f"  Precision: {results['precision']:.3f}")
     print(f"  Recall: {results['recall']:.3f}")
@@ -353,7 +354,7 @@ def test_ab_test_statistics():
     assert results["improvement_percent"] > 0, "Ожидалось положительное улучшение"
     assert 0 <= results["p_value"] <= 1, "P-value должен быть в диапазоне [0, 1]"
 
-    print(f"A/B тест статистика:")
+    print("A/B тест статистика:")
     print(f"  Контроль: {results['control_mean']:.3f}")
     print(f"  Treatment: {results['treatment_mean']:.3f}")
     print(f"  Улучшение: {results['improvement_percent']:.1f}%")
@@ -482,7 +483,7 @@ def test_metrics_aggregation():
     assert aggregated["count"] == 50
     assert aggregated["mean"] == pytest.approx(np.mean(metric_values), abs=0.01)
 
-    print(f"Агрегация метрик:")
+    print("Агрегация метрик:")
     print(f"  Среднее: {aggregated['mean']:.3f}")
     print(f"  Медиана: {aggregated['median']:.3f}")
     print(f"  Стандартное отклонение: {aggregated['std']:.3f}")

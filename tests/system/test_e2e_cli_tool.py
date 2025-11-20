@@ -23,6 +23,7 @@ async def test_e2e_cli_query_command() -> None:
     # В реальном сценарии можно использовать TestClient
 
     from fastapi.testclient import TestClient
+
     from src.ai.orchestrator import app
 
     client = TestClient(app)
@@ -40,6 +41,7 @@ async def test_e2e_cli_scenarios_command() -> None:
     E2E тест: CLI команда scenarios работает корректно.
     """
     from fastapi.testclient import TestClient
+
     from src.ai.orchestrator import app
 
     client = TestClient(app)
@@ -60,6 +62,7 @@ async def test_e2e_cli_health_command() -> None:
     E2E тест: CLI команда health работает корректно.
     """
     from fastapi.testclient import TestClient
+
     from src.ai.orchestrator import app
 
     client = TestClient(app)
@@ -78,6 +81,7 @@ async def test_e2e_cli_cache_metrics_command() -> None:
     E2E тест: CLI команда cache metrics работает корректно.
     """
     from fastapi.testclient import TestClient
+
     from src.ai.orchestrator import app
 
     client = TestClient(app)
@@ -97,6 +101,7 @@ async def test_e2e_cli_llm_providers_command() -> None:
     E2E тест: CLI команда llm-providers list работает корректно.
     """
     from fastapi.testclient import TestClient
+
     from src.ai.orchestrator import app
 
     client = TestClient(app)

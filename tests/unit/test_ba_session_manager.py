@@ -4,14 +4,12 @@ import json
 
 import pytest
 
+from src.monitoring.prometheus_metrics import (ba_ws_active_participants,
+                                               ba_ws_active_sessions,
+                                               ba_ws_disconnects_total,
+                                               ba_ws_events_total,
+                                               set_ba_session_counts)
 from src.services.ba_session_manager import BASessionManager
-from src.monitoring.prometheus_metrics import (
-    ba_ws_active_participants,
-    ba_ws_active_sessions,
-    ba_ws_disconnects_total,
-    ba_ws_events_total,
-    set_ba_session_counts,
-)
 
 
 class MockWebSocket:

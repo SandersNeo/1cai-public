@@ -7,13 +7,14 @@ Telegram Bot - Main entry point
 
 import asyncio
 import sys
+
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from src.utils.structured_logging import StructuredLogger
 
 from src.telegram.config import config
 from src.telegram.handlers import router
+from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 

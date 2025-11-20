@@ -5,9 +5,10 @@ Extended Architect AI Agent - Full Implementation
 Расширенный AI ассистент для архитекторов с граф-анализом, ADR и детекцией anti-patterns
 """
 
-from typing import Dict, List, Any
-from datetime import datetime, timedelta
 from dataclasses import dataclass
+from datetime import datetime, timedelta
+from typing import Any, Dict, List
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -58,7 +59,8 @@ class ArchitectAgentExtended:
 
         # Интеграция знаний из ИТС
         try:
-            from src.ai.agents.its_knowledge_integrator import ITSKnowledgeIntegrator
+            from src.ai.agents.its_knowledge_integrator import \
+                ITSKnowledgeIntegrator
 
             self.its_knowledge = ITSKnowledgeIntegrator()
             self.its_integration = True
@@ -192,7 +194,7 @@ class ArchitectAgentExtended:
         MATCH (m1:Module)-[:BELONGS_TO]->(c:Configuration {name: $config_name})
         OPTIONAL MATCH (m1)-[d:DEPENDS_ON]->(m2:Module)
         WITH m1, count(d) as dependencies_count
-        RETURN 
+        RETURN
             avg(dependencies_count) as avg_dependencies,
             max(dependencies_count) as max_dependencies,
             collect({module: m1.name, deps: dependencies_count}) as modules_data
@@ -233,7 +235,7 @@ class ArchitectAgentExtended:
         MATCH (f1:Function)-[:BELONGS_TO]->(m)
         OPTIONAL MATCH (f1)-[:CALLS]->(f2:Function)-[:BELONGS_TO]->(m)
         WITH m, count(DISTINCT f1) as functions_count, count(DISTINCT f2) as internal_calls
-        RETURN 
+        RETURN
             avg(CASE WHEN functions_count > 0 THEN toFloat(internal_calls) / functions_count ELSE 0 END) as avg_cohesion,
             collect({module: m.name, cohesion: internal_calls * 1.0 / functions_count}) as modules_data
         """
@@ -265,10 +267,10 @@ class ArchitectAgentExtended:
         """
         query = """
         MATCH path = (m1:Module)-[:DEPENDS_ON*2..5]->(m2:Module)
-        WHERE m1 = m2 
-          AND all(r in relationships(path) WHERE 
+        WHERE m1 = m2
+          AND all(r in relationships(path) WHERE
             startNode(r)-[:BELONGS_TO]->(:Configuration {name: $config_name}))
-        RETURN 
+        RETURN
             m1.name as module,
             length(path) as cycle_length,
             [n in nodes(path) | n.name] as cycle_path
@@ -304,12 +306,12 @@ class ArchitectAgentExtended:
         OPTIONAL MATCH (f:Function)-[:BELONGS_TO]->(m)
         OPTIONAL MATCH (m)-[out:DEPENDS_ON]->()
         OPTIONAL MATCH ()-[in:DEPENDS_ON]->(m)
-        WITH m, 
+        WITH m,
              count(DISTINCT f) as functions_count,
              count(DISTINCT out) as outgoing_deps,
              count(DISTINCT in) as incoming_deps
         WHERE functions_count > 50 OR outgoing_deps > 20 OR incoming_deps > 15
-        RETURN 
+        RETURN
             m.name as module,
             functions_count,
             outgoing_deps,
@@ -625,8 +627,8 @@ class ArchitectAgentExtended:
         """Конвертация ADR в Markdown"""
         md = f"""# {adr['adr_id']}: {adr['title']}
 
-**Date:** {adr['date'][:10]}  
-**Status:** {adr['status']}  
+**Date:** {adr['date'][:10]}
+**Status:** {adr['status']}
 **Tags:** {', '.join(adr['tags'])}
 
 ---
@@ -798,7 +800,7 @@ class ArchitectAgentExtended:
                     "cycle_length": cycle["cycle_length"],
                     "modules_involved": len(cycle["path"]),
                 },
-                "recommendation": f"Разорвать цикл через события, интерфейсы или промежуточный модуль",
+                "recommendation": "Разорвать цикл через события, интерфейсы или промежуточный модуль",
                 "refactoring_effort": (
                     "Medium" if cycle["cycle_length"] <= 3 else "High"
                 ),

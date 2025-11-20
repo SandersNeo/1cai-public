@@ -18,10 +18,12 @@ Features:
 - User-friendly error messages
 """
 
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
+
 from fastapi import HTTPException, Request, status
-from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
 from src.utils.structured_logging import StructuredLogger
 
 structured_logger = StructuredLogger(__name__)

@@ -6,10 +6,11 @@ OpenAI Code Analyzer Service
 Версия: 1.0.0
 """
 
-import os
 import json
-from typing import List, Dict, Any, Optional
+import os
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
 import httpx
 
 from src.utils.structured_logging import StructuredLogger
@@ -246,7 +247,7 @@ class OpenAICodeAnalyzer:
 
 Анализируй код и предлагай улучшения в категориях:
 - Производительность
-- Безопасность  
+- Безопасность
 - Best practices
 - Потенциальные баги
 

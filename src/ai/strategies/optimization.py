@@ -1,5 +1,6 @@
-from typing import Dict, Any
 import time
+from typing import Any, Dict
+
 from src.ai.strategies.base import AIStrategy
 from src.utils.structured_logging import StructuredLogger
 
@@ -25,11 +26,8 @@ class OptimizationStrategy(AIStrategy):
                 # Track metrics
                 try:
                     from src.monitoring.prometheus_metrics import (
-                        kimi_queries_total,
-                        kimi_response_duration_seconds,
-                        kimi_tokens_used_total,
-                        orchestrator_queries_total,
-                    )
+                        kimi_queries_total, kimi_response_duration_seconds,
+                        kimi_tokens_used_total, orchestrator_queries_total)
 
                     start_time = time.time()
                     kimi_mode = "api" if not self.kimi_client.is_local else "local"
@@ -108,10 +106,8 @@ class OptimizationStrategy(AIStrategy):
                 # Track error metrics
                 try:
                     from src.monitoring.prometheus_metrics import (
-                        kimi_queries_total,
-                        ai_errors_total,
-                        orchestrator_fallback_total,
-                    )
+                        ai_errors_total, kimi_queries_total,
+                        orchestrator_fallback_total)
 
                     kimi_mode = "api" if not self.kimi_client.is_local else "local"
                     kimi_queries_total.labels(mode=kimi_mode, status="error").inc()

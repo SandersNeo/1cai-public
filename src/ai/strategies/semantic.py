@@ -1,5 +1,6 @@
-from typing import Dict, Any
 import asyncio
+from typing import Any, Dict
+
 from src.ai.strategies.base import AIStrategy
 from src.db.qdrant_client import QdrantClient
 from src.services.embedding_service import EmbeddingService

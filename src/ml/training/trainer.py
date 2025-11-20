@@ -5,31 +5,26 @@
 Интеграция с Celery для background обучения и автоматического переобучения.
 """
 
-from datetime import datetime
-from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
-import numpy as np
-import pandas as pd
+from typing import Any, Dict, List, Optional, Tuple
 
+import numpy as np
+import optuna
+import pandas as pd
 # Celery для background задач
 from celery import Celery
-from celery.schedules import crontab
 from celery.result import AsyncResult
-
+from celery.schedules import crontab
+from sklearn.feature_selection import SelectKBest, f_classif, f_regression
 # ML библиотеки
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.feature_selection import SelectKBest, f_classif, f_regression
-import optuna
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 
-from src.ml.models.predictor import (
-    ModelEnsemble,
-    create_model,
-    PredictionType,
-)
-from src.ml.metrics.collector import MetricsCollector, AssistantRole
 from src.ml.experiments.mlflow_manager import MLFlowManager
+from src.ml.metrics.collector import AssistantRole, MetricsCollector
+from src.ml.models.predictor import ModelEnsemble, PredictionType, create_model
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

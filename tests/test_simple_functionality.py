@@ -4,9 +4,10 @@
 Простые тесты для проверки основной функциональности без внешних зависимостей
 """
 
-import pytest
-import re
 import json
+import re
+
+import pytest
 
 
 def test_mermaid_code_validation_empty():

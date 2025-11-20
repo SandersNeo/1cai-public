@@ -5,19 +5,16 @@
 Реализует функции анализа требований и генерации архитектурных диаграмм
 """
 
-import re
 import json
-from typing import Dict, List, Optional, Any
+import re
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
 
 from src.config import settings
 
-from .base_assistant import (
-    BaseAIAssistant,
-    AssistantConfig,
-    ChatPromptTemplate,
-)
+from .base_assistant import (AssistantConfig, BaseAIAssistant,
+                             ChatPromptTemplate)
 
 
 # Упрощенные классы для тестирования

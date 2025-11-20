@@ -11,9 +11,10 @@ Internationalization (i18n) Service
 """
 
 import json
-from typing import Dict, Optional
-from pathlib import Path
 from enum import Enum
+from pathlib import Path
+from typing import Dict, Optional
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

@@ -4,10 +4,10 @@
 Tests for BA-05 Traceability & Compliance API endpoints.
 """
 
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from src.api.ba_sessions import router
-from fastapi import FastAPI
 
 app = FastAPI()
 app.include_router(router)

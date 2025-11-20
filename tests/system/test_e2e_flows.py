@@ -4,11 +4,12 @@
 System Tests - End-to-End сценарии
 """
 
-import pytest
-from unittest.mock import patch, AsyncMock
-from types import SimpleNamespace
 import sys
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, patch
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
@@ -162,8 +163,9 @@ async def test_full_billing_flow():
     5. Status update
     """
 
-    from src.api.billing_webhooks import BillingWebhookHandler
     import asyncpg
+
+    from src.api.billing_webhooks import BillingWebhookHandler
 
     try:
         conn = await asyncpg.connect(

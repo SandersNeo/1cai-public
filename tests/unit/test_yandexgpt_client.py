@@ -8,8 +8,8 @@ Unit tests for YandexGPTClient.
 
 import pytest
 
-from src.ai.clients.yandexgpt_client import YandexGPTClient, YandexGPTConfig
 from src.ai.clients.exceptions import LLMNotConfiguredError
+from src.ai.clients.yandexgpt_client import YandexGPTClient, YandexGPTConfig
 
 
 class TestYandexGPTConfig:

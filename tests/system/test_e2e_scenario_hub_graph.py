@@ -11,7 +11,7 @@ Unified Change Graph, Scenario Recommender и Impact Analyzer.
 import pytest
 
 from src.ai.code_graph import InMemoryCodeGraphBackend, Node, NodeKind
-from src.ai.scenario_hub import ScenarioPlan, ScenarioStep, ScenarioRiskLevel
+from src.ai.scenario_hub import ScenarioPlan, ScenarioRiskLevel, ScenarioStep
 from src.ai.scenario_recommender import ImpactAnalyzer, ScenarioRecommender
 
 

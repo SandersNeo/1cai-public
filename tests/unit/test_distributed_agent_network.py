@@ -6,14 +6,10 @@ Unit tests for Distributed AI Agent Network - 1000% coverage
 """
 
 import pytest
-from src.ai.distributed_agent_network import (
-    DistributedAgentNetwork,
-    Agent,
-    AgentNode,
-    AgentRole,
-    Task,
-    ConsensusAlgorithm,
-)
+
+from src.ai.distributed_agent_network import (Agent, AgentNode, AgentRole,
+                                              ConsensusAlgorithm,
+                                              DistributedAgentNetwork, Task)
 
 
 class MockAgent(Agent):

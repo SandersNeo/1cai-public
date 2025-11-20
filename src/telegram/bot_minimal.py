@@ -9,12 +9,12 @@ import asyncio
 import logging
 import os
 
-from aiohttp import ClientTimeout
-from aiogram import Bot, Dispatcher, Router, F
+from aiogram import Bot, Dispatcher, F, Router
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.types import Message
+from aiohttp import ClientTimeout
 
 # Настройка логирования
 logging.basicConfig(

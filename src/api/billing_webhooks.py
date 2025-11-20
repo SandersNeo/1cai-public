@@ -7,8 +7,10 @@ Billing Webhooks Handler
 
 import os
 from typing import Dict
-from fastapi import APIRouter, Request, HTTPException, Header
+
 import asyncpg
+from fastapi import APIRouter, Header, HTTPException, Request
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

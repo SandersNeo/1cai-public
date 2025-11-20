@@ -7,11 +7,11 @@ Extended MCP Server with Multi-Role Support
 
 import asyncio
 from typing import Dict, List
-from src.utils.structured_logging import StructuredLogger
 
-from src.ai.role_based_router import RoleBasedRouter
 from src.ai.agents.business_analyst_agent import BusinessAnalystAgent
 from src.ai.agents.qa_engineer_agent import QAEngineerAgent
+from src.ai.role_based_router import RoleBasedRouter
+from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 

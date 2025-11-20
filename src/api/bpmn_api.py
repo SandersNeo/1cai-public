@@ -5,13 +5,14 @@ BPMN API
 Backend for BPMN diagram management
 """
 
-from typing import Dict, Any, List
+from typing import Any, Dict, List
+
+import asyncpg
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-import asyncpg
-from src.utils.structured_logging import StructuredLogger
 
 from src.database import get_db_pool
+from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 
@@ -156,7 +157,7 @@ async def save_diagram(
             # Insert diagram
             diagram_id = await conn.fetchval(
                 """
-                INSERT INTO bpmn_diagrams 
+                INSERT INTO bpmn_diagrams
                 (tenant_id, name, description, xml_content, project_id, created_at, updated_at)
                 VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
                 RETURNING id

@@ -5,9 +5,9 @@ Best Practices Checker
 Проверка соответствия best practices 1С
 """
 
-import re
 import logging
-from typing import List, Dict
+import re
+from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -120,7 +120,7 @@ class BestPracticesChecker:
         ,
         ПодробноеПредставлениеОшибки(ИнформацияОбОшибке())
     );
-    
+
     ВызватьИсключение("Не удалось выполнить операцию");
 КонецПопытки;
 """,

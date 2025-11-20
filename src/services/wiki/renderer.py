@@ -4,9 +4,10 @@ Handles custom syntax extensions using Marko.
 """
 
 import re
+
 import marko
-from marko.inline import InlineElement
 from marko.block import BlockElement
+from marko.inline import InlineElement
 
 # --- Custom Elements ---
 

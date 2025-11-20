@@ -4,12 +4,13 @@
 Integration Tests для API
 """
 
-import pytest
-import asyncpg
-from unittest.mock import Mock, patch, AsyncMock
-from types import SimpleNamespace
 import sys
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, Mock, patch
+
+import asyncpg
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 

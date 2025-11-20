@@ -5,26 +5,20 @@
 Тестирование всех компонентов ML системы: метрики, модели, A/B тестирование.
 """
 
-import pytest
 import asyncio
-import numpy as np
-import pandas as pd
 from unittest.mock import Mock
 
-# Тестируемые компоненты
-from src.ml.metrics.collector import (
-    MetricsCollector,
-    AssistantRole,
-)
-from src.ml.models.predictor import (
-    SklearnPredictor,
-    ModelEnsemble,
-    create_model,
-    PredictionType,
-)
-from src.ml.training.trainer import ModelTrainer, DataPreprocessor
-from src.ml.ab_testing.tester import ABTestManager, ABTestConfig, TestType
+import numpy as np
+import pandas as pd
+import pytest
+
+from src.ml.ab_testing.tester import ABTestConfig, ABTestManager, TestType
 from src.ml.experiments.mlflow_manager import MLFlowManager
+# Тестируемые компоненты
+from src.ml.metrics.collector import AssistantRole, MetricsCollector
+from src.ml.models.predictor import (ModelEnsemble, PredictionType,
+                                     SklearnPredictor, create_model)
+from src.ml.training.trainer import DataPreprocessor, ModelTrainer
 
 
 class TestMetricsCollector:

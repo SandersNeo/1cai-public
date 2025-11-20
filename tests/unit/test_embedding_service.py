@@ -5,6 +5,7 @@ Unit tests for EmbeddingService
 """
 
 from unittest.mock import Mock, patch
+
 from src.services.embedding_service import EmbeddingService
 
 

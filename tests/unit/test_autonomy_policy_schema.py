@@ -7,7 +7,6 @@ from jsonschema import Draft202012Validator
 
 from src.ai.scenario_policy import DEFAULT_POLICIES
 
-
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = ROOT / "docs" / "architecture" / "AUTONOMY_POLICY_SCHEMA.json"
 EXTERNAL_POLICY_PATH = (

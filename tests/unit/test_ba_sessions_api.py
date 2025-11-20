@@ -2,8 +2,8 @@
 
 from fastapi.testclient import TestClient
 
-from src.services.ba_session_manager import ba_session_manager
 from src.main import app
+from src.services.ba_session_manager import ba_session_manager
 
 
 def setup_module(module):

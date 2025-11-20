@@ -5,16 +5,16 @@ Handles logic for page management, versioning, rendering, and advanced features 
 
 import uuid
 from datetime import datetime
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional
+
+from src.database import get_db_connection
+from src.utils.structured_logging import StructuredLogger
 
 # Import DTOs
-from .models import WikiPage as PageDTO, WikiPageCreate, WikiPageUpdate
-
+from .models import WikiPage as PageDTO
+from .models import WikiPageCreate, WikiPageUpdate
 # Import Renderer
 from .renderer import WikiRenderer
-
-from src.utils.structured_logging import StructuredLogger
-from src.database import get_db_connection
 
 logger = StructuredLogger(__name__).logger
 
@@ -36,7 +36,7 @@ class WikiService:
         Retrieve a wiki page by slug from DB.
         """
         query = """
-            SELECT 
+            SELECT
                 p.id, p.slug, p.title, p.namespace_id, p.version, p.created_at, p.updated_at,
                 r.content
             FROM wiki_pages p
@@ -47,7 +47,7 @@ class WikiService:
 
         if version:
             query = """
-                SELECT 
+                SELECT
                     p.id, p.slug, p.title, p.namespace_id, p.version, p.created_at, p.updated_at,
                     r.content
                 FROM wiki_pages p
@@ -192,7 +192,7 @@ class WikiService:
                 # 4. Update Page
                 await conn.execute(
                     """
-                    UPDATE wiki_pages 
+                    UPDATE wiki_pages
                     SET version = $1, current_revision_id = $2, updated_at = NOW()
                     WHERE id = $3
                 """,
@@ -219,9 +219,9 @@ class WikiService:
         List wiki pages with pagination.
         """
         query = """
-            SELECT 
+            SELECT
                 id, slug, title, namespace_id, version, created_at, updated_at
-            FROM wiki_pages 
+            FROM wiki_pages
             WHERE is_deleted = FALSE
             ORDER BY updated_at DESC
             LIMIT $1 OFFSET $2

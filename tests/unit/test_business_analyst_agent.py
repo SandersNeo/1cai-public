@@ -7,7 +7,8 @@ import pytest
 docx_mod = pytest.importorskip("docx")
 Document = docx_mod.Document
 
-from src.ai.agents.business_analyst_agent_extended import BusinessAnalystAgentExtended
+from src.ai.agents.business_analyst_agent_extended import \
+    BusinessAnalystAgentExtended
 
 
 @pytest.mark.asyncio

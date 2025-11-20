@@ -13,7 +13,8 @@ Converts plain language queries to Neo4j Cypher
 """
 
 import re
-from typing import Dict, Any
+from typing import Any, Dict
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -98,7 +99,7 @@ class NLToCypherConverter:
                         cypher = cypher.replace(f"\\{i}", group.capitalize())
 
                     logger.info(
-                        f"Matched pattern, generated Cypher",
+                        "Matched pattern, generated Cypher",
                         extra={
                             "pattern": pattern,
                             "cypher_length": len(cypher),
@@ -173,7 +174,7 @@ class NLToCypherConverter:
                         cypher = f"MATCH (n:{found_label}) RETURN n LIMIT 50"
 
             logger.debug(
-                f"Intelligent fallback generated Cypher",
+                "Intelligent fallback generated Cypher",
                 extra={
                     "label": found_label,
                     "cypher_length": len(cypher),

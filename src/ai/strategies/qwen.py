@@ -1,6 +1,7 @@
-from typing import Dict, Any
-from src.ai.strategies.base import AIStrategy
+from typing import Any, Dict
+
 from src.ai.qwen_client import QwenCoderClient
+from src.ai.strategies.base import AIStrategy
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

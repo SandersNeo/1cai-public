@@ -11,13 +11,13 @@ Migration Script: Celery → Event-Driven Architecture
     python src/migration/celery_to_event_driven.py --migrate
 """
 
-import asyncio
+import argparse
 import ast
+import asyncio
 import logging
 import sys
 from pathlib import Path
 from typing import Dict, List
-import argparse
 
 from src.infrastructure.event_bus import EventBus, EventType
 from src.infrastructure.event_store import InMemoryEventStore
@@ -125,25 +125,25 @@ from src.infrastructure.event_bus import Event, EventHandler, EventType
 
 class {task_info["name"].title()}Handler(EventHandler):
     """Обработчик события {event_type.value}"""
-    
+
     @property
     def event_types(self):
         return {{EventType.{event_type.name}}}
-    
+
     async def handle(self, event: Event) -> None:
         """
         Обработка события
-        
+
         Args:
             event: Событие с payload
         """
         # Извлечение параметров из payload
         payload = event.payload
         {args} = payload.get("{args.split(',')[0] if args else 'data'}", None)
-        
+
         # TODO: Реализовать логику из оригинальной Celery задачи
         # Оригинальная функция: {task_info["name"]}
-        
+
         # Ваша логика здесь
         pass
 '''

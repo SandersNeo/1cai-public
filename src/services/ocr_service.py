@@ -6,14 +6,14 @@ OCR Service for 1C Documents
 Refactored: Non-blocking execution for CPU/GPU intensive tasks
 """
 
+import asyncio
 import os
 import tempfile
-import asyncio
-from typing import Dict, Any, Optional
-from pathlib import Path
-from enum import Enum
-from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, Optional
 
 from src.utils.structured_logging import StructuredLogger
 
@@ -105,8 +105,8 @@ class OCRService:
 
         for attempt in range(max_retries):
             try:
-                from transformers import AutoModel, AutoTokenizer
                 import torch
+                from transformers import AutoModel, AutoTokenizer
 
                 logger.info(
                     f"Loading DeepSeek-OCR model (attempt {attempt + 1}/{max_retries})..."
@@ -251,8 +251,8 @@ class OCRService:
             raise RuntimeError("DeepSeek-OCR not available")
 
         def _run_inference():
-            from PIL import Image
             import torch
+            from PIL import Image
 
             image = Image.open(image_path).convert("RGB")
             inputs = self.deepseek_tokenizer(images=image, return_tensors="pt").to(

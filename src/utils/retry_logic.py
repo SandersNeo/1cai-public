@@ -20,9 +20,9 @@ Best Practices:
 
 import asyncio
 import random
-from typing import Callable, Any, Type, Tuple
-from functools import wraps
 from enum import Enum
+from functools import wraps
+from typing import Any, Callable, Tuple, Type
 
 from src.utils.structured_logging import StructuredLogger
 

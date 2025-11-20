@@ -6,10 +6,12 @@ AI ассистент для DevOps инженеров с полным функ�
 """
 
 import re
-from typing import Dict, Any, List, Optional
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, List, Optional
+
 import yaml
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -646,7 +648,7 @@ resource "aws_instance" "app_server" {
   count         = var.instance_count
   ami           = var.ami_id
   instance_type = var.instance_type
-  
+
   tags = {
     Name        = "${{var.project_name}}-app-${{count.index}}"
     Environment = var.environment
@@ -665,14 +667,14 @@ resource "aws_db_instance" "main" {
   engine_version      = "15.3"
   instance_class      = var.db_instance_class
   allocated_storage   = var.db_storage_gb
-  
+
   db_name  = var.db_name
   username = var.db_username
   password = var.db_password
-  
+
   skip_final_snapshot = false
   final_snapshot_identifier = "${{var.project_name}}-final-snapshot"
-  
+
   tags = {
     Name        = "${{var.project_name}}-database"
     Environment = var.environment
@@ -691,7 +693,7 @@ resource "aws_elasticache_cluster" "redis" {
   node_type            = "cache.t3.micro"
   num_cache_nodes      = 1
   parameter_group_name = "default.redis7"
-  
+
   tags = {
     Name        = "${{var.project_name}}-cache"
     Environment = var.environment

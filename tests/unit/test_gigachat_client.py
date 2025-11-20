@@ -10,8 +10,8 @@ Unit tests for GigaChatClient.
 
 import pytest
 
-from src.ai.clients.gigachat_client import GigaChatClient, GigaChatConfig
 from src.ai.clients.exceptions import LLMNotConfiguredError
+from src.ai.clients.gigachat_client import GigaChatClient, GigaChatConfig
 
 
 class TestGigaChatConfig:

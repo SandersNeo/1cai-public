@@ -6,6 +6,7 @@ Real-time updates for dashboards and notifications
 """
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+
 from src.services.real_time_service import real_time_manager
 from src.utils.structured_logging import StructuredLogger
 

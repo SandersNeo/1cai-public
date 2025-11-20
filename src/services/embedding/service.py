@@ -1,9 +1,9 @@
 import time
-from typing import List, Union, Optional, Dict, Any
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Any, Dict, List, Optional, Union
 
-from src.utils.structured_logging import StructuredLogger
 from src.utils.circuit_breaker import CircuitState
+from src.utils.structured_logging import StructuredLogger
 
 from .cache_manager import CacheManager
 from .model_manager import ModelManager

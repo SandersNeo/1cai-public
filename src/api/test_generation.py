@@ -7,14 +7,16 @@ Refactored: Uses BSLParser for robust parsing
 """
 
 import asyncio
+from datetime import datetime
+from typing import Any, Dict, List, Literal, Optional
+
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
-from typing import Optional, List, Literal, Any, Dict
-from datetime import datetime
-from src.services.openai_code_analyzer import get_openai_analyzer
-from src.middleware.rate_limiter import limiter
-from src.utils.structured_logging import StructuredLogger
+
 from src.ai.agents.code_review.bsl_parser import BSLParser
+from src.middleware.rate_limiter import limiter
+from src.services.openai_code_analyzer import get_openai_analyzer
+from src.utils.structured_logging import StructuredLogger
 
 # Import TypeScript test generation (moved from conditional import)
 try:
@@ -294,7 +296,7 @@ async def generate_test_cases(
                 {
                     "id": f"test-{func['name']}-negative",
                     "name": f"{func['name']}_Negative",
-                    "description": f"Негативный тест с невалидными данными",
+                    "description": "Негативный тест с невалидными данными",
                     "input": generate_invalid_input(func["params"]),
                     "expectedOutput": None,
                     "type": "unit",
@@ -308,7 +310,7 @@ async def generate_test_cases(
                 {
                     "id": f"test-{func['name']}-boundary",
                     "name": f"{func['name']}_Boundary",
-                    "description": f"Граничный тест с минимальными/максимальными значениями",
+                    "description": "Граничный тест с минимальными/максимальными значениями",
                     "input": generate_boundary_input(func["params"]),
                     "expectedOutput": "OK",
                     "type": "unit",
@@ -340,29 +342,29 @@ def generate_bsl_test_code(func: dict, test_cases: List[dict]) -> str:
 
     for test_case in test_cases:
         test_code += f"Процедура Тест_{func['name']}_{test_case['name']}()\n"
-        test_code += f"\n"
+        test_code += "\n"
         test_code += f"\t// {test_case['description']}\n"
-        test_code += f"\t\n"
+        test_code += "\t\n"
 
         # Подготовка входных данных
         for key, value in test_case["input"].items():
             formatted_value = format_value(value)
             test_code += f"\t{key} = {formatted_value};\n"
 
-        test_code += f"\t\n"
+        test_code += "\t\n"
 
         # Вызов функции
         params_str = ", ".join(func["params"])
         test_code += f"\tРезультат = {func['name']}({params_str});\n"
-        test_code += f"\t\n"
+        test_code += "\t\n"
 
         # Проверка результата
         expected = format_value(test_case["expectedOutput"])
         test_code += (
             f'\tОжидаемоИстина(Результат = {expected}, "Ожидалось: {expected}");\n'
         )
-        test_code += f"\n"
-        test_code += f"КонецПроцедуры\n\n"
+        test_code += "\n"
+        test_code += "КонецПроцедуры\n\n"
 
     return test_code
 
@@ -485,10 +487,10 @@ def _generate_python_test_code(
 def test_{function_name}_happy_path():
     # Arrange
     {', '.join(params)} = {param_values if param_values else ''}
-    
+
     # Act
     result = {function_name}({', '.join(params) if params else ''})
-    
+
     # Assert
     assert result is not None
     # TODO: Add specific assertions
@@ -499,7 +501,7 @@ def test_{function_name}_happy_path():
 def test_{function_name}_empty_input():
     # Test with None/empty inputs
     result = {function_name}({', '.join(['None'] * len(params)) if params else ''})
-    
+
     # Should handle gracefully
     assert result is not None or result == expected_default
 """
@@ -598,10 +600,10 @@ describe('{function_name}', () => {{
   it('should work with valid input', () => {{
     // Arrange
     const input = 'test_value';
-    
+
     // Act
     const result = {function_name}(input);
-    
+
     // Assert
     expect(result).toBeDefined();
     // TODO: Add specific assertions
@@ -626,7 +628,7 @@ describe('{function_name}', () => {{
   it('should throw on invalid input', () => {{
     // Arrange
     const invalidInput = {{}};
-    
+
     // Act & Assert
     expect(() => {function_name}(invalidInput)).toThrow();
   }});

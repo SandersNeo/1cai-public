@@ -11,8 +11,8 @@
 2. Иначе возвращает синтетический анализ на основе простых эвристик.
 """
 
-from typing import Any, Dict, Optional
 import logging
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +24,8 @@ class ArchitectAgent:
         self._delegate: Optional[Any] = None
 
         try:
-            from src.ai.agents.architect_agent_extended import (
-                ArchitectAgentExtended,
-            )
+            from src.ai.agents.architect_agent_extended import \
+                ArchitectAgentExtended
 
             self._delegate = ArchitectAgentExtended()
             logger.debug("ArchitectAgentExtended найден и будет использоваться.")

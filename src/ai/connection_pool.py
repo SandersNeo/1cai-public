@@ -10,8 +10,8 @@ Connection Pool для AI Clients
 
 import asyncio
 import logging
-from typing import Dict, Optional
 from contextlib import asynccontextmanager
+from typing import Dict, Optional
 
 import aiohttp
 

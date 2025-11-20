@@ -4,10 +4,13 @@
 Unit tests for LLM Gateway
 """
 
+from unittest.mock import AsyncMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, AsyncMock, patch
+
 from src.services.llm_gateway import LLMGateway
-from src.services.llm_provider_manager import LLMProviderManager, ProviderConfig
+from src.services.llm_provider_manager import (LLMProviderManager,
+                                               ProviderConfig)
 
 
 @pytest.fixture

@@ -21,13 +21,7 @@ import re
 from pathlib import Path
 from typing import Any, Dict, Optional, Set
 
-from src.ai.code_graph import (
-    CodeGraphBackend,
-    Edge,
-    EdgeKind,
-    Node,
-    NodeKind,
-)
+from src.ai.code_graph import CodeGraphBackend, Edge, EdgeKind, Node, NodeKind
 
 logger = logging.getLogger(__name__)
 

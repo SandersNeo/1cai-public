@@ -10,13 +10,14 @@ Best Practices:
 """
 
 import logging
-import sys
 import os
+import sys
+import uuid
+from contextvars import ContextVar
 from datetime import datetime
 from typing import Dict, Optional
-from contextvars import ContextVar
+
 from pythonjsonlogger import jsonlogger
-import uuid
 
 
 class StructuredLogger:

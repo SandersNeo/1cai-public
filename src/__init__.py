@@ -12,8 +12,8 @@
 `Mock` в builtins (если он там ещё не объявлен).
 """
 
-from unittest.mock import Mock  # noqa: F401
 import builtins
+from unittest.mock import Mock  # noqa: F401
 
 if not hasattr(builtins, "Mock"):
     builtins.Mock = Mock

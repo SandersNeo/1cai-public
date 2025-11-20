@@ -4,11 +4,11 @@
 
 from __future__ import annotations
 
+import json
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Dict, List
-import json
-import uuid
 
 ISO_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 MAX_TEXT_LENGTH = 2048

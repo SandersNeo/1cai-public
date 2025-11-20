@@ -6,6 +6,7 @@ LoRA Fine-Tuning Pipeline
 """
 
 from pathlib import Path
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -70,15 +71,11 @@ class LoRAFineTuner:
         logger.info("Starting LoRA fine-tuning", extra={"base_model": self.base_model})
 
         try:
-            from transformers import (
-                AutoModelForCausalLM,
-                AutoTokenizer,
-                TrainingArguments,
-                Trainer,
-            )
-            from peft import LoraConfig, get_peft_model, TaskType
-            from datasets import load_dataset
             import torch
+            from datasets import load_dataset
+            from peft import LoraConfig, TaskType, get_peft_model
+            from transformers import (AutoModelForCausalLM, AutoTokenizer,
+                                      Trainer, TrainingArguments)
 
             # 1. Load base model
             logger.info("Loading base model...")
@@ -216,7 +213,7 @@ if __name__ == "__main__":
         result = await tuner.fine_tune(dataset_path)
 
         if result["status"] == "success":
-            print(f"\n✅ Fine-tuning complete!")
+            print("\n✅ Fine-tuning complete!")
             print(f"   Model saved to: {result['model_path']}")
             print(f"   Training loss: {result['train_loss']:.4f}")
         else:

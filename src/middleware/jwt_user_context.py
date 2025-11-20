@@ -2,11 +2,12 @@
 Security Middleware for User Context
 """
 
+from typing import Any
+
 from fastapi import Request
+from pydantic import BaseModel
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
-from pydantic import BaseModel
-from typing import Any
 
 
 class CurrentUser(BaseModel):

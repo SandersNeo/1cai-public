@@ -7,6 +7,7 @@ Auto-Fixer
 
 import re
 from typing import Dict, List
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -95,7 +96,7 @@ class AutoFixer:
             func_end = match.group(3)
 
             # Wrap body in try-catch
-            wrapped_body = f"""    
+            wrapped_body = f"""
     Попытка
         {func_body.strip()}
     Исключение
@@ -106,7 +107,7 @@ class AutoFixer:
             ,
             ПодробноеПредставлениеОшибки(ИнформацияОбОшибке())
         );
-        
+
         Возврат Неопределено;
     КонецПопытки;
     """

@@ -4,8 +4,8 @@
 Integration-style tests for src.api.graph_api using TestClient with mocked dependencies.
 """
 
-from fastapi.testclient import TestClient
 import pytest
+from fastapi.testclient import TestClient
 
 from src.api import graph_api
 

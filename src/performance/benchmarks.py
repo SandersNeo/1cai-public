@@ -23,11 +23,12 @@ Performance Benchmarks - Бенчмарки для всех компоненто
 import logging
 import time
 import tracemalloc
-import psutil
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List
 from statistics import mean
+from typing import Any, Dict, List
+
+import psutil
 
 logger = logging.getLogger(__name__)
 

@@ -7,9 +7,11 @@ Integration tests for Event-Driven ML Tasks - 1000% coverage
 Тестирование замены Celery на Event-Driven Architecture
 """
 
-import pytest
 import asyncio
-from src.infrastructure.event_bus import EventBus, EventType, EventPublisher
+
+import pytest
+
+from src.infrastructure.event_bus import EventBus, EventPublisher, EventType
 from src.infrastructure.event_store import InMemoryEventStore
 
 

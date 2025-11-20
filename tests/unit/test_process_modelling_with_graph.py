@@ -6,8 +6,9 @@ Tests for ProcessModellerWithGraph (process_modelling_with_graph.py).
 
 import pytest
 
-from src.ai.code_graph import Edge, EdgeKind, InMemoryCodeGraphBackend, Node, NodeKind
 from src.ai.agents.process_modelling_with_graph import ProcessModellerWithGraph
+from src.ai.code_graph import (Edge, EdgeKind, InMemoryCodeGraphBackend, Node,
+                               NodeKind)
 
 
 @pytest.mark.asyncio

@@ -5,14 +5,16 @@ Tenant Management API
 Registration, billing, usage tracking
 """
 
+import hashlib
 import os
 import uuid
 from datetime import datetime, timedelta
-from typing import Dict, Any
-from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel, EmailStr
+from typing import Any, Dict
+
 import asyncpg
-import hashlib
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, EmailStr
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

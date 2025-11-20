@@ -5,13 +5,15 @@ Advanced Security Features
 OAuth2, 2FA, Audit Logging, Compliance
 """
 
+import hashlib
 import secrets
-import pyotp
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Any, Dict
+
+import pyotp
 from fastapi import HTTPException
 from jose import jwt
-import hashlib
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -129,7 +131,7 @@ class AdvancedSecurity:
             async with pool.acquire() as conn:
                 await conn.execute(
                     """
-                    INSERT INTO audit_log 
+                    INSERT INTO audit_log
                     (user_id, action, entity_type, entity_id, changes, ip_address, user_agent)
                     VALUES ($1, $2, $3, $4, $5, $6, $7)
                     """,

@@ -8,7 +8,6 @@ from fastapi.testclient import TestClient
 
 from src.ai.orchestrator import app
 
-
 client = TestClient(app)
 
 

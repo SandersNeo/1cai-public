@@ -5,6 +5,7 @@ Unit тесты для SemanticCacheANN
 """
 
 import pytest
+
 from src.services.advanced_optimizations import SemanticCacheANN
 
 

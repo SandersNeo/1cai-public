@@ -4,8 +4,10 @@
 Unit tests for QwenCoderClient
 """
 
+from unittest.mock import AsyncMock, patch
+
 import pytest
-from unittest.mock import patch, AsyncMock
+
 from src.ai.qwen_client import QwenCoderClient
 
 

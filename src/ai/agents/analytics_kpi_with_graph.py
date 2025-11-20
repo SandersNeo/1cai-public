@@ -261,21 +261,21 @@ class KPIGeneratorWithGraph:
                             "kpi_id": kpi["id"],
                             "query": """
 -- Code Coverage для фичи
-SELECT 
+SELECT
     COUNT(DISTINCT code_nodes.id) as code_count,
     COUNT(DISTINCT test_nodes.id) as test_count,
-    ROUND((COUNT(DISTINCT test_nodes.id)::numeric / 
+    ROUND((COUNT(DISTINCT test_nodes.id)::numeric /
            NULLIF(COUNT(DISTINCT code_nodes.id), 0)) * 100, 2) as coverage_percent
 FROM graph_nodes code_nodes
-LEFT JOIN graph_edges code_to_test 
-    ON code_nodes.id = code_to_test.source_id 
+LEFT JOIN graph_edges code_to_test
+    ON code_nodes.id = code_to_test.source_id
     AND code_to_test.kind = 'TESTED_BY'
-LEFT JOIN graph_nodes test_nodes 
+LEFT JOIN graph_nodes test_nodes
     ON code_to_test.target_id = test_nodes.id
 WHERE code_nodes.kind = 'MODULE'
     AND code_nodes.id IN (
-        SELECT target_id FROM graph_edges 
-        WHERE source_id = 'ba_requirement:{}' 
+        SELECT target_id FROM graph_edges
+        WHERE source_id = 'ba_requirement:{}'
         AND kind = 'IMPLEMENTS'
     )
 """.format(
@@ -291,16 +291,16 @@ WHERE code_nodes.kind = 'MODULE'
                             "kpi_id": kpi["id"],
                             "query": """
 -- Incident Rate
-SELECT 
+SELECT
     COUNT(DISTINCT modules.id) as module_count,
     COUNT(DISTINCT incidents.id) as incident_count,
-    ROUND(COUNT(DISTINCT incidents.id)::numeric / 
+    ROUND(COUNT(DISTINCT incidents.id)::numeric /
           NULLIF(COUNT(DISTINCT modules.id), 0), 2) as incident_rate
 FROM graph_nodes modules
-LEFT JOIN graph_edges module_to_incident 
-    ON modules.id = module_to_incident.source_id 
+LEFT JOIN graph_edges module_to_incident
+    ON modules.id = module_to_incident.source_id
     AND module_to_incident.kind = 'TRIGGERS_INCIDENT'
-LEFT JOIN graph_nodes incidents 
+LEFT JOIN graph_nodes incidents
     ON module_to_incident.target_id = incidents.id
 WHERE modules.kind = 'MODULE'
 """,
@@ -317,7 +317,7 @@ WHERE modules.kind = 'MODULE'
                             "kpi_id": kpi["id"],
                             "query": """
 -- Revenue Impact (требует внешней таблицы revenue)
-SELECT 
+SELECT
     feature_id,
     SUM(revenue) as total_revenue,
     COUNT(DISTINCT user_id) as active_users,

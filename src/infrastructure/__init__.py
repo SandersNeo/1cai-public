@@ -11,10 +11,10 @@ Infrastructure Layer - Революционные компоненты
 - Unified Data Layer
 """
 
+from .data_layer import DataLoader, UnifiedDataLayer
 from .event_bus import EventBus, EventPublisher, EventSubscriber
 from .event_store import EventStore, EventStream
 from .serverless import EdgeFunction, ServerlessFunction
-from .data_layer import UnifiedDataLayer, DataLoader
 
 __all__ = [
     "EventBus",

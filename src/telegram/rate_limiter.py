@@ -5,8 +5,8 @@ Rate limiter для Telegram бота
 Ограничение запросов на пользователя
 """
 
-from datetime import datetime, timedelta
 from collections import defaultdict
+from datetime import datetime, timedelta
 from typing import Dict, Tuple
 
 

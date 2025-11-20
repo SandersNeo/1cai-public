@@ -4,12 +4,13 @@
 API для управления рисками в 1C AI-экосистеме
 """
 
-from typing import Dict, List, Optional, Any
 from datetime import datetime
-from src.utils.structured_logging import StructuredLogger
+from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException, APIRouter
+from fastapi import APIRouter, FastAPI, HTTPException
 from pydantic import BaseModel, Field
+
+from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 

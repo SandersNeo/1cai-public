@@ -10,6 +10,7 @@ Monitoring API Endpoints
 """
 
 from fastapi import APIRouter, HTTPException
+
 from src.monitoring.prometheus_metrics import metrics_endpoint
 from src.services.health_checker import get_health_checker
 from src.utils.structured_logging import StructuredLogger

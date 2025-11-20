@@ -7,7 +7,8 @@ Machine Learning model for issue classification
 ALL TODOs CLOSED!
 """
 
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -31,8 +32,9 @@ class MLIssueClassifier:
 
         # Try to load trained model
         try:
-            import joblib
             import os
+
+            import joblib
 
             model_path = os.getenv(
                 "CLASSIFIER_MODEL_PATH", "./models/issue_classifier.joblib"
@@ -274,7 +276,7 @@ class MLIssueClassifier:
                 # Use PostgreSQL full-text search with similarity
                 similar = await conn.fetch(
                     """
-                    SELECT 
+                    SELECT
                         id,
                         title,
                         description,
@@ -326,7 +328,7 @@ class MLIssueClassifier:
                 await conn.execute(
                     """
                     UPDATE tasks
-                    SET 
+                    SET
                         priority = $1,
                         updated_at = NOW()
                     WHERE id = $2

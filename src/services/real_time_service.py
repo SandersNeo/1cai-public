@@ -13,9 +13,11 @@ Real-Time Service
 
 import asyncio
 import re
-from typing import Dict, Set, Any
 from datetime import datetime
+from typing import Any, Dict, Set
+
 from fastapi import WebSocket
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -310,14 +312,11 @@ async def start_dashboard_updater():
     Background task that periodically updates dashboards
     Broadcasts to all connected clients
     """
-    from src.api.dashboard_api import (
-        get_owner_dashboard,
-        get_executive_dashboard,
-        get_pm_dashboard,
-        get_developer_dashboard,
-        get_team_lead_dashboard,
-        get_ba_dashboard,
-    )
+    from src.api.dashboard_api import (get_ba_dashboard,
+                                       get_developer_dashboard,
+                                       get_executive_dashboard,
+                                       get_owner_dashboard, get_pm_dashboard,
+                                       get_team_lead_dashboard)
     from src.database import get_pool
 
     while True:

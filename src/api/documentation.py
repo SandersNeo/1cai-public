@@ -6,14 +6,17 @@ API endpoints для автоматической генерации докум�
 """
 
 import asyncio
+from datetime import datetime
+from typing import Any, Dict, List, Literal, Optional
+
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
-from typing import Optional, Literal, List, Dict, Any
-from datetime import datetime
-from src.services.documentation_generation_service import get_documentation_generator
-from src.utils.structured_logging import StructuredLogger
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+
+from src.services.documentation_generation_service import \
+    get_documentation_generator
+from src.utils.structured_logging import StructuredLogger
 
 limiter = Limiter(key_func=get_remote_address)
 logger = StructuredLogger(__name__).logger

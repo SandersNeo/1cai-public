@@ -16,11 +16,8 @@ logger = logging.getLogger(__name__)
 
 try:
     from src.monitoring.prometheus_metrics import (
-        set_ba_session_counts,
-        track_ba_session_audit_failure,
-        track_ba_session_disconnect,
-        track_ba_session_event,
-    )
+        set_ba_session_counts, track_ba_session_audit_failure,
+        track_ba_session_disconnect, track_ba_session_event)
 except Exception:  # pragma: no cover - metrics optional
 
     def set_ba_session_counts(*args: Any, **kwargs: Any) -> None:  # type: ignore[unused-ignore]  # noqa: ANN401

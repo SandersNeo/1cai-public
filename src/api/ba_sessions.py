@@ -5,14 +5,8 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional
 
-from fastapi import (
-    APIRouter,
-    Body,
-    HTTPException,
-    Query,
-    WebSocket,
-    WebSocketDisconnect,
-)
+from fastapi import (APIRouter, Body, HTTPException, Query, WebSocket,
+                     WebSocketDisconnect)
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -139,9 +133,8 @@ async def build_traceability_matrix(request: TraceabilityRequest) -> Dict[str, A
     requirements → code → tests → incidents.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import (
-            BusinessAnalystAgentExtended,
-        )
+        from src.ai.agents.business_analyst_agent_extended import \
+            BusinessAnalystAgentExtended
 
         agent = BusinessAnalystAgentExtended()
 
@@ -185,8 +178,8 @@ async def build_risk_register(
     - Отсутствие кода, реализующего требование
     """
     try:
-        from src.ai.code_graph import InMemoryCodeGraphBackend
         from src.ai.agents.traceability_with_graph import TraceabilityWithGraph
+        from src.ai.code_graph import InMemoryCodeGraphBackend
 
         backend = InMemoryCodeGraphBackend()
         traceability = TraceabilityWithGraph(backend)
@@ -223,8 +216,8 @@ async def build_full_traceability_report(
     - Compliance status
     """
     try:
-        from src.ai.code_graph import InMemoryCodeGraphBackend
         from src.ai.agents.traceability_with_graph import TraceabilityWithGraph
+        from src.ai.code_graph import InMemoryCodeGraphBackend
 
         backend = InMemoryCodeGraphBackend()
         traceability = TraceabilityWithGraph(backend)
@@ -271,9 +264,8 @@ async def generate_kpis(request: KPIGenerationRequest) -> Dict[str, Any]:
     на основе реальных метрик (code coverage, test coverage, incident rate, etc.).
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import (
-            BusinessAnalystAgentExtended,
-        )
+        from src.ai.agents.business_analyst_agent_extended import \
+            BusinessAnalystAgentExtended
 
         agent = BusinessAnalystAgentExtended()
 
@@ -339,9 +331,8 @@ async def generate_process_model(request: ProcessModelRequest) -> Dict[str, Any]
     Использует Unified Change Graph для связи процесса с кодом, требованиями и тестами.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import (
-            BusinessAnalystAgentExtended,
-        )
+        from src.ai.agents.business_analyst_agent_extended import \
+            BusinessAnalystAgentExtended
 
         agent = BusinessAnalystAgentExtended()
 
@@ -373,9 +364,8 @@ async def generate_journey_map(request: JourneyMapRequest) -> Dict[str, Any]:
     Использует Unified Change Graph для поиска touchpoints (API endpoints, модули).
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import (
-            BusinessAnalystAgentExtended,
-        )
+        from src.ai.agents.business_analyst_agent_extended import \
+            BusinessAnalystAgentExtended
 
         agent = BusinessAnalystAgentExtended()
 
@@ -412,9 +402,8 @@ async def validate_process(
     и связей с кодом/тестами через граф.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import (
-            BusinessAnalystAgentExtended,
-        )
+        from src.ai.agents.business_analyst_agent_extended import \
+            BusinessAnalystAgentExtended
 
         agent = BusinessAnalystAgentExtended()
 
@@ -473,9 +462,8 @@ async def sync_requirements_to_jira(request: SyncRequirementsRequest) -> Dict[st
     ссылки на код и тесты из Unified Change Graph.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import (
-            BusinessAnalystAgentExtended,
-        )
+        from src.ai.agents.business_analyst_agent_extended import \
+            BusinessAnalystAgentExtended
 
         agent = BusinessAnalystAgentExtended()
 
@@ -508,9 +496,8 @@ async def sync_bpmn_to_confluence(request: SyncBPMNRequest) -> Dict[str, Any]:
     ссылками на код/тесты из Unified Change Graph.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import (
-            BusinessAnalystAgentExtended,
-        )
+        from src.ai.agents.business_analyst_agent_extended import \
+            BusinessAnalystAgentExtended
 
         agent = BusinessAnalystAgentExtended()
 
@@ -551,9 +538,8 @@ async def sync_kpi_to_confluence(
     Синхронизировать KPI отчёт в Confluence.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import (
-            BusinessAnalystAgentExtended,
-        )
+        from src.ai.agents.business_analyst_agent_extended import \
+            BusinessAnalystAgentExtended
 
         agent = BusinessAnalystAgentExtended()
 
@@ -594,9 +580,8 @@ async def sync_traceability_to_confluence(
     Синхронизировать Traceability matrix в Confluence.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import (
-            BusinessAnalystAgentExtended,
-        )
+        from src.ai.agents.business_analyst_agent_extended import \
+            BusinessAnalystAgentExtended
 
         agent = BusinessAnalystAgentExtended()
 
@@ -673,9 +658,8 @@ async def generate_enablement_plan(request: EnablementPlanRequest) -> Dict[str, 
     и связанных артефактов.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import (
-            BusinessAnalystAgentExtended,
-        )
+        from src.ai.agents.business_analyst_agent_extended import \
+            BusinessAnalystAgentExtended
 
         agent = BusinessAnalystAgentExtended()
 
@@ -705,9 +689,8 @@ async def generate_guide(request: GuideRequest) -> Dict[str, Any]:
     Сгенерировать гайд по теме с примерами из графа.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import (
-            BusinessAnalystAgentExtended,
-        )
+        from src.ai.agents.business_analyst_agent_extended import \
+            BusinessAnalystAgentExtended
 
         agent = BusinessAnalystAgentExtended()
 
@@ -737,9 +720,8 @@ async def generate_presentation(request: PresentationRequest) -> Dict[str, Any]:
     Сгенерировать outline презентации.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import (
-            BusinessAnalystAgentExtended,
-        )
+        from src.ai.agents.business_analyst_agent_extended import \
+            BusinessAnalystAgentExtended
 
         agent = BusinessAnalystAgentExtended()
 
@@ -777,9 +759,8 @@ async def generate_onboarding_checklist(
     Сгенерировать onboarding чек-лист для роли.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import (
-            BusinessAnalystAgentExtended,
-        )
+        from src.ai.agents.business_analyst_agent_extended import \
+            BusinessAnalystAgentExtended
 
         agent = BusinessAnalystAgentExtended()
 

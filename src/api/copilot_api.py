@@ -5,10 +5,11 @@
 Backend для VSCode extension и других клиентов
 """
 
+import asyncio
 import os
 import re
-import asyncio
 from typing import Dict, List
+
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 from slowapi import Limiter
@@ -279,21 +280,21 @@ class CopilotService:
 //   Тип - Описание результата
 //
 Функция {func_name}(Параметр1) Экспорт
-    
+
     Результат = Неопределено;
-    
+
     Попытка
         // Реализация функции
-        
+
     Исключение
-        ЗаписьЖурналаРегистрации("Ошибка в {func_name}", 
+        ЗаписьЖурналаРегистрации("Ошибка в {func_name}",
             УровеньЖурналаРегистрации.Ошибка,,,
             ОписаниеОшибки());
         ВызватьИсключение;
     КонецПопытки;
-    
+
     Возврат Результат;
-    
+
 КонецФункции
 """
 
@@ -326,17 +327,17 @@ class CopilotService:
 //   Параметр1 - Произвольный - Описание параметра
 //
 Процедура {proc_name}(Параметр1) Экспорт
-    
+
     Попытка
         // Реализация процедуры
-        
+
     Исключение
-        ЗаписьЖурналаРегистрации("Ошибка в {proc_name}", 
+        ЗаписьЖурналаРегистрации("Ошибка в {proc_name}",
             УровеньЖурналаРегистрации.Ошибка,,,
             ОписаниеОшибки());
         ВызватьИсключение;
     КонецПопытки;
-    
+
 КонецПроцедуры
 """
 
@@ -370,21 +371,21 @@ class CopilotService:
 // Тест для функции {clean_name}
 //
 Процедура Тест_{clean_name}() Экспорт
-    
+
     // Arrange (Подготовка данных)
     ВходныеДанные = "test_value";
     ОжидаемыйРезультат = "expected_value";
-    
+
     // Act (Выполнение)
     ФактическийРезультат = {clean_name}(ВходныеДанные);
-    
+
     // Assert (Проверка)
     юТест.ПроверитьРавенство(
-        ФактическийРезультат, 
+        ФактическийРезультат,
         ОжидаемыйРезультат,
         "Функция {clean_name} должна вернуть ожидаемое значение"
     );
-    
+
 КонецПроцедуры
 """
 
@@ -399,9 +400,9 @@ copilot_service = CopilotService()
     summary="Get code completions",
     description="""
     Get autocomplete suggestions for code.
-    
+
     **Rate Limit:** 60 completions per minute
-    
+
     **Features:**
     - Context-aware suggestions
     - Multiple suggestions with scores
@@ -495,14 +496,14 @@ async def get_completions(api_request: Request, request: CompletionRequest):
     summary="Generate code from prompt",
     description="""
     Generate code (function, procedure, or test) from natural language prompt.
-    
+
     **Rate Limit:** 10 generations per minute
-    
+
     **Supported Types:**
     - `function`: Generate BSL function
     - `procedure`: Generate BSL procedure
     - `test`: Generate test code
-    
+
     **Features:**
     - Template-based generation
     - Smart function naming
@@ -588,16 +589,16 @@ async def generate_code(api_request: Request, request: GenerationRequest):
     summary="Optimize code",
     description="""
     Analyze and optimize code for performance, security, and best practices.
-    
+
     **Rate Limit:** 10 optimizations per minute
-    
+
     **Optimizations Detected:**
     - N+1 query problems
     - Unused variables
     - String concatenation inefficiencies
     - Type checking improvements
     - Security issues
-    
+
     **Returns:**
     - Optimized code
     - List of improvements with impact levels
@@ -731,9 +732,9 @@ async def optimize_code(api_request: Request, request: OptimizationRequest):
     summary="Generate test code",
     description="""
     Generate test code for functions or procedures.
-    
+
     **Rate Limit:** 10 test generations per minute
-    
+
     **Test Framework:**
     - Vanessa framework for BSL
     - Follows AAA pattern (Arrange, Act, Assert)

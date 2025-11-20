@@ -7,11 +7,13 @@ E2E tests for Self-Evolving System - 1000% coverage
 End-to-end тестирование самоэволюционирующей системы
 """
 
-import pytest
 import asyncio
 from unittest.mock import AsyncMock, MagicMock
-from src.ai.self_evolving_ai import SelfEvolvingAI, EvolutionStage
+
+import pytest
+
 from src.ai.llm_provider_abstraction import LLMProviderAbstraction
+from src.ai.self_evolving_ai import EvolutionStage, SelfEvolvingAI
 from src.infrastructure.event_bus import EventBus, EventType
 
 

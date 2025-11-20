@@ -10,9 +10,11 @@ Security Monitoring API - endpoints для security dashboard
 - Улучшена обработка ошибок
 """
 
-from fastapi import APIRouter, HTTPException, Query
-from typing import Optional
 from datetime import datetime, timedelta
+from typing import Optional
+
+from fastapi import APIRouter, HTTPException, Query
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

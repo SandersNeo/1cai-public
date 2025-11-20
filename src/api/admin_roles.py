@@ -9,16 +9,9 @@ from typing import Dict, Optional
 from fastapi import APIRouter, Depends, Response, status
 from pydantic import BaseModel, Field
 
-from src.security import (
-    CurrentUser,
-    get_audit_logger,
-    grant_permission,
-    grant_role,
-    revoke_permission,
-    revoke_role,
-    require_roles,
-)
-
+from src.security import (CurrentUser, get_audit_logger, grant_permission,
+                          grant_role, require_roles, revoke_permission,
+                          revoke_role)
 
 router = APIRouter(prefix="/admin/users", tags=["admin", "roles"])
 audit_logger = get_audit_logger()

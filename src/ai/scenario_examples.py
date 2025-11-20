@@ -17,16 +17,11 @@ from __future__ import annotations
 
 from typing import List
 
-from src.ai.scenario_hub import (
-    AutonomyLevel,
-    ScenarioExecutionReport,
-    ScenarioGoal,
-    ScenarioPlan,
-    ScenarioRiskLevel,
-    ScenarioStep,
-    TrustScore,
-)
-from src.ai.graph_refs_builder import build_refs_for_feature, build_refs_for_service
+from src.ai.graph_refs_builder import (build_refs_for_feature,
+                                       build_refs_for_service)
+from src.ai.scenario_hub import (AutonomyLevel, ScenarioExecutionReport,
+                                 ScenarioGoal, ScenarioPlan, ScenarioRiskLevel,
+                                 ScenarioStep, TrustScore)
 
 
 def example_ba_dev_qa_scenario(feature_id: str) -> ScenarioPlan:

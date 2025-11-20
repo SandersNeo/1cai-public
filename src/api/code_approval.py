@@ -11,13 +11,14 @@ Code Approval API - для human-in-the-loop approval process
 - Timeout handling
 """
 
-from fastapi import APIRouter, HTTPException, Depends, Request
-from pydantic import BaseModel, Field
+import asyncio
+from datetime import timedelta
 from typing import List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel, Field
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from datetime import timedelta
-import asyncio
 
 from src.ai.agents.developer_agent_secure import DeveloperAISecure
 from src.utils.structured_logging import StructuredLogger

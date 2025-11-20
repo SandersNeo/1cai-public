@@ -11,12 +11,13 @@ Configuration Knowledge Base Service
 - Улучшена обработка ошибок
 """
 
-import os
 import json
+import os
 import re
-from typing import List, Dict, Any, Optional
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -149,7 +150,7 @@ class ConfigurationKnowledgeBase:
             )
 
             logger.debug(
-                f"Configuration info retrieved",
+                "Configuration info retrieved",
                 extra={
                     "config_name": config_name,
                     "config_key": config_key,

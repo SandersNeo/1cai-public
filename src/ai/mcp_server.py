@@ -13,10 +13,11 @@ Model Context Protocol implementation
 """
 
 import os
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
+import httpx
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-import httpx
 
 from src.ai.orchestrator import AIOrchestrator
 from src.config import settings

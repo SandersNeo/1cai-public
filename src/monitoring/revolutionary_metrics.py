@@ -17,10 +17,10 @@ Revolutionary Metrics - Мониторинг всех революционных
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, Optional
 from enum import Enum
+from typing import Any, Dict, Optional
 
-from prometheus_client import Counter, Histogram, Gauge
+from prometheus_client import Counter, Gauge, Histogram
 
 logger = None  # Будет инициализирован при импорте
 

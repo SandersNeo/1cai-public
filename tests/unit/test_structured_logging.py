@@ -4,6 +4,7 @@
 Unit tests for Structured Logging
 """
 import logging
+
 from src.utils.structured_logging import StructuredLogger
 
 

@@ -5,19 +5,19 @@ API endpoints для Code Review в реальном времени
 Версия: 1.0.0
 """
 
+import asyncio
+from datetime import datetime
+from typing import List, Literal, Optional
+
 from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, Field
-from typing import Optional, List, Literal
-from datetime import datetime
-import asyncio
+
+from src.api.code_analyzers import (analyze_javascript_code,
+                                    analyze_python_code,
+                                    analyze_typescript_code)
+from src.middleware.rate_limiter import PUBLIC_RATE_LIMIT, limiter
 from src.services.caching_service import get_cache_service
-from src.middleware.rate_limiter import limiter, PUBLIC_RATE_LIMIT
 from src.services.openai_code_analyzer import get_openai_analyzer
-from src.api.code_analyzers import (
-    analyze_typescript_code,
-    analyze_python_code,
-    analyze_javascript_code,
-)
 from src.utils.structured_logging import StructuredLogger
 
 router = APIRouter(prefix="/api/code-review")
@@ -281,7 +281,7 @@ def analyze_bsl_code(code: str) -> dict:
     summary="Real-time code analysis",
     description="""
     Analyze code and provide improvement suggestions in real-time.
-    
+
     **Supported Languages:**
     - BSL (1C:Enterprise)
     - TypeScript
@@ -289,18 +289,18 @@ def analyze_bsl_code(code: str) -> dict:
     - Python
     - Java
     - C#
-    
+
     **Analysis Features:**
     - Performance issues (N+1 queries, inefficient loops)
     - Security vulnerabilities (SQL injection, hardcoded secrets)
     - Code quality metrics (complexity, maintainability)
     - Best practices violations
     - Style suggestions
-    
+
     **Caching:**
     - Results are cached for 1 hour
     - Cache key based on code content hash
-    
+
     **Rate Limit:** Public rate limit (configurable)
     """,
     responses={

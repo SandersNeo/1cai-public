@@ -3,15 +3,15 @@ Code Sync Service
 Scans the repository and updates Wiki pages to reflect the codebase structure and documentation.
 """
 
-import os
 import ast
+import os
+import uuid
 from pathlib import Path
 from typing import List, Optional, Set
-import uuid
 
-from src.services.wiki.service import WikiService
-from src.services.wiki.models import WikiPageCreate, WikiPageUpdate
 from src.database import get_db_connection
+from src.services.wiki.models import WikiPageCreate, WikiPageUpdate
+from src.services.wiki.service import WikiService
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

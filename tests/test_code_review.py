@@ -4,16 +4,17 @@
 Tests для AI Code Review Agent
 """
 
-import pytest
 import sys
 from pathlib import Path
+
+import pytest
 
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.ai.agents.code_review.ai_reviewer import AICodeReviewer
-from src.ai.agents.code_review.security_scanner import SecurityScanner
 from src.ai.agents.code_review.performance_analyzer import PerformanceAnalyzer
+from src.ai.agents.code_review.security_scanner import SecurityScanner
 
 
 @pytest.mark.asyncio
@@ -105,7 +106,7 @@ async def test_good_code_passes():
 //   Число - Сумма заказа
 //
 Функция РассчитатьСуммуЗаказа(Заказ) Экспорт
-    
+
     Попытка
         Запрос = Новый Запрос;
         Запрос.Текст = "
@@ -115,23 +116,23 @@ async def test_good_code_passes():
         |    Документ.ЗаказПокупателя.Товары
         |ГДЕ
         |    Ссылка = &Заказ";
-        
+
         Запрос.УстановитьПараметр("Заказ", Заказ);
-        
+
         Результат = Запрос.Выполнить();
         Выборка = Результат.Выбрать();
-        
+
         Если Выборка.Следующий() Тогда
             Возврат Выборка.Сумма;
         Иначе
             Возврат 0;
         КонецЕсли;
-        
+
     Исключение
         ЗаписьЖурналаРегистрации("Ошибка", УровеньЖурналаРегистрации.Ошибка);
         Возврат 0;
     КонецПопытки;
-    
+
 КонецФункции
 """
 

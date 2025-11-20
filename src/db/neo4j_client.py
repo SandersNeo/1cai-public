@@ -6,10 +6,10 @@ Manages graph database operations with enhanced security and resilience
 """
 
 import os
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 try:
-    from neo4j import GraphDatabase, Driver, Session
+    from neo4j import Driver, GraphDatabase, Session
 
     NEO4J_AVAILABLE = True
 except ImportError:
@@ -162,7 +162,7 @@ class Neo4jClient:
             result = session.run(
                 """
                 MERGE (c:Configuration {name: $name})
-                ON CREATE SET 
+                ON CREATE SET
                     c.full_name = $full_name,
                     c.version = $version,
                     c.created_at = datetime(),

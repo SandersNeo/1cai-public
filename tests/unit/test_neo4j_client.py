@@ -4,7 +4,8 @@
 Unit tests for Neo4jClient
 """
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from src.db.neo4j_client import Neo4jClient
 
 

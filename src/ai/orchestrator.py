@@ -7,29 +7,22 @@ Refactored: API endpoints moved to src/api/orchestrator_api.py
 """
 
 import asyncio
-from typing import Dict, Any, Optional
-
-from src.utils.structured_logging import StructuredLogger
-from src.monitoring.prometheus_metrics import (
-    orchestrator_cache_hits_total,
-    orchestrator_cache_misses_total,
-)
+from typing import Any, Dict, Optional
 
 # Import extracted classifier
-from src.ai.query_classifier import QueryClassifier, AIService, QueryIntent
-
+from src.ai.query_classifier import AIService, QueryClassifier, QueryIntent
+from src.ai.strategies.graph import Neo4jStrategy
+from src.ai.strategies.kimi import KimiStrategy
+from src.ai.strategies.llm_providers import (GigaChatStrategy,
+                                             NaparnikStrategy, OllamaStrategy,
+                                             TabnineStrategy,
+                                             YandexGPTStrategy)
 # Import strategies
 from src.ai.strategies.qwen import QwenStrategy
-from src.ai.strategies.kimi import KimiStrategy
-from src.ai.strategies.graph import Neo4jStrategy
 from src.ai.strategies.semantic import QdrantStrategy
-from src.ai.strategies.llm_providers import (
-    GigaChatStrategy,
-    YandexGPTStrategy,
-    NaparnikStrategy,
-    OllamaStrategy,
-    TabnineStrategy,
-)
+from src.monitoring.prometheus_metrics import (orchestrator_cache_hits_total,
+                                               orchestrator_cache_misses_total)
+from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 
@@ -104,13 +97,13 @@ class AIOrchestrator:
         if cached_value:
             try:
                 orchestrator_cache_hits_total.inc()
-            except:
+            except Exception:
                 pass
             return cached_value
 
         try:
             orchestrator_cache_misses_total.inc()
-        except:
+        except Exception:
             pass
 
         # Classify

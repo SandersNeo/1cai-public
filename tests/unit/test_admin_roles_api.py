@@ -4,14 +4,10 @@
 
 from __future__ import annotations
 
-
 import pytest
 
-from src.api.admin_roles import (
-    RoleRequest,
-    grant_role_endpoint,
-    revoke_permission_endpoint,
-)
+from src.api.admin_roles import (RoleRequest, grant_role_endpoint,
+                                 revoke_permission_endpoint)
 from src.security.auth import CurrentUser
 
 

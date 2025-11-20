@@ -16,11 +16,10 @@ import time
 from typing import Optional
 
 from fastapi import HTTPException, status
+from redis.asyncio import Redis
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
-
-from redis.asyncio import Redis
 
 from src.security.auth import AuthService
 from src.utils.structured_logging import StructuredLogger

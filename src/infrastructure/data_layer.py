@@ -19,7 +19,7 @@ Unified Data Layer - Абстракция над множественными Б
 import asyncio
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, TypeVar, Generic
+from typing import Any, Dict, Generic, List, Optional, TypeVar
 
 logger = logging.getLogger(__name__)
 

@@ -4,9 +4,11 @@ Handles file uploads to S3-compatible storage (MinIO/AWS)
 """
 
 import os
+from typing import Optional
+
 import boto3
 from botocore.exceptions import ClientError
-from typing import Optional
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

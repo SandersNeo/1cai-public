@@ -3,8 +3,10 @@
 """
 Integration tests for Kimi-K2-Thinking client
 """
-import pytest
 import os
+
+import pytest
+
 from src.ai.clients.kimi_client import KimiClient, KimiConfig
 
 

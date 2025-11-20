@@ -15,8 +15,7 @@ import logging
 try:
     from src.monitoring.prometheus_metrics import (
         protocol_obfuscation_operations_total,
-        protocol_obfuscation_overhead_bytes,
-    )
+        protocol_obfuscation_overhead_bytes)
 except ImportError:
     protocol_obfuscation_operations_total = None
     protocol_obfuscation_overhead_bytes = None

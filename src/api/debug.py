@@ -6,9 +6,11 @@ Iteration 2 Quick Win #5: Easier troubleshooting
 """
 
 import os
+from typing import Any, Dict
+
 import psutil
-from fastapi import APIRouter, HTTPException, Depends
-from typing import Dict, Any
+from fastapi import APIRouter, Depends, HTTPException
+
 from src.config import settings
 from src.utils.structured_logging import StructuredLogger
 

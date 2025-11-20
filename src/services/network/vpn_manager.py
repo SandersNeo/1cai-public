@@ -23,11 +23,9 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 try:
-    from src.monitoring.prometheus_metrics import (
-        vpn_tunnel_health,
-        vpn_tunnel_latency_ms,
-        vpn_tunnel_throughput_bytes,
-    )
+    from src.monitoring.prometheus_metrics import (vpn_tunnel_health,
+                                                   vpn_tunnel_latency_ms,
+                                                   vpn_tunnel_throughput_bytes)
 except ImportError:
     vpn_tunnel_health = None
     vpn_tunnel_latency_ms = None

@@ -11,13 +11,11 @@ Based on Agents Rule of Two: [AB] Configuration
 
 import re
 import uuid
-from typing import Dict, Any, Optional, List
 from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
 
-from src.security.ai_security_layer import (
-    AISecurityLayer,
-    AgentRuleOfTwoConfig,
-)
+from src.security.ai_security_layer import (AgentRuleOfTwoConfig,
+                                            AISecurityLayer)
 
 
 class DeveloperAISecure:

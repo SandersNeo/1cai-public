@@ -1,7 +1,7 @@
-from typing import Dict, Any, Optional
 from dataclasses import asdict
+from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, HTTPException, Query, Body
+from fastapi import APIRouter, Body, HTTPException, Query
 
 from src.ai.orchestrator import orchestrator
 from src.utils.structured_logging import StructuredLogger
@@ -16,9 +16,7 @@ async def get_scenario_examples(
     autonomy: Optional[str] = Query(None, description="Autonomy level")
 ) -> Dict[str, Any]:
     try:
-        from src.ai.scenario_examples import (
-            example_ba_dev_qa_scenario,
-        )
+        from src.ai.scenario_examples import example_ba_dev_qa_scenario
 
         # Simplified for demo purposes as per original
         ba_plan = example_ba_dev_qa_scenario("DEMO_FEATURE")

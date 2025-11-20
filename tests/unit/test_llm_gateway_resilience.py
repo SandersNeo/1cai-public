@@ -2,9 +2,11 @@
 Unit tests for LLMGateway resilience
 """
 
-import pytest
 import asyncio
-from unittest.mock import Mock, AsyncMock
+from unittest.mock import AsyncMock, Mock
+
+import pytest
+
 from src.services.llm_gateway import LLMGateway
 from src.services.llm_provider_manager import ProviderConfig
 

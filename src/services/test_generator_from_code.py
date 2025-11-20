@@ -9,11 +9,11 @@
 from __future__ import annotations
 
 import re
-from typing import Dict, List, Optional
 from dataclasses import dataclass
+from typing import Dict, List, Optional
 
-from src.utils.structured_logging import StructuredLogger
 from src.ai.agents.qa_engineer_agent_extended import QAEngineerAgentExtended
+from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 
@@ -272,16 +272,16 @@ class CodeToTestGenerator:
 
         return f"""// Базовый тест функции {func_info.name}
 Процедура Тест_{func_info.name}_Базовый() Экспорт
-    
+
     // Arrange (подготовка)
 {arrange_code}
-    
+
     // Act (действие)
     Результат = {func_info.name}({', '.join(p['name'] for p in func_info.parameters)});
-    
+
     // Assert (проверка через YAxUnit)
 {assert_code}
-    
+
 КонецПроцедуры
 """
 
@@ -319,17 +319,17 @@ class CodeToTestGenerator:
             tests.append(
                 f"""// Edge case: нулевые значения
 Процедура Тест_{func_info.name}_НулевыеЗначения() Экспорт
-    
+
     // Arrange
     {', '.join(param_assignments)};
-    
+
     // Act
     Результат = {func_info.name}({', '.join(p['name'] for p in func_info.parameters)});
-    
+
     // Assert
     ЮТест.ОжидаетЧто(Результат, "Результат с нулевыми значениями")
         .ЭтоНеНеопределено();
-    
+
 КонецПроцедуры
 """
             )
@@ -350,17 +350,17 @@ class CodeToTestGenerator:
             tests.append(
                 f"""// Edge case: максимальные значения
 Процедура Тест_{func_info.name}_МаксимальныеЗначения() Экспорт
-    
+
     // Arrange
     {', '.join(param_assignments)};
-    
+
     // Act
     Результат = {func_info.name}({', '.join(p['name'] for p in func_info.parameters)});
-    
+
     // Assert
     ЮТест.ОжидаетЧто(Результат, "Результат с максимальными значениями")
         .ЭтоНеНеопределено();
-    
+
 КонецПроцедуры
 """
             )
@@ -379,10 +379,10 @@ class CodeToTestGenerator:
         tests.append(
             f"""// Негативный тест: неопределенные параметры
 Процедура Тест_{func_info.name}_НеопределенныеПараметры() Экспорт
-    
+
     // Arrange
     {', '.join(param_assignments)};
-    
+
     // Act & Assert
     Попытка
         Результат = {func_info.name}({', '.join(p['name'] for p in func_info.parameters)});
@@ -391,7 +391,7 @@ class CodeToTestGenerator:
         ЮТест.ОжидаетЧто(ОписаниеОшибки(), "Описание ошибки")
             .Заполнено();
     КонецПопытки;
-    
+
 КонецПроцедуры
 """
         )

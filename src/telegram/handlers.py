@@ -5,20 +5,21 @@ Telegram Bot Handlers
 Обработчики команд и сообщений
 """
 
-from aiogram import Router, F
+import os
+import tempfile
+
+from aiogram import F, Router
+from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.types import Message
-from aiogram.enums import ParseMode
-import tempfile
-import os
-from src.utils.structured_logging import StructuredLogger
 
 from src.ai.orchestrator import AIOrchestrator
+from src.services.ocr_service import DocumentType, get_ocr_service
+from src.services.speech_to_text_service import get_stt_service
+from src.telegram.config import config
 from src.telegram.formatters import TelegramFormatter
 from src.telegram.rate_limiter import RateLimiter
-from src.telegram.config import config
-from src.services.speech_to_text_service import get_stt_service
-from src.services.ocr_service import get_ocr_service, DocumentType
+from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 router = Router()
@@ -450,7 +451,7 @@ async def handle_photo(message: Message):
                 return
 
             # Формируем ответ
-            response = f"✅ **Документ распознан!**\n\n"
+            response = "✅ **Документ распознан!**\n\n"
             response += f"📊 Уверенность: {ocr_result.confidence*100:.1f}%\n"
             response += f"📝 Символов: {len(ocr_result.text)}\n\n"
 

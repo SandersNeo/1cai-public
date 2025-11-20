@@ -11,6 +11,7 @@ Code analyzers for different programming languages
 """
 
 import re
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

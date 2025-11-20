@@ -9,12 +9,14 @@ Best Practices:
 - Graceful shutdown
 """
 
-import asyncpg
 import asyncio
 import os
-from typing import Optional
-from contextlib import asynccontextmanager
 import time
+from contextlib import asynccontextmanager
+from typing import Optional
+
+import asyncpg
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

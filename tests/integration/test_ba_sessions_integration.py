@@ -8,13 +8,10 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from src.api.ba_sessions import router as ba_sessions_router
-from src.monitoring.prometheus_metrics import (
-    ba_ws_active_participants,
-    ba_ws_active_sessions,
-    set_ba_session_counts,
-)
+from src.monitoring.prometheus_metrics import (ba_ws_active_participants,
+                                               ba_ws_active_sessions,
+                                               set_ba_session_counts)
 from src.services.ba_session_manager import ba_session_manager
-
 
 app = FastAPI()
 app.include_router(ba_sessions_router)

@@ -6,10 +6,11 @@ API для админ панели SaaS платформы
 """
 
 import logging
-from typing import Dict
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, Depends
+from typing import Dict
+
 import asyncpg
+from fastapi import APIRouter, Depends, HTTPException
 
 from src.monitoring.performance_monitor import performance_monitor
 

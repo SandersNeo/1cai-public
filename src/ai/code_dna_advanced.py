@@ -18,10 +18,10 @@ Advanced Code DNA - Расширенная версия
 import logging
 import random
 from dataclasses import dataclass
-from typing import List
 from enum import Enum
+from typing import List
 
-from src.ai.code_dna import CodeDNAEngine, CodeDNA, Gene
+from src.ai.code_dna import CodeDNA, CodeDNAEngine, Gene
 
 logger = logging.getLogger(__name__)
 

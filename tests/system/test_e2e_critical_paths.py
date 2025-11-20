@@ -12,13 +12,12 @@ E2E тесты для критических путей системы
 Все тесты используют моки для имитации реальных HTTP запросов и LLM вызовов.
 """
 
-import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
+
+from src.ai.llm_provider_abstraction import LLMProviderAbstraction
 from src.ai.orchestrator import AIOrchestrator
-from src.ai.llm_provider_abstraction import (
-    LLMProviderAbstraction,
-)
 
 
 @pytest.fixture

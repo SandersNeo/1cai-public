@@ -256,7 +256,7 @@ class PredictiveCodeGenerator:
         prompt = f"""
         Based on the category "{category}", generate a realistic software requirement description.
         The requirement should be specific, actionable, and typical for this category.
-        
+
         Return only the requirement description, no additional text.
         """
 
@@ -267,7 +267,7 @@ class PredictiveCodeGenerator:
             return response.strip()
         except Exception as e:
             logger.error(
-                f"Failed to generate requirement description",
+                "Failed to generate requirement description",
                 extra={"category": category, "error": str(e)},
                 exc_info=True,
             )
@@ -290,16 +290,16 @@ class PredictiveCodeGenerator:
         # Генерация кода через LLM
         prompt = f"""
         Generate code for the following requirement:
-        
+
         {prediction.description}
-        
+
         Category: {prediction.category}
-        
+
         Provide:
         1. Complete implementation code
         2. Unit tests
         3. Documentation comments
-        
+
         Format as JSON with "code" and "tests" fields.
         """
 

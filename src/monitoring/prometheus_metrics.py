@@ -11,17 +11,13 @@ Prometheus Metrics Export
 TIER 1 Improvement: Comprehensive monitoring
 """
 
-from prometheus_client import (
-    Counter,
-    Histogram,
-    Gauge,
-    Info,
-    generate_latest,
-    CONTENT_TYPE_LATEST,
-)
-from fastapi import Response
 from typing import Optional
+
 import psutil
+from fastapi import Response
+from prometheus_client import (CONTENT_TYPE_LATEST, Counter, Gauge, Histogram,
+                               Info, generate_latest)
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

@@ -4,7 +4,8 @@
 Unit tests for QdrantClient
 """
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from src.db.qdrant_client import QdrantClient
 
 

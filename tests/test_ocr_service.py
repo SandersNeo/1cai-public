@@ -5,14 +5,10 @@ Unit Tests для OCRService
 """
 
 import pytest
-from src.services.ocr_service import (
-    OCRService,
-    OCRProvider,
-    DocumentType,
-    OCRResult,
-    quick_ocr,
-    ocr_with_structure,
-)
+
+from src.services.ocr_service import (DocumentType, OCRProvider, OCRResult,
+                                      OCRService, ocr_with_structure,
+                                      quick_ocr)
 
 
 class TestOCRService:
@@ -37,10 +33,10 @@ class TestOCRService:
             text = """
             ДОГОВОР № 123
             от 01.11.2024
-            
+
             Поставщик: ООО "Рога и Копыта"
             Покупатель: ООО "Тестовая Компания"
-            
+
             Сумма: 100,000.00 руб
             """
 

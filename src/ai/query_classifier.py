@@ -1,9 +1,10 @@
 import re
-from typing import Dict, List, Any, Optional
-from enum import Enum
 from dataclasses import dataclass
-from src.utils.structured_logging import StructuredLogger
+from enum import Enum
+from typing import Any, Dict, List, Optional
+
 from src.ai.scenario_hub import ScenarioRiskLevel
+from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 
@@ -234,7 +235,8 @@ class QueryClassifier:
         suggested_tools: List[str] = []
         try:
             # Robust tool registry loading
-            from src.ai.tool_registry_examples import build_example_tool_registry
+            from src.ai.tool_registry_examples import \
+                build_example_tool_registry
 
             registry = build_example_tool_registry()
 

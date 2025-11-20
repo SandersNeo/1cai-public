@@ -14,9 +14,11 @@ Property-based тестирование для всех компонентов:
 - "Fuzzing" (2024): Автоматический поиск уязвимостей
 """
 
+from typing import Any, Dict
+
 import pytest
-from hypothesis import given, strategies as st
-from typing import Dict, Any
+from hypothesis import given
+from hypothesis import strategies as st
 
 
 # Property-based тесты для Event Bus
@@ -27,7 +29,8 @@ from typing import Dict, Any
 )
 async def test_event_bus_property_based(event_count: int, handlers_count: int):
     """Property-based тест Event Bus"""
-    from src.infrastructure.event_bus import EventBus, Event, EventType, EventHandler
+    from src.infrastructure.event_bus import (Event, EventBus, EventHandler,
+                                              EventType)
 
     class TestHandler(EventHandler):
         def __init__(self):
@@ -72,9 +75,10 @@ async def test_self_healing_fuzzing(
     error_message: str, file_path: str, line_number: int
 ):
     """Fuzzing тест Self-Healing Code"""
-    from src.ai.self_healing_code import SelfHealingCode
+    from unittest.mock import AsyncMock, MagicMock
+
     from src.ai.llm_provider_abstraction import LLMProviderAbstraction
-    from unittest.mock import MagicMock, AsyncMock
+    from src.ai.self_healing_code import SelfHealingCode
 
     llm_provider = MagicMock(spec=LLMProviderAbstraction)
     llm_provider.generate = AsyncMock(return_value='{"fixes": []}')
@@ -104,11 +108,8 @@ async def test_self_healing_fuzzing(
 @pytest.mark.asyncio
 async def test_chaos_network_partition():
     """Chaos тест: разделение сети"""
-    from src.ai.distributed_agent_network import (
-        DistributedAgentNetwork,
-        AgentNode,
-        AgentRole,
-    )
+    from src.ai.distributed_agent_network import (AgentNode, AgentRole,
+                                                  DistributedAgentNetwork)
 
     network = DistributedAgentNetwork()
 
@@ -128,11 +129,8 @@ async def test_chaos_network_partition():
 @pytest.mark.asyncio
 async def test_chaos_node_failure():
     """Chaos тест: отказ узла"""
-    from src.ai.distributed_agent_network import (
-        DistributedAgentNetwork,
-        AgentNode,
-        AgentRole,
-    )
+    from src.ai.distributed_agent_network import (AgentNode, AgentRole,
+                                                  DistributedAgentNetwork)
 
     network = DistributedAgentNetwork()
 

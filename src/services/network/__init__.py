@@ -23,17 +23,16 @@ Network Resilience Components
 Подробнее: docs/06-features/NETWORK_RESILIENCE_LEGAL_DISCLAIMER.md
 """
 
-from .dns_manager import DNSManager, DNSResolver, DNSResolverType, get_dns_manager
-from .tcp_optimizer import TCPOptimizer, TCPConfig, get_tcp_optimizer
-from .multipath_router import MultiPathRouter, NetworkPath, PathStatus
-from .traffic_shaper import TrafficShaper, TrafficShapeConfig
-from .vpn_manager import VPNManager, VPNTunnel, TunnelStatus
-from .protocol_obfuscator import ProtocolObfuscator
+from .dns_manager import (DNSManager, DNSResolver, DNSResolverType,
+                          get_dns_manager)
 from .http3_client import HTTP3Client
-from .network_resilience_layer import (
-    NetworkResilienceLayer,
-    get_network_resilience_layer,
-)
+from .multipath_router import MultiPathRouter, NetworkPath, PathStatus
+from .network_resilience_layer import (NetworkResilienceLayer,
+                                       get_network_resilience_layer)
+from .protocol_obfuscator import ProtocolObfuscator
+from .tcp_optimizer import TCPConfig, TCPOptimizer, get_tcp_optimizer
+from .traffic_shaper import TrafficShapeConfig, TrafficShaper
+from .vpn_manager import TunnelStatus, VPNManager, VPNTunnel
 
 __all__ = [
     "DNSManager",

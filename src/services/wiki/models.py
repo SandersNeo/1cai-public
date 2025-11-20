@@ -4,6 +4,7 @@ Wiki Database Models
 
 from datetime import datetime
 from typing import Optional
+
 from pydantic import BaseModel, Field
 
 # Domain Models (Pydantic) - independent of specific ORM for now to keep architecture clean

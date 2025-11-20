@@ -5,37 +5,28 @@ A/B тестирование для ML моделей.
 Позволяет тестировать новые модели в продакшене с минимальными рисками.
 """
 
-from datetime import datetime
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass, asdict
-from enum import Enum
-import numpy as np
-import json
 import hashlib
+import json
+import math
+import uuid
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
 
+import numpy as np
 # Статистика
 from scipy import stats
-import math
-
 # База данных для результатов A/B тестов
-from sqlalchemy import (
-    create_engine,
-    Column,
-    Integer,
-    String,
-    Float,
-    DateTime,
-    JSON,
-    Boolean,
-)
+from sqlalchemy import (JSON, Boolean, Column, DateTime, Float, Integer,
+                        String, create_engine)
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.dialects.postgresql import UUID
-import uuid
 
-from src.ml.models.predictor import MLPredictor
-from src.ml.metrics.collector import MetricsCollector
 from src.ml.experiments.mlflow_manager import MLFlowManager
+from src.ml.metrics.collector import MetricsCollector
+from src.ml.models.predictor import MLPredictor
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

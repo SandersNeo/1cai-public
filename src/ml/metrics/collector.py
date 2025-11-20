@@ -5,24 +5,17 @@
 Отслеживает качество анализа требований, генерации диаграмм и оценки рисков.
 """
 
+import uuid
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, asdict
 from enum import Enum
-import numpy as np
+from typing import Any, Dict, List, Optional
 
-from sqlalchemy import (
-    create_engine,
-    Column,
-    String,
-    Float,
-    DateTime,
-    JSON,
-)
+import numpy as np
+from sqlalchemy import JSON, Column, DateTime, Float, String, create_engine
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.dialects.postgresql import UUID
-import uuid
 
 from src.config import settings
 from src.utils.structured_logging import StructuredLogger

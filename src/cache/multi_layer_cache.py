@@ -12,20 +12,21 @@ Features:
 - Stale-while-revalidate pattern
 """
 
+import asyncio
+import hashlib
 import json
-from typing import Any, Optional, List, Dict
-from datetime import datetime, timedelta
 from collections import OrderedDict
 from contextlib import nullcontext
-import hashlib
-import asyncio
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 
 # Try to import Prometheus client (optional)
 try:
-    from prometheus_client import Counter, Histogram, Gauge
+    from prometheus_client import Counter, Gauge, Histogram
 
     PROMETHEUS_AVAILABLE = True
 

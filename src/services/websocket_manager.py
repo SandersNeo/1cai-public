@@ -12,8 +12,10 @@ WebSocket Manager for Real-Time Updates
 """
 
 import asyncio
-from typing import Dict, Set, Any, Optional
+from typing import Any, Dict, Optional, Set
+
 from fastapi import WebSocket
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -360,16 +362,16 @@ from src.services.websocket_manager import manager
 @app.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: str):
     await manager.connect(websocket, user_id=user_id)
-    
+
     try:
         while True:
             # Receive message
             data = await websocket.receive_json()
-            
+
             # Process message
             if data['type'] == 'subscribe':
                 manager.join_room(websocket, data['room_id'])
-            
+
             elif data['type'] == 'message':
                 # Broadcast to room
                 await manager.send_to_room({
@@ -377,7 +379,7 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
                     'from': user_id,
                     'text': data['text']
                 }, data['room_id'])
-    
+
     except WebSocketDisconnect:
         manager.disconnect(websocket, user_id=user_id)
 """

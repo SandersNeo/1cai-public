@@ -10,11 +10,12 @@ API для сбора и анализа метрик 1C AI-экосистемы
 - Улучшена обработка ошибок
 """
 
-from typing import Dict, List, Optional, Any, Union
 from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Union
 
-from fastapi import FastAPI, HTTPException, APIRouter
+from fastapi import APIRouter, FastAPI, HTTPException
 from pydantic import BaseModel, Field, field_validator
+
 from src.utils.structured_logging import StructuredLogger
 
 # Создание router для API endpoints

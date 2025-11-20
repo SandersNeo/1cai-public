@@ -25,10 +25,8 @@ import httpx
 
 try:
     from src.monitoring.prometheus_metrics import (
-        dns_resolution_total,
-        dns_resolution_duration_seconds,
-        dns_resolver_health,
-    )
+        dns_resolution_duration_seconds, dns_resolution_total,
+        dns_resolver_health)
 except ImportError:
     # Fallback для случаев когда prometheus_metrics не доступен
     dns_resolution_total = None

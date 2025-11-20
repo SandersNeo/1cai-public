@@ -1,7 +1,8 @@
 # [NEXUS IDENTITY] ID: -3010645292656268884 | DATE: 2025-11-19
 
-import pytest
 from datetime import timedelta
+
+import pytest
 
 from src.ai.agents.developer_agent_secure import DeveloperAISecure
 

@@ -5,21 +5,16 @@ Unit tests for marketplace API endpoints
 Tests for create, update, and complaints functionality
 """
 
-import pytest
 from unittest.mock import AsyncMock, patch
+
+import pytest
 from fastapi import HTTPException
 from starlette.requests import Request
 from starlette.responses import Response
 
-from src.api.marketplace import (
-    submit_plugin,
-    update_plugin,
-    report_plugin,
-    PluginSubmitRequest,
-    PluginUpdateRequest,
-    PluginStatus,
-    PluginCategory,
-)
+from src.api.marketplace import (PluginCategory, PluginStatus,
+                                 PluginSubmitRequest, PluginUpdateRequest,
+                                 report_plugin, submit_plugin, update_plugin)
 from src.security.auth import CurrentUser
 
 

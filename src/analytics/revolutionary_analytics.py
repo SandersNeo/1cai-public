@@ -16,12 +16,12 @@ Revolutionary Analytics - Аналитика для всех компонент�
 - "Predictive Analytics" (2024): Прогнозирование снижает риски на 30-50%
 """
 
+import json
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
 from enum import Enum
-import json
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 

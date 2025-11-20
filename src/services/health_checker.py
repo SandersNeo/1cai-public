@@ -11,9 +11,10 @@ Enhanced Health Checker Service
 """
 
 import asyncio
-from typing import Dict
-from datetime import datetime
 import os
+from datetime import datetime
+from typing import Dict
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -120,8 +121,9 @@ class HealthChecker:
     async def check_postgresql(self) -> Dict:
         """Check PostgreSQL connection"""
         try:
-            import asyncpg
             from urllib.parse import urlparse
+
+            import asyncpg
 
             db_url = os.getenv(
                 "DATABASE_URL",

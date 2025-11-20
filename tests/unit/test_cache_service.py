@@ -6,12 +6,8 @@ from datetime import datetime, timedelta
 import pytest
 
 import src.services.caching_service as caching_module
-from src.services.caching_service import (
-    CacheService,
-    cache_result,
-    memory_cache,
-    memory_cache_ttl,
-)
+from src.services.caching_service import (CacheService, cache_result,
+                                          memory_cache, memory_cache_ttl)
 
 
 @pytest.fixture(autouse=True)

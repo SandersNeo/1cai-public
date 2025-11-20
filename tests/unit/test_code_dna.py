@@ -6,7 +6,8 @@ Unit tests for Code DNA System - 1000% coverage
 """
 
 import pytest
-from src.ai.code_dna import CodeDNAEngine, CodeDNA, Gene, GeneType
+
+from src.ai.code_dna import CodeDNA, CodeDNAEngine, Gene, GeneType
 
 
 @pytest.fixture

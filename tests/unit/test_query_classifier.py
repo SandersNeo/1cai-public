@@ -1,7 +1,7 @@
 # [NEXUS IDENTITY] ID: 8012280499333434021 | DATE: 2025-11-19
 
 
-from src.ai.orchestrator import QueryClassifier, QueryType, AIService
+from src.ai.orchestrator import AIService, QueryClassifier, QueryType
 
 
 def test_classify_standard_1c_query():

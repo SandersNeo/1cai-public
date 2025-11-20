@@ -6,6 +6,7 @@ Performance tests for ConnectionPool.
 
 import asyncio
 import time
+
 import pytest
 
 from src.ai.connection_pool import ConnectionPool

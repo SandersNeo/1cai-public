@@ -3,9 +3,11 @@
 """
 Integration tests for AI Orchestrator with Kimi-K2-Thinking
 """
-import pytest
 import os
-from src.ai.orchestrator import AIOrchestrator, QueryType, AIService
+
+import pytest
+
+from src.ai.orchestrator import AIOrchestrator, AIService, QueryType
 
 
 @pytest.mark.integration

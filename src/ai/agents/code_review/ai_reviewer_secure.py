@@ -9,11 +9,12 @@ Based on Agents Rule of Two: [BC] Configuration
 [C] Can change state (post comments, suggest changes)
 """
 
-from datetime import datetime
-from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from src.security.ai_security_layer import AISecurityLayer, AgentRuleOfTwoConfig
+from src.security.ai_security_layer import (AgentRuleOfTwoConfig,
+                                            AISecurityLayer)
 
 
 @dataclass

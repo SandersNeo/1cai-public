@@ -16,25 +16,19 @@ Production readiness improvements:
 
 import os
 import uuid
-from typing import Dict, List, Optional, Any
 from datetime import datetime
-
-from fastapi import (
-    APIRouter,
-    HTTPException,
-    Depends,
-    UploadFile,
-    File,
-    Query,
-    Response,
-)
-from starlette.requests import Request
-from pydantic import BaseModel, Field
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
-from src.security import CurrentUser, get_audit_logger, get_current_user, require_roles
+from fastapi import (APIRouter, Depends, File, HTTPException, Query, Response,
+                     UploadFile)
+from pydantic import BaseModel, Field
+from starlette.requests import Request
+
 from src.db.marketplace_repository import MarketplaceRepository
 from src.middleware.rate_limiter import limiter
+from src.security import (CurrentUser, get_audit_logger, get_current_user,
+                          require_roles)
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -255,14 +249,14 @@ class PluginStatsResponse(BaseModel):
     summary="Submit a new plugin",
     description="""
     Submit a new plugin to the marketplace.
-    
+
     The plugin will be created with status PENDING and sent for moderation.
     After approval, it will be available in the marketplace.
-    
+
     **Rate Limit:** 5 submissions per minute per user
-    
+
     **Required Roles:** developer, admin
-    
+
     **Process:**
     1. Validate plugin data
     2. Create plugin record with status PENDING
@@ -362,22 +356,22 @@ async def submit_plugin(
     summary="Search plugins",
     description="""
     Search and filter plugins in the marketplace.
-    
+
     **Filters:**
     - `query`: Search by name, description, or keywords (full-text search)
     - `category`: Filter by plugin category
     - `author`: Filter by author username
-    
+
     **Sorting:**
     - `rating`: Sort by average rating (default)
     - `downloads`: Sort by total downloads
     - `updated`: Sort by last update date
     - `name`: Sort alphabetically by name
-    
+
     **Order:**
     - `desc`: Descending (default)
     - `asc`: Ascending
-    
+
     **Pagination:**
     - `page`: Page number (starts from 1)
     - `page_size`: Number of results per page (max 100)

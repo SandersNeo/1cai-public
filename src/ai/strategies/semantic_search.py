@@ -1,5 +1,6 @@
-from typing import Dict, Any
 import asyncio
+from typing import Any, Dict
+
 from src.ai.strategies.base import AIStrategy
 from src.utils.structured_logging import StructuredLogger
 

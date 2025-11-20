@@ -10,8 +10,8 @@ Unit tests for NaparnikClient.
 
 import pytest
 
-from src.ai.clients.naparnik_client import NaparnikClient, NaparnikConfig
 from src.ai.clients.exceptions import LLMNotConfiguredError
+from src.ai.clients.naparnik_client import NaparnikClient, NaparnikConfig
 
 
 class TestNaparnikConfig:

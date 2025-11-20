@@ -6,8 +6,9 @@ API для генерации TypeScript тестов
 """
 
 import re
-from typing import List, Dict, Any
 from datetime import datetime
+from typing import Any, Dict, List
+
 from src.services.openai_code_analyzer import get_openai_analyzer
 from src.utils.structured_logging import StructuredLogger
 
@@ -184,7 +185,7 @@ async def generate_typescript_tests(
                 {
                     "id": f"test-{func['name']}-positive",
                     "name": f"{func['name']}_Positive",
-                    "description": f"Позитивный тест",
+                    "description": "Позитивный тест",
                     "input": {param: 0 for param in func["params"]},
                     "expectedOutput": None,
                     "type": "unit",

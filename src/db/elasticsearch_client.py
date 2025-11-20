@@ -11,9 +11,9 @@ Elasticsearch Client for Full-text Search
 - Input validation
 """
 
-import os
 import asyncio
-from typing import Dict, List, Any, Optional
+import os
+from typing import Any, Dict, List, Optional
 
 try:
     from elasticsearch import AsyncElasticsearch

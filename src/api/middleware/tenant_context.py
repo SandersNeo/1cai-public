@@ -6,9 +6,11 @@ Tenant Context Middleware
 """
 
 import os
-from fastapi import Request, HTTPException
-from starlette.middleware.base import BaseHTTPMiddleware
+
 import jwt
+from fastapi import HTTPException, Request
+from starlette.middleware.base import BaseHTTPMiddleware
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

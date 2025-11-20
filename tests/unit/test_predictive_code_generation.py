@@ -5,15 +5,15 @@ Unit tests for Predictive Code Generation - 1000% coverage
 ==========================================================
 """
 
-import pytest
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock
-from src.ai.predictive_code_generation import (
-    PredictiveCodeGenerator,
-    Requirement,
-    PredictedRequirement,
-)
+
+import pytest
+
 from src.ai.llm_provider_abstraction import LLMProviderAbstraction
+from src.ai.predictive_code_generation import (PredictedRequirement,
+                                               PredictiveCodeGenerator,
+                                               Requirement)
 
 
 @pytest.fixture

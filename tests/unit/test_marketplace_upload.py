@@ -5,12 +5,11 @@ import io
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from src.api.marketplace import (
-    MAX_ARTIFACT_SIZE_BYTES,
-    router as marketplace_router,
-    get_marketplace_repository,
-    get_current_user as marketplace_get_current_user,
-)
+from src.api.marketplace import MAX_ARTIFACT_SIZE_BYTES
+from src.api.marketplace import \
+    get_current_user as marketplace_get_current_user
+from src.api.marketplace import get_marketplace_repository
+from src.api.marketplace import router as marketplace_router
 from src.security.auth import CurrentUser
 
 

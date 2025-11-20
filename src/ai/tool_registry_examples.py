@@ -14,13 +14,8 @@ from __future__ import annotations
 from typing import List
 
 from src.ai.scenario_hub import ScenarioRiskLevel
-from src.ai.tool_registry import (
-    ToolCategory,
-    ToolDescriptor,
-    ToolEndpoint,
-    ToolProtocol,
-    ToolRegistry,
-)
+from src.ai.tool_registry import (ToolCategory, ToolDescriptor, ToolEndpoint,
+                                  ToolProtocol, ToolRegistry)
 
 
 def build_example_tool_registry() -> ToolRegistry:

@@ -14,7 +14,7 @@ import pytest
 from src.ai.intelligent_cache import IntelligentCache
 from src.ai.llm_provider_abstraction import LLMProviderAbstraction, QueryType
 from src.ai.orchestrator import AIOrchestrator
-from src.ai.scenario_hub import ScenarioPlan, ScenarioStep, ScenarioRiskLevel
+from src.ai.scenario_hub import ScenarioPlan, ScenarioRiskLevel, ScenarioStep
 
 
 @pytest.mark.asyncio

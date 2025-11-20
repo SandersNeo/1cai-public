@@ -5,9 +5,11 @@ E2E tests for Integrated Revolutionary System - 1000% coverage
 ==============================================================
 """
 
-import pytest
 import asyncio
 from unittest.mock import AsyncMock, MagicMock
+
+import pytest
+
 from examples.integrated_revolutionary_system import IntegratedSystem
 from src.ai.llm_provider_abstraction import LLMProviderAbstraction
 

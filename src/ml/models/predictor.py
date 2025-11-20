@@ -5,26 +5,17 @@
 Интеграция с TensorFlow/PyTorch и scikit-learn для различных типов моделей.
 """
 
+import pickle
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Any, Union, Tuple
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 import numpy as np
 import pandas as pd
-import pickle
-from datetime import datetime
-
 # ML модели
-from sklearn.ensemble import (
-    RandomForestClassifier,
-    RandomForestRegressor,
-)
-from sklearn.metrics import (
-    accuracy_score,
-    precision_score,
-    recall_score,
-    f1_score,
-    mean_squared_error,
-    r2_score,
-)
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.metrics import (accuracy_score, f1_score, mean_squared_error,
+                             precision_score, r2_score, recall_score)
 
 # TensorFlow интеграция
 try:

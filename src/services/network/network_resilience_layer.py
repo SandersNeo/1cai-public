@@ -25,14 +25,14 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Any, Callable, Dict, Optional, Awaitable
+from typing import Any, Awaitable, Callable, Dict, Optional
 
 from .dns_manager import DNSManager, get_dns_manager
-from .tcp_optimizer import TCPOptimizer, get_tcp_optimizer
 from .multipath_router import MultiPathRouter, NetworkPath
+from .protocol_obfuscator import ProtocolObfuscator
+from .tcp_optimizer import TCPOptimizer, get_tcp_optimizer
 from .traffic_shaper import TrafficShaper
 from .vpn_manager import VPNManager, VPNTunnel
-from .protocol_obfuscator import ProtocolObfuscator
 
 logger = logging.getLogger(__name__)
 

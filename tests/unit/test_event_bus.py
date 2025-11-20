@@ -6,15 +6,12 @@ Unit tests for Event Bus - 1000% coverage
 """
 
 import asyncio
+
 import pytest
-from src.infrastructure.event_bus import (
-    Event,
-    EventBus,
-    EventPublisher,
-    EventSubscriber,
-    EventType,
-    EventHandler,
-)
+
+from src.infrastructure.event_bus import (Event, EventBus, EventHandler,
+                                          EventPublisher, EventSubscriber,
+                                          EventType)
 
 
 class MockEventHandler(EventHandler):

@@ -12,9 +12,10 @@
 """
 
 import logging
-from typing import Dict, Any, List, Optional
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Any, Dict, List, Optional
+
 from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logger = logging.getLogger(__name__)
 

@@ -11,9 +11,9 @@ PostgreSQL repository for marketplace data with caching and storage helpers.
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import os
-import asyncio
 import re
 import uuid
 from typing import Any, Dict, List, Optional, Tuple
@@ -656,8 +656,8 @@ class MarketplaceRepository:
                     UPDATE marketplace_plugins
                     SET downloads = downloads + 1,
                         installs = (
-                            SELECT COUNT(*) 
-                            FROM marketplace_installs 
+                            SELECT COUNT(*)
+                            FROM marketplace_installs
                             WHERE plugin_id = marketplace_plugins.plugin_id
                         ),
                         updated_at = NOW()
@@ -695,8 +695,8 @@ class MarketplaceRepository:
                     """
                     UPDATE marketplace_plugins
                     SET installs = (
-                        SELECT COUNT(*) 
-                        FROM marketplace_installs 
+                        SELECT COUNT(*)
+                        FROM marketplace_installs
                         WHERE plugin_id = marketplace_plugins.plugin_id
                     ),
                         updated_at = NOW()
@@ -838,7 +838,7 @@ class MarketplaceRepository:
                     SELECT * FROM marketplace_plugins WHERE plugin_id = $1
                 ),
                 review_stats AS (
-                    SELECT 
+                    SELECT
                         COUNT(*) AS reviews_count,
                         AVG(rating) AS avg_rating,
                         json_object_agg(rating, count) FILTER (WHERE rating IS NOT NULL) AS rating_dist
@@ -850,11 +850,11 @@ class MarketplaceRepository:
                     ) AS rating_counts
                 ),
                 counts AS (
-                    SELECT 
+                    SELECT
                         (SELECT COUNT(*) FROM marketplace_favorites WHERE plugin_id = $1) AS favorites_count,
                         (SELECT COUNT(*) FROM marketplace_installs WHERE plugin_id = $1) AS installs_active
                 )
-                SELECT 
+                SELECT
                     p.*,
                     COALESCE(r.reviews_count, 0) AS reviews_count,
                     COALESCE(r.avg_rating, 0) AS avg_rating,

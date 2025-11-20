@@ -1,7 +1,8 @@
 from typing import Optional
+
 from src.db.neo4j_client import Neo4jClient
-from src.db.qdrant_client import QdrantClient
 from src.db.postgres_saver import PostgreSQLSaver
+from src.db.qdrant_client import QdrantClient
 from src.services.embedding_service import EmbeddingService
 from src.utils.structured_logging import StructuredLogger
 

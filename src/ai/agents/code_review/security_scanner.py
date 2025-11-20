@@ -5,9 +5,9 @@ Security Scanner для BSL кода
 Детекция уязвимостей безопасности
 """
 
-import re
 import logging
-from typing import List, Dict
+import re
+from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 

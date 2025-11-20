@@ -6,11 +6,8 @@ Tests for playbook_executor (experimental).
 
 from pathlib import Path
 
-from src.ai.playbook_executor import (
-    dry_run_playbook,
-    dry_run_playbook_to_dict,
-    load_playbook,
-)
+from src.ai.playbook_executor import (dry_run_playbook,
+                                      dry_run_playbook_to_dict, load_playbook)
 from src.ai.scenario_hub import AutonomyLevel, ScenarioPlan
 
 

@@ -11,10 +11,11 @@ Metrics Collection Middleware
 - Поддержка различных типов ID в путях
 """
 
-import time
 import re
-from fastapi import Request
+import time
 from typing import Callable
+
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 

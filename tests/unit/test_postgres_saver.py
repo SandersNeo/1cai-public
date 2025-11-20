@@ -4,8 +4,10 @@
 Unit tests for PostgreSQLSaver with Connection Pooling
 """
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
+
 from src.db.postgres_saver import PostgreSQLSaver
 
 

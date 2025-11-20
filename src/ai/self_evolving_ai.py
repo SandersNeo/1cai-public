@@ -257,21 +257,21 @@ class SelfEvolvingAI:
         # Генерация улучшений через LLM
         prompt = f"""
         Analyze the following performance metrics and generate improvements:
-        
+
         Accuracy: {performance.accuracy}
         Latency: {performance.latency_ms}ms
         Error Rate: {performance.error_rate}
         Throughput: {performance.throughput}
         User Satisfaction: {performance.user_satisfaction}
-        
+
         Problems detected: {', '.join(problems)}
-        
+
         Generate specific improvements with:
         1. Description of the improvement
         2. Code changes needed
         3. Configuration changes
         4. Expected improvement metrics
-        
+
         Format as JSON with improvements array.
         """
 

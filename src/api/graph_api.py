@@ -12,24 +12,21 @@ Graph API - FastAPI endpoints for Neo4j, Qdrant, PostgreSQL
 - Защита от Cypher injection
 """
 
-from fastapi import FastAPI, HTTPException, Query, Depends
+import re
+from typing import Any, Dict, Optional
+
+from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
-from typing import Optional, Dict, Any
-import re
 
+from src.api.dependencies import (ServiceContainer, get_embedding_service,
+                                  get_neo4j_client, get_postgres_client,
+                                  get_qdrant_client)
 from src.db.neo4j_client import Neo4jClient
-from src.db.qdrant_client import QdrantClient
 from src.db.postgres_saver import PostgreSQLSaver
+from src.db.qdrant_client import QdrantClient
 from src.services.embedding_service import EmbeddingService
 from src.utils.structured_logging import StructuredLogger
-from src.api.dependencies import (
-    ServiceContainer,
-    get_neo4j_client,
-    get_qdrant_client,
-    get_postgres_client,
-    get_embedding_service,
-)
 
 logger = StructuredLogger(__name__).logger
 

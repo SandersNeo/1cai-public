@@ -15,7 +15,8 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from src.security.ai_security_layer import AISecurityLayer, AgentRuleOfTwoConfig
+from src.security.ai_security_layer import (AgentRuleOfTwoConfig,
+                                            AISecurityLayer)
 
 
 @dataclass

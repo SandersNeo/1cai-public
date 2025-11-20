@@ -5,12 +5,12 @@ API endpoints для работы с базой знаний по конфигу
 Версия: 1.0.0
 """
 
+from typing import Literal, Optional
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
-from typing import Optional, Literal
-from src.services.configuration_knowledge_base import (
-    get_knowledge_base,
-)
+
+from src.services.configuration_knowledge_base import get_knowledge_base
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -296,7 +296,7 @@ async def add_module_documentation(request: ModuleDocumentationRequest):
 
         if not success:
             raise HTTPException(
-                status_code=400, detail=f"Не удалось добавить документацию модуля"
+                status_code=400, detail="Не удалось добавить документацию модуля"
             )
 
         return {
@@ -345,7 +345,7 @@ async def add_best_practice(request: BestPracticeRequest):
 
         if not success:
             raise HTTPException(
-                status_code=400, detail=f"Не удалось добавить best practice"
+                status_code=400, detail="Не удалось добавить best practice"
             )
 
         return {"success": True, "message": "Best practice добавлена"}

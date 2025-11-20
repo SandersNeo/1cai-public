@@ -10,15 +10,16 @@ Performance Benchmarks для новых компонентов
 - Intelligent Cache
 """
 
-import pytest
-import time
 import statistics
+import time
 from typing import List
 
+import pytest
+
 from src.ai.code_graph import InMemoryCodeGraphBackend, Node, NodeKind
-from src.ai.scenario_recommender import ScenarioRecommender, ImpactAnalyzer
-from src.ai.llm_provider_abstraction import LLMProviderAbstraction, QueryType
 from src.ai.intelligent_cache import IntelligentCache
+from src.ai.llm_provider_abstraction import LLMProviderAbstraction, QueryType
+from src.ai.scenario_recommender import ImpactAnalyzer, ScenarioRecommender
 
 
 @pytest.mark.asyncio
@@ -69,7 +70,7 @@ async def test_performance_scenario_recommender_small_graph() -> None:
         else latencies[-1]
     )
 
-    print(f"\nScenario Recommender (small graph, 100 nodes):")
+    print("\nScenario Recommender (small graph, 100 nodes):")
     print(f"  p50: {p50:.2f}ms")
     print(f"  p95: {p95:.2f}ms")
     print(f"  p99: {p99:.2f}ms")
@@ -125,7 +126,7 @@ async def test_performance_scenario_recommender_large_graph() -> None:
         else latencies[-1]
     )
 
-    print(f"\nScenario Recommender (large graph, 1000 nodes):")
+    print("\nScenario Recommender (large graph, 1000 nodes):")
     print(f"  p50: {p50:.2f}ms")
     print(f"  p95: {p95:.2f}ms")
     print(f"  p99: {p99:.2f}ms")
@@ -185,7 +186,7 @@ async def test_performance_impact_analyzer() -> None:
         else latencies[-1]
     )
 
-    print(f"\nImpact Analyzer (500 nodes):")
+    print("\nImpact Analyzer (500 nodes):")
     print(f"  p50: {p50:.2f}ms")
     print(f"  p95: {p95:.2f}ms")
     print(f"  p99: {p99:.2f}ms")
@@ -234,7 +235,7 @@ async def test_performance_llm_provider_selection() -> None:
         else latencies[-1]
     )
 
-    print(f"\nLLM Provider Selection:")
+    print("\nLLM Provider Selection:")
     print(f"  p50: {p50:.4f}ms")
     print(f"  p95: {p95:.4f}ms")
     print(f"  p99: {p99:.4f}ms")
@@ -279,7 +280,7 @@ async def test_performance_intelligent_cache_get() -> None:
         else latencies[-1]
     )
 
-    print(f"\nIntelligent Cache GET (cache hit):")
+    print("\nIntelligent Cache GET (cache hit):")
     print(f"  p50: {p50:.4f}ms")
     print(f"  p95: {p95:.4f}ms")
     print(f"  p99: {p99:.4f}ms")
@@ -319,7 +320,7 @@ async def test_performance_intelligent_cache_set() -> None:
         else latencies[-1]
     )
 
-    print(f"\nIntelligent Cache SET:")
+    print("\nIntelligent Cache SET:")
     print(f"  p50: {p50:.4f}ms")
     print(f"  p95: {p95:.4f}ms")
     print(f"  p99: {p99:.4f}ms")
@@ -368,7 +369,7 @@ async def test_performance_intelligent_cache_invalidation() -> None:
         else latencies[-1]
     )
 
-    print(f"\nIntelligent Cache Invalidation (by tags, 100 entries):")
+    print("\nIntelligent Cache Invalidation (by tags, 100 entries):")
     print(f"  p50: {p50:.4f}ms")
     print(f"  p95: {p95:.4f}ms")
     print(f"  p99: {p99:.4f}ms")
@@ -412,7 +413,7 @@ async def test_performance_intelligent_cache_lru_eviction() -> None:
         else latencies[-1]
     )
 
-    print(f"\nIntelligent Cache LRU Eviction (overflow):")
+    print("\nIntelligent Cache LRU Eviction (overflow):")
     print(f"  p50: {p50:.4f}ms")
     print(f"  p95: {p95:.4f}ms")
     print(f"  p99: {p99:.4f}ms")
@@ -470,7 +471,7 @@ async def test_performance_intelligent_cache_concurrent_access() -> None:
         else latencies[-1]
     )
 
-    print(f"\nIntelligent Cache Concurrent Access (200 operations):")
+    print("\nIntelligent Cache Concurrent Access (200 operations):")
     print(f"  p50: {p50:.4f}ms")
     print(f"  p95: {p95:.4f}ms")
     print(f"  p99: {p99:.4f}ms")

@@ -114,7 +114,8 @@ async def test_e2e_ba_process_modelling_with_graph() -> None:
     await backend.upsert_node(req_node)
 
     # 2. Создать ProcessModellerWithGraph
-    from src.ai.agents.process_modelling_with_graph import ProcessModellerWithGraph
+    from src.ai.agents.process_modelling_with_graph import \
+        ProcessModellerWithGraph
 
     process_modeller = ProcessModellerWithGraph(backend)
 
@@ -146,7 +147,8 @@ async def test_e2e_ba_enablement_with_graph() -> None:
     await backend.upsert_node(req_node)
 
     # 2. Создать EnablementGeneratorWithGraph
-    from src.ai.agents.enablement_with_graph import EnablementGeneratorWithGraph
+    from src.ai.agents.enablement_with_graph import \
+        EnablementGeneratorWithGraph
 
     enablement_generator = EnablementGeneratorWithGraph(backend)
 

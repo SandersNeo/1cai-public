@@ -5,15 +5,13 @@ Unit tests for Self-Evolving AI - 1000% coverage
 =================================================
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock
-from src.ai.self_evolving_ai import (
-    SelfEvolvingAI,
-    EvolutionStage,
-    PerformanceMetrics,
-    Improvement,
-)
+
+import pytest
+
 from src.ai.llm_provider_abstraction import LLMProviderAbstraction
+from src.ai.self_evolving_ai import (EvolutionStage, Improvement,
+                                     PerformanceMetrics, SelfEvolvingAI)
 from src.infrastructure.event_bus import EventBus
 
 

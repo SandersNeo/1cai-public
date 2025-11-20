@@ -7,11 +7,9 @@ Tests for GraphRefsBuilder (graph_refs_builder.py).
 import pytest
 
 from src.ai.code_graph import InMemoryCodeGraphBackend, NodeKind
-from src.ai.graph_refs_builder import (
-    GraphRefsBuilder,
-    build_refs_for_feature,
-    build_refs_for_service,
-)
+from src.ai.graph_refs_builder import (GraphRefsBuilder,
+                                       build_refs_for_feature,
+                                       build_refs_for_service)
 
 
 def test_build_refs_for_feature() -> None:

@@ -12,9 +12,10 @@ Performance Monitoring
 """
 
 import time
-from typing import Dict, Any
 from datetime import datetime
 from functools import wraps
+from typing import Any, Dict
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

@@ -2,7 +2,7 @@
 Unit tests for QueryClassifier resilience
 """
 
-from src.ai.query_classifier import QueryClassifier, QueryType, QueryIntent
+from src.ai.query_classifier import QueryClassifier, QueryIntent, QueryType
 
 
 class TestQueryClassifierResilience:

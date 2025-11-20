@@ -2,12 +2,14 @@
 Unit tests for modular EmbeddingService
 """
 
-import pytest
 from unittest.mock import MagicMock
-from src.services.embedding.service import EmbeddingService
+
+import pytest
+
 from src.services.embedding.cache_manager import EmbeddingCacheManager
 from src.services.embedding.model_manager import EmbeddingModelManager
 from src.services.embedding.resource_manager import EmbeddingResourceManager
+from src.services.embedding.service import EmbeddingService
 
 
 class TestEmbeddingService:

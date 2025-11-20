@@ -8,14 +8,11 @@ Best Practices: Test all error scenarios
 import pytest
 from fastapi import HTTPException, Request
 from fastapi.exceptions import RequestValidationError
-from src.utils.error_handling import (
-    APIError,
-    ErrorCategory,
-    ErrorCode,
-    http_exception_handler,
-    validation_exception_handler,
-    general_exception_handler,
-)
+
+from src.utils.error_handling import (APIError, ErrorCategory, ErrorCode,
+                                      general_exception_handler,
+                                      http_exception_handler,
+                                      validation_exception_handler)
 
 
 @pytest.mark.asyncio

@@ -18,9 +18,10 @@ Advanced Optimizations для Embedding Service
 
 import logging
 import time
-from typing import Dict, List, Optional, Tuple
-import numpy as np
 from collections import deque
+from typing import Dict, List, Optional, Tuple
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 

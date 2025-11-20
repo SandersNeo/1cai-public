@@ -253,22 +253,22 @@ class SelfHealingCode:
         # Генерация анализа через LLM
         prompt = f"""
         Analyze the following error and identify the root cause:
-        
+
         Error Type: {error.error_type}
         Error Message: {error.error_message}
         File: {error.file_path}
         Line: {error.line_number}
         Code Snippet:
         {error.code_snippet}
-        
+
         Stack Trace:
         {error.stack_trace}
-        
+
         Provide:
         1. Root cause analysis
         2. Why this error occurred
         3. What needs to be fixed
-        
+
         Format as JSON.
         """
 
@@ -313,20 +313,20 @@ class SelfHealingCode:
 
         prompt = f"""
         Generate code fixes for the following error:
-        
+
         Error: {error.error_message}
         Root Cause: {analysis.get('root_cause', 'unknown')}
         File: {error.file_path}
         Line: {error.line_number}
-        
+
         Original Code:
         {error.code_snippet}
-        
+
         Generate fixes with:
         1. Description of the fix
         2. Fixed code
         3. Confidence level (0.0-1.0)
-        
+
         Format as JSON with fixes array.
         """
 

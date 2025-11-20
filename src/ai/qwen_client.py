@@ -11,9 +11,11 @@ Qwen3-Coder Client - Real integration with Ollama
 - Input validation
 """
 
-import aiohttp
 import asyncio
-from typing import Dict, Any, Optional, List
+from typing import Any, Dict, List, Optional
+
+import aiohttp
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

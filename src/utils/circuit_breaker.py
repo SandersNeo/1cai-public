@@ -12,9 +12,10 @@ TIER 1 Improvement: Prevents cascade failures
 """
 
 import time
-from typing import Callable, Any
-from functools import wraps
 from enum import Enum
+from functools import wraps
+from typing import Any, Callable
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

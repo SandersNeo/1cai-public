@@ -4,11 +4,12 @@
 Unit tests for OllamaClient
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock
 
+import pytest
+
+from src.ai.clients.exceptions import LLMCallError, LLMNotConfiguredError
 from src.ai.clients.ollama_client import OllamaClient, OllamaConfig
-from src.ai.clients.exceptions import LLMNotConfiguredError, LLMCallError
 
 
 class AsyncContextManagerMock:

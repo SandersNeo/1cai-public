@@ -13,13 +13,14 @@ AI Orchestrator with Revolutionary Components Integration
 
 import asyncio
 import logging
-from typing import Dict, List, Any, Optional
-from src.ai.orchestrator import AIOrchestrator
-from src.infrastructure.event_bus import EventBus, EventType, EventPublisher
-from src.ai.self_evolving_ai import SelfEvolvingAI
-from src.ai.self_healing_code import SelfHealingCode
+from typing import Any, Dict, List, Optional
+
 from src.ai.distributed_agent_network import DistributedAgentNetwork
 from src.ai.llm_provider_abstraction import LLMProviderAbstraction
+from src.ai.orchestrator import AIOrchestrator
+from src.ai.self_evolving_ai import SelfEvolvingAI
+from src.ai.self_healing_code import SelfHealingCode
+from src.infrastructure.event_bus import EventBus, EventPublisher, EventType
 from src.monitoring.revolutionary_metrics import RevolutionaryMetricsCollector
 
 logger = logging.getLogger(__name__)

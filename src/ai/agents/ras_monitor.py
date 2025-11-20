@@ -7,9 +7,10 @@ RAS Monitor - 1C Remote Administration Server Monitoring
 Based on: https://github.com/Polyplastic/1c-parsing-tech-log (RAS integration)
 """
 
-from typing import Dict, List, Any, Optional
-from datetime import datetime, timedelta
 from dataclasses import dataclass
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -354,7 +355,7 @@ if __name__ == "__main__":
         # Get cluster health
         health = await monitor.get_cluster_health()
 
-        print(f"\nCluster Health:")
+        print("\nCluster Health:")
         print(f"  Name: {health['cluster_info'].name}")
         print(f"  Working Processes: {health['working_processes']}")
         print(f"  Active Sessions: {health['active_sessions']}")

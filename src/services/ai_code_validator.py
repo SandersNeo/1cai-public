@@ -13,13 +13,13 @@
 from __future__ import annotations
 
 import asyncio
-from pathlib import Path
-from typing import Dict, List, Optional, Any
-from datetime import datetime
 from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from src.utils.structured_logging import StructuredLogger
 from src.ai.agents.qa_engineer_agent_extended import QAEngineerAgentExtended
+from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 

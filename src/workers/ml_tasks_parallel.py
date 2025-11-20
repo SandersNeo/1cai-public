@@ -15,23 +15,22 @@ Celery Worker для параллельного обучения ML моделе
 import os
 import sys
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
 
+import numpy as np
+# ML библиотеки
+import pandas as pd
 # Celery
-from celery import Celery, group, chord
+from celery import Celery, chord, group
 from celery.schedules import crontab
 from celery.utils.log import get_task_logger
 
-# ML библиотеки
-import pandas as pd
-import numpy as np
-
 # Локальные импорты
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from ml.training.trainer import ModelTrainer
+from config import settings
 from ml.experiments.mlflow_manager import MLFlowManager
 from ml.metrics.collector import MetricsCollector
-from config import settings
+from ml.training.trainer import ModelTrainer
 
 # Настройка Celery
 celery_app = Celery(

@@ -6,16 +6,17 @@ FastAPI endpoints для AI-ассистентов
 """
 
 import asyncio
-from typing import Dict, List, Optional, Any
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
+
+from src.utils.structured_logging import StructuredLogger
 
 from ..ai_assistants.architect_assistant import ArchitectAssistant
 from ..config import settings
 from ..middleware.rate_limiter import limiter
-from src.utils.structured_logging import StructuredLogger
 
 
 # Pydantic модели для запросов и ответов

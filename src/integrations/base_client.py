@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional
 
 import httpx
 
-from .exceptions import IntegrationError, IntegrationConfigError
+from .exceptions import IntegrationConfigError, IntegrationError
 
 
 class BaseIntegrationClient:

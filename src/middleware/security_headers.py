@@ -20,9 +20,11 @@ Features:
 """
 
 import os
-from fastapi import Request, Response
 from typing import Callable
+
+from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

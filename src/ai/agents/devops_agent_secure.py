@@ -10,9 +10,10 @@ Based on Agents Rule of Two: [BC] Configuration
 """
 
 import re
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
 
-from src.security.ai_security_layer import AISecurityLayer, AgentRuleOfTwoConfig
+from src.security.ai_security_layer import (AgentRuleOfTwoConfig,
+                                            AISecurityLayer)
 
 
 class DevOpsAISecure:

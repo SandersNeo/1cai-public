@@ -7,8 +7,9 @@ AI ассистент для тестировщиков с полным функ
 
 import os
 import re
-from typing import Dict, Any, List, Optional
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -30,16 +31,16 @@ class SmartTestGenerator:
 // Генерировано автоматически AI Agent
 
 Процедура {test_name}() Экспорт
-    
+
     // Arrange (подготовка)
     {arrange_code}
-    
+
     // Act (действие)
     {act_code}
-    
+
     // Assert (проверка через YAxUnit)
     {assert_code}
-    
+
 КонецПроцедуры
 """,
             "yaxunit_with_predicate": """
@@ -48,21 +49,21 @@ class SmartTestGenerator:
 // Генерировано автоматически AI Agent
 
 Процедура {test_name}() Экспорт
-    
+
     // Arrange (подготовка)
     {arrange_code}
-    
+
     // Act (действие)
     {act_code}
-    
+
     // Assert (проверка через YAxUnit с предикатом)
     Условие = ЮТест.Предикат()
         {predicate_code}
         .Получить();
-    
+
     ЮТест.ОжидаетЧто({result_variable}, "{test_description}")
         {assert_code}
-    
+
 КонецПроцедуры
 """,
             "yaxunit_database_test": """
@@ -71,21 +72,21 @@ class SmartTestGenerator:
 // Генерировано автоматически AI Agent
 
 Процедура {test_name}() Экспорт
-    
+
     // Arrange (подготовка)
     {arrange_code}
-    
+
     // Act (действие)
     {act_code}
-    
+
     // Assert (проверка базы данных через YAxUnit)
     УсловиеПоиска = ЮТест.Предикат()
         {predicate_code}
         .Получить();
-    
+
     ЮТест.ОжидаетЧтоТаблицаБазы("{table_name}", "{test_description}")
         {assert_code}
-    
+
 КонецПроцедуры
 """,
             "unit_test_bsl": """
@@ -93,16 +94,16 @@ class SmartTestGenerator:
 // Модуль: {module_name}
 
 Процедура {test_name}() Экспорт
-    
+
     // Arrange (подготовка)
     {arrange_code}
-    
+
     // Act (действие)
     {act_code}
-    
+
     // Assert (проверка)
     {assert_code}
-    
+
 КонецПроцедуры
 """,
             "vanessa_bdd": """
@@ -123,11 +124,11 @@ class SmartTestGenerator:
 """,
             "negative_test": """
 Процедура {test_name}_НегативныйТест() Экспорт
-    
+
     // Тест на обработку {error_case}
-    
+
     ОжидаемаяОшибка = "{error_message}";
-    
+
     Попытка
         {code_that_should_fail}
         ВызватьИсключение("Ожидалась ошибка, но код выполнился успешно");
@@ -136,7 +137,7 @@ class SmartTestGenerator:
             ВызватьИсключение("Получена неожиданная ошибка: " + ОписаниеОшибки());
         КонецЕсли;
     КонецПопытки;
-    
+
 КонецПроцедуры
 """,
         }
@@ -445,16 +446,16 @@ class SmartTestGenerator:
 
         return f"""// Edge case: {case}
 Процедура {test_name}() Экспорт
-    
+
     // Arrange - подготовка edge case данных
     // TODO: Добавить специфичные данные для {case}
-    
+
     // Act - выполнение функции
     // TODO: Вызвать функцию с edge case данными
-    
+
     // Assert - проверка обработки edge case
     // TODO: Добавить проверки через ЮТест.ОжидаетЧто
-    
+
 КонецПроцедуры
 """
 

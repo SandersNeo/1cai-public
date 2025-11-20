@@ -13,14 +13,16 @@
 ALL TODOs CLOSED! Production-ready!
 """
 
-import os
 import asyncio
-from typing import Dict, List, Any
+import os
+import re
+from typing import Any, Dict, List
+
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
-import re
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -68,9 +70,10 @@ class CopilotService:
                 logger.info("Loading Copilot model", extra={"model_path": model_path})
 
                 try:
-                    from transformers import AutoModelForCausalLM, AutoTokenizer
-                    from peft import PeftModel
                     import torch
+                    from peft import PeftModel
+                    from transformers import (AutoModelForCausalLM,
+                                              AutoTokenizer)
 
                     # Determine device
                     self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -462,22 +465,22 @@ class CopilotService:
 //   Произвольный - Результат выполнения функции
 //
 Функция {func_name}({params}) Экспорт
-    
+
     Результат = Неопределено;
-    
+
     // Реализация функции
     Попытка
         // Основная логика
-        
+
     Исключение
-        ЗаписьЖурналаРегистрации("Ошибка в {func_name}", 
+        ЗаписьЖурналаРегистрации("Ошибка в {func_name}",
             УровеньЖурналаРегистрации.Ошибка,,,
             ОписаниеОшибки());
         ВызватьИсключение;
     КонецПопытки;
-    
+
     Возврат Результат;
-    
+
 КонецФункции
 """
 
@@ -496,17 +499,17 @@ class CopilotService:
 //   Параметр1 - Произвольный - Описание параметра
 //
 Процедура {proc_name}(Параметр1) Экспорт
-    
+
     Попытка
         // Реализация процедуры
-        
+
     Исключение
-        ЗаписьЖурналаРегистрации("Ошибка в {proc_name}", 
+        ЗаписьЖурналаРегистрации("Ошибка в {proc_name}",
             УровеньЖурналаРегистрации.Ошибка,,,
             ОписаниеОшибки());
         ВызватьИсключение;
     КонецПопытки;
-    
+
 КонецПроцедуры
 """
 
@@ -520,21 +523,21 @@ class CopilotService:
 // Тест для функции {clean_name}
 //
 Процедура Тест_{clean_name}() Экспорт
-    
+
     // Arrange (Подготовка данных)
     ВходныеДанные = "test_value";
     ОжидаемыйРезультат = "expected_value";
-    
+
     // Act (Выполнение)
     ФактическийРезультат = {clean_name}(ВходныеДанные);
-    
+
     // Assert (Проверка)
     юТест.ПроверитьРавенство(
-        ФактическийРезультат, 
+        ФактическийРезультат,
         ОжидаемыйРезультат,
         "Функция {clean_name} должна вернуть ожидаемое значение"
     );
-    
+
 КонецПроцедуры
 """
 

@@ -5,14 +5,15 @@ Dashboard API Endpoints
 Backend для Unified Portal dashboards
 """
 
-from typing import Dict, Any
-from fastapi import APIRouter, Depends, HTTPException
-from datetime import datetime, timedelta
 import random
-from src.utils.structured_logging import StructuredLogger
+from datetime import datetime, timedelta
+from typing import Any, Dict
+
+import asyncpg
+from fastapi import APIRouter, Depends, HTTPException
 
 from src.database import get_db_pool
-import asyncpg
+from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 
@@ -694,11 +695,11 @@ async def get_team_lead_dashboard(
                         f"""
                     SELECT COALESCE(
                         ROUND(
-                            (SELECT COUNT(*) FROM code_reviews 
-                             WHERE tenant_id = $1 AND status = 'approved' 
+                            (SELECT COUNT(*) FROM code_reviews
+                             WHERE tenant_id = $1 AND status = 'approved'
                                AND created_at BETWEEN {week_start} AND {week_end})::numeric /
-                            NULLIF((SELECT COUNT(*) FROM code_reviews 
-                                    WHERE tenant_id = $1 
+                            NULLIF((SELECT COUNT(*) FROM code_reviews
+                                    WHERE tenant_id = $1
                                       AND created_at BETWEEN {week_start} AND {week_end}), 0) * 100
                         ), 0
                     )
@@ -722,7 +723,7 @@ async def get_team_lead_dashboard(
                     FROM tasks
                     WHERE tenant_id = $1
                       AND status = 'completed'
-                      AND completed_at BETWEEN NOW() - INTERVAL '{week_offset} weeks' 
+                      AND completed_at BETWEEN NOW() - INTERVAL '{week_offset} weeks'
                                            AND NOW() - INTERVAL '{week_offset - 1} weeks'
                     """,
                         tenant_id,
@@ -875,7 +876,7 @@ async def get_ba_dashboard(
             # For now, derive from tasks with type 'requirement'
             requirements_rows = await conn.fetch(
                 """
-                SELECT 
+                SELECT
                     id,
                     title,
                     description,

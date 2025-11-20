@@ -5,18 +5,19 @@ MLflow менеджер для экспериментов и трекинга м
 Интеграция с MLflow для мониторинга экспериментов и управления моделями.
 """
 
+import json
+import tempfile
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
 import mlflow
 import mlflow.sklearn
 import mlflow.tensorflow
-from mlflow.tracking import MlflowClient
-from mlflow.exceptions import MlflowException
-from datetime import datetime
-from typing import Dict, List, Optional, Any, Union
-import json
 import numpy as np
 import pandas as pd
-from pathlib import Path
-import tempfile
+from mlflow.exceptions import MlflowException
+from mlflow.tracking import MlflowClient
 
 from src.config import settings
 from src.utils.structured_logging import StructuredLogger

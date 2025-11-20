@@ -4,9 +4,10 @@
 Security Tests - Тестирование безопасности
 """
 
-import pytest
 import sys
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
@@ -37,14 +38,14 @@ async def test_sql_injection_prevention():
             )
             # Should succeed without damage
             assert True
-        except:
+        except Exception:
             pytest.fail("Parameterized query failed")
 
         # Verify table still exists
         exists = await conn.fetchval(
             """
             SELECT EXISTS (
-                SELECT FROM information_schema.tables 
+                SELECT FROM information_schema.tables
                 WHERE table_name = 'projects'
             )
         """
@@ -166,8 +167,8 @@ async def test_authentication_required():
     Security: Endpoints require authentication
     """
 
+    from fastapi import Depends, FastAPI, HTTPException
     from fastapi.testclient import TestClient
-    from fastapi import FastAPI, Depends, HTTPException
 
     app = FastAPI()
 
@@ -243,7 +244,7 @@ async def test_csrf_protection():
     Security: CSRF token validation
     """
 
-    from fastapi import FastAPI, HTTPException, Header
+    from fastapi import FastAPI, Header, HTTPException
     from fastapi.testclient import TestClient
 
     app = FastAPI()

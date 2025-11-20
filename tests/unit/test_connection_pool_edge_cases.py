@@ -4,8 +4,9 @@
 Unit tests for ConnectionPool edge cases.
 """
 
-import pytest
 import asyncio
+
+import pytest
 
 from src.ai.connection_pool import ConnectionPool
 

@@ -11,8 +11,9 @@ E2E: Business Analyst → Developer AI Secure → QA Engineer AI
 Тест моделирует поток с помощью простых объектов и моков без реальных LLM/HTTP.
 """
 
-import pytest
 from unittest.mock import AsyncMock, patch
+
+import pytest
 
 
 @pytest.mark.asyncio
@@ -76,7 +77,8 @@ async def test_e2e_ba_dev_qa_flow():
     assert "Функция РассчитатьСкидку" in draft["code"]
 
     # 3. QA Engineer AI: генерирует тесты по сгенерированному коду
-    from src.ai.agents.qa_engineer_agent_extended import QAEngineerAgentExtended
+    from src.ai.agents.qa_engineer_agent_extended import \
+        QAEngineerAgentExtended
 
     qa_agent = QAEngineerAgentExtended()
 

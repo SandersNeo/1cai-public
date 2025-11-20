@@ -11,10 +11,10 @@ AI-оптимизация SQL запросов для 1С (PostgreSQL, MS SQL)
 - MS SQL docs - Microsoft Learn
 """
 
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass
-import re
 import logging
+import re
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -374,7 +374,7 @@ class SQLOptimizer:
         # Simplified example
         return """
 -- ОПТИМИЗИРОВАННО: Один запрос вместо N
-SELECT 
+SELECT
     t1.колонка,
     t2.связанная_колонка
 FROM таблица1 t1
@@ -603,7 +603,7 @@ WHERE t1.условие
     КоличествоОстаток
 ИЗ
     РегистрНакопления.Товары.Остатки(, , , )
-    
+
 // Платформа сама оптимизирует!
                     """,
                     }

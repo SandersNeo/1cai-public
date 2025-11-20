@@ -12,16 +12,18 @@
 - Tool Indexer
 """
 
-import pytest
-from pathlib import Path
 import sys
+from pathlib import Path
+
+import pytest
 
 # Add code directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "code" / "py_server"))
 
-from pii_tokenizer import PIITokenizer
-from secure_mcp_client import SecureMCPClient
 from mcp_code_generator import MCPCodeGenerator
+from secure_mcp_client import SecureMCPClient
+
+from pii_tokenizer import PIITokenizer
 
 
 class TestPIITokenizer:

@@ -5,8 +5,9 @@ AI Issue Classifier - ML классификация проблем произв�
 Based on: Neural networks from 1c-parsing-tech-log
 """
 
-from typing import Dict, List, Any
 from dataclasses import dataclass
+from typing import Any, Dict, List
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -312,7 +313,7 @@ if __name__ == "__main__":
 
         result = await classifier.classify_issue(issue)
 
-        print(f"\nClassification Result:")
+        print("\nClassification Result:")
         print(f"  Category: {result.category}")
         print(f"  Subcategory: {result.subcategory}")
         print(f"  Confidence: {result.confidence}")

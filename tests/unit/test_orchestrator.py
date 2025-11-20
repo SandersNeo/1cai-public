@@ -4,9 +4,12 @@
 Unit tests for AI Orchestrator
 """
 
+from unittest.mock import AsyncMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, AsyncMock, patch
-from src.ai.orchestrator import QueryClassifier, AIOrchestrator, QueryType, AIService
+
+from src.ai.orchestrator import (AIOrchestrator, AIService, QueryClassifier,
+                                 QueryType)
 
 
 class TestQueryClassifier:

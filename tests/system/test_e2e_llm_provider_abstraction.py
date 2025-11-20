@@ -10,10 +10,7 @@ E2E тесты для LLM Provider Abstraction
 
 import pytest
 
-from src.ai.llm_provider_abstraction import (
-    LLMProviderAbstraction,
-    QueryType,
-)
+from src.ai.llm_provider_abstraction import LLMProviderAbstraction, QueryType
 from src.ai.orchestrator import QueryType as OrchestratorQueryType
 
 
@@ -190,7 +187,8 @@ async def test_e2e_russian_text_query_provider_selection() -> None:
     Проверяет, что для запросов с русским текстом выбираются российские провайдеры
     (GigaChat или YandexGPT).
     """
-    from src.ai.llm_provider_abstraction import LLMProviderAbstraction, QueryType
+    from src.ai.llm_provider_abstraction import (LLMProviderAbstraction,
+                                                 QueryType)
 
     # 1. Создать LLM Provider Abstraction
     abstraction = LLMProviderAbstraction()
@@ -271,7 +269,8 @@ async def test_e2e_naparnik_in_llm_provider_abstraction() -> None:
     Проверяет, что 1C:Напарник доступен через LLM Provider Abstraction
     для 1C-специфичных запросов.
     """
-    from src.ai.llm_provider_abstraction import LLMProviderAbstraction, QueryType
+    from src.ai.llm_provider_abstraction import (LLMProviderAbstraction,
+                                                 QueryType)
 
     # 1. Создать LLM Provider Abstraction
     abstraction = LLMProviderAbstraction()

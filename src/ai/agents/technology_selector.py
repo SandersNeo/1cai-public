@@ -5,9 +5,9 @@ Technology Selector - AI выбор технологического стека
 Помогает архитектору выбрать оптимальные технологии для проекта
 """
 
-from typing import Dict, List, Any
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -397,8 +397,8 @@ class TechnologySelector:
                     "duration": "1-2 weeks",
                     "tasks": [
                         f"Установка и настройка {tech['option']}",
-                        f"Интеграция с 1С",
-                        f"Тестирование",
+                        "Интеграция с 1С",
+                        "Тестирование",
                     ],
                 }
             )

@@ -12,11 +12,12 @@ AI Security Layer - Unified Security для всех AI агентов
 Based on Meta's Agents Rule of Two framework
 """
 
-import re
 import hashlib
+import re
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional
-from dataclasses import dataclass
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

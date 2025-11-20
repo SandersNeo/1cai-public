@@ -13,10 +13,11 @@ Tech Log Analyzer - Анализ технологического журнала
 """
 
 import re
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from datetime import datetime
 from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -727,7 +728,7 @@ if __name__ == "__main__":
         analyzer = TechLogAnalyzer()
 
         print("=== Tech Log Analyzer Test ===")
-        print(f"Thresholds configured:")
+        print("Thresholds configured:")
         for key, value in analyzer.thresholds.items():
             print(f"  {key}: {value}ms")
 
@@ -745,7 +746,7 @@ if __name__ == "__main__":
             severity="high",
         )
 
-        print(f"\nMock event created:")
+        print("\nMock event created:")
         print(f"  Type: {mock_event.event_type}")
         print(f"  Duration: {mock_event.duration_ms}ms")
         print(f"  Severity: {mock_event.severity}")

@@ -8,13 +8,8 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from src.security import (
-    AuthService,
-    CurrentUser,
-    TokenResponse,
-    get_auth_service,
-    get_current_user,
-)
+from src.security import (AuthService, CurrentUser, TokenResponse,
+                          get_auth_service, get_current_user)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

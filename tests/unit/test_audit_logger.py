@@ -2,8 +2,8 @@
 
 """Tests for audit logger."""
 
-from pathlib import Path
 import json
+from pathlib import Path
 
 from src.security.audit import AuditLogger
 

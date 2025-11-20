@@ -4,9 +4,10 @@
 Acceptance Tests - Пользовательские сценарии
 """
 
-import pytest
 import sys
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
@@ -25,6 +26,7 @@ async def test_scenario_new_user_onboarding():
     """
 
     import asyncpg
+
     from src.ai.role_based_router import RoleBasedRouter
 
     try:
@@ -103,7 +105,6 @@ async def test_scenario_developer_uses_code_review():
     from src.ai.agents.code_review.auto_fixer import AutoFixer
 
     # Step 1-2: Code written & PR created (mocked)
-
     # Step 3: Auto review
     reviewer = AICodeReviewer()
 
@@ -351,7 +352,7 @@ async def test_scenario_copilot_assists_development():
     accepted = suggestions[0]
 
     # Step 5: Generate tests
-    full_code = f"""
+    full_code = """
 Функция РассчитатьНДС(Сумма, Ставка = 20) Экспорт
     СуммаНДС = Сумма * Ставка / 100;
     Возврат Окр(СуммаНДС, 2);

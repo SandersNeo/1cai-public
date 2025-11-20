@@ -103,7 +103,8 @@ class ScenarioRecommender:
 
         # Метрики: отслеживание рекомендаций
         try:
-            from src.monitoring.prometheus_metrics import track_scenario_recommendation
+            from src.monitoring.prometheus_metrics import \
+                track_scenario_recommendation
 
             # Определить категорию размера графа
             graph_size = len(graph_nodes) if graph_nodes else 0

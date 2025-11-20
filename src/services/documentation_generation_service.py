@@ -6,10 +6,10 @@ Documentation Generation Service
 Версия: 1.0.0
 """
 
-import re
 import logging
-from typing import List, Dict, Any, Optional
+import re
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -234,7 +234,7 @@ class DocumentationGenerator:
 
             # Возвращаемое значение
             if section.get("return_value"):
-                lines.append(f"### Возвращаемое значение\n\n")
+                lines.append("### Возвращаемое значение\n\n")
                 lines.append(f"`{section['return_value']}`\n\n")
 
             # Примеры
@@ -290,7 +290,7 @@ class DocumentationGenerator:
                 html += "    </table>\n"
 
             if section.get("return_value"):
-                html += f"    <h3>Возвращаемое значение</h3>\n"
+                html += "    <h3>Возвращаемое значение</h3>\n"
                 html += f"    <p><code>{section['return_value']}</code></p>\n"
 
             html += "    <hr>\n"

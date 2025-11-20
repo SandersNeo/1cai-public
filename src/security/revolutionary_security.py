@@ -16,6 +16,7 @@ Revolutionary Security Layer - Безопасность для всех комп
 - "Security by Design" (2024): Безопасность с самого начала
 """
 
+import base64
 import logging
 import secrets
 from dataclasses import dataclass, field
@@ -25,7 +26,6 @@ from typing import Any, Dict, List, Optional, Set
 from uuid import uuid4
 
 from cryptography.fernet import Fernet
-import base64
 
 logger = logging.getLogger(__name__)
 

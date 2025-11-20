@@ -3,7 +3,8 @@ Wiki Search Service
 Handles semantic search via Qdrant and integration with WikiService
 """
 
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 from src.db.qdrant_client import QdrantClient
 from src.services.embedding.service import EmbeddingService
 from src.utils.structured_logging import StructuredLogger

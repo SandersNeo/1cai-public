@@ -5,11 +5,11 @@
 Автоматический анализ эффективности AI-ассистентов и улучшение рекомендаций.
 """
 
+from .ab_testing.tester import ABTestManager
+from .experiments.mlflow_manager import MLFlowManager
 from .metrics.collector import MetricsCollector
 from .models.predictor import MLPredictor
-from .experiments.mlflow_manager import MLFlowManager
 from .training.trainer import ModelTrainer
-from .ab_testing.tester import ABTestManager
 
 __all__ = [
     "MetricsCollector",

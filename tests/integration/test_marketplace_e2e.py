@@ -9,8 +9,8 @@ without real JWT tokens or a Postgres marketplace repository.
 import pytest
 from fastapi.testclient import TestClient
 
-from src.main import app
 from src.api.marketplace import get_marketplace_repository
+from src.main import app
 from src.security.auth import CurrentUser, get_current_user
 
 

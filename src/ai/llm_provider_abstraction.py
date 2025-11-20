@@ -382,7 +382,8 @@ class LLMProviderAbstraction:
 
         # Метрики: отслеживание выбора провайдера
         try:
-            from src.monitoring.prometheus_metrics import track_llm_provider_selection
+            from src.monitoring.prometheus_metrics import \
+                track_llm_provider_selection
 
             # Время выбора очень быстрое, но измеряем для консистентности
             duration = 0.0001  # Приблизительное время выбора

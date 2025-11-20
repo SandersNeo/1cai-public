@@ -6,8 +6,8 @@ Tests for EnablementGeneratorWithGraph (enablement_with_graph.py).
 
 import pytest
 
-from src.ai.code_graph import InMemoryCodeGraphBackend, Node, NodeKind
 from src.ai.agents.enablement_with_graph import EnablementGeneratorWithGraph
+from src.ai.code_graph import InMemoryCodeGraphBackend, Node, NodeKind
 
 
 @pytest.mark.asyncio

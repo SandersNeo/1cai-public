@@ -5,15 +5,15 @@ Exposes Wiki functionality including Pages, Comments, Search, and Attachments
 
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
-from src.services.wiki.service import WikiService
+from src.middleware.jwt_user_context import CurrentUser, get_current_user
+from src.services.wiki.attachments import WikiAttachmentStorage
+from src.services.wiki.comments import CommentDTO, WikiCommentsService
 from src.services.wiki.models import WikiPage, WikiPageCreate, WikiPageUpdate
 from src.services.wiki.search import WikiSearchService, get_wiki_search_service
-from src.services.wiki.comments import WikiCommentsService, CommentDTO
-from src.services.wiki.attachments import WikiAttachmentStorage
+from src.services.wiki.service import WikiService
 from src.utils.structured_logging import StructuredLogger
-from src.middleware.jwt_user_context import get_current_user, CurrentUser
 
 logger = StructuredLogger(__name__).logger
 router = APIRouter(prefix="/wiki", tags=["Wiki"])

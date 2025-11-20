@@ -11,9 +11,11 @@ AI Response Caching with Semantic Similarity
 """
 
 import hashlib
-import numpy as np
-from typing import Optional, Dict, Any
 import json
+from typing import Any, Dict, Optional
+
+import numpy as np
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

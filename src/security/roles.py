@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Iterable, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable, Optional
 
 if TYPE_CHECKING:  # pragma: no cover
     from src.security.auth import CurrentUser

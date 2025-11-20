@@ -8,20 +8,19 @@ Celery Worker для background обучения моделей и ML задач
 import os
 import sys
 from datetime import datetime
-from typing import Dict, List, Any
-
-# Celery
-from celery import Celery
+from typing import Any, Dict, List
 
 # ML библиотеки
 import pandas as pd
+# Celery
+from celery import Celery
 
 # Локальные импорты
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from ml.training.trainer import ModelTrainer
+from config import settings
 from ml.experiments.mlflow_manager import MLFlowManager
 from ml.metrics.collector import MetricsCollector
-from config import settings
+from ml.training.trainer import ModelTrainer
 from src.utils.structured_logging import StructuredLogger
 
 # Настройка Celery
@@ -589,7 +588,7 @@ def process_metrics_batch(self, metrics_data: List[Dict[str, Any]]):
         for metric_data in metrics_data:
             try:
                 # Преобразование enum
-                from ml.metrics.collector import MetricType, AssistantRole
+                from ml.metrics.collector import AssistantRole, MetricType
 
                 metric_type = MetricType(metric_data["metric_type"].lower())
                 assistant_role = AssistantRole(metric_data["assistant_role"].lower())

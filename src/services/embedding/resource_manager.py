@@ -1,7 +1,8 @@
-import time
 import os
+import time
 from threading import Lock
-from typing import Dict, Any
+from typing import Any, Dict
+
 from src.utils.circuit_breaker import CircuitBreaker
 
 

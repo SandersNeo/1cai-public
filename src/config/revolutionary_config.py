@@ -12,13 +12,14 @@ Revolutionary Configuration Management
 - Secrets management
 """
 
-import os
 import logging
+import os
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
 from enum import Enum
-import yaml
 from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import yaml
 
 logger = logging.getLogger(__name__)
 

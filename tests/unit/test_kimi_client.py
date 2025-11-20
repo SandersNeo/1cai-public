@@ -3,10 +3,13 @@
 """
 Unit tests for Kimi-K2-Thinking client
 """
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from src.ai.clients.kimi_client import KimiClient, KimiConfig, DEFAULT_OLLAMA_URL
-from src.ai.clients.exceptions import LLMNotConfiguredError, LLMCallError
+
+import pytest
+
+from src.ai.clients.exceptions import LLMCallError, LLMNotConfiguredError
+from src.ai.clients.kimi_client import (DEFAULT_OLLAMA_URL, KimiClient,
+                                        KimiConfig)
 
 
 class AsyncContextManagerMock:

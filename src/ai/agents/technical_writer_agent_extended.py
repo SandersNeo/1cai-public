@@ -6,8 +6,9 @@ AI ассистент для технических писателей с пол
 """
 
 import re
-from typing import Dict, Any, List
 from datetime import datetime
+from typing import Any, Dict, List
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

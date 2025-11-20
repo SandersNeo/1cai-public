@@ -14,10 +14,10 @@ from __future__ import annotations
 
 import json
 import xml.etree.ElementTree as ET
-from pathlib import Path
-from typing import Dict, Optional, Any
+from dataclasses import asdict, dataclass
 from datetime import datetime
-from dataclasses import dataclass, asdict
+from pathlib import Path
+from typing import Any, Dict, Optional
 
 from src.utils.structured_logging import StructuredLogger
 

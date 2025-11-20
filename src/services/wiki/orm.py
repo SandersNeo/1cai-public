@@ -3,20 +3,12 @@ Wiki Service - Database Models (SQLAlchemy)
 Supports Versioning, Soft Deletes, Namespaces, Blueprints, and Comments
 """
 
-from datetime import datetime
-from sqlalchemy import (
-    Column,
-    String,
-    Integer,
-    Boolean,
-    DateTime,
-    ForeignKey,
-    Text,
-    UniqueConstraint,
-    JSON,
-)
-from sqlalchemy.orm import relationship, declarative_base
 import uuid
+from datetime import datetime
+
+from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
+                        String, Text, UniqueConstraint)
+from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
 

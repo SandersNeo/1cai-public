@@ -5,12 +5,9 @@ Tests for LLM Provider Abstraction (llm_provider_abstraction.py).
 """
 
 
-from src.ai.llm_provider_abstraction import (
-    LLMProviderAbstraction,
-    ModelProfile,
-    QueryType,
-    RiskLevel,
-)
+from src.ai.llm_provider_abstraction import (LLMProviderAbstraction,
+                                             ModelProfile, QueryType,
+                                             RiskLevel)
 
 
 def test_model_profile_to_dict() -> None:

@@ -142,8 +142,7 @@ class IntelligentCache:
             try:
                 from src.monitoring.prometheus_metrics import (
                     track_intelligent_cache_miss,
-                    track_intelligent_cache_operation,
-                )
+                    track_intelligent_cache_operation)
 
                 query_type = context.get("query_type") if context else None
                 track_intelligent_cache_miss(query_type=query_type)
@@ -161,10 +160,9 @@ class IntelligentCache:
             duration = time.time() - start_time
             try:
                 from src.monitoring.prometheus_metrics import (
-                    track_intelligent_cache_miss,
-                    track_intelligent_cache_operation,
                     track_intelligent_cache_eviction,
-                )
+                    track_intelligent_cache_miss,
+                    track_intelligent_cache_operation)
 
                 query_type = entry.query_type
                 track_intelligent_cache_miss(query_type=query_type)
@@ -182,9 +180,7 @@ class IntelligentCache:
         duration = time.time() - start_time
         try:
             from src.monitoring.prometheus_metrics import (
-                track_intelligent_cache_hit,
-                track_intelligent_cache_operation,
-            )
+                track_intelligent_cache_hit, track_intelligent_cache_operation)
 
             query_type = entry.query_type
             track_intelligent_cache_hit(query_type=query_type)
@@ -243,9 +239,8 @@ class IntelligentCache:
             del self._cache[oldest_key]
             self._metrics["evictions"] += 1
             try:
-                from src.monitoring.prometheus_metrics import (
-                    track_intelligent_cache_eviction,
-                )
+                from src.monitoring.prometheus_metrics import \
+                    track_intelligent_cache_eviction
 
                 track_intelligent_cache_eviction(eviction_reason="lru")
             except ImportError:
@@ -259,8 +254,7 @@ class IntelligentCache:
         try:
             from src.monitoring.prometheus_metrics import (
                 track_intelligent_cache_operation,
-                update_intelligent_cache_size,
-            )
+                update_intelligent_cache_size)
 
             track_intelligent_cache_operation("set", duration, "success")
             update_intelligent_cache_size(
@@ -297,8 +291,7 @@ class IntelligentCache:
             from src.monitoring.prometheus_metrics import (
                 track_intelligent_cache_invalidation,
                 track_intelligent_cache_operation,
-                update_intelligent_cache_size,
-            )
+                update_intelligent_cache_size)
 
             track_intelligent_cache_invalidation(invalidation_type="tags")
             track_intelligent_cache_operation("invalidate_by_tags", duration, "success")
@@ -336,8 +329,7 @@ class IntelligentCache:
             from src.monitoring.prometheus_metrics import (
                 track_intelligent_cache_invalidation,
                 track_intelligent_cache_operation,
-                update_intelligent_cache_size,
-            )
+                update_intelligent_cache_size)
 
             track_intelligent_cache_invalidation(invalidation_type="query_type")
             track_intelligent_cache_operation(
@@ -363,8 +355,7 @@ class IntelligentCache:
             from src.monitoring.prometheus_metrics import (
                 track_intelligent_cache_invalidation,
                 track_intelligent_cache_operation,
-                update_intelligent_cache_size,
-            )
+                update_intelligent_cache_size)
 
             track_intelligent_cache_invalidation(invalidation_type="manual")
             track_intelligent_cache_operation("clear", duration, "success")

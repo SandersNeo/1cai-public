@@ -13,13 +13,13 @@ sys.path.insert(0, str(project_root))
 
 import asyncio
 from typing import Dict, List
-from src.utils.structured_logging import StructuredLogger
 
 from src.ai.agents.architect_agent_extended import ArchitectAgentExtended
-from src.ai.agents.technology_selector import TechnologySelector
+from src.ai.agents.onec_server_optimizer import OneCServerOptimizer
 from src.ai.agents.performance_analyzer import PerformanceAnalyzer
 from src.ai.agents.sql_optimizer import SQLOptimizer
-from src.ai.agents.onec_server_optimizer import OneCServerOptimizer
+from src.ai.agents.technology_selector import TechnologySelector
+from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 

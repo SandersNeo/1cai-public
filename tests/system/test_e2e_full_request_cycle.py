@@ -13,15 +13,11 @@ E2E тесты для полного цикла запроса с несколь
 
 import pytest
 
-from src.ai.orchestrator import AIOrchestrator
 from src.ai.intelligent_cache import IntelligentCache
 from src.ai.llm_provider_abstraction import LLMProviderAbstraction, QueryType
-from src.ai.scenario_hub import (
-    ScenarioPlan,
-    ScenarioStep,
-    ScenarioRiskLevel,
-    AutonomyLevel,
-)
+from src.ai.orchestrator import AIOrchestrator
+from src.ai.scenario_hub import (AutonomyLevel, ScenarioPlan,
+                                 ScenarioRiskLevel, ScenarioStep)
 
 
 @pytest.mark.asyncio

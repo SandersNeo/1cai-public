@@ -2,8 +2,10 @@
 Unit tests for Neo4jClient security features
 """
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
+
 from src.db.neo4j_client import Neo4jClient
 
 

@@ -4,8 +4,10 @@
 Unit tests for Hybrid Search Service
 """
 
-import pytest
 from unittest.mock import Mock
+
+import pytest
+
 from src.services.hybrid_search import HybridSearchService
 
 

@@ -10,8 +10,9 @@ Feature Flags Service
 - Input validation
 """
 
-from typing import Dict, Optional
 from enum import Enum
+from typing import Dict, Optional
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

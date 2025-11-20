@@ -10,30 +10,24 @@
 """
 
 import asyncio
-from typing import Dict, List, Optional, Any
-from datetime import datetime
-import httpx
+import time
 from contextlib import asynccontextmanager
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from fastapi import (
-    FastAPI,
-    APIRouter,
-    Request,
-    Response,
-    HTTPException,
-    BackgroundTasks,
-    status,
-)
+import httpx
+import redis
+from fastapi import (APIRouter, BackgroundTasks, FastAPI, HTTPException,
+                     Request, Response, status)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
-from starlette.middleware.base import BaseHTTPMiddleware
-import time
-import redis
 from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
+from starlette.middleware.base import BaseHTTPMiddleware
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

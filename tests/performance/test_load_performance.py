@@ -4,12 +4,13 @@
 Performance Tests - Нагрузочное тестирование
 """
 
-import pytest
 import asyncio
-import time
 import statistics
 import sys
+import time
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
@@ -47,7 +48,7 @@ async def test_api_latency_benchmark():
     else:
         p99 = latencies[-1] if latencies else 0
 
-    print(f"\nLatency Benchmark:")
+    print("\nLatency Benchmark:")
     print(f"  p50: {p50:.2f}ms")
     print(f"  p95: {p95:.2f}ms")
     print(f"  p99: {p99:.2f}ms")
@@ -84,7 +85,7 @@ async def test_concurrent_requests():
 
     throughput = len(results) / duration
 
-    print(f"\nConcurrent Load Test:")
+    print("\nConcurrent Load Test:")
     print(f"  Requests: {len(results)}")
     print(f"  Successes: {successes}")
     print(f"  Errors: {errors}")
@@ -126,7 +127,7 @@ async def test_cache_performance():
     avg_hit = statistics.mean(hit_times)
     avg_miss = statistics.mean(miss_times)
 
-    print(f"\nCache Performance:")
+    print("\nCache Performance:")
     print(f"  Avg HIT: {avg_hit:.3f}ms")
     print(f"  Avg MISS: {avg_miss:.3f}ms")
     print(f"  Speedup: {avg_miss/avg_hit:.1f}x")
@@ -168,7 +169,7 @@ async def test_database_query_performance():
         else:
             p95_time = times[-1] if times else 0
 
-        print(f"\nDatabase Performance:")
+        print("\nDatabase Performance:")
         print(f"  Avg: {avg_time:.2f}ms")
         print(f"  p95: {p95_time:.2f}ms")
 
@@ -209,7 +210,7 @@ async def test_code_review_throughput():
 
     throughput = len(results) / duration
 
-    print(f"\nCode Review Throughput:")
+    print("\nCode Review Throughput:")
     print(f"  Reviews: {len(results)}")
     print(f"  Duration: {duration:.2f}s")
     print(f"  Throughput: {throughput:.2f} reviews/s")
@@ -223,8 +224,9 @@ async def test_memory_usage():
     Resource: Memory usage под нагрузкой
     """
 
-    import psutil
     import os
+
+    import psutil
 
     process = psutil.Process(os.getpid())
 
@@ -245,7 +247,7 @@ async def test_memory_usage():
 
     increase_mb = peak_mb - baseline_mb
 
-    print(f"\nMemory Usage:")
+    print("\nMemory Usage:")
     print(f"  Baseline: {baseline_mb:.1f} MB")
     print(f"  Peak: {peak_mb:.1f} MB")
     print(f"  Increase: {increase_mb:.1f} MB")

@@ -5,12 +5,12 @@ Main FastAPI Application
 With Agents Rule of Two Security Integration
 """
 
-import sys
 import asyncio
-from contextlib import asynccontextmanager
 import os
+import sys
 import time
 import uuid
+from contextlib import asynccontextmanager
 
 if os.getenv("IGNORE_PY_VERSION_CHECK") != "1" and sys.version_info[:2] != (
     3,
@@ -20,62 +20,51 @@ if os.getenv("IGNORE_PY_VERSION_CHECK") != "1" and sys.version_info[:2] != (
         f"Python 3.11.x is required to run 1C AI Stack (detected {sys.version.split()[0]})."
     )
 
-from fastapi import FastAPI, Request, APIRouter, status
-from fastapi.responses import RedirectResponse, JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.staticfiles import StaticFiles  # Import StaticFiles
-
 import redis.asyncio as aioredis
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from fastapi import APIRouter, FastAPI, Request, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles  # Import StaticFiles
 from prometheus_fastapi_instrumentator import Instrumentator
 
-# Database
-from src.database import create_pool, close_pool
-
-# API Routers
-from src.api.dashboard_api import router as dashboard_router
-from src.api.monitoring import router as monitoring_router
-from src.api.copilot_api_perfect import router as copilot_router
-from src.api.code_review import router as code_review_router
-from src.api.test_generation import router as test_generation_router
-from src.api.websocket_enhanced import router as websocket_router
-from src.api.bpmn_api import router as bpmn_router
-from src.api.auth import router as auth_router
-from src.api.admin_roles import router as admin_roles_router
 from src.api.admin_audit import router as admin_audit_router
-
+from src.api.admin_roles import router as admin_roles_router
+from src.api.auth import router as auth_router
+from src.api.bpmn_api import router as bpmn_router
 # NEW: Security routers
 from src.api.code_approval import router as code_approval_router
-from src.api.security_monitoring import router as security_monitoring_router
-from src.api.orchestrator_api import router as orchestrator_router
-
+from src.api.code_review import router as code_review_router
+from src.api.copilot_api_perfect import router as copilot_router
+# API Routers
+from src.api.dashboard_api import router as dashboard_router
 # NEW: Marketplace router
 from src.api.marketplace import router as marketplace_router
-
+from src.api.monitoring import router as monitoring_router
+from src.api.orchestrator_api import router as orchestrator_router
+from src.api.security_monitoring import router as security_monitoring_router
+from src.api.test_generation import router as test_generation_router
+from src.api.websocket_enhanced import router as websocket_router
 # NEW: Wiki Router
 from src.api.wiki import router as wiki_router
-
+# Database
+from src.database import close_pool, create_pool
+from src.db.marketplace_repository import MarketplaceRepository
+from src.middleware.jwt_user_context import JWTUserContextMiddleware
+from src.middleware.metrics_middleware import MetricsMiddleware
 # Middleware
 from src.middleware.security_headers import SecurityHeadersMiddleware
-from src.middleware.metrics_middleware import MetricsMiddleware
-from src.middleware.jwt_user_context import JWTUserContextMiddleware
 from src.middleware.user_rate_limit import UserRateLimitMiddleware
+from src.monitoring.opentelemetry_setup import (instrument_asyncpg,
+                                                instrument_fastapi_app,
+                                                instrument_httpx,
+                                                instrument_redis,
+                                                setup_opentelemetry)
 from src.security.auth import get_auth_service
-from src.db.marketplace_repository import MarketplaceRepository
 from src.services.health_checker import get_health_checker
-from src.utils.structured_logging import (
-    StructuredLogger,
-    set_request_context,
-)
-from src.monitoring.opentelemetry_setup import (
-    setup_opentelemetry,
-    instrument_fastapi_app,
-    instrument_asyncpg,
-    instrument_httpx,
-    instrument_redis,
-)
 from src.utils.error_handling import register_error_handlers
+from src.utils.structured_logging import StructuredLogger, set_request_context
 
 # Use structured logging
 structured_logger = StructuredLogger(__name__)
@@ -178,7 +167,7 @@ async def lifespan(app: FastAPI):
                 )
                 try:
                     await redis_client.close()
-                except:
+                except Exception:
                     pass
                 redis_client = None
                 app.state.redis = None

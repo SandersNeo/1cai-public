@@ -4,11 +4,12 @@
 White-Box Tests - Анализ кода
 """
 
-import pytest
 import subprocess
-from pathlib import Path
-from radon.visitors import ComplexityVisitor
 import sys
+from pathlib import Path
+
+import pytest
+from radon.visitors import ComplexityVisitor
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
@@ -70,7 +71,7 @@ def test_cyclomatic_complexity():
         avg_complexity = sum(c["complexity"] for c in complexities) / len(complexities)
         max_complexity = max(complexities, key=lambda x: x["complexity"])
 
-        print(f"\n=== Cyclomatic Complexity ===")
+        print("\n=== Cyclomatic Complexity ===")
         print(f"Total functions: {len(complexities)}")
         print(f"Average complexity: {avg_complexity:.2f}")
         print(
@@ -121,7 +122,7 @@ def test_code_duplication():
                 }
             )
 
-        except:
+        except Exception:
             pass
 
     if metrics:
@@ -131,7 +132,7 @@ def test_code_duplication():
 
         comment_ratio = total_comments / total_sloc if total_sloc > 0 else 0
 
-        print(f"\n=== Code Metrics ===")
+        print("\n=== Code Metrics ===")
         print(f"Total LOC: {total_loc}")
         print(f"Source LOC: {total_sloc}")
         print(f"Comments: {total_comments}")
@@ -154,7 +155,7 @@ def test_dead_code_detection():
     if result.stdout:
         dead_code_items = result.stdout.strip().split("\n")
 
-        print(f"\n=== Dead Code Detection ===")
+        print("\n=== Dead Code Detection ===")
         print(f"Found {len(dead_code_items)} potential dead code items")
 
         # Allow some dead code (e.g., public APIs not yet used)
@@ -189,11 +190,11 @@ def test_import_dependencies():
 
             imports[py_file.name] = module_imports
 
-        except:
+        except Exception:
             pass
 
     # Check for circular dependencies (simplified)
-    print(f"\n=== Import Dependencies ===")
+    print("\n=== Import Dependencies ===")
     print(f"Analyzed {len(imports)} files")
 
     total_imports = sum(len(imps) for imps in imports.values())
@@ -234,14 +235,14 @@ def test_function_length():
                     {"name": item.name, "file": py_file.name, "length": length}
                 )
 
-        except:
+        except Exception:
             pass
 
     if function_lengths:
         avg_length = sum(f["length"] for f in function_lengths) / len(function_lengths)
         max_func = max(function_lengths, key=lambda x: x["length"])
 
-        print(f"\n=== Function Length Analysis ===")
+        print("\n=== Function Length Analysis ===")
         print(f"Total functions: {len(function_lengths)}")
         print(f"Average length: {avg_length:.1f} lines")
         print(

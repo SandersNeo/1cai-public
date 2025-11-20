@@ -13,12 +13,13 @@
 покрытие реальных бизнес-сценариев с комплексной проверкой интеграции.
 """
 
-import pytest
 import asyncio
 import time
 import uuid
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, patch
+
+import pytest
 
 # Тестовые данные для имитации реальных сценариев
 SAMPLE_USER_REQUEST = """

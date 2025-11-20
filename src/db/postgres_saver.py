@@ -6,17 +6,17 @@ PostgreSQL Saver for 1C Configurations
 Refactored: Implemented Connection Pooling and Thread Safety
 """
 
-import os
 import hashlib
+import os
 import time
-from typing import Dict, Any, Optional
-from datetime import datetime
 from contextlib import contextmanager
+from datetime import datetime
+from typing import Any, Dict, Optional
 
 try:
     import psycopg2
-    from psycopg2.extras import Json
     from psycopg2 import OperationalError
+    from psycopg2.extras import Json
 except ImportError:
     raise ImportError("psycopg2 not installed. Run: pip install psycopg2-binary")
 
@@ -141,7 +141,7 @@ class PostgreSQLSaver:
                     # Update existing
                     cur.execute(
                         """
-                        UPDATE configurations 
+                        UPDATE configurations
                         SET full_name = %s,
                             version = %s,
                             source_path = %s,
@@ -205,8 +205,8 @@ class PostgreSQLSaver:
                         configuration_id, object_type, name, synonym, description, metadata
                     )
                     VALUES (%s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (configuration_id, object_type, name) 
-                    DO UPDATE SET 
+                    ON CONFLICT (configuration_id, object_type, name)
+                    DO UPDATE SET
                         synonym = EXCLUDED.synonym,
                         description = EXCLUDED.description,
                         metadata = EXCLUDED.metadata,
@@ -243,7 +243,7 @@ class PostgreSQLSaver:
                 cur.execute(
                     """
                     INSERT INTO modules (
-                        configuration_id, object_id, name, module_type, 
+                        configuration_id, object_id, name, module_type,
                         code, code_hash, description, source_file, line_count
                     )
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
@@ -473,7 +473,7 @@ class PostgreSQLSaver:
                     params = [config_name]
 
                 base_query = """
-                    SELECT 
+                    SELECT
                         COUNT(DISTINCT c.id) as configs,
                         COUNT(DISTINCT o.id) as objects,
                         COUNT(DISTINCT m.id) as modules,

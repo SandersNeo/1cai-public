@@ -17,18 +17,16 @@ Advanced Self-Evolving AI - Расширенная версия
 """
 
 import logging
-import numpy as np
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from src.ai.self_evolving_ai import (
-    SelfEvolvingAI,
-    PerformanceMetrics,
-    Improvement,
-)
+import numpy as np
+
 from src.ai.llm_provider_abstraction import LLMProviderAbstraction
+from src.ai.self_evolving_ai import (Improvement, PerformanceMetrics,
+                                     SelfEvolvingAI)
 from src.infrastructure.event_bus import EventBus
 
 logger = logging.getLogger(__name__)

@@ -11,21 +11,22 @@ API эндпоинты для ML системы непрерывного улу�
 - Timeout handling
 """
 
-from typing import Dict, List, Optional, Any
-from datetime import datetime
 import asyncio
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, APIRouter
+from fastapi import APIRouter, BackgroundTasks, Depends, FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from src.ml.metrics.collector import MetricsCollector, MetricType, AssistantRole
-from src.ml.models.predictor import MLPredictor, create_model
-from src.ml.training.trainer import ModelTrainer, TrainingType
-from src.ml.ab_testing.tester import ABTestManager, ABTestConfig, TestType
-from src.ml.experiments.mlflow_manager import MLFlowManager
 from src.config import settings
 from src.middleware.rate_limiter import limiter
+from src.ml.ab_testing.tester import ABTestConfig, ABTestManager, TestType
+from src.ml.experiments.mlflow_manager import MLFlowManager
+from src.ml.metrics.collector import (AssistantRole, MetricsCollector,
+                                      MetricType)
+from src.ml.models.predictor import MLPredictor, create_model
+from src.ml.training.trainer import ModelTrainer, TrainingType
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

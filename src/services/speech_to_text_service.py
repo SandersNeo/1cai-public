@@ -12,12 +12,13 @@ Speech-to-Text Service
 - Input validation и sanitization
 """
 
+import asyncio
 import os
 import tempfile
-import asyncio
-from typing import Optional, Dict, Any
-from pathlib import Path
 from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, Optional
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -418,9 +419,10 @@ class SpeechToTextService:
         """Распознавание через Vosk (offline)"""
 
         try:
-            from vosk import KaldiRecognizer
-            import wave
             import json
+            import wave
+
+            from vosk import KaldiRecognizer
 
             # Открываем аудио файл
             wf = wave.open(audio_file_path, "rb")

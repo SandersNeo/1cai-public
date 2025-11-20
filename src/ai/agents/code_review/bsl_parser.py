@@ -5,9 +5,9 @@ BSL Parser
 Парсинг BSL кода в AST для анализа
 """
 
-import re
 import logging
-from typing import Dict, List, Any
+import re
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 

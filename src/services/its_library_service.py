@@ -14,11 +14,13 @@
 
 import os
 import re
-from typing import List, Dict, Any, Optional
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+from urllib.parse import urljoin
+
 import httpx
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

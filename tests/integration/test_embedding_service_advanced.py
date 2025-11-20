@@ -4,10 +4,12 @@
 Интеграционные тесты для EmbeddingService с продвинутыми компонентами
 """
 
-import pytest
 import os
 import time
 from unittest.mock import Mock, patch
+
+import pytest
+
 from src.services.embedding_service import EmbeddingService
 
 

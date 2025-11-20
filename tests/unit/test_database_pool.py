@@ -5,16 +5,12 @@ Unit tests for database connection pool
 Best Practices: Comprehensive testing of connection pooling
 """
 
-import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from src.database import (
-    create_pool,
-    close_pool,
-    get_pool,
-    check_pool_health,
-    get_db_connection,
-)
+import pytest
+
+from src.database import (check_pool_health, close_pool, create_pool,
+                          get_db_connection, get_pool)
 
 
 class AsyncAcquireContext:

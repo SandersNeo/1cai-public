@@ -5,12 +5,13 @@ API для импорта данных в базу знаний из разли�
 Версия: 1.0.0
 """
 
-from fastapi import APIRouter, HTTPException, UploadFile, File
-from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional
-import json
 import csv
 import io
+import json
+from typing import Any, Dict, List, Optional
+
+from fastapi import APIRouter, File, HTTPException, UploadFile
+from pydantic import BaseModel, Field
 
 from src.services.configuration_knowledge_base import get_knowledge_base
 from src.utils.structured_logging import StructuredLogger
