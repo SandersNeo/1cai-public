@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -4905010853109920497 | DATE: 2025-11-19
+
 """
 AI Agents for different roles
 Специализированные AI агенты для разных ролей
@@ -16,16 +18,15 @@ from src.ai.agents.ras_monitor import RASMonitor
 from src.ai.agents.ai_issue_classifier import AIIssueClassifier
 
 __all__ = [
-    'BusinessAnalystAgent',
-    'QAEngineerAgent',
-    'ArchitectAgentExtended',
-    'TechnologySelector',
-    'PerformanceAnalyzer',
-    'ITSKnowledgeIntegrator',
-    'SQLOptimizer',
-    'OneCServerOptimizer',
-    'TechLogAnalyzer',
-    'RASMonitor',
-    'AIIssueClassifier',
+    "BusinessAnalystAgent",
+    "QAEngineerAgent",
+    "ArchitectAgentExtended",
+    "TechnologySelector",
+    "PerformanceAnalyzer",
+    "ITSKnowledgeIntegrator",
+    "SQLOptimizer",
+    "OneCServerOptimizer",
+    "TechLogAnalyzer",
+    "RASMonitor",
+    "AIIssueClassifier",
 ]
-

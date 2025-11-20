@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 7411858915040180267 | DATE: 2025-11-19
+
 """
 Universal Ollama Client
 -----------------------
@@ -100,7 +102,7 @@ class OllamaClient:
                 models = [model.get("name", "") for model in data.get("models", [])]
                 logger.debug(
                     "Listed Ollama models",
-                    extra={"models_count": len(models), "models": models[:5]}
+                    extra={"models_count": len(models), "models": models[:5]},
                 )
                 return models
 
@@ -124,7 +126,7 @@ class OllamaClient:
         except Exception as e:
             logger.debug(
                 "Failed to check model availability",
-                extra={"model": model_name, "error": str(e)}
+                extra={"model": model_name, "error": str(e)},
             )
             return False
 
@@ -180,7 +182,7 @@ class OllamaClient:
         if len(prompt) > max_prompt_length:
             logger.warning(
                 "Prompt too long, truncating",
-                extra={"prompt_length": len(prompt), "max_length": max_prompt_length}
+                extra={"prompt_length": len(prompt), "max_length": max_prompt_length},
             )
             prompt = prompt[:max_prompt_length]
 
@@ -215,7 +217,7 @@ class OllamaClient:
                     "model": model_name,
                     "prompt_length": len(prompt),
                     "temperature": temperature,
-                }
+                },
             )
 
             async with session.post(
@@ -244,7 +246,7 @@ class OllamaClient:
                         "prompt_length": len(prompt),
                         "response_length": len(text),
                         "tokens": usage["total_tokens"],
-                    }
+                    },
                 )
 
                 return {
@@ -261,7 +263,6 @@ class OllamaClient:
         if self._session is None:
             self._session = aiohttp.ClientSession(timeout=self._timeout)
         # Проверяем закрыта ли сессия только если она не None
-        elif hasattr(self._session, 'closed') and self._session.closed:
+        elif hasattr(self._session, "closed") and self._session.closed:
             self._session = aiohttp.ClientSession(timeout=self._timeout)
         return self._session
-

@@ -1,4 +1,5 @@
-import pytest
+# [NEXUS IDENTITY] ID: 8012280499333434021 | DATE: 2025-11-19
+
 
 from src.ai.orchestrator import QueryClassifier, QueryType, AIService
 
@@ -16,7 +17,9 @@ def test_classify_standard_1c_query():
 
 def test_classify_graph_query():
     classifier = QueryClassifier()
-    intent = classifier.classify("Где используется этот метод и какие есть зависимости?")
+    intent = classifier.classify(
+        "Где используется этот метод и какие есть зависимости?"
+    )
 
     assert intent.query_type == QueryType.GRAPH_QUERY
     assert AIService.NEO4J in intent.preferred_services
@@ -50,5 +53,3 @@ def test_invalid_query_returns_unknown():
     assert intent.confidence == 0.0
     assert intent.preferred_services  # есть хотя бы naparnik по умолчанию
     assert intent.suggested_tools == []
-
-

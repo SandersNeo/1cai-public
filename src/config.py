@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 2515925432159965546 | DATE: 2025-11-19
+
 """
 Конфигурация для AI-ассистентов
 Версия: 2.0.0
@@ -9,11 +11,10 @@
 - Default values с описаниями
 """
 
-import os
 import logging
 from typing import Dict, Any, List, Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field, validator, field_validator
+from pydantic import Field, field_validator
 
 logger = logging.getLogger(__name__)
 
@@ -21,96 +22,90 @@ logger = logging.getLogger(__name__)
 class Settings(BaseSettings):
     """
     Настройки приложения с валидацией
-    
+
     Best practices:
     - Валидация через Pydantic
     - Environment variable support
     - Type safety
     - Default values
     """
-    
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
-        extra="ignore"  # Игнорируем неизвестные поля
+        extra="ignore",  # Игнорируем неизвестные поля
     )
-    
+
     # OpenAI API
     openai_api_key: str = Field(
-        default="",
-        description="API ключ OpenAI",
-        validation_alias="OPENAI_API_KEY"
+        default="", description="API ключ OpenAI", validation_alias="OPENAI_API_KEY"
     )
-    
+
     # Kimi-K2-Thinking (Moonshot AI) - API или локальный режим
     kimi_mode: str = Field(
         default="api",
         description="Режим работы Kimi: 'api' (Moonshot API) или 'local' (Ollama)",
-        validation_alias="KIMI_MODE"
+        validation_alias="KIMI_MODE",
     )
     kimi_api_key: str = Field(
         default="",
         description="API ключ Kimi-K2-Thinking (Moonshot AI) - только для API режима",
-        validation_alias="KIMI_API_KEY"
+        validation_alias="KIMI_API_KEY",
     )
     kimi_api_url: str = Field(
         default="https://api.moonshot.cn/v1",
         description="URL API Kimi - только для API режима",
-        validation_alias="KIMI_API_URL"
+        validation_alias="KIMI_API_URL",
     )
     kimi_model: str = Field(
         default="moonshotai/Kimi-K2-Thinking",
         description="Модель Kimi для API режима",
-        validation_alias="KIMI_MODEL"
+        validation_alias="KIMI_MODEL",
     )
     kimi_local_model: str = Field(
         default="kimi-k2-thinking:cloud",
         description="Модель Kimi для локального режима (Ollama)",
-        validation_alias="KIMI_LOCAL_MODEL"
+        validation_alias="KIMI_LOCAL_MODEL",
     )
     kimi_ollama_url: str = Field(
         default="",
         description="URL Ollama для локального режима (по умолчанию использует OLLAMA_HOST)",
-        validation_alias="KIMI_OLLAMA_URL"
+        validation_alias="KIMI_OLLAMA_URL",
     )
     kimi_temperature: float = Field(
         default=1.0,
         description="Temperature для Kimi (рекомендуется 1.0)",
-        validation_alias="KIMI_TEMPERATURE"
+        validation_alias="KIMI_TEMPERATURE",
     )
-    
+
     # Supabase
     supabase_url: str = Field(
-        default="",
-        description="URL Supabase проекта",
-        validation_alias="SUPABASE_URL"
+        default="", description="URL Supabase проекта", validation_alias="SUPABASE_URL"
     )
     supabase_key: str = Field(
-        default="",
-        description="API ключ Supabase",
-        validation_alias="SUPABASE_KEY"
+        default="", description="API ключ Supabase", validation_alias="SUPABASE_KEY"
     )
-    
-    @field_validator('openai_api_key')
+
+    @field_validator("openai_api_key")
     @classmethod
     def validate_openai_key(cls, v: str) -> str:
         """Валидация OpenAI API ключа"""
-        if v and not v.startswith('sk-'):
+        if v and not v.startswith("sk-"):
             logger.warning("OpenAI API key doesn't start with 'sk-', may be invalid")
         return v
-    
-    @field_validator('supabase_url')
+
+    @field_validator("supabase_url")
     @classmethod
     def validate_supabase_url(cls, v: str) -> str:
         """Валидация Supabase URL"""
-        if v and not (v.startswith('http://') or v.startswith('https://')):
+        if v and not (v.startswith("http://") or v.startswith("https://")):
             logger.warning(
                 "Supabase URL doesn't start with http:// or https://",
-                extra={"supabase_url": v}
+                extra={"supabase_url": v},
             )
         return v
-    
+
     # Конфигурация ассистентов
     assistant_configs: Dict[str, Dict[str, Any]] = {
         "architect": {
@@ -136,8 +131,8 @@ class Settings(BaseSettings):
 Используй профессиональную терминологию 1С и учитывай специфику российского рынка.""",
             "vector_store_config": {
                 "table_name": "architect_knowledge",
-                "similarity_threshold": 0.8
-            }
+                "similarity_threshold": 0.8,
+            },
         },
         "developer": {
             "role": "developer",
@@ -160,8 +155,8 @@ class Settings(BaseSettings):
 4. Примеры тестирования""",
             "vector_store_config": {
                 "table_name": "developer_knowledge",
-                "similarity_threshold": 0.7
-            }
+                "similarity_threshold": 0.7,
+            },
         },
         "tester": {
             "role": "tester",
@@ -184,8 +179,8 @@ class Settings(BaseSettings):
 4. Метрики качества тестирования""",
             "vector_store_config": {
                 "table_name": "tester_knowledge",
-                "similarity_threshold": 0.75
-            }
+                "similarity_threshold": 0.75,
+            },
         },
         "pm": {
             "role": "project_manager",
@@ -208,8 +203,8 @@ class Settings(BaseSettings):
 4. KPI для мониторинга прогресса""",
             "vector_store_config": {
                 "table_name": "pm_knowledge",
-                "similarity_threshold": 0.7
-            }
+                "similarity_threshold": 0.7,
+            },
         },
         "analyst": {
             "role": "business_analyst",
@@ -232,38 +227,44 @@ class Settings(BaseSettings):
 4. Анализ пробелов в функциональности""",
             "vector_store_config": {
                 "table_name": "analyst_knowledge",
-                "similarity_threshold": 0.8
-            }
-        }
+                "similarity_threshold": 0.8,
+            },
+        },
     }
-    
+
     # База данных
     database_url: str = Field(
         default="",
         description="URL базы данных (postgresql://user:pass@host:port/db)",
-        validation_alias="DATABASE_URL"
+        validation_alias="DATABASE_URL",
     )
-    
+
     # Redis для кэширования
     redis_url: str = Field(default="redis://localhost:6379", description="URL Redis")
-    
+
     # CORS настройки
     cors_origins: str = Field(
         default="http://localhost:3000,http://localhost:5173",
-        description="Разрешенные домены для CORS (через запятую)"
+        description="Разрешенные домены для CORS (через запятую)",
     )
-    
+
     # JWT настройки
-    jwt_secret_key: Optional[str] = Field(default=None, description="Секретный ключ для JWT")
+    jwt_secret_key: Optional[str] = Field(
+        default=None, description="Секретный ключ для JWT"
+    )
     jwt_algorithm: str = Field(default="HS256", description="Алгоритм подписи JWT")
-    jwt_access_token_expire_minutes: int = Field(default=30, description="Время жизни access token в минутах")
-    
+    jwt_access_token_expire_minutes: int = Field(
+        default=30, description="Время жизни access token в минутах"
+    )
+
     # Путь к логам
     log_dir: str = Field(default="./logs", description="Директория для логов")
     log_file: str = Field(default="app.log", description="Имя файла лога")
-    
+
     # Режим разработки (для development можно разрешить небезопасные настройки)
-    environment: str = Field(default="production", description="Режим работы: development/production")
+    environment: str = Field(
+        default="production", description="Режим работы: development/production"
+    )
 
     # Внешние MCP-инструменты
     mcp_bsl_context_base_url: Optional[str] = Field(
@@ -290,24 +291,23 @@ class Settings(BaseSettings):
         default=None,
         description="Bearer-токен для аутентификации на MCP сервере тест-раннера (опционально)",
     )
-    
+
     model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-        extra="ignore"
+        env_file=".env", env_file_encoding="utf-8", case_sensitive=False, extra="ignore"
     )
-    
+
     def get_cors_origins(self) -> List[str]:
         """Получить список разрешенных доменов для CORS"""
         if self.environment == "development" and not self.cors_origins:
             return ["*"]  # Только для development
-        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
-    
+        return [
+            origin.strip() for origin in self.cors_origins.split(",") if origin.strip()
+        ]
+
     def get_log_path(self) -> str:
         """Получить полный путь к файлу лога"""
-        import os
         from pathlib import Path
+
         log_dir = Path(self.log_dir)
         log_dir.mkdir(parents=True, exist_ok=True)
         return str(log_dir / self.log_file)

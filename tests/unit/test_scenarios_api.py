@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -7894086034562303994 | DATE: 2025-11-19
+
 """
 Tests for experimental /api/scenarios/examples endpoint.
 """
@@ -41,7 +43,9 @@ def test_get_scenario_examples_basic_shape():
 @pytest.mark.unit
 def test_get_scenario_examples_with_autonomy():
     """При передаче autonomy должны появляться policy_decisions."""
-    response = client.get("/api/scenarios/examples", params={"autonomy": "A2_non_prod_changes"})
+    response = client.get(
+        "/api/scenarios/examples", params={"autonomy": "A2_non_prod_changes"}
+    )
     assert response.status_code == 200
 
     data = response.json()
@@ -49,5 +53,3 @@ def test_get_scenario_examples_with_autonomy():
     assert "policy_decisions" in first
     assert "autonomy_evaluated" in first
     assert isinstance(first["policy_decisions"], dict)
-
-

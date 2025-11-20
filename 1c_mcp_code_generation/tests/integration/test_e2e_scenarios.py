@@ -1,8 +1,10 @@
-"""
-End-to-End тесты для полного цикла работы системы генерации кода 1C.
+﻿# [NEXUS IDENTITY] ID: -5864638253900433302 | DATE: 2025-11-19
 
-Тестируют реальные сценарии использования от начала до конца,
-включая пользовательские интерфейсы и внешние интеграции.
+"""
+End-to-End С‚РµСЃС‚С‹ РґР»СЏ РїРѕР»РЅРѕРіРѕ С†РёРєР»Р° СЂР°Р±РѕС‚С‹ СЃРёСЃС‚РµРјС‹ РіРµРЅРµСЂР°С†РёРё РєРѕРґР° 1C.
+
+РўРµСЃС‚РёСЂСѓСЋС‚ СЂРµР°Р»СЊРЅС‹Рµ СЃС†РµРЅР°СЂРёРё РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РѕС‚ РЅР°С‡Р°Р»Р° РґРѕ РєРѕРЅС†Р°,
+РІРєР»СЋС‡Р°СЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРёРµ РёРЅС‚РµСЂС„РµР№СЃС‹ Рё РІРЅРµС€РЅРёРµ РёРЅС‚РµРіСЂР°С†РёРё.
 """
 
 import pytest
@@ -19,11 +21,11 @@ from src.cli.interface import CLIInterface
 @pytest.mark.integration
 @pytest.mark.e2e
 class TestEndToEndScenarios:
-    """End-to-End тесты реальных сценариев использования."""
+    """End-to-End С‚РµСЃС‚С‹ СЂРµР°Р»СЊРЅС‹С… СЃС†РµРЅР°СЂРёРµРІ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ."""
     
     @pytest.mark.asyncio
     async def test_complete_processing_generation_workflow(self, integration_test_setup, temp_test_dir, audit_logger):
-        """Тест полного workflow генерации обработки."""
+        """РўРµСЃС‚ РїРѕР»РЅРѕРіРѕ workflow РіРµРЅРµСЂР°С†РёРё РѕР±СЂР°Р±РѕС‚РєРё."""
         test_name = "complete_processing_workflow"
         params = {
             "workflow": "generation_to_deployment",
@@ -37,49 +39,49 @@ class TestEndToEndScenarios:
             components = integration_test_setup
             engine = components["engine"]
             
-            # Шаг 1: Генерация кода
+            # РЁР°Рі 1: Р“РµРЅРµСЂР°С†РёСЏ РєРѕРґР°
             generation_result = await engine.generate_code(
                 object_type="processing",
-                description="Комплексная обработка для анализа продаж",
+                description="РљРѕРјРїР»РµРєСЃРЅР°СЏ РѕР±СЂР°Р±РѕС‚РєР° РґР»СЏ Р°РЅР°Р»РёР·Р° РїСЂРѕРґР°Р¶",
                 parameters={
-                    "object_name": "АнализПродажКомплексный",
-                    "description": "Обработка для детального анализа продаж с группировками",
+                    "object_name": "РђРЅР°Р»РёР·РџСЂРѕРґР°Р¶РљРѕРјРїР»РµРєСЃРЅС‹Р№",
+                    "description": "РћР±СЂР°Р±РѕС‚РєР° РґР»СЏ РґРµС‚Р°Р»СЊРЅРѕРіРѕ Р°РЅР°Р»РёР·Р° РїСЂРѕРґР°Р¶ СЃ РіСЂСѓРїРїРёСЂРѕРІРєР°РјРё",
                     "author": "TestSystem",
-                    "features": ["группировки", "фильтры", "экспорт", "отчетность"],
-                    "data_source": "РегистрНакопления.Продажи",
-                    "output_format": ["ТаблицаЗначений", "ТабличныйДокумент"]
+                    "features": ["РіСЂСѓРїРїРёСЂРѕРІРєРё", "С„РёР»СЊС‚СЂС‹", "СЌРєСЃРїРѕСЂС‚", "РѕС‚С‡РµС‚РЅРѕСЃС‚СЊ"],
+                    "data_source": "Р РµРіРёСЃС‚СЂРќР°РєРѕРїР»РµРЅРёСЏ.РџСЂРѕРґР°Р¶Рё",
+                    "output_format": ["РўР°Р±Р»РёС†Р°Р—РЅР°С‡РµРЅРёР№", "РўР°Р±Р»РёС‡РЅС‹Р№Р”РѕРєСѓРјРµРЅС‚"]
                 }
             )
             
             assert generation_result.success is True
             assert generation_result.generated_code is not None
             
-            # Шаг 2: Валидация
+            # РЁР°Рі 2: Р’Р°Р»РёРґР°С†РёСЏ
             validation_result = components["validator"].comprehensive_validation(
                 generation_result.generated_code
             )
             assert validation_result.is_valid is True
             
-            # Шаг 3: Проверка безопасности
+            # РЁР°Рі 3: РџСЂРѕРІРµСЂРєР° Р±РµР·РѕРїР°СЃРЅРѕСЃС‚Рё
             security_result = components["security_manager"].validate_generated_code(
                 generation_result.generated_code
             )
             assert security_result.is_safe is True
             
-            # Шаг 4: Сохранение в файл
-            output_file = temp_test_dir / "АнализПродажКомплексный.bsl"
+            # РЁР°Рі 4: РЎРѕС…СЂР°РЅРµРЅРёРµ РІ С„Р°Р№Р»
+            output_file = temp_test_dir / "РђРЅР°Р»РёР·РџСЂРѕРґР°Р¶РљРѕРјРїР»РµРєСЃРЅС‹Р№.bsl"
             with open(output_file, 'w', encoding='utf-8') as f:
                 f.write(generation_result.generated_code)
             
             assert output_file.exists()
             assert output_file.stat().st_size > 0
             
-            # Шаг 5: Проверка содержимого файла
+            # РЁР°Рі 5: РџСЂРѕРІРµСЂРєР° СЃРѕРґРµСЂР¶РёРјРѕРіРѕ С„Р°Р№Р»Р°
             with open(output_file, 'r', encoding='utf-8') as f:
                 saved_code = f.read()
             
             assert saved_code == generation_result.generated_code
-            assert "АнализПродажКомплексный" in saved_code
+            assert "РђРЅР°Р»РёР·РџСЂРѕРґР°Р¶РљРѕРјРїР»РµРєСЃРЅС‹Р№" in saved_code
             
             audit_logger.log_test_result(
                 test_name,
@@ -98,12 +100,12 @@ class TestEndToEndScenarios:
     
     @pytest.mark.asyncio 
     async def test_full_catalog_lifecycle(self, integration_test_setup, temp_test_dir, audit_logger):
-        """Тест полного жизненного цикла справочника."""
+        """РўРµСЃС‚ РїРѕР»РЅРѕРіРѕ Р¶РёР·РЅРµРЅРЅРѕРіРѕ С†РёРєР»Р° СЃРїСЂР°РІРѕС‡РЅРёРєР°."""
         test_name = "full_catalog_lifecycle"
         params = {
             "lifecycle": "create_validate_generate",
             "object_type": "catalog",
-            "features": ["иерархия", "коды", "формы"]
+            "features": ["РёРµСЂР°СЂС…РёСЏ", "РєРѕРґС‹", "С„РѕСЂРјС‹"]
         }
         
         audit_logger.log_test_start(test_name, params)
@@ -113,48 +115,48 @@ class TestEndToEndScenarios:
             engine = components["engine"]
             template_processor = components["template_processor"]
             
-            # Шаг 1: Генерация основного кода справочника
+            # РЁР°Рі 1: Р“РµРЅРµСЂР°С†РёСЏ РѕСЃРЅРѕРІРЅРѕРіРѕ РєРѕРґР° СЃРїСЂР°РІРѕС‡РЅРёРєР°
             catalog_result = await engine.generate_code(
                 object_type="catalog",
-                description="Иерархический справочник номенклатуры с кодами и формами",
+                description="РРµСЂР°СЂС…РёС‡РµСЃРєРёР№ СЃРїСЂР°РІРѕС‡РЅРёРє РЅРѕРјРµРЅРєР»Р°С‚СѓСЂС‹ СЃ РєРѕРґР°РјРё Рё С„РѕСЂРјР°РјРё",
                 parameters={
-                    "object_name": "НоменклатураРасширенная",
-                    "description": "Справочник номенклатуры с поддержкой иерархии и форм",
+                    "object_name": "РќРѕРјРµРЅРєР»Р°С‚СѓСЂР°Р Р°СЃС€РёСЂРµРЅРЅР°СЏ",
+                    "description": "РЎРїСЂР°РІРѕС‡РЅРёРє РЅРѕРјРµРЅРєР»Р°С‚СѓСЂС‹ СЃ РїРѕРґРґРµСЂР¶РєРѕР№ РёРµСЂР°СЂС…РёРё Рё С„РѕСЂРј",
                     "author": "TestSystem",
                     "hierarchical": True,
-                    "parent_field": "Родитель",
+                    "parent_field": "Р РѕРґРёС‚РµР»СЊ",
                     "code_length": 10,
                     "has_forms": True,
-                    "form_types": ["Список", "Элемент"],
-                    "additional_fields": ["Артикул", "ЕдиницаИзмерения", "СтавкаНДС"]
+                    "form_types": ["РЎРїРёСЃРѕРє", "Р­Р»РµРјРµРЅС‚"],
+                    "additional_fields": ["РђСЂС‚РёРєСѓР»", "Р•РґРёРЅРёС†Р°РР·РјРµСЂРµРЅРёСЏ", "РЎС‚Р°РІРєР°РќР”РЎ"]
                 }
             )
             
             assert catalog_result.success is True
             
-            # Шаг 2: Генерация форм через шаблон
+            # РЁР°Рі 2: Р“РµРЅРµСЂР°С†РёСЏ С„РѕСЂРј С‡РµСЂРµР· С€Р°Р±Р»РѕРЅ
             form_template_result = await template_processor.generate_from_template(
                 template_id="catalog_form",
                 variables={
-                    "object_name": "НоменклатураРасширенная",
-                    "form_type": "Список",
-                    "fields": "Код,Наименование,Артикул,Родитель"
+                    "object_name": "РќРѕРјРµРЅРєР»Р°С‚СѓСЂР°Р Р°СЃС€РёСЂРµРЅРЅР°СЏ",
+                    "form_type": "РЎРїРёСЃРѕРє",
+                    "fields": "РљРѕРґ,РќР°РёРјРµРЅРѕРІР°РЅРёРµ,РђСЂС‚РёРєСѓР»,Р РѕРґРёС‚РµР»СЊ"
                 }
             )
             
             assert form_template_result.success is True
             
-            # Шаг 3: Комплексная валидация
+            # РЁР°Рі 3: РљРѕРјРїР»РµРєСЃРЅР°СЏ РІР°Р»РёРґР°С†РёСЏ
             combined_code = catalog_result.generated_code + "\n\n" + form_template_result.generated_code
             
             validation_result = components["validator"].comprehensive_validation(combined_code)
             assert validation_result.is_valid is True
             
-            # Шаг 4: Создание структуры проекта
-            catalog_dir = temp_test_dir / "Catalogs" / "НоменклатураРасширенная"
+            # РЁР°Рі 4: РЎРѕР·РґР°РЅРёРµ СЃС‚СЂСѓРєС‚СѓСЂС‹ РїСЂРѕРµРєС‚Р°
+            catalog_dir = temp_test_dir / "Catalogs" / "РќРѕРјРµРЅРєР»Р°С‚СѓСЂР°Р Р°СЃС€РёСЂРµРЅРЅР°СЏ"
             catalog_dir.mkdir(parents=True, exist_ok=True)
             
-            # Сохраняем модули
+            # РЎРѕС…СЂР°РЅСЏРµРј РјРѕРґСѓР»Рё
             manager_module = catalog_dir / "Module.bsl"
             object_module = catalog_dir / "ObjectModule.bsl"
             
@@ -164,19 +166,19 @@ class TestEndToEndScenarios:
             with open(object_module, 'w', encoding='utf-8') as f:
                 f.write(form_template_result.generated_code)
             
-            # Шаг 5: Проверка структуры файлов
+            # РЁР°Рі 5: РџСЂРѕРІРµСЂРєР° СЃС‚СЂСѓРєС‚СѓСЂС‹ С„Р°Р№Р»РѕРІ
             assert manager_module.exists()
             assert object_module.exists()
             
-            # Проверяем что оба файла содержат ожидаемый код
+            # РџСЂРѕРІРµСЂСЏРµРј С‡С‚Рѕ РѕР±Р° С„Р°Р№Р»Р° СЃРѕРґРµСЂР¶Р°С‚ РѕР¶РёРґР°РµРјС‹Р№ РєРѕРґ
             with open(manager_module, 'r', encoding='utf-8') as f:
                 manager_code = f.read()
             
             with open(object_module, 'r', encoding='utf-8') as f:
                 object_code = f.read()
             
-            assert "СправочникМенеджер" in manager_code
-            assert "СправочникОбъект" in object_code
+            assert "РЎРїСЂР°РІРѕС‡РЅРёРєРњРµРЅРµРґР¶РµСЂ" in manager_code
+            assert "РЎРїСЂР°РІРѕС‡РЅРёРєРћР±СЉРµРєС‚" in object_code
             
             audit_logger.log_test_result(
                 test_name,
@@ -196,7 +198,7 @@ class TestEndToEndScenarios:
     
     @pytest.mark.asyncio
     async def test_mcp_workflow_integration(self, integration_test_setup, temp_test_dir, audit_logger):
-        """Тест интеграции с MCP протоколом в реальном workflow."""
+        """РўРµСЃС‚ РёРЅС‚РµРіСЂР°С†РёРё СЃ MCP РїСЂРѕС‚РѕРєРѕР»РѕРј РІ СЂРµР°Р»СЊРЅРѕРј workflow."""
         test_name = "mcp_workflow_integration"
         params = {
             "integration": "mcp_protocol",
@@ -210,10 +212,10 @@ class TestEndToEndScenarios:
             components = integration_test_setup
             server = MCP1CServer()
             
-            # Инициализируем MCP сервер
+            # РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј MCP СЃРµСЂРІРµСЂ
             await server.initialize()
             
-            # MCP запрос 1: Генерация документа
+            # MCP Р·Р°РїСЂРѕСЃ 1: Р“РµРЅРµСЂР°С†РёСЏ РґРѕРєСѓРјРµРЅС‚Р°
             generate_doc_request = {
                 "jsonrpc": "2.0",
                 "id": 1001,
@@ -222,14 +224,14 @@ class TestEndToEndScenarios:
                     "name": "generate_code",
                     "arguments": {
                         "object_type": "document",
-                        "description": "Документ заказа покупателя с проведением",
+                        "description": "Р”РѕРєСѓРјРµРЅС‚ Р·Р°РєР°Р·Р° РїРѕРєСѓРїР°С‚РµР»СЏ СЃ РїСЂРѕРІРµРґРµРЅРёРµРј",
                         "parameters": {
-                            "object_name": "ЗаказПокупателя",
-                            "description": "Документ для оформления заказов",
+                            "object_name": "Р—Р°РєР°Р·РџРѕРєСѓРїР°С‚РµР»СЏ",
+                            "description": "Р”РѕРєСѓРјРµРЅС‚ РґР»СЏ РѕС„РѕСЂРјР»РµРЅРёСЏ Р·Р°РєР°Р·РѕРІ",
                             "author": "MCPSystem",
                             "posting": True,
-                            "tabular_sections": ["Товары", "Услуги"],
-                            "registers": ["Продажи", "Взаиморасчеты"],
+                            "tabular_sections": ["РўРѕРІР°СЂС‹", "РЈСЃР»СѓРіРё"],
+                            "registers": ["РџСЂРѕРґР°Р¶Рё", "Р’Р·Р°РёРјРѕСЂР°СЃС‡РµС‚С‹"],
                             "approval_workflow": True
                         }
                     }
@@ -241,7 +243,7 @@ class TestEndToEndScenarios:
             
             generated_code = generate_response["result"]["content"][0]["text"]
             
-            # MCP запрос 2: Валидация
+            # MCP Р·Р°РїСЂРѕСЃ 2: Р’Р°Р»РёРґР°С†РёСЏ
             validate_request = {
                 "jsonrpc": "2.0", 
                 "id": 1002,
@@ -261,7 +263,7 @@ class TestEndToEndScenarios:
             
             validation_results = validate_response["result"]
             
-            # MCP запрос 3: Проверка безопасности
+            # MCP Р·Р°РїСЂРѕСЃ 3: РџСЂРѕРІРµСЂРєР° Р±РµР·РѕРїР°СЃРЅРѕСЃС‚Рё
             security_request = {
                 "jsonrpc": "2.0",
                 "id": 1003,
@@ -279,7 +281,7 @@ class TestEndToEndScenarios:
             security_response = await server.handle_request(security_request)
             assert "result" in security_response
             
-            # Шаг 4: Сохранение результатов
+            # РЁР°Рі 4: РЎРѕС…СЂР°РЅРµРЅРёРµ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ
             results_file = temp_test_dir / "mcp_workflow_results.json"
             
             workflow_results = {
@@ -323,7 +325,7 @@ class TestEndToEndScenarios:
     
     @pytest.mark.asyncio
     async def test_cli_interface_workflow(self, integration_test_setup, temp_test_dir, audit_logger):
-        """Тест workflow через CLI интерфейс."""
+        """РўРµСЃС‚ workflow С‡РµСЂРµР· CLI РёРЅС‚РµСЂС„РµР№СЃ."""
         test_name = "cli_interface_workflow"
         params = {
             "interface": "command_line",
@@ -336,24 +338,24 @@ class TestEndToEndScenarios:
         try:
             components = integration_test_setup
             
-            # Создаем CLI интерфейс
+            # РЎРѕР·РґР°РµРј CLI РёРЅС‚РµСЂС„РµР№СЃ
             cli = CLIInterface(
                 engine=components["engine"],
                 validator=components["validator"],
                 security_manager=components["security_manager"]
             )
             
-            # Симулируем CLI команды
+            # РЎРёРјСѓР»РёСЂСѓРµРј CLI РєРѕРјР°РЅРґС‹
             cli_commands = [
                 {
                     "command": "generate",
                     "args": {
                         "type": "report",
-                        "name": "ПродажиПоМенеджерам", 
-                        "description": "Отчет по продажам в разрезе менеджеров",
-                        "features": ["группировки", "диаграммы", "фильтры"],
-                        "period": "месяц",
-                        "output_formats": ["табличный_документ", "excel"]
+                        "name": "РџСЂРѕРґР°Р¶РёРџРѕРњРµРЅРµРґР¶РµСЂР°Рј", 
+                        "description": "РћС‚С‡РµС‚ РїРѕ РїСЂРѕРґР°Р¶Р°Рј РІ СЂР°Р·СЂРµР·Рµ РјРµРЅРµРґР¶РµСЂРѕРІ",
+                        "features": ["РіСЂСѓРїРїРёСЂРѕРІРєРё", "РґРёР°РіСЂР°РјРјС‹", "С„РёР»СЊС‚СЂС‹"],
+                        "period": "РјРµСЃСЏС†",
+                        "output_formats": ["С‚Р°Р±Р»РёС‡РЅС‹Р№_РґРѕРєСѓРјРµРЅС‚", "excel"]
                     }
                 },
                 {
@@ -373,7 +375,7 @@ class TestEndToEndScenarios:
                 }
             ]
             
-            # Выполняем команды последовательно
+            # Р’С‹РїРѕР»РЅСЏРµРј РєРѕРјР°РЅРґС‹ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕ
             results = []
             for cmd in cli_commands:
                 if cmd["command"] == "generate":
@@ -381,7 +383,7 @@ class TestEndToEndScenarios:
                     results.append(("generate", result))
                     
                 elif cmd["command"] == "validate":
-                    # Для теста валидации используем код из предыдущей команды
+                    # Р”Р»СЏ С‚РµСЃС‚Р° РІР°Р»РёРґР°С†РёРё РёСЃРїРѕР»СЊР·СѓРµРј РєРѕРґ РёР· РїСЂРµРґС‹РґСѓС‰РµР№ РєРѕРјР°РЅРґС‹
                     if results and results[-1][0] == "generate":
                         generated_code = results[-1][1]["generated_code"]
                         result = await cli.validate_code(generated_code, **cmd["args"])
@@ -393,20 +395,20 @@ class TestEndToEndScenarios:
                         result = await cli.save_code(generated_code, **cmd["args"])
                         results.append(("save", result))
             
-            # Проверяем результаты
+            # РџСЂРѕРІРµСЂСЏРµРј СЂРµР·СѓР»СЊС‚Р°С‚С‹
             assert len(results) >= 2
             
-            # Проверяем генерацию
+            # РџСЂРѕРІРµСЂСЏРµРј РіРµРЅРµСЂР°С†РёСЋ
             generate_result = results[0][1]
             assert generate_result["success"] is True
             assert "generated_code" in generate_result
             
-            # Проверяем валидацию (если была выполнена)
+            # РџСЂРѕРІРµСЂСЏРµРј РІР°Р»РёРґР°С†РёСЋ (РµСЃР»Рё Р±С‹Р»Р° РІС‹РїРѕР»РЅРµРЅР°)
             validate_result = next((r for r in results if r[0] == "validate"), None)
             if validate_result:
                 assert validate_result[1]["success"] is True
             
-            # Проверяем сохранение (если было выполнено)  
+            # РџСЂРѕРІРµСЂСЏРµРј СЃРѕС…СЂР°РЅРµРЅРёРµ (РµСЃР»Рё Р±С‹Р»Рѕ РІС‹РїРѕР»РЅРµРЅРѕ)  
             save_result = next((r for r in results if r[0] == "save"), None)
             if save_result:
                 assert save_result[1]["success"] is True
@@ -430,7 +432,7 @@ class TestEndToEndScenarios:
     @pytest.mark.performance
     @pytest.mark.asyncio
     async def test_performance_benchmark(self, integration_test_setup, audit_logger):
-        """Тест производительности под нагрузкой."""
+        """РўРµСЃС‚ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚Рё РїРѕРґ РЅР°РіСЂСѓР·РєРѕР№."""
         test_name = "performance_benchmark"
         params = {
             "test_type": "load_test",
@@ -444,50 +446,50 @@ class TestEndToEndScenarios:
             components = integration_test_setup
             engine = components["engine"]
             
-            # Создаем множество параллельных запросов
+            # РЎРѕР·РґР°РµРј РјРЅРѕР¶РµСЃС‚РІРѕ РїР°СЂР°Р»Р»РµР»СЊРЅС‹С… Р·Р°РїСЂРѕСЃРѕРІ
             requests = []
             object_types = ["processing", "report", "catalog", "document"]
             
-            for i in range(20):  # 20 параллельных запросов
+            for i in range(20):  # 20 РїР°СЂР°Р»Р»РµР»СЊРЅС‹С… Р·Р°РїСЂРѕСЃРѕРІ
                 obj_type = object_types[i % len(object_types)]
                 request = engine.generate_code(
                     object_type=obj_type,
-                    description=f"Нагрузочный тест {i+1}",
+                    description=f"РќР°РіСЂСѓР·РѕС‡РЅС‹Р№ С‚РµСЃС‚ {i+1}",
                     parameters={
-                        "object_name": f"ОбъектНагрузки{i+1}",
-                        "description": f"Объект для тестирования производительности #{i+1}",
+                        "object_name": f"РћР±СЉРµРєС‚РќР°РіСЂСѓР·РєРё{i+1}",
+                        "description": f"РћР±СЉРµРєС‚ РґР»СЏ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚Рё #{i+1}",
                         "author": "LoadTest",
                         "complexity": "medium"
                     }
                 )
                 requests.append(request)
             
-            # Измеряем время выполнения
+            # РР·РјРµСЂСЏРµРј РІСЂРµРјСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ
             start_time = time.time()
             responses = await asyncio.gather(*requests, return_exceptions=True)
             end_time = time.time()
             
             execution_time = end_time - start_time
             
-            # Анализируем результаты
+            # РђРЅР°Р»РёР·РёСЂСѓРµРј СЂРµР·СѓР»СЊС‚Р°С‚С‹
             successful_responses = [r for r in responses if not isinstance(r, Exception)]
             failed_responses = [r for r in responses if isinstance(r, Exception)]
             
             success_rate = len(successful_responses) / len(requests)
             
-            # Проверяем производительность
+            # РџСЂРѕРІРµСЂСЏРµРј РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚СЊ
             requests_per_minute = (len(requests) / execution_time) * 60
             
-            assert success_rate >= 0.8, f"Success rate {success_rate} слишком низкий"
-            assert requests_per_minute >= 50, f"Performance {requests_per_minute} req/min слишком низкая"
+            assert success_rate >= 0.8, f"Success rate {success_rate} СЃР»РёС€РєРѕРј РЅРёР·РєРёР№"
+            assert requests_per_minute >= 50, f"Performance {requests_per_minute} req/min СЃР»РёС€РєРѕРј РЅРёР·РєР°СЏ"
             
-            # Проверяем среднее время ответа
+            # РџСЂРѕРІРµСЂСЏРµРј СЃСЂРµРґРЅРµРµ РІСЂРµРјСЏ РѕС‚РІРµС‚Р°
             response_times = [r.metrics.generation_time for r in successful_responses 
                             if hasattr(r, 'metrics') and hasattr(r.metrics, 'generation_time')]
             
             if response_times:
                 avg_response_time = sum(response_times) / len(response_times)
-                assert avg_response_time < 10, f"Average response time {avg_response_time}s слишком высокий"
+                assert avg_response_time < 10, f"Average response time {avg_response_time}s СЃР»РёС€РєРѕРј РІС‹СЃРѕРєРёР№"
             
             audit_logger.log_test_result(
                 test_name,
@@ -509,7 +511,7 @@ class TestEndToEndScenarios:
     
     @pytest.mark.asyncio
     async def test_error_recovery_scenarios(self, integration_test_setup, audit_logger):
-        """Тест сценариев восстановления после ошибок."""
+        """РўРµСЃС‚ СЃС†РµРЅР°СЂРёРµРІ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёСЏ РїРѕСЃР»Рµ РѕС€РёР±РѕРє."""
         test_name = "error_recovery_scenarios"
         params = {
             "recovery_test": True,
@@ -522,48 +524,48 @@ class TestEndToEndScenarios:
             components = integration_test_setup
             engine = components["engine"]
             
-            # Сценарий 1: Восстановление после невалидного запроса
+            # РЎС†РµРЅР°СЂРёР№ 1: Р’РѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ РїРѕСЃР»Рµ РЅРµРІР°Р»РёРґРЅРѕРіРѕ Р·Р°РїСЂРѕСЃР°
             invalid_request = {
                 "object_type": "invalid_type",
-                "description": "Некорректный запрос",
+                "description": "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ Р·Р°РїСЂРѕСЃ",
                 "parameters": {}
             }
             
-            # Ожидаем ошибку, но система должна продолжить работу
+            # РћР¶РёРґР°РµРј РѕС€РёР±РєСѓ, РЅРѕ СЃРёСЃС‚РµРјР° РґРѕР»Р¶РЅР° РїСЂРѕРґРѕР»Р¶РёС‚СЊ СЂР°Р±РѕС‚Сѓ
             result1 = await engine.generate_code(**invalid_request)
             assert result1.success is False
             assert result1.error_message is not None
             
-            # Сценарий 2: Успешная генерация после ошибки
+            # РЎС†РµРЅР°СЂРёР№ 2: РЈСЃРїРµС€РЅР°СЏ РіРµРЅРµСЂР°С†РёСЏ РїРѕСЃР»Рµ РѕС€РёР±РєРё
             valid_request = {
                 "object_type": "processing",
-                "description": "Восстановительный запрос",
+                "description": "Р’РѕСЃСЃС‚Р°РЅРѕРІРёС‚РµР»СЊРЅС‹Р№ Р·Р°РїСЂРѕСЃ",
                 "parameters": {
-                    "object_name": "ВосстановительнаяОбработка",
-                    "description": "Обработка после восстановления"
+                    "object_name": "Р’РѕСЃСЃС‚Р°РЅРѕРІРёС‚РµР»СЊРЅР°СЏРћР±СЂР°Р±РѕС‚РєР°",
+                    "description": "РћР±СЂР°Р±РѕС‚РєР° РїРѕСЃР»Рµ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёСЏ"
                 }
             }
             
             result2 = await engine.generate_code(**valid_request)
-            assert result2.success is True  # Система восстановилась
+            assert result2.success is True  # РЎРёСЃС‚РµРјР° РІРѕСЃСЃС‚Р°РЅРѕРІРёР»Р°СЃСЊ
             
-            # Сценарий 3: Частичный сброс состояния
+            # РЎС†РµРЅР°СЂРёР№ 3: Р§Р°СЃС‚РёС‡РЅС‹Р№ СЃР±СЂРѕСЃ СЃРѕСЃС‚РѕСЏРЅРёСЏ
             components["prompt_manager"].clear_cache()
             components["template_library"].reset_statistics()
             
-            # После сброса система должна работать
+            # РџРѕСЃР»Рµ СЃР±СЂРѕСЃР° СЃРёСЃС‚РµРјР° РґРѕР»Р¶РЅР° СЂР°Р±РѕС‚Р°С‚СЊ
             result3 = await engine.generate_code(
                 object_type="catalog",
-                description="Проверка после сброса",
+                description="РџСЂРѕРІРµСЂРєР° РїРѕСЃР»Рµ СЃР±СЂРѕСЃР°",
                 parameters={
-                    "object_name": "ПослеСброса",
-                    "description": "Справочник после очистки кеша"
+                    "object_name": "РџРѕСЃР»РµРЎР±СЂРѕСЃР°",
+                    "description": "РЎРїСЂР°РІРѕС‡РЅРёРє РїРѕСЃР»Рµ РѕС‡РёСЃС‚РєРё РєРµС€Р°"
                 }
             )
             
             assert result3.success is True
             
-            # Проверяем что статистика обновилась
+            # РџСЂРѕРІРµСЂСЏРµРј С‡С‚Рѕ СЃС‚Р°С‚РёСЃС‚РёРєР° РѕР±РЅРѕРІРёР»Р°СЃСЊ
             stats = components["template_library"].get_usage_statistics()
             assert stats["total_generations"] >= 2
             
@@ -584,7 +586,7 @@ class TestEndToEndScenarios:
     
     @pytest.mark.asyncio
     async def test_integration_health_check(self, integration_test_setup, audit_logger):
-        """Тест проверки здоровья всей системы."""
+        """РўРµСЃС‚ РїСЂРѕРІРµСЂРєРё Р·РґРѕСЂРѕРІСЊСЏ РІСЃРµР№ СЃРёСЃС‚РµРјС‹."""
         test_name = "integration_health_check"
         params = {
             "health_check": "full_system",
@@ -598,7 +600,7 @@ class TestEndToEndScenarios:
             
             health_status = {}
             
-            # Проверяем каждый компонент
+            # РџСЂРѕРІРµСЂСЏРµРј РєР°Р¶РґС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚
             components_to_check = [
                 ("engine", components["engine"]),
                 ("validator", components["validator"]),
@@ -609,7 +611,7 @@ class TestEndToEndScenarios:
             
             for name, component in components_to_check:
                 try:
-                    # Базовая проверка работоспособности
+                    # Р‘Р°Р·РѕРІР°СЏ РїСЂРѕРІРµСЂРєР° СЂР°Р±РѕС‚РѕСЃРїРѕСЃРѕР±РЅРѕСЃС‚Рё
                     if hasattr(component, 'health_check'):
                         health_result = await component.health_check()
                         health_status[name] = {
@@ -617,7 +619,7 @@ class TestEndToEndScenarios:
                             "details": health_result.details
                         }
                     else:
-                        # Простая проверка доступности методов
+                        # РџСЂРѕСЃС‚Р°СЏ РїСЂРѕРІРµСЂРєР° РґРѕСЃС‚СѓРїРЅРѕСЃС‚Рё РјРµС‚РѕРґРѕРІ
                         health_status[name] = {
                             "status": "healthy",
                             "details": f"Component {name} is accessible"
@@ -629,21 +631,21 @@ class TestEndToEndScenarios:
                         "details": str(e)
                     }
             
-            # Проверяем что все компоненты здоровы
+            # РџСЂРѕРІРµСЂСЏРµРј С‡С‚Рѕ РІСЃРµ РєРѕРјРїРѕРЅРµРЅС‚С‹ Р·РґРѕСЂРѕРІС‹
             unhealthy_components = [
                 name for name, status in health_status.items() 
                 if status["status"] != "healthy"
             ]
             
-            assert len(unhealthy_components) == 0, f"Нездоровые компоненты: {unhealthy_components}"
+            assert len(unhealthy_components) == 0, f"РќРµР·РґРѕСЂРѕРІС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚С‹: {unhealthy_components}"
             
-            # Дополнительная проверка интеграции компонентов
+            # Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅР°СЏ РїСЂРѕРІРµСЂРєР° РёРЅС‚РµРіСЂР°С†РёРё РєРѕРјРїРѕРЅРµРЅС‚РѕРІ
             integration_test = await components["engine"].generate_code(
                 object_type="processing",
-                "description": "Тест интеграции компонентов",
+                "description": "РўРµСЃС‚ РёРЅС‚РµРіСЂР°С†РёРё РєРѕРјРїРѕРЅРµРЅС‚РѕРІ",
                 "parameters": {
-                    "object_name": "ИнтеграционныйТест",
-                    "description": "Проверка работы всех компонентов вместе"
+                    "object_name": "РРЅС‚РµРіСЂР°С†РёРѕРЅРЅС‹Р№РўРµСЃС‚",
+                    "description": "РџСЂРѕРІРµСЂРєР° СЂР°Р±РѕС‚С‹ РІСЃРµС… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РІРјРµСЃС‚Рµ"
                 }
             )
             

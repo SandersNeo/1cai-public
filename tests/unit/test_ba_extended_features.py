@@ -1,4 +1,5 @@
-from datetime import datetime
+# [NEXUS IDENTITY] ID: -2625091860944473855 | DATE: 2025-11-19
+
 
 import pytest
 
@@ -70,5 +71,3 @@ def test_build_enablement_plan_structure():
     assert result["feature_name"] == "Scenario Hub"
     assert result["modules"]
     assert any(m["id"] == "howto" for m in result["modules"])
-
-

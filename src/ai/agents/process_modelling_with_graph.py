@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 6844130591866032192 | DATE: 2025-11-19
+
 """
 Process & Journey Modelling с Unified Change Graph
 --------------------------------------------------
@@ -12,7 +14,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from src.ai.code_graph import CodeGraphBackend, EdgeKind, Node, NodeKind
+from src.ai.code_graph import CodeGraphBackend, EdgeKind, NodeKind
 
 logger = logging.getLogger(__name__)
 
@@ -218,7 +220,9 @@ class ProcessModellerWithGraph:
             "summary": {
                 "total_steps": len(steps),
                 "steps_with_owners": sum(1 for s in steps if s.get("owner")),
-                "steps_with_io": sum(1 for s in steps if s.get("inputs") or s.get("outputs")),
+                "steps_with_io": sum(
+                    1 for s in steps if s.get("inputs") or s.get("outputs")
+                ),
                 "graph_refs_count": len(graph_refs),
             },
         }
@@ -253,9 +257,7 @@ class ProcessModellerWithGraph:
             "events": events,
         }
 
-    async def _find_graph_refs_for_requirement(
-        self, requirement_id: str
-    ) -> List[str]:
+    async def _find_graph_refs_for_requirement(self, requirement_id: str) -> List[str]:
         """Найти ссылки на граф для требования."""
         if not self.backend:
             return []
@@ -398,4 +400,3 @@ class ProcessModellerWithGraph:
 
         lines.append("@enduml")
         return "\n".join(lines)
-

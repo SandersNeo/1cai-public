@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 40022579626944058 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Правильное тестирование API ИТС на основе JavaScript кода

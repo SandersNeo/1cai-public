@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 4118967328016553513 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """AWS Cost Explorer quick report (daily spend)."""
 

@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -2162213750970693826 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Security Manager для 1C AI MCP Code Generation

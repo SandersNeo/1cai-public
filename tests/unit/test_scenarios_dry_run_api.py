@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -7205633061486018285 | DATE: 2025-11-19
+
 """
 Тесты для endpoint /api/scenarios/dry-run (экспериментальный).
 """
@@ -39,6 +41,3 @@ def test_dry_run_playbook_endpoint_not_found() -> None:
     )
     assert response.status_code == 404
     assert "Playbook not found" in response.json()["detail"]
-
-
-

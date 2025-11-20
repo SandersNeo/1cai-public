@@ -1,4 +1,3 @@
-import logging
 import os
 import hashlib
 import json
@@ -12,14 +11,22 @@ from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 
+
 class CacheManager:
     """
     Manages L1 (Memory) and L2 (Redis) caching for embeddings.
     Also handles quantization/dequantization.
     """
 
-    def __init__(self, redis_client=None, quantization_enabled: bool = False, quantization_dtype: str = "int8"):
-        self._cache_enabled = os.getenv("EMBEDDING_CACHE_ENABLED", "true").lower() == "true"
+    def __init__(
+        self,
+        redis_client=None,
+        quantization_enabled: bool = False,
+        quantization_dtype: str = "int8",
+    ):
+        self._cache_enabled = (
+            os.getenv("EMBEDDING_CACHE_ENABLED", "true").lower() == "true"
+        )
         self._cache_max_size = int(os.getenv("EMBEDDING_CACHE_SIZE", "1000"))
         self._cache_ttl_seconds = int(os.getenv("EMBEDDING_CACHE_TTL", "3600"))
 
@@ -42,16 +49,22 @@ class CacheManager:
         # Quantization
         self._quantization_enabled = quantization_enabled
         self._quantization_dtype = quantization_dtype
-        
+
         # Semantic Cache
-        self._semantic_cache_enabled = os.getenv("EMBEDDING_SEMANTIC_CACHE", "true").lower() == "true"
-        self._semantic_similarity_threshold = float(os.getenv("EMBEDDING_SEMANTIC_THRESHOLD", "0.95"))
-        self._semantic_cache: Dict[str, List[float]] = {} # text_hash -> embedding
-        
+        self._semantic_cache_enabled = (
+            os.getenv("EMBEDDING_SEMANTIC_CACHE", "true").lower() == "true"
+        )
+        self._semantic_similarity_threshold = float(
+            os.getenv("EMBEDDING_SEMANTIC_THRESHOLD", "0.95")
+        )
+        self._semantic_cache: Dict[str, List[float]] = {}  # text_hash -> embedding
+
         # Advanced components (placeholders for now, injected via setters if needed)
         self._adaptive_quantizer = None
         self._semantic_cache_ann = None
-        self._semantic_cache_ann_type = os.getenv("EMBEDDING_SEMANTIC_CACHE_ANN_TYPE", "linear")
+        self._semantic_cache_ann_type = os.getenv(
+            "EMBEDDING_SEMANTIC_CACHE_ANN_TYPE", "linear"
+        )
 
     def get_cache_key(self, text: Union[str, List[str]]) -> str:
         if isinstance(text, str):
@@ -86,10 +99,12 @@ class CacheManager:
                     value = json.loads(cached_value)
                     if self._quantization_enabled:
                         value = self._dequantize_embedding(value)
-                    
+
                     # Promote to L1
                     with self._cache_lock:
-                        expires_at = datetime.utcnow() + timedelta(seconds=self._cache_ttl_seconds)
+                        expires_at = datetime.utcnow() + timedelta(
+                            seconds=self._cache_ttl_seconds
+                        )
                         self._result_cache[cache_key] = {
                             "value": value,
                             "created_at": datetime.utcnow(),
@@ -99,7 +114,7 @@ class CacheManager:
                     return value
             except Exception as e:
                 logger.debug(f"Redis cache error: {e}")
-        
+
         return None
 
     def set(self, cache_key: str, value: Union[List[float], List[List[float]]]):
@@ -108,14 +123,17 @@ class CacheManager:
 
         cache_value = value
         if self._quantization_enabled:
-             cache_value = self._quantize_embedding(value)
+            cache_value = self._quantize_embedding(value)
 
         # L1
         with self._cache_lock:
-            if len(self._result_cache) >= self._cache_max_size and cache_key not in self._result_cache:
+            if (
+                len(self._result_cache) >= self._cache_max_size
+                and cache_key not in self._result_cache
+            ):
                 oldest_key = next(iter(self._result_cache))
                 del self._result_cache[oldest_key]
-            
+
             expires_at = datetime.utcnow() + timedelta(seconds=self._cache_ttl_seconds)
             self._result_cache[cache_key] = {
                 "value": cache_value,
@@ -133,24 +151,25 @@ class CacheManager:
             except Exception as e:
                 logger.debug(f"Error saving to Redis cache: {e}")
 
-    def get_from_semantic_cache(self, text: str, query_embedding_func) -> Optional[List[float]]:
+    def get_from_semantic_cache(
+        self, text: str, query_embedding_func
+    ) -> Optional[List[float]]:
         """
         Try to find semantically similar text in cache.
         query_embedding_func: function that returns embedding for text (to compare with cache)
         """
         if not self._semantic_cache_enabled:
             return None
-            
+
         # ANN lookup if available
         if self._semantic_cache_ann:
             try:
                 query_embedding = query_embedding_func(text)
-                if query_embedding is None: return None
-                
+                if query_embedding is None:
+                    return None
+
                 result = self._semantic_cache_ann.search(
-                    query_embedding, 
-                    k=1, 
-                    threshold=self._semantic_similarity_threshold
+                    query_embedding, k=1, threshold=self._semantic_similarity_threshold
                 )
                 if result:
                     best_embedding, similarity, _ = result
@@ -165,7 +184,8 @@ class CacheManager:
 
         try:
             query_embedding = query_embedding_func(text)
-            if query_embedding is None: return None
+            if query_embedding is None:
+                return None
 
             best_similarity = 0.0
             best_embedding = None
@@ -182,18 +202,24 @@ class CacheManager:
 
         except Exception as e:
             logger.warning(f"Error in semantic cache lookup: {e}")
-        
+
         return None
 
-    def save_to_semantic_cache(self, text: str, embedding: Union[List[float], List[List[float]]]):
+    def save_to_semantic_cache(
+        self, text: str, embedding: Union[List[float], List[List[float]]]
+    ):
         if not self._semantic_cache_enabled:
             return
-            
+
         try:
             max_size = int(os.getenv("EMBEDDING_SEMANTIC_CACHE_SIZE", "500"))
-            
+
             # Normalize
-            if isinstance(embedding, list) and len(embedding) > 0 and isinstance(embedding[0], list):
+            if (
+                isinstance(embedding, list)
+                and len(embedding) > 0
+                and isinstance(embedding[0], list)
+            ):
                 embedding = embedding[0]
 
             if len(self._semantic_cache) >= max_size:
@@ -202,10 +228,10 @@ class CacheManager:
 
             text_hash = hashlib.md5(text.encode()).hexdigest()
             self._semantic_cache[text_hash] = embedding
-            
+
             if self._semantic_cache_ann:
                 self._semantic_cache_ann.add(embedding, text)
-                
+
         except Exception as e:
             logger.warning(f"Error saving to semantic cache: {e}")
 
@@ -216,21 +242,28 @@ class CacheManager:
             dot_product = np.dot(v1, v2)
             norm1 = np.linalg.norm(v1)
             norm2 = np.linalg.norm(v2)
-            if norm1 == 0 or norm2 == 0: return 0.0
+            if norm1 == 0 or norm2 == 0:
+                return 0.0
             return float(dot_product / (norm1 * norm2))
         except Exception:
             return 0.0
 
     def _quantize_embedding(self, embedding):
         if self._adaptive_quantizer:
-             # Use adaptive if available
-             try:
-                 if isinstance(embedding, list) and len(embedding) > 0 and isinstance(embedding[0], list):
-                     return [self._adaptive_quantizer.quantize(emb)[0] for emb in embedding]
-                 else:
-                     return self._adaptive_quantizer.quantize(embedding)[0]
-             except Exception:
-                 pass
+            # Use adaptive if available
+            try:
+                if (
+                    isinstance(embedding, list)
+                    and len(embedding) > 0
+                    and isinstance(embedding[0], list)
+                ):
+                    return [
+                        self._adaptive_quantizer.quantize(emb)[0] for emb in embedding
+                    ]
+                else:
+                    return self._adaptive_quantizer.quantize(embedding)[0]
+            except Exception:
+                pass
 
         # Simple quantization fallback
         try:
@@ -259,7 +292,11 @@ class CacheManager:
                 else:
                     dtype = np.int8 if self._quantization_dtype == "int8" else np.int16
                     arr = np.array(quantized, dtype=dtype)
-                    scale = 1.0 / 127.0 if self._quantization_dtype == "int8" else 1.0 / 32767.0
+                    scale = (
+                        1.0 / 127.0
+                        if self._quantization_dtype == "int8"
+                        else 1.0 / 32767.0
+                    )
                     return (arr.astype(np.float32) * scale).tolist()
             return quantized
         except Exception:
@@ -272,6 +309,5 @@ class CacheManager:
                 "max_size": self._cache_max_size,
                 "ttl_seconds": self._cache_ttl_seconds,
                 "enabled": self._cache_enabled,
-                "semantic_cache_size": len(self._semantic_cache)
+                "semantic_cache_size": len(self._semantic_cache),
             }
-

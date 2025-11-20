@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -2339368314523260987 | DATE: 2025-11-19
+
 """Stdio сервер для MCP."""
 
 import asyncio

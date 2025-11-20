@@ -1,5 +1,6 @@
+# [NEXUS IDENTITY] ID: -4487350310196249049 | DATE: 2025-11-19
+
 import json
-import os
 from typing import Any, Dict
 
 import httpx
@@ -25,9 +26,15 @@ async def test_jira_client_create_issue():
         captured["url"] = request.url
         captured["payload"] = json.loads(request.content.decode())
         assert request.headers["Authorization"] == "Bearer token"
-        return httpx.Response(201, json={"key": "TEST-1", "self": "https://jira.example.com/TEST-1"})
+        return httpx.Response(
+            201, json={"key": "TEST-1", "self": "https://jira.example.com/TEST-1"}
+        )
 
-    client = JiraClient(base_url="https://jira.example.com", token="token", transport=_mock_transport(handler))
+    client = JiraClient(
+        base_url="https://jira.example.com",
+        token="token",
+        transport=_mock_transport(handler),
+    )
     response = await client.create_issue(
         project_key="PROJ",
         summary="Summary",
@@ -44,7 +51,6 @@ async def test_jira_client_create_issue():
 
 @pytest.mark.asyncio
 async def test_confluence_client_create_page():
-
     def handler(request: httpx.Request) -> httpx.Response:
         payload = json.loads(request.content.decode())
         assert payload["title"] == "Demo"
@@ -55,14 +61,15 @@ async def test_confluence_client_create_page():
         token="token",
         transport=_mock_transport(handler),
     )
-    response = await client.create_page(space_key="SPACE", title="Demo", body="<p>Body</p>")
+    response = await client.create_page(
+        space_key="SPACE", title="Demo", body="<p>Body</p>"
+    )
     await client.aclose()
     assert response["id"] == "123"
 
 
 @pytest.mark.asyncio
 async def test_powerbi_client_trigger_refresh():
-
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.method == "POST"
         assert request.url.path.endswith("/refreshes")
@@ -80,18 +87,21 @@ async def test_powerbi_client_trigger_refresh():
 
 @pytest.mark.asyncio
 async def test_docflow_client_register_document():
-
     def handler(request: httpx.Request) -> httpx.Response:
         payload = json.loads(request.content.decode())
         assert payload["title"] == "Doc"
-        return httpx.Response(200, json={"id": "DOC-1", "url": "https://1c.example.com/doc/1"})
+        return httpx.Response(
+            200, json={"id": "DOC-1", "url": "https://1c.example.com/doc/1"}
+        )
 
     client = OneCDocflowClient(
         base_url="https://1c.example.com",
         token="token",
         transport=_mock_transport(handler),
     )
-    response = await client.register_document(title="Doc", description="Desc", category="BA")
+    response = await client.register_document(
+        title="Doc", description="Desc", category="BA"
+    )
     await client.aclose()
     assert response["id"] == "DOC-1"
 
@@ -175,4 +185,3 @@ async def test_integration_connector_stubs_when_not_configured(monkeypatch):
     artefact = {"type": "roadmap", "metadata": {"summary": "Test"}}
     result = await connector.sync(artefact, targets=["jira"])
     assert result["results"][0]["status"] == "queued"
-

@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -7723125597079273 | DATE: 2025-11-19
+
 """Helper script to run Alembic migrations."""
 
 from __future__ import annotations

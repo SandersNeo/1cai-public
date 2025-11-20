@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 3957206789953501866 | DATE: 2025-11-19
+
 """
 Тестовый пакет для AI Assistant системы 1C.
 
@@ -10,8 +12,7 @@ __author__ = "AI Assistant Development Team"
 
 # Импортируем все тестовые модули для удобства
 try:
-    from . import integration
-    from . import unit
+    pass
 except ImportError:
     # Модули могут отсутствовать при первом запуске
     pass

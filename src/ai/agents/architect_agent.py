@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 2572462847296730521 | DATE: 2025-11-19
+
 """
 Легковесная версия архитекторского агента.
 
@@ -48,7 +50,9 @@ class ArchitectAgent:
         if self._delegate and hasattr(self._delegate, "analyze_system"):
             return await self._delegate.analyze_system(description)  # type: ignore[no-any-return]
 
-        cleaned = " ".join(line.strip() for line in description.splitlines() if line.strip())
+        cleaned = " ".join(
+            line.strip() for line in description.splitlines() if line.strip()
+        )
         word_count = len(cleaned.split())
 
         modules = max(1, word_count // 20)

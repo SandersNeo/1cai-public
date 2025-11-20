@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 3970651904874643657 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Template Manager для 1C AI MCP Code Generation

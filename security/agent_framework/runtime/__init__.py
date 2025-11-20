@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -2783886169486141725 | DATE: 2025-11-19
+
 """Agent runtime package for security testing."""
 
 from .agent import AgentResult, Finding, SecurityAgent

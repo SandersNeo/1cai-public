@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -3059557980544414404 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 1C AI Stack CLI - Унифицированный CLI инструмент для работы с платформой

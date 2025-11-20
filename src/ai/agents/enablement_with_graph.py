@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 8523876577921277390 | DATE: 2025-11-19
+
 """
 Documentation & Enablement с Unified Change Graph
 -------------------------------------------------
@@ -12,7 +14,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from src.ai.code_graph import CodeGraphBackend, EdgeKind, Node, NodeKind
+from src.ai.code_graph import CodeGraphBackend, NodeKind
 
 logger = logging.getLogger(__name__)
 
@@ -182,7 +184,11 @@ class EnablementGeneratorWithGraph:
         slides = [
             {"id": "title", "title": f"{topic}", "content": "Title slide"},
             {"id": "agenda", "title": "Agenda", "content": "Overview of topics"},
-            {"id": "problem", "title": "Problem Statement", "content": "Current challenges"},
+            {
+                "id": "problem",
+                "title": "Problem Statement",
+                "content": "Current challenges",
+            },
             {"id": "solution", "title": "Solution", "content": "Proposed approach"},
             {"id": "benefits", "title": "Benefits", "content": "Expected outcomes"},
             {"id": "next_steps", "title": "Next Steps", "content": "Action items"},
@@ -287,9 +293,7 @@ class EnablementGeneratorWithGraph:
 
         return examples
 
-    async def _find_code_examples_for_topic(
-        self, topic: str
-    ) -> List[Dict[str, Any]]:
+    async def _find_code_examples_for_topic(self, topic: str) -> List[Dict[str, Any]]:
         """Найти примеры кода для темы."""
         if not self.backend:
             return []
@@ -314,9 +318,7 @@ class EnablementGeneratorWithGraph:
 
         return examples
 
-    async def _find_related_requirements(
-        self, topic: str
-    ) -> List[Dict[str, Any]]:
+    async def _find_related_requirements(self, topic: str) -> List[Dict[str, Any]]:
         """Найти связанные требования."""
         if not self.backend:
             return []
@@ -433,4 +435,3 @@ class EnablementGeneratorWithGraph:
             lines.append("")
 
         return "\n".join(lines)
-

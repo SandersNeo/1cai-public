@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 6330244418710985949 | DATE: 2025-11-19
+
 """
 CLI for Business Analyst requirements extraction.
 

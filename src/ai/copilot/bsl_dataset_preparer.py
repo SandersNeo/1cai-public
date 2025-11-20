@@ -1,11 +1,12 @@
+# [NEXUS IDENTITY] ID: -7014406642465094804 | DATE: 2025-11-19
+
 """
 BSL Dataset Preparer
 Подготовка dataset для fine-tuning на BSL
 """
 
-import os
 import json
-from typing import List, Dict
+from typing import Dict
 from pathlib import Path
 from src.utils.structured_logging import StructuredLogger
 
@@ -15,37 +16,37 @@ logger = StructuredLogger(__name__).logger
 class BSLDatasetPreparer:
     """
     Подготовка датасета для обучения модели на BSL
-    
+
     Sources:
     1. GitHub (public 1C projects)
     2. ИТС examples
     3. Internal projects (if available)
     """
-    
+
     def __init__(self, output_dir: str = "datasets/bsl"):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        
+
         self.examples = []
-    
+
     async def prepare_dataset_from_db(self):
         """
         Подготовка dataset из PostgreSQL
-        
+
         Извлекаем:
         - Функции и процедуры
         - С документацией
         - С примерами использования
         """
-        
+
         # TODO: Connect to PostgreSQL
         # For now - create sample dataset
-        
+
         self.examples = [
             {
-                'instruction': 'Создай функцию для расчета НДС',
-                'input': 'Параметры: Сумма (число), СтавкаНДС (число, по умолчанию 20)',
-                'output': '''
+                "instruction": "Создай функцию для расчета НДС",
+                "input": "Параметры: Сумма (число), СтавкаНДС (число, по умолчанию 20)",
+                "output": """
 // Рассчитывает НДС от суммы
 //
 // Параметры:
@@ -66,12 +67,12 @@ class BSLDatasetPreparer:
     Возврат Окр(СуммаНДС, 2);
     
 КонецФункции
-'''
+""",
             },
             {
-                'instruction': 'Напиши функцию для проверки ИНН',
-                'input': 'Проверка контрольной суммы для 10 и 12 символов',
-                'output': '''
+                "instruction": "Напиши функцию для проверки ИНН",
+                "input": "Проверка контрольной суммы для 10 и 12 символов",
+                "output": """
 // Проверяет корректность ИНН
 //
 // Параметры:
@@ -106,12 +107,12 @@ class BSLDatasetPreparer:
     Возврат Истина;
     
 КонецФункции
-'''
+""",
             },
             {
-                'instruction': 'Создай процедуру для записи в журнал регистрации',
-                'input': 'Уровень, событие, комментарий',
-                'output': '''
+                "instruction": "Создай процедуру для записи в журнал регистрации",
+                "input": "Уровень, событие, комментарий",
+                "output": """
 Процедура ЗаписатьВЖурнал(Уровень, Событие, Комментарий) Экспорт
     
     ЗаписьЖурналаРегистрации(
@@ -123,15 +124,12 @@ class BSLDatasetPreparer:
     );
     
 КонецПроцедуры
-'''
-            }
+""",
+            },
         ]
-        
-        logger.info(
-            "Prepared examples",
-            extra={"examples_count": len(self.examples)}
-        )
-    
+
+        logger.info("Prepared examples", extra={"examples_count": len(self.examples)})
+
     def prepare_single_sample(self, code: str, description: str) -> Dict[str, str]:
         """
         Формирует единственную запись датасета в формате instruction/input/output.
@@ -143,60 +141,61 @@ class BSLDatasetPreparer:
         }
         self.examples.append(entry)
         return entry
-    
-    def save_dataset(self, format: str = 'jsonl'):
+
+    def save_dataset(self, format: str = "jsonl"):
         """
         Сохранение dataset
-        
+
         Formats:
         - jsonl: для fine-tuning (Hugging Face format)
         - json: для общего использования
         """
-        
-        if format == 'jsonl':
+
+        if format == "jsonl":
             output_file = self.output_dir / "bsl_train.jsonl"
-            
-            with open(output_file, 'w', encoding='utf-8') as f:
+
+            with open(output_file, "w", encoding="utf-8") as f:
                 for example in self.examples:
                     # Hugging Face format
-                    line = json.dumps({
-                        'text': f"### Instruction:\n{example['instruction']}\n\n### Input:\n{example['input']}\n\n### Response:\n{example['output']}"
-                    }, ensure_ascii=False)
-                    f.write(line + '\n')
-            
+                    line = json.dumps(
+                        {
+                            "text": f"### Instruction:\n{example['instruction']}\n\n### Input:\n{example['input']}\n\n### Response:\n{example['output']}"
+                        },
+                        ensure_ascii=False,
+                    )
+                    f.write(line + "\n")
+
             logger.info(
                 "Dataset saved",
-                extra={"output_file": str(output_file), "format": "jsonl"}
+                extra={"output_file": str(output_file), "format": "jsonl"},
             )
-        
+
         else:
             output_file = self.output_dir / "bsl_train.json"
-            
-            with open(output_file, 'w', encoding='utf-8') as f:
+
+            with open(output_file, "w", encoding="utf-8") as f:
                 json.dump(self.examples, f, ensure_ascii=False, indent=2)
-            
+
             logger.info(
                 "Dataset saved",
-                extra={"output_file": str(output_file), "format": "json"}
+                extra={"output_file": str(output_file), "format": "json"},
             )
-        
+
         return str(output_file)
 
 
 # CLI usage
 if __name__ == "__main__":
     import asyncio
-    
+
     async def main():
         preparer = BSLDatasetPreparer()
         await preparer.prepare_dataset_from_db()
-        
+
         # Save in both formats
-        preparer.save_dataset('jsonl')
-        preparer.save_dataset('json')
-        
+        preparer.save_dataset("jsonl")
+        preparer.save_dataset("json")
+
         print(f"Dataset готов! {len(preparer.examples)} examples")
-    
+
     asyncio.run(main())
-
-

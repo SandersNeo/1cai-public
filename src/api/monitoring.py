@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -637803051261194503 | DATE: 2025-11-19
+
 """
 Monitoring API Endpoints
 Версия: 2.1.0
@@ -21,9 +23,9 @@ router = APIRouter(prefix="/monitoring", tags=["Monitoring"])
 async def get_prometheus_metrics():
     """
     Prometheus metrics endpoint
-    
+
     Scrape this endpoint with Prometheus:
-    
+
     ```yaml
     scrape_configs:
       - job_name: '1c-ai-api'
@@ -40,19 +42,21 @@ async def get_prometheus_metrics():
         logger.error(
             f"Error getting Prometheus metrics: {e}",
             extra={"error_type": type(e).__name__},
-            exc_info=True
+            exc_info=True,
         )
-        raise HTTPException(status_code=500, detail=f"Failed to retrieve metrics: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to retrieve metrics: {str(e)}"
+        )
 
 
 @router.get("/health/detailed")
 async def detailed_health_check():
     """
     Detailed health check with all services
-    
+
     Returns status of:
     - PostgreSQL
-    - Redis  
+    - Redis
     - Neo4j
     - Qdrant
     - Elasticsearch
@@ -61,23 +65,21 @@ async def detailed_health_check():
     try:
         health_checker = get_health_checker()
         result = await health_checker.check_all()
-        
+
         logger.info(
             "Detailed health check completed",
             extra={
                 "overall_status": result.get("status"),
                 "healthy_count": result.get("healthy_count", 0),
-                "total_count": result.get("total_count", 0)
-            }
+                "total_count": result.get("total_count", 0),
+            },
         )
-        
+
         return result
     except Exception as e:
         logger.error(
             f"Error performing detailed health check: {e}",
             extra={"error_type": type(e).__name__},
-            exc_info=True
+            exc_info=True,
         )
         raise HTTPException(status_code=500, detail=f"Health check failed: {str(e)}")
-
-

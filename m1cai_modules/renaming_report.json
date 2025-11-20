@@ -1,0 +1,303 @@
+{
+  "dry_run": false,
+  "execution_date": "2025-01-27",
+  "statistics": {
+    "files_to_rename": 18,
+    "files_renamed": 18,
+    "references_replaced": 825,
+    "status": "completed",
+    "note": "Все файлы успешно переименованы. Старые дубликаты (A1sAR.bsl, A1sAI.bsl) удалены."
+  },
+  "changes": [
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sAI.bsl",
+      "old": "A1sAI",
+      "new": "М1сAIИнтеграция",
+      "count": 6
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sAI.bsl",
+      "old": "A1sO",
+      "new": "М1сAIОбщие",
+      "count": 4
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sAI.bsl",
+      "old": "A1sS",
+      "new": "М1сAIСтроки",
+      "count": 7
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sAR.bsl",
+      "old": "A1sAR",
+      "new": "М1сAIМассивы",
+      "count": 8
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sChars.bsl",
+      "old": "A1sChars",
+      "new": "М1сAIСимволы",
+      "count": 48
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sChars.bsl",
+      "old": "A1sS",
+      "new": "М1сAIСтроки",
+      "count": 5
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sChecks.bsl",
+      "old": "A1sChars",
+      "new": "М1сAIСимволы",
+      "count": 3
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sChecks.bsl",
+      "old": "A1sChecks",
+      "new": "М1сAIПроверки",
+      "count": 9
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sChecks.bsl",
+      "old": "A1sLog",
+      "new": "М1сAIЛогирование",
+      "count": 3
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sDS.bsl",
+      "old": "A1sAR",
+      "new": "М1сAIМассивы",
+      "count": 2
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sDS.bsl",
+      "old": "A1sDS",
+      "new": "М1сAIСтруктуры",
+      "count": 69
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sDS.bsl",
+      "old": "A1sS",
+      "new": "М1сAIСтроки",
+      "count": 5
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sFake.bsl",
+      "old": "A1sAR",
+      "new": "М1сAIМассивы",
+      "count": 5
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sFake.bsl",
+      "old": "A1sFake",
+      "new": "М1сAIТестовыеДанные",
+      "count": 2
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sHTML.bsl",
+      "old": "A1sChecks",
+      "new": "М1сAIПроверки",
+      "count": 2
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sJ.bsl",
+      "old": "A1sJ",
+      "new": "М1сAIJSON",
+      "count": 16
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sJ.bsl",
+      "old": "A1sS",
+      "new": "М1сAIСтроки",
+      "count": 6
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sLocks.bsl",
+      "old": "A1sLocks",
+      "new": "М1сAIБлокировки",
+      "count": 20
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sLocks.bsl",
+      "old": "A1sO",
+      "new": "М1сAIОбщие",
+      "count": 13
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sLog.bsl",
+      "old": "A1sJ",
+      "new": "М1сAIJSON",
+      "count": 6
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sLog.bsl",
+      "old": "A1sLog",
+      "new": "М1сAIЛогирование",
+      "count": 35
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sLog.bsl",
+      "old": "A1sS",
+      "new": "М1сAIСтроки",
+      "count": 5
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sMaps.bsl",
+      "old": "A1sChecks",
+      "new": "М1сAIПроверки",
+      "count": 16
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sMaps.bsl",
+      "old": "A1sMaps",
+      "new": "М1сAIСоответствия",
+      "count": 34
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sO.bsl",
+      "old": "A1sLog",
+      "new": "М1сAIЛогирование",
+      "count": 2
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sO.bsl",
+      "old": "A1sO",
+      "new": "М1сAIОбщие",
+      "count": 90
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sO.bsl",
+      "old": "A1sS",
+      "new": "М1сAIСтроки",
+      "count": 11
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sQ.bsl",
+      "old": "A1sChars",
+      "new": "М1сAIСимволы",
+      "count": 2
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sQ.bsl",
+      "old": "A1sQ",
+      "new": "М1сAIЗапросы",
+      "count": 81
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sQ.bsl",
+      "old": "A1sS",
+      "new": "М1сAIСтроки",
+      "count": 64
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sS.bsl",
+      "old": "A1sChars",
+      "new": "М1сAIСимволы",
+      "count": 1
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sS.bsl",
+      "old": "A1sJ",
+      "new": "М1сAIJSON",
+      "count": 3
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sS.bsl",
+      "old": "A1sLog",
+      "new": "М1сAIЛогирование",
+      "count": 10
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sS.bsl",
+      "old": "A1sO",
+      "new": "М1сAIОбщие",
+      "count": 1
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sS.bsl",
+      "old": "A1sS",
+      "new": "М1сAIСтроки",
+      "count": 70
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sS.bsl",
+      "old": "A1sX",
+      "new": "М1сAIXML",
+      "count": 2
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sTesting.bsl",
+      "old": "A1sS",
+      "new": "М1сAIСтроки",
+      "count": 48
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sTesting.bsl",
+      "old": "A1sTesting",
+      "new": "М1сAIТестирование",
+      "count": 33
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sVT.bsl",
+      "old": "A1sAR",
+      "new": "М1сAIМассивы",
+      "count": 2
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sVT.bsl",
+      "old": "A1sDS",
+      "new": "М1сAIСтруктуры",
+      "count": 8
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sVT.bsl",
+      "old": "A1sVT",
+      "new": "М1сAIТаблицыЗначений",
+      "count": 22
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sWeb.bsl",
+      "old": "A1sS",
+      "new": "М1сAIСтроки",
+      "count": 10
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sWeb.bsl",
+      "old": "A1sWeb",
+      "new": "М1сAIВеб",
+      "count": 22
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sX.bsl",
+      "old": "A1sS",
+      "new": "М1сAIСтроки",
+      "count": 7
+    },
+    {
+      "file": "C:\\Users\\user\\OneDrive\\Рабочий стол\\package (1)\\a1scode_source\\A1sX.bsl",
+      "old": "A1sX",
+      "new": "М1сAIXML",
+      "count": 7
+    }
+  ],
+  "mapping": {
+    "A1sAI": "М1сAIИнтеграция",
+    "A1sAR": "М1сAIМассивы",
+    "A1sChars": "М1сAIСимволы",
+    "A1sChecks": "М1сAIПроверки",
+    "A1sDS": "М1сAIСтруктуры",
+    "A1sFake": "М1сAIТестовыеДанные",
+    "A1sHTML": "М1сAIHTML",
+    "A1sJ": "М1сAIJSON",
+    "A1sLocks": "М1сAIБлокировки",
+    "A1sLog": "М1сAIЛогирование",
+    "A1sMaps": "М1сAIСоответствия",
+    "A1sO": "М1сAIОбщие",
+    "A1sQ": "М1сAIЗапросы",
+    "A1sS": "М1сAIСтроки",
+    "A1sTesting": "М1сAIТестирование",
+    "A1sVT": "М1сAIТаблицыЗначений",
+    "A1sWeb": "М1сAIВеб",
+    "A1sX": "М1сAIXML"
+  }
+}

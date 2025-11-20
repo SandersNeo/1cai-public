@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -4463638147250294504 | DATE: 2025-11-19
+
 import json
 from pathlib import Path
 
@@ -9,7 +11,9 @@ from src.ai.knowledge.ba_knowledge import BAKnowledgeBase
 def _write_snapshot(tmp_path: Path, collector: str, payload: dict) -> None:
     collector_dir = tmp_path / collector / "20250101"
     collector_dir.mkdir(parents=True, exist_ok=True)
-    (collector_dir / f"{collector}_snapshot.json").write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    (collector_dir / f"{collector}_snapshot.json").write_text(
+        json.dumps(payload, ensure_ascii=False), encoding="utf-8"
+    )
 
 
 def test_generate_assessment_uses_latest_snapshot(tmp_path: Path):
@@ -23,7 +27,11 @@ def test_generate_assessment_uses_latest_snapshot(tmp_path: Path):
     conf_payload = {
         "collector": "conference_digest",
         "records": [
-            {"event": "Analyst Days", "topic": "AI & BA", "link": "https://example.com"},
+            {
+                "event": "Analyst Days",
+                "topic": "AI & BA",
+                "link": "https://example.com",
+            },
         ],
     }
     _write_snapshot(tmp_path, "job_market", job_payload)
@@ -82,12 +90,22 @@ def test_ba_knowledge_base_reads_snapshots(tmp_path: Path):
     conf_payload = {
         "collector": "conference_digest",
         "records": [
-            {"event": "BA Summit", "topic": "Generative AI", "link": "https://example.com"},
+            {
+                "event": "BA Summit",
+                "topic": "Generative AI",
+                "link": "https://example.com",
+            },
         ],
     }
     usage_payload = {
         "collector": "internal_usage",
-        "records": [{"feature": "discovery_run_session", "count": 10, "timestamp": "2025-01-01T00:00:00Z"}],
+        "records": [
+            {
+                "feature": "discovery_run_session",
+                "count": 10,
+                "timestamp": "2025-01-01T00:00:00Z",
+            }
+        ],
     }
     _write_snapshot(tmp_path, "job_market", job_payload)
     _write_snapshot(tmp_path, "conference_digest", conf_payload)
@@ -101,4 +119,3 @@ def test_ba_knowledge_base_reads_snapshots(tmp_path: Path):
     assert top_skills and top_skills[0]["skill"] == "Power BI"
     assert topics and topics[0]["event"] == "BA Summit"
     assert usage and usage[0]["feature"] == "discovery_run_session"
-

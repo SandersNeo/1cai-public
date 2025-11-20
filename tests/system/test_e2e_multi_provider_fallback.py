@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -1105127812605669089 | DATE: 2025-11-19
+
 """
 E2E тесты для multi-provider fallback и критических путей.
 
@@ -38,7 +40,10 @@ async def test_e2e_multi_provider_fallback_for_code_generation():
         # Если ошибка, должен произойти fallback
         if "error" in result:
             # Проверяем, что есть информация о попытке fallback
-            assert "fallback" in str(result).lower() or "alternative" in str(result).lower()
+            assert (
+                "fallback" in str(result).lower()
+                or "alternative" in str(result).lower()
+            )
 
     except Exception as e:
         # Ожидаем, что некоторые провайдеры могут быть недоступны
@@ -209,4 +214,3 @@ async def test_e2e_cache_lru_eviction():
     assert cache.get("key2") == "value2"
     assert cache.get("key3") == "value3"
     assert cache.get("key4") == "value4"
-

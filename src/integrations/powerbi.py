@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 6746694841476324466 | DATE: 2025-11-19
+
 from __future__ import annotations
 
 import os
@@ -31,8 +33,9 @@ class PowerBIClient(BaseIntegrationClient):
             raise IntegrationConfigError("BA_POWERBI_TOKEN must be configured.")
         return cls(base_url=base_url, token=token, transport=transport)
 
-    async def trigger_refresh(self, workspace_id: str, dataset_id: str) -> Dict[str, Any]:
+    async def trigger_refresh(
+        self, workspace_id: str, dataset_id: str
+    ) -> Dict[str, Any]:
         endpoint = f"/v1.0/myorg/groups/{workspace_id}/datasets/{dataset_id}/refreshes"
         response = await self._request("POST", endpoint, json={})
         return response.json()
-

@@ -1,8 +1,9 @@
+# [NEXUS IDENTITY] ID: -5544637695137986782 | DATE: 2025-11-19
+
 """Unit tests for admin audit endpoints."""
 
 from __future__ import annotations
 
-import asyncio
 from datetime import datetime, timezone
 
 import pytest
@@ -22,7 +23,9 @@ async def test_list_audit_entries(monkeypatch):
         "metadata": {"key": "value"},
     }
 
-    current_user = CurrentUser(user_id="admin-1", username="admin", roles=["admin"], permissions=[])
+    current_user = CurrentUser(
+        user_id="admin-1", username="admin", roles=["admin"], permissions=[]
+    )
 
     async def fake_fetch(limit, offset, actor, action):
         entry = AuditEntry(
@@ -46,4 +49,3 @@ async def test_list_audit_entries(monkeypatch):
     assert response.total == 1
     assert response.items[0].actor == "admin"
     assert response.items[0].metadata["key"] == "value"
-

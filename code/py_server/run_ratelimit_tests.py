@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -4359180632403751108 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Скрипт для запуска всех rate limiting тестов

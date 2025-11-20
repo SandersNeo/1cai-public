@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -4116085316104930133 | DATE: 2025-11-19
+
 """
 Tests for playbook_executor (experimental).
 """
@@ -26,7 +28,9 @@ def test_load_playbook_ba_dev_qa(tmp_path: Path) -> None:
 def test_dry_run_playbook_returns_report_dict() -> None:
     """dry_run_playbook_to_dict должен возвращать dict с ключевыми полями."""
     playbook_path = Path("playbooks/dr_vault_example.yaml")
-    report_dict = dry_run_playbook_to_dict(playbook_path, autonomy="A2_non_prod_changes")
+    report_dict = dry_run_playbook_to_dict(
+        playbook_path, autonomy="A2_non_prod_changes"
+    )
 
     assert isinstance(report_dict, dict)
     assert report_dict.get("scenario_id") == "plan-dr-vault"
@@ -64,6 +68,3 @@ def test_code_review_playbook_loads() -> None:
     assert isinstance(plan, ScenarioPlan)
     assert plan.id == "plan-code-review-EXTERNAL_PR"
     assert plan.overall_risk.value == "read_only"
-
-
-

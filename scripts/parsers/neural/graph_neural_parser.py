@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 8151216234644898524 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Graph Neural Network Parser для BSL кода

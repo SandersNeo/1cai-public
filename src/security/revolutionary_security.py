@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 1548699014200172116 | DATE: 2025-11-19
+
 """
 Revolutionary Security Layer - Безопасность для всех компонентов
 ================================================================
@@ -14,8 +16,6 @@ Revolutionary Security Layer - Безопасность для всех комп
 - "Security by Design" (2024): Безопасность с самого начала
 """
 
-import hashlib
-import hmac
 import logging
 import secrets
 from dataclasses import dataclass, field
@@ -25,9 +25,6 @@ from typing import Any, Dict, List, Optional, Set
 from uuid import uuid4
 
 from cryptography.fernet import Fernet
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.backends import default_backend
 import base64
 
 logger = logging.getLogger(__name__)
@@ -35,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 class SecurityLevel(str, Enum):
     """Уровни безопасности"""
-    
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -44,7 +41,7 @@ class SecurityLevel(str, Enum):
 
 class ThreatType(str, Enum):
     """Типы угроз"""
-    
+
     UNAUTHORIZED_ACCESS = "unauthorized_access"
     DATA_BREACH = "data_breach"
     CODE_INJECTION = "code_injection"
@@ -55,7 +52,7 @@ class ThreatType(str, Enum):
 @dataclass
 class SecurityEvent:
     """Событие безопасности"""
-    
+
     id: str = field(default_factory=lambda: str(uuid4()))
     threat_type: ThreatType = ThreatType.UNAUTHORIZED_ACCESS
     severity: SecurityLevel = SecurityLevel.MEDIUM
@@ -65,7 +62,7 @@ class SecurityEvent:
     timestamp: datetime = field(default_factory=datetime.utcnow)
     blocked: bool = False
     metadata: Dict[str, Any] = field(default_factory=dict)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Сериализация события"""
         return {
@@ -84,13 +81,15 @@ class SecurityEvent:
 @dataclass
 class AccessToken:
     """Токен доступа"""
-    
+
     token: str
     user_id: str
     permissions: Set[str] = field(default_factory=set)
-    expires_at: datetime = field(default_factory=lambda: datetime.utcnow() + timedelta(hours=1))
+    expires_at: datetime = field(
+        default_factory=lambda: datetime.utcnow() + timedelta(hours=1)
+    )
     created_at: datetime = field(default_factory=datetime.utcnow)
-    
+
     def is_valid(self) -> bool:
         """Проверка валидности токена"""
         return datetime.utcnow() < self.expires_at
@@ -98,17 +97,17 @@ class AccessToken:
 
 class EncryptionService:
     """Сервис шифрования"""
-    
+
     def __init__(self, key: Optional[bytes] = None):
         if key is None:
             key = Fernet.generate_key()
         self.cipher = Fernet(key)
-    
+
     def encrypt(self, data: str) -> str:
         """Шифрование данных"""
         encrypted = self.cipher.encrypt(data.encode())
         return base64.b64encode(encrypted).decode()
-    
+
     def decrypt(self, encrypted_data: str) -> str:
         """Расшифровка данных"""
         encrypted_bytes = base64.b64decode(encrypted_data.encode())
@@ -119,28 +118,25 @@ class EncryptionService:
 class SecurityManager:
     """
     Менеджер безопасности для всех революционных компонентов
-    
+
     Обеспечивает:
     - Аутентификацию и авторизацию
     - Шифрование данных
     - Аудит действий
     - Защиту от атак
     """
-    
+
     def __init__(self):
         self.encryption = EncryptionService()
         self._tokens: Dict[str, AccessToken] = {}
         self._security_events: List[SecurityEvent] = []
         self._blocked_sources: Set[str] = set()
         self._rate_limits: Dict[str, List[datetime]] = {}
-        
+
         logger.info("SecurityManager initialized")
-    
+
     def generate_token(
-        self,
-        user_id: str,
-        permissions: Set[str],
-        expires_hours: int = 1
+        self, user_id: str, permissions: Set[str], expires_hours: int = 1
     ) -> AccessToken:
         """Генерация токена доступа"""
         token = secrets.token_urlsafe(32)
@@ -148,63 +144,69 @@ class SecurityManager:
             token=token,
             user_id=user_id,
             permissions=permissions,
-            expires_at=datetime.utcnow() + timedelta(hours=expires_hours)
+            expires_at=datetime.utcnow() + timedelta(hours=expires_hours),
         )
-        
+
         self._tokens[token] = access_token
-        
+
         logger.info(f"Token generated for user: {user_id}")
-        
+
         return access_token
-    
+
     def validate_token(self, token: str) -> Optional[AccessToken]:
         """Валидация токена"""
         access_token = self._tokens.get(token)
-        
+
         if access_token and access_token.is_valid():
             return access_token
-        
+
         # Невалидный токен - событие безопасности
         self._record_security_event(
             ThreatType.UNAUTHORIZED_ACCESS,
             SecurityLevel.MEDIUM,
             source="unknown",
-            action="invalid_token_attempt"
+            action="invalid_token_attempt",
         )
-        
+
         return None
-    
+
     def check_permission(self, token: str, permission: str) -> bool:
         """Проверка разрешения"""
         access_token = self.validate_token(token)
-        
+
         if not access_token:
             return False
-        
-        return permission in access_token.permissions or "admin" in access_token.permissions
-    
+
+        return (
+            permission in access_token.permissions
+            or "admin" in access_token.permissions
+        )
+
     def encrypt_data(self, data: str) -> str:
         """Шифрование данных"""
         return self.encryption.encrypt(data)
-    
+
     def decrypt_data(self, encrypted_data: str) -> str:
         """Расшифровка данных"""
         return self.encryption.decrypt(encrypted_data)
-    
-    def check_rate_limit(self, source: str, max_requests: int = 100, window_seconds: int = 60) -> bool:
+
+    def check_rate_limit(
+        self, source: str, max_requests: int = 100, window_seconds: int = 60
+    ) -> bool:
         """Проверка rate limit"""
         now = datetime.utcnow()
         window_start = now - timedelta(seconds=window_seconds)
-        
+
         if source not in self._rate_limits:
             self._rate_limits[source] = []
-        
+
         # Очистка старых запросов
         self._rate_limits[source] = [
-            req_time for req_time in self._rate_limits[source]
+            req_time
+            for req_time in self._rate_limits[source]
             if req_time > window_start
         ]
-        
+
         # Проверка лимита
         if len(self._rate_limits[source]) >= max_requests:
             # Превышен лимит - событие безопасности
@@ -212,21 +214,21 @@ class SecurityManager:
                 ThreatType.DOS_ATTACK,
                 SecurityLevel.HIGH,
                 source=source,
-                action="rate_limit_exceeded"
+                action="rate_limit_exceeded",
             )
             return False
-        
+
         # Добавление текущего запроса
         self._rate_limits[source].append(now)
         return True
-    
+
     def _record_security_event(
         self,
         threat_type: ThreatType,
         severity: SecurityLevel,
         source: str,
         action: str,
-        blocked: bool = False
+        blocked: bool = False,
     ) -> SecurityEvent:
         """Запись события безопасности"""
         event = SecurityEvent(
@@ -234,30 +236,30 @@ class SecurityManager:
             severity=severity,
             source=source,
             action=action,
-            blocked=blocked
+            blocked=blocked,
         )
-        
+
         self._security_events.append(event)
-        
+
         if blocked or severity == SecurityLevel.CRITICAL:
             self._blocked_sources.add(source)
-        
+
         logger.warning(
             f"Security event: {threat_type.value}",
             extra={
                 "event_id": event.id,
                 "severity": severity.value,
                 "source": source,
-                "blocked": blocked
-            }
+                "blocked": blocked,
+            },
         )
-        
+
         return event
-    
+
     def is_blocked(self, source: str) -> bool:
         """Проверка, заблокирован ли источник"""
         return source in self._blocked_sources
-    
+
     def get_security_stats(self) -> Dict[str, Any]:
         """Получение статистики безопасности"""
         return {
@@ -265,12 +267,15 @@ class SecurityManager:
             "blocked_sources": len(self._blocked_sources),
             "active_tokens": len([t for t in self._tokens.values() if t.is_valid()]),
             "events_by_type": {
-                threat.value: len([e for e in self._security_events if e.threat_type == threat])
+                threat.value: len(
+                    [e for e in self._security_events if e.threat_type == threat]
+                )
                 for threat in ThreatType
             },
             "events_by_severity": {
-                level.value: len([e for e in self._security_events if e.severity == level])
+                level.value: len(
+                    [e for e in self._security_events if e.severity == level]
+                )
                 for level in SecurityLevel
-            }
+            },
         }
-

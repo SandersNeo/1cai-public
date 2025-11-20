@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 2292718890817079091 | DATE: 2025-11-19
+
 """
 Simple Demo - AI Architect (без Neo4j, без emoji)
 Демонстрация возможностей без зависимостей

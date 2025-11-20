@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -910912519915074840 | DATE: 2025-11-19
+
 """
 Unified Change Graph (experimental)
 -----------------------------------
@@ -97,7 +99,9 @@ class EdgeKind(str, Enum):
 
     # BSL-Specific типы для 1C (BSL Code Graph Standard)
     # Вызовы и зависимости
-    BSL_CALLS = "BSL_CALLS"  # Вызов функции/процедуры (более специфичный чем DEPENDS_ON)
+    BSL_CALLS = (
+        "BSL_CALLS"  # Вызов функции/процедуры (более специфичный чем DEPENDS_ON)
+    )
     BSL_USES_METADATA = "BSL_USES_METADATA"  # Использование объекта метаданных в коде
     # Работа с БД
     BSL_READS_TABLE = "BSL_READS_TABLE"  # Чтение таблицы БД (SELECT)
@@ -196,7 +200,9 @@ class InMemoryCodeGraphBackend(CodeGraphBackend):
     ) -> List[Node]:
         if kinds is not None:
             kinds_set = set(kinds)
-            relevant = [e for e in self._edges if e.source == node_id and e.kind in kinds_set]
+            relevant = [
+                e for e in self._edges if e.source == node_id and e.kind in kinds_set
+            ]
         else:
             relevant = [e for e in self._edges if e.source == node_id]
         return [self._nodes[e.target] for e in relevant if e.target in self._nodes]
@@ -224,5 +230,3 @@ class InMemoryCodeGraphBackend(CodeGraphBackend):
                     continue
             result.append(node)
         return result
-
-

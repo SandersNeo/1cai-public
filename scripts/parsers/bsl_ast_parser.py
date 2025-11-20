@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -4725101862841903164 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 BSL AST Parser - интеграция с bsl-language-server

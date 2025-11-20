@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -4666218792727110957 | DATE: 2025-11-19
+
 """
 Tests for TraceabilityWithGraph (traceability_with_graph.py).
 """
@@ -157,7 +159,11 @@ async def test_build_full_traceability_report() -> None:
     assert "risk_register" in result
     assert "risk_heatmap" in result
     assert "compliance" in result
-    assert result["compliance"]["status"] in ["compliant", "partially_compliant", "non_compliant"]
+    assert result["compliance"]["status"] in [
+        "compliant",
+        "partially_compliant",
+        "non_compliant",
+    ]
 
 
 @pytest.mark.asyncio
@@ -170,4 +176,3 @@ async def test_traceability_without_backend() -> None:
     assert len(result["matrix"]) > 0
     # Coverage должен быть "unknown" без графа
     assert result["matrix"][0]["coverage"] == "unknown"
-

@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -8334077302848246648 | DATE: 2025-11-19
+
 """
 Kubernetes Health Probes Configuration
 Настройка Liveness, Readiness и Startup probes

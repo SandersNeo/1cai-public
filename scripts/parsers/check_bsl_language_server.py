@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -1839856393857037613 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """Quick health check for bsl-language-server.
 

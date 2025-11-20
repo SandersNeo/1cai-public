@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -2009415983217203501 | DATE: 2025-11-19
+
 """
 E2E тесты для BA-функций с Unified Change Graph
 ------------------------------------------------
@@ -87,9 +89,7 @@ async def test_e2e_ba_kpi_with_graph() -> None:
     kpi_generator = KPIGeneratorWithGraph(backend)
 
     # 3. Сгенерировать KPI
-    kpis = await kpi_generator.generate_kpis_from_graph(
-        feature_name="Test Feature"
-    )
+    kpis = await kpi_generator.generate_kpis_from_graph(feature_name="Test Feature")
 
     # 4. Проверить результаты
     assert "technical_kpis" in kpis
@@ -162,4 +162,3 @@ async def test_e2e_ba_enablement_with_graph() -> None:
     assert "modules" in plan
     assert "feature_name" in plan
     assert len(plan["modules"]) > 0
-

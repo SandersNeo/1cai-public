@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -5778748387626129409 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Lightweight smoke checks to validate core tooling without full deployment.

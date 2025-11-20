@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -5261240321247034037 | DATE: 2025-11-19
+
 """MCP-прокси сервер для взаимодействия с 1С."""
 
 from .config import Config, get_config

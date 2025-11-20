@@ -1,45 +1,45 @@
 import importlib
-import logging
 import os
 import time
-import sys
-import types
-from typing import Optional, Dict, Any, List
-from threading import Lock
+from typing import Dict, Any
 
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 
 try:
-    import sentence_transformers
+    pass
+
     EMBEDDINGS_AVAILABLE = True
 except ImportError:
     logger.warning("sentence-transformers not installed.")
     EMBEDDINGS_AVAILABLE = False
 
+
 class ModelManager:
     """
     Manages loading and access to SentenceTransformer models on CPU and GPU.
     """
-    
+
     DEFAULT_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
     def __init__(self, model_name: str = None, hybrid_mode: bool = None):
         self.model_name = model_name or self.DEFAULT_MODEL
-        
+
         if hybrid_mode is None:
             hybrid_mode = os.getenv("EMBEDDING_HYBRID_MODE", "false").lower() == "true"
         self.hybrid_mode = hybrid_mode
-        
+
         self.model_cpu = None
         self.model_gpu = None
-        self.model = None # Primary model
-        
-        self._multi_gpu_enabled = os.getenv("EMBEDDING_MULTI_GPU_ENABLED", "false").lower() == "true"
+        self.model = None  # Primary model
+
+        self._multi_gpu_enabled = (
+            os.getenv("EMBEDDING_MULTI_GPU_ENABLED", "false").lower() == "true"
+        )
         self._gpu_devices = []
         self._gpu_models: Dict[int, Any] = {}
-        
+
         self._init_gpu_devices()
         self.load_model()
 
@@ -48,6 +48,7 @@ class ModelManager:
             return
         try:
             import torch
+
             if torch.cuda.is_available():
                 num_gpus = torch.cuda.device_count()
                 self._gpu_devices = list(range(num_gpus))
@@ -61,6 +62,7 @@ class ModelManager:
 
         try:
             import torch
+
             has_cuda = torch.cuda.is_available()
         except ImportError:
             has_cuda = False
@@ -74,17 +76,19 @@ class ModelManager:
         for attempt in range(max_retries):
             try:
                 device = "cuda" if use_gpu else "cpu"
-                logger.info(f"Loading model {self.model_name} on {device} (attempt {attempt+1})")
-                
+                logger.info(
+                    f"Loading model {self.model_name} on {device} (attempt {attempt+1})"
+                )
+
                 module = importlib.import_module("sentence_transformers")
                 transformer_cls = getattr(module, "SentenceTransformer")
                 self.model = transformer_cls(self.model_name, device=device)
-                
+
                 if use_gpu:
                     self.model_gpu = self.model
                 else:
                     self.model_cpu = self.model
-                    
+
                 logger.info(f"Model loaded on {device}")
                 return
             except Exception as e:
@@ -96,7 +100,7 @@ class ModelManager:
 
     def _load_hybrid_models(self, max_retries: int, retry_delay: float):
         logger.info("Loading models in hybrid mode (CPU + GPU)")
-        
+
         # GPU
         if self._multi_gpu_enabled and self._gpu_devices:
             for device_id in self._gpu_devices:
@@ -107,7 +111,7 @@ class ModelManager:
                     self._gpu_models[device_id] = model
                 except Exception as e:
                     logger.warning(f"Failed to load on GPU {device_id}: {e}")
-            
+
             if self._gpu_models:
                 self.model_gpu = self._gpu_models[list(self._gpu_models.keys())[0]]
         else:
@@ -139,4 +143,3 @@ class ModelManager:
         if self.model:
             return self.model.get_sentence_embedding_dimension()
         return 384
-

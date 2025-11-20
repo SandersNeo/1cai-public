@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -5784108812459120184 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """Utility to verify that Python 3.11 runtime is available on the host."""
 

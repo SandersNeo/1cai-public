@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -821244290660468447 | DATE: 2025-11-19
+
 """
 Utilities for pushing BA artefacts to external integrations.
 """

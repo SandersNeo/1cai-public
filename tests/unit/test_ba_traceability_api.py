@@ -1,8 +1,9 @@
+# [NEXUS IDENTITY] ID: 7393879267212295721 | DATE: 2025-11-19
+
 """
 Tests for BA-05 Traceability & Compliance API endpoints.
 """
 
-import pytest
 from fastapi.testclient import TestClient
 
 from src.api.ba_sessions import router
@@ -64,4 +65,3 @@ def test_build_full_traceability_report_endpoint() -> None:
         assert "risk_register" in data
         assert "risk_heatmap" in data
         assert "compliance" in data
-

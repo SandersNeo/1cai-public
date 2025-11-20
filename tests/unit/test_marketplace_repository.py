@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 7989747997441726993 | DATE: 2025-11-19
+
 import re
 from typing import Any, Dict
 from unittest.mock import AsyncMock, Mock
@@ -88,7 +90,9 @@ async def test_store_artifact_uploads_and_updates_db():
 
 @pytest.mark.asyncio
 async def test_store_artifact_without_storage_configuration_raises():
-    repo = MarketplaceRepository(pool=_MockPool(_MockConn({})), cache=None, storage_config={})
+    repo = MarketplaceRepository(
+        pool=_MockPool(_MockConn({})), cache=None, storage_config={}
+    )
 
     with pytest.raises(RuntimeError):
         await repo.store_artifact("plugin-1", b"data", "file.zip")
@@ -125,7 +129,9 @@ def _create_repo(storage: Dict[str, str]) -> MarketplaceRepository:
         "secret_key": "secret",
     }
     defaults.update(storage)
-    return MarketplaceRepository(pool=_MockPool(_MockConn({})), cache=None, storage_config=defaults)
+    return MarketplaceRepository(
+        pool=_MockPool(_MockConn({})), cache=None, storage_config=defaults
+    )
 
 
 @pytest.mark.asyncio()
@@ -158,4 +164,3 @@ async def test_build_download_payload_presigned() -> None:
 
     assert payload["download_url"] == "https://s3.example.com/presigned"
     assert "manifest.json" in payload["files"]
-

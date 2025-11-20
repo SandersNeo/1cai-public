@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -4996916515761471810 | DATE: 2025-11-19
+
 """add user roles and permissions tables"""
 
 from __future__ import annotations

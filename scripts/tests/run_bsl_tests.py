@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 1625744313012606303 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Execute BSL / 1C test suites described in a manifest file.

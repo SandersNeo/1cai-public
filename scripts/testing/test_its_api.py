@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -4777680019559753834 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """Тестирование API ИТС"""
 

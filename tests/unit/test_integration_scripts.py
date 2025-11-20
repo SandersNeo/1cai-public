@@ -1,9 +1,15 @@
+# [NEXUS IDENTITY] ID: 2733263434009906938 | DATE: 2025-11-19
+
 import json
 from pathlib import Path
 
 import pytest
 
-from scripts.ba_integration.sync_artifact import parse_args, sync_artifact, sync_artifact_from_path
+from scripts.ba_integration.sync_artifact import (
+    parse_args,
+    sync_artifact,
+    sync_artifact_from_path,
+)
 
 
 class DummyConnector:
@@ -44,4 +50,3 @@ def test_parse_args_defaults():
     args = parse_args(["artefact.json"])
     assert args.artefact.name == "artefact.json"
     assert args.targets == ["jira", "confluence"]
-

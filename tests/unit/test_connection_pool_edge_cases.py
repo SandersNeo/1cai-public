@@ -1,12 +1,13 @@
+# [NEXUS IDENTITY] ID: 43156014907975039 | DATE: 2025-11-19
+
 """
 Unit tests for ConnectionPool edge cases.
 """
 
 import pytest
 import asyncio
-from unittest.mock import AsyncMock, MagicMock
 
-from src.ai.connection_pool import ConnectionPool, get_global_pool, close_global_pool
+from src.ai.connection_pool import ConnectionPool
 
 
 @pytest.mark.asyncio
@@ -25,7 +26,9 @@ async def test_connection_pool_concurrent_access_same_key():
 
     # Все должны получить одну и ту же сессию
     first_session = sessions[0]
-    assert all(s is first_session for s in sessions), "All concurrent requests should get the same session"
+    assert all(
+        s is first_session for s in sessions
+    ), "All concurrent requests should get the same session"
 
     await pool.close_all()
 
@@ -132,4 +135,3 @@ async def test_connection_pool_empty_key():
     assert session2 is session  # Та же сессия для пустого ключа
 
     await pool.close_all()
-

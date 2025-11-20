@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -4290371980687725983 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Collect weekly DORA metrics based on git tags and history.

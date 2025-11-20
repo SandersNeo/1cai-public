@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 8836012505439772361 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Context Collector для 1C AI MCP Code Generation

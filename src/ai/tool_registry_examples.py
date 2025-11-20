@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -4731614212332448003 | DATE: 2025-11-19
+
 """
 ToolRegistry examples (experimental)
 ------------------------------------
@@ -32,8 +34,14 @@ def build_example_tool_registry() -> ToolRegistry:
         category=ToolCategory.BA,
         risk=ScenarioRiskLevel.READ_ONLY,
         description="Извлечение требований из docx/pdf и формирование структурированного бэклога.",
-        input_schema={"type": "object", "properties": {"document_path": {"type": "string"}}},
-        output_schema={"type": "object", "properties": {"requirements": {"type": "array"}}},
+        input_schema={
+            "type": "object",
+            "properties": {"document_path": {"type": "string"}},
+        },
+        output_schema={
+            "type": "object",
+            "properties": {"requirements": {"type": "array"}},
+        },
         endpoints=[
             ToolEndpoint(
                 protocol=ToolProtocol.HTTP,
@@ -81,7 +89,10 @@ def build_example_tool_registry() -> ToolRegistry:
         risk=ScenarioRiskLevel.READ_ONLY,
         description="Локальный security-audit (hidden dirs, secrets, git safety, project audit).",
         input_schema={"type": "object", "properties": {}},
-        output_schema={"type": "object", "properties": {"report_path": {"type": "string"}}},
+        output_schema={
+            "type": "object",
+            "properties": {"report_path": {"type": "string"}},
+        },
         endpoints=[
             ToolEndpoint(
                 protocol=ToolProtocol.SCRIPT,
@@ -109,13 +120,22 @@ def build_example_tool_registry() -> ToolRegistry:
         category=ToolCategory.BA,
         risk=ScenarioRiskLevel.NON_PROD_CHANGE,
         description="Запуск BA→Dev→QA сценария на основе YAML-плейбука.",
-        input_schema={"type": "object", "properties": {"feature_id": {"type": "string"}}},
+        input_schema={
+            "type": "object",
+            "properties": {"feature_id": {"type": "string"}},
+        },
         output_schema={"type": "object", "properties": {"status": {"type": "string"}}},
         endpoints=[
             ToolEndpoint(
                 protocol=ToolProtocol.SCRIPT,
                 name="scripts/runbooks/run_playbook.py",
-                config={"args": ["playbooks/ba_dev_qa_example.yaml", "--autonomy", "A2_non_prod_changes"]},
+                config={
+                    "args": [
+                        "playbooks/ba_dev_qa_example.yaml",
+                        "--autonomy",
+                        "A2_non_prod_changes",
+                    ]
+                },
             )
         ],
         cost_model={"latency_target_ms": 600000, "risk": "non_prod_change"},
@@ -132,5 +152,3 @@ def build_example_tool_registry() -> ToolRegistry:
 def list_example_tools() -> List[ToolDescriptor]:
     """Удобный helper для получения списка примерных инструментов."""
     return build_example_tool_registry().list_tools()
-
-

@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -7771162310022813525 | DATE: 2025-11-19
+
 """LLM client implementations for AI agents."""
 
 from .gigachat_client import GigaChatClient  # noqa: F401

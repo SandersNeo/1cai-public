@@ -1,15 +1,26 @@
+# [NEXUS IDENTITY] ID: -622148167285899289 | DATE: 2025-11-19
+
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
 
-from scripts.ba_pipeline.orchestrator import available_collectors, instantiate_collectors, run_pipeline
+from scripts.ba_pipeline.orchestrator import (
+    available_collectors,
+    instantiate_collectors,
+    run_pipeline,
+)
 
 
 def test_available_collectors_contains_expected():
     registry = available_collectors()
-    assert {"job_market", "conference_digest", "regulation_watcher", "internal_usage"} <= set(registry.keys())
+    assert {
+        "job_market",
+        "conference_digest",
+        "regulation_watcher",
+        "internal_usage",
+    } <= set(registry.keys())
 
 
 def test_instantiate_collectors_subset():
@@ -49,4 +60,3 @@ def test_run_pipeline_creates_outputs(tmp_path: Path, monkeypatch: pytest.Monkey
     assert Path(collector_payloads["conference_digest"]["output_file"]).exists()
     assert Path(collector_payloads["regulation_watcher"]["output_file"]).exists()
     assert Path(collector_payloads["internal_usage"]["output_file"]).exists()
-

@@ -1,10 +1,11 @@
+# [NEXUS IDENTITY] ID: -5641028335109012780 | DATE: 2025-11-19
+
 """
 Tests for IntelligentCache (intelligent_cache.py).
 """
 
 import time
 
-import pytest
 
 from src.ai.intelligent_cache import CacheEntry, IntelligentCache
 
@@ -62,7 +63,7 @@ def test_intelligent_cache_get_set() -> None:
 
     # Установить значение
     cache.set("test query", "test value")
-    
+
     # Получить значение
     value = cache.get("test query")
     assert value == "test value"
@@ -195,4 +196,3 @@ def test_intelligent_cache_invalidate_by_query_type() -> None:
     assert cache.get("query1") is None
     assert cache.get("query2") == "value2"
     assert cache.get("query3") is None
-

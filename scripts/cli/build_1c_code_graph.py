@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 827679521355986355 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 CLI для построения Unified Change Graph из кода 1С.

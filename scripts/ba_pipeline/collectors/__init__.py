@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -175669379644154931 | DATE: 2025-11-19
+
 """
 Collector registry for BA data pipeline.
 """

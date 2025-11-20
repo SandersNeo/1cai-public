@@ -1,10 +1,11 @@
+# [NEXUS IDENTITY] ID: -8427899710185904718 | DATE: 2025-11-19
+
 """
 Unit tests for OllamaClient
 """
 
-import os
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 from src.ai.clients.ollama_client import OllamaClient, OllamaConfig
 from src.ai.clients.exceptions import LLMNotConfiguredError, LLMCallError
@@ -35,6 +36,7 @@ class TestOllamaConfig:
 
         # Создаём конфигурацию явно, так как dataclass defaults загружаются при определении класса
         import os
+
         config = OllamaConfig(
             base_url=os.getenv("OLLAMA_HOST", "http://localhost:11434"),
             model_name=os.getenv("OLLAMA_MODEL", "llama3"),
@@ -79,20 +81,24 @@ class TestOllamaClient:
                 {"name": "codellama"},
             ]
         }
-        
+
         mock_response = MagicMock()
         mock_response.status = 200
         mock_response.text = AsyncMock(return_value="")
         mock_response.json = AsyncMock(return_value=mock_response_data)
 
         mock_session = AsyncMock()
-        mock_session.get = AsyncMock(return_value=AsyncContextManagerMock(mock_response))
+        mock_session.get = AsyncMock(
+            return_value=AsyncContextManagerMock(mock_response)
+        )
         mock_session.closed = False
 
         client = OllamaClient(OllamaConfig(base_url="http://localhost:11434"))
+
         # Мокаем _get_session чтобы вернуть нашу мок-сессию
         async def mock_get_session():
             return mock_session
+
         client._get_session = mock_get_session
 
         models = await client.list_models()
@@ -111,12 +117,16 @@ class TestOllamaClient:
         mock_response.text = AsyncMock(return_value="Internal Server Error")
 
         mock_session = AsyncMock()
-        mock_session.get = AsyncMock(return_value=AsyncContextManagerMock(mock_response))
+        mock_session.get = AsyncMock(
+            return_value=AsyncContextManagerMock(mock_response)
+        )
         mock_session.closed = False
 
         client = OllamaClient(OllamaConfig(base_url="http://localhost:11434"))
+
         async def mock_get_session():
             return mock_session
+
         client._get_session = mock_get_session
 
         with pytest.raises(LLMCallError) as exc_info:
@@ -147,11 +157,15 @@ class TestOllamaClient:
             }
         )
         mock_session = AsyncMock()
-        mock_session.get = AsyncMock(return_value=AsyncContextManagerMock(mock_response))
+        mock_session.get = AsyncMock(
+            return_value=AsyncContextManagerMock(mock_response)
+        )
 
         client = OllamaClient(OllamaConfig(base_url="http://localhost:11434"))
+
         async def mock_get_session():
             return mock_session
+
         client._get_session = mock_get_session
 
         assert await client.check_model_available("llama3") is True
@@ -173,12 +187,16 @@ class TestOllamaClient:
             }
         )
         mock_session = AsyncMock()
-        mock_session.post = AsyncMock(return_value=AsyncContextManagerMock(mock_response))
+        mock_session.post = AsyncMock(
+            return_value=AsyncContextManagerMock(mock_response)
+        )
         mock_session.closed = False
 
         client = OllamaClient(OllamaConfig(base_url="http://localhost:11434"))
+
         async def mock_get_session():
             return mock_session
+
         client._get_session = mock_get_session
 
         result = await client.generate("Test prompt", model_name="llama3")
@@ -204,12 +222,16 @@ class TestOllamaClient:
             }
         )
         mock_session = AsyncMock()
-        mock_session.post = AsyncMock(return_value=AsyncContextManagerMock(mock_response))
+        mock_session.post = AsyncMock(
+            return_value=AsyncContextManagerMock(mock_response)
+        )
         mock_session.closed = False
 
         client = OllamaClient(OllamaConfig(base_url="http://localhost:11434"))
+
         async def mock_get_session():
             return mock_session
+
         client._get_session = mock_get_session
 
         result = await client.generate(
@@ -263,12 +285,16 @@ class TestOllamaClient:
             }
         )
         mock_session = AsyncMock()
-        mock_session.post = AsyncMock(return_value=AsyncContextManagerMock(mock_response))
+        mock_session.post = AsyncMock(
+            return_value=AsyncContextManagerMock(mock_response)
+        )
         mock_session.closed = False
 
         client = OllamaClient(OllamaConfig(base_url="http://localhost:11434"))
+
         async def mock_get_session():
             return mock_session
+
         client._get_session = mock_get_session
 
         result = await client.generate(long_prompt)
@@ -286,9 +312,10 @@ class TestOllamaClient:
     @pytest.mark.asyncio
     async def test_context_manager(self):
         """Проверка работы context manager."""
-        async with OllamaClient(OllamaConfig(base_url="http://localhost:11434")) as client:
+        async with OllamaClient(
+            OllamaConfig(base_url="http://localhost:11434")
+        ) as client:
             assert client.is_configured is True
 
         # После выхода из контекста сессия должна быть закрыта
         assert client._session is None or client._session.closed
-

@@ -1,14 +1,20 @@
+# [NEXUS IDENTITY] ID: 1123248268577682331 | DATE: 2025-11-19
+
 """
 Unit tests for database connection pool
 Best Practices: Comprehensive testing of connection pooling
 """
 
 import pytest
-import asyncio
 from unittest.mock import AsyncMock, patch, MagicMock
-from dataclasses import dataclass
 
-from src.database import create_pool, close_pool, get_pool, check_pool_health, get_db_connection
+from src.database import (
+    create_pool,
+    close_pool,
+    get_pool,
+    check_pool_health,
+    get_db_connection,
+)
 
 
 class AsyncAcquireContext:
@@ -42,7 +48,9 @@ async def test_create_pool_success():
     mock_pool = MagicMock()
     mock_pool.acquire.return_value = AsyncAcquireContext(mock_conn)
 
-    with patch('src.database.asyncpg.create_pool', new_callable=AsyncMock) as mock_create_pool:
+    with patch(
+        "src.database.asyncpg.create_pool", new_callable=AsyncMock
+    ) as mock_create_pool:
         mock_create_pool.return_value = mock_pool
 
         pool = await create_pool()
@@ -60,14 +68,16 @@ async def test_create_pool_retry_logic():
     mock_pool = MagicMock()
     mock_pool.acquire.return_value = AsyncAcquireContext(mock_conn)
 
-    with patch('src.database.asyncpg.create_pool', new_callable=AsyncMock) as mock_create_pool:
+    with patch(
+        "src.database.asyncpg.create_pool", new_callable=AsyncMock
+    ) as mock_create_pool:
         mock_create_pool.side_effect = [
             Exception("Connection failed"),
             Exception("Connection failed"),
             mock_pool,
         ]
 
-        with patch('asyncio.sleep', new_callable=AsyncMock) as mock_sleep:
+        with patch("asyncio.sleep", new_callable=AsyncMock) as mock_sleep:
             pool = await create_pool(max_retries=3, retry_delay=0.1)
 
             assert pool == mock_pool
@@ -78,7 +88,9 @@ async def test_create_pool_retry_logic():
 @pytest.mark.asyncio
 async def test_create_pool_exponential_backoff():
     """Test exponential backoff retry"""
-    with patch('src.database.asyncpg.create_pool', new_callable=AsyncMock) as mock_create_pool:
+    with patch(
+        "src.database.asyncpg.create_pool", new_callable=AsyncMock
+    ) as mock_create_pool:
         mock_create_pool.side_effect = Exception("Connection failed")
 
         sleep_calls = []
@@ -86,7 +98,7 @@ async def test_create_pool_exponential_backoff():
         async def mock_sleep(delay):
             sleep_calls.append(delay)
 
-        with patch('asyncio.sleep', side_effect=mock_sleep):
+        with patch("asyncio.sleep", side_effect=mock_sleep):
             pool = await create_pool(max_retries=3, retry_delay=1)
 
             assert pool is None
@@ -99,8 +111,9 @@ async def test_get_pool_before_initialization():
     """Test get_pool raises error if pool not initialized"""
     # Reset pool
     import src.database
+
     src.database._pool = None
-    
+
     with pytest.raises(RuntimeError, match="Database pool not initialized"):
         get_pool()
 
@@ -116,7 +129,7 @@ async def test_check_pool_health_healthy():
     mock_conn.fetchval = AsyncMock(return_value=1)
     mock_pool.acquire.return_value = AsyncAcquireContext(mock_conn)
 
-    with patch('src.database._pool', mock_pool):
+    with patch("src.database._pool", mock_pool):
         health = await check_pool_health()
 
     assert health["status"] == "healthy"
@@ -129,10 +142,11 @@ async def test_check_pool_health_healthy():
 async def test_check_pool_health_unhealthy():
     """Test pool health check when unhealthy"""
     import src.database
+
     src.database._pool = None
-    
+
     health = await check_pool_health()
-    
+
     assert health["status"] == "unhealthy"
     assert "error" in health
 
@@ -144,7 +158,7 @@ async def test_get_db_connection_context_manager():
     mock_conn = AsyncMock()
     mock_pool.acquire.return_value = AsyncAcquireContext(mock_conn)
 
-    with patch('src.database.get_pool', return_value=mock_pool):
+    with patch("src.database.get_pool", return_value=mock_pool):
         async with get_db_connection() as conn:
             assert conn == mock_conn
 
@@ -156,10 +170,10 @@ async def test_close_pool_gracefully():
     mock_pool.terminate = AsyncMock()
 
     import src.database
+
     src.database._pool = mock_pool
-    
+
     await close_pool()
-    
+
     mock_pool.terminate.assert_called_once()
     assert src.database._pool is None
-

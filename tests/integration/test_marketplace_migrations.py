@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 6336090309378879850 | DATE: 2025-11-19
+
 """Integration tests for marketplace migrations and repository."""
 
 from __future__ import annotations
@@ -82,11 +84,16 @@ async def test_marketplace_repository_crud(db_pool):
     await repo.soft_delete_plugin(plugin_id)
 
     await grant_role("test-owner", "developer", assigned_by="integration-test")
-    await grant_permission("test-owner", "marketplace:submit", assigned_by="integration-test")
+    await grant_permission(
+        "test-owner", "marketplace:submit", assigned_by="integration-test"
+    )
 
     # clean up rows to keep database tidy
     async with db_pool.acquire() as conn:
-        await conn.execute("DELETE FROM marketplace_plugins WHERE plugin_id = $1", plugin_id)
+        await conn.execute(
+            "DELETE FROM marketplace_plugins WHERE plugin_id = $1", plugin_id
+        )
         await conn.execute("DELETE FROM user_roles WHERE user_id = $1", "test-owner")
-        await conn.execute("DELETE FROM user_permissions WHERE user_id = $1", "test-owner")
-
+        await conn.execute(
+            "DELETE FROM user_permissions WHERE user_id = $1", "test-owner"
+        )

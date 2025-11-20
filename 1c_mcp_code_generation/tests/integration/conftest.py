@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -3336989346911513858 | DATE: 2025-11-19
+
 """
 Конфигурация интеграционных тестов для 1C MCP Code Generation System.
 

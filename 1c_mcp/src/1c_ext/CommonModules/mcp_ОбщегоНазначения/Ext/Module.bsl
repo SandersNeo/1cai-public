@@ -1,3 +1,5 @@
+// [NEXUS IDENTITY] ID: -1014761077927714228 | DATE: 2025-11-19
+
 ﻿// Репозиторий проекта: 
 // https://github.com/vladimir-kharin/1c_mcp
 // 

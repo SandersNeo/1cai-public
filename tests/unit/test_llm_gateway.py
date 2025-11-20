@@ -1,11 +1,12 @@
+# [NEXUS IDENTITY] ID: 2362448943746227077 | DATE: 2025-11-19
+
 """
 Unit tests for LLM Gateway
 """
 
 import pytest
-import asyncio
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
-from src.services.llm_gateway import LLMGateway, LLMGatewayResponse
+from unittest.mock import Mock, AsyncMock, patch
+from src.services.llm_gateway import LLMGateway
 from src.services.llm_provider_manager import LLMProviderManager, ProviderConfig
 
 
@@ -20,7 +21,7 @@ def mock_provider_manager():
             priority=60,
             base_url="https://gigachat.devices.sberbank.ru/api",
             enabled=True,
-            metadata={"models": [{"name": "gigachat"}]}
+            metadata={"models": [{"name": "gigachat"}]},
         ),
         "yandex-gpt": ProviderConfig(
             name="yandex-gpt",
@@ -28,23 +29,22 @@ def mock_provider_manager():
             priority=55,
             base_url="https://llm.api.cloud.yandex.net",
             enabled=True,
-            metadata={"models": [{"name": "yandexgpt-lite"}]}
+            metadata={"models": [{"name": "yandexgpt-lite"}]},
         ),
     }
     manager.fallback_matrix = {
-        "developer": {
-            "primary": "gigachat",
-            "chain": ["yandex-gpt"]
-        }
+        "developer": {"primary": "gigachat", "chain": ["yandex-gpt"]}
     }
     manager.health_config = {
         "interval_seconds": 60,
         "failure_threshold": 3,
-        "recovery_threshold": 2
+        "recovery_threshold": 2,
     }
     manager.has_configuration = Mock(return_value=True)
     manager.get_provider = Mock(side_effect=lambda name: manager.providers.get(name))
-    manager.get_fallback_chain = Mock(side_effect=lambda role: manager.fallback_matrix.get(role))
+    manager.get_fallback_chain = Mock(
+        side_effect=lambda role: manager.fallback_matrix.get(role)
+    )
     manager.get_active_provider = Mock(return_value=None)
     manager.available_providers = Mock(return_value=list(manager.providers.values()))
     return manager
@@ -53,14 +53,14 @@ def mock_provider_manager():
 @pytest.fixture
 def gateway(mock_provider_manager):
     """Create LLM Gateway instance"""
-    with patch('src.services.llm_gateway.IntelligentCache'), \
-         patch('src.services.llm_gateway.LLMHealthMonitor'), \
-         patch('src.services.llm_gateway.CircuitBreaker'):
+    with patch("src.services.llm_gateway.IntelligentCache"), patch(
+        "src.services.llm_gateway.LLMHealthMonitor"
+    ), patch("src.services.llm_gateway.CircuitBreaker"):
         gateway = LLMGateway(
             manager=mock_provider_manager,
             enable_cache=False,
             enable_health_monitoring=False,
-            enable_circuit_breaker=False
+            enable_circuit_breaker=False,
         )
         return gateway
 
@@ -100,12 +100,12 @@ async def test_simulation_mode(gateway):
                 "response": {
                     "provider": "test-provider",
                     "model": "test-model",
-                    "text": "Test response"
-                }
+                    "text": "Test response",
+                },
             }
-        ]
+        ],
     }
-    
+
     response = await gateway.generate("test prompt", role="developer")
     assert response.provider == "test-provider"
     assert response.response == "Test response"
@@ -115,19 +115,21 @@ async def test_simulation_mode(gateway):
 async def test_call_gigachat_provider(gateway):
     """Test calling GigaChat provider"""
     provider = gateway.manager.providers["gigachat"]
-    
-    with patch('src.services.llm_gateway._get_gigachat_client') as mock_get_client:
+
+    with patch("src.services.llm_gateway._get_gigachat_client") as mock_get_client:
         mock_client = AsyncMock()
         mock_client.is_configured = True
-        mock_client.generate = AsyncMock(return_value={
-            "text": "Test response",
-            "usage": {"prompt_tokens": 10, "completion_tokens": 20},
-            "raw": {}
-        })
+        mock_client.generate = AsyncMock(
+            return_value={
+                "text": "Test response",
+                "usage": {"prompt_tokens": 10, "completion_tokens": 20},
+                "raw": {},
+            }
+        )
         mock_get_client.return_value = mock_client
-        
+
         response = await gateway._call_provider(provider, "test prompt")
-        
+
         assert response.provider == "gigachat"
         assert response.response == "Test response"
         assert "usage" in response.metadata
@@ -137,19 +139,17 @@ async def test_call_gigachat_provider(gateway):
 async def test_call_yandexgpt_provider(gateway):
     """Test calling YandexGPT provider"""
     provider = gateway.manager.providers["yandex-gpt"]
-    
-    with patch('src.services.llm_gateway._get_yandexgpt_client') as mock_get_client:
+
+    with patch("src.services.llm_gateway._get_yandexgpt_client") as mock_get_client:
         mock_client = AsyncMock()
         mock_client.is_configured = True
-        mock_client.generate = AsyncMock(return_value={
-            "text": "Yandex response",
-            "usage": {},
-            "raw": {}
-        })
+        mock_client.generate = AsyncMock(
+            return_value={"text": "Yandex response", "usage": {}, "raw": {}}
+        )
         mock_get_client.return_value = mock_client
-        
+
         response = await gateway._call_provider(provider, "test prompt")
-        
+
         assert response.provider == "yandex-gpt"
         assert response.response == "Yandex response"
 
@@ -159,28 +159,28 @@ async def test_fallback_chain(gateway):
     """Test fallback to next provider on failure"""
     provider1 = gateway.manager.providers["gigachat"]
     provider2 = gateway.manager.providers["yandex-gpt"]
-    
-    with patch('src.services.llm_gateway._get_gigachat_client') as mock_get_gigachat, \
-         patch('src.services.llm_gateway._get_yandexgpt_client') as mock_get_yandex:
-        
+
+    with patch(
+        "src.services.llm_gateway._get_gigachat_client"
+    ) as mock_get_gigachat, patch(
+        "src.services.llm_gateway._get_yandexgpt_client"
+    ) as mock_get_yandex:
         # First provider fails
         mock_gigachat = AsyncMock()
         mock_gigachat.is_configured = True
         mock_gigachat.generate = AsyncMock(side_effect=Exception("Provider error"))
         mock_get_gigachat.return_value = mock_gigachat
-        
+
         # Second provider succeeds
         mock_yandex = AsyncMock()
         mock_yandex.is_configured = True
-        mock_yandex.generate = AsyncMock(return_value={
-            "text": "Fallback response",
-            "usage": {},
-            "raw": {}
-        })
+        mock_yandex.generate = AsyncMock(
+            return_value={"text": "Fallback response", "usage": {}, "raw": {}}
+        )
         mock_get_yandex.return_value = mock_yandex
-        
+
         response = await gateway.generate("test prompt", role="developer")
-        
+
         assert response.provider == "yandex-gpt"
         assert response.response == "Fallback response"
 
@@ -188,30 +188,36 @@ async def test_fallback_chain(gateway):
 @pytest.mark.asyncio
 async def test_offline_fallback(gateway):
     """Test offline fallback when all providers fail"""
-    with patch('src.services.llm_gateway._get_gigachat_client') as mock_get_gigachat, \
-         patch('src.services.llm_gateway._get_yandexgpt_client') as mock_get_yandex, \
-         patch('src.services.llm_gateway._get_ollama_client') as mock_get_ollama:
-        
+    with patch(
+        "src.services.llm_gateway._get_gigachat_client"
+    ) as mock_get_gigachat, patch(
+        "src.services.llm_gateway._get_yandexgpt_client"
+    ) as mock_get_yandex, patch(
+        "src.services.llm_gateway._get_ollama_client"
+    ) as mock_get_ollama:
         # All providers fail
         mock_gigachat = AsyncMock()
         mock_gigachat.is_configured = True
         mock_gigachat.generate = AsyncMock(side_effect=Exception("Error"))
         mock_get_gigachat.return_value = mock_gigachat
-        
+
         mock_yandex = AsyncMock()
         mock_yandex.is_configured = True
         mock_yandex.generate = AsyncMock(side_effect=Exception("Error"))
         mock_get_yandex.return_value = mock_yandex
-        
+
         # Ollama also fails
         mock_ollama = AsyncMock()
         mock_ollama.generate = AsyncMock(side_effect=Exception("Error"))
         mock_get_ollama.return_value = mock_ollama
-        
+
         response = await gateway.generate("test prompt")
-        
+
         assert response.provider == "offline"
-        assert "недоступны" in response.response.lower() or "unavailable" in response.response.lower()
+        assert (
+            "недоступны" in response.response.lower()
+            or "unavailable" in response.response.lower()
+        )
 
 
 @pytest.mark.asyncio
@@ -220,20 +226,18 @@ async def test_cache_integration(gateway):
     gateway.cache = Mock()
     gateway.cache.get = Mock(return_value=None)
     gateway.cache.set = Mock()
-    
-    with patch('src.services.llm_gateway._get_gigachat_client') as mock_get_client:
+
+    with patch("src.services.llm_gateway._get_gigachat_client") as mock_get_client:
         mock_client = AsyncMock()
         mock_client.is_configured = True
-        mock_client.generate = AsyncMock(return_value={
-            "text": "Cached response",
-            "usage": {},
-            "raw": {}
-        })
+        mock_client.generate = AsyncMock(
+            return_value={"text": "Cached response", "usage": {}, "raw": {}}
+        )
         mock_get_client.return_value = mock_client
-        
+
         provider = gateway.manager.providers["gigachat"]
         await gateway.generate("test prompt")
-        
+
         # Check cache was called
         assert gateway.cache.get.called
         assert gateway.cache.set.called
@@ -244,7 +248,6 @@ def test_build_cache_key(gateway):
     key1 = gateway._build_cache_key("test", "developer", 0.7, 2048, None)
     key2 = gateway._build_cache_key("test", "developer", 0.7, 2048, None)
     key3 = gateway._build_cache_key("different", "developer", 0.7, 2048, None)
-    
+
     assert key1 == key2  # Same inputs = same key
     assert key1 != key3  # Different inputs = different key
-

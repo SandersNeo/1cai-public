@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 8530230735427419019 | DATE: 2025-11-19
+
 """
 Генератор визуальных отчетов о тестах YAxUnit.
 
@@ -6,11 +8,10 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional
 from datetime import datetime
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 
 from src.utils.structured_logging import StructuredLogger
 from src.services.test_metrics import TestMetrics
@@ -21,6 +22,7 @@ logger = StructuredLogger(__name__).logger
 @dataclass
 class VisualReportConfig:
     """Конфигурация визуального отчета"""
+
     include_charts: bool = True
     include_timeline: bool = True
     include_coverage: bool = True
@@ -32,22 +34,22 @@ class VisualTestReporter:
     """
     Генератор визуальных отчетов о тестах.
     """
-    
+
     def __init__(self, templates_dir: Path = Path("templates/test_reports")):
         """
         Инициализация генератора отчетов.
-        
+
         Args:
             templates_dir: Директория с шаблонами отчетов
         """
         self.templates_dir = Path(templates_dir)
         self.templates_dir.mkdir(parents=True, exist_ok=True)
-        
+
         logger.info(
             "VisualTestReporter initialized",
-            extra={"templates_dir": str(self.templates_dir)}
+            extra={"templates_dir": str(self.templates_dir)},
         )
-    
+
     def generate_html_report(
         self,
         metrics: TestMetrics,
@@ -57,44 +59,41 @@ class VisualTestReporter:
     ) -> Path:
         """
         Генерирует HTML отчет с графиками.
-        
+
         Args:
             metrics: Текущие метрики тестов
             output_path: Путь для сохранения отчета
             config: Конфигурация отчета
             historical_data: Исторические данные для сравнения
-        
+
         Returns:
             Путь к созданному отчету
         """
         config = config or VisualReportConfig()
-        
+
         logger.info(
             "Generating HTML report",
             extra={
                 "output_path": str(output_path),
                 "include_charts": config.include_charts,
-            }
+            },
         )
-        
+
         # Генерация HTML
         html_content = self._generate_html_content(
             metrics=metrics,
             config=config,
             historical_data=historical_data or [],
         )
-        
+
         # Сохранение
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(html_content, encoding="utf-8")
-        
-        logger.info(
-            "HTML report generated",
-            extra={"output_path": str(output_path)}
-        )
-        
+
+        logger.info("HTML report generated", extra={"output_path": str(output_path)})
+
         return output_path
-    
+
     def _generate_html_content(
         self,
         metrics: TestMetrics,
@@ -102,7 +101,7 @@ class VisualTestReporter:
         historical_data: List[TestMetrics],
     ) -> str:
         """Генерирует HTML содержимое отчета."""
-        
+
         # Расчет процентов
         pass_rate = (
             (metrics.passed_tests / metrics.total_tests * 100)
@@ -114,7 +113,7 @@ class VisualTestReporter:
             if metrics.total_tests > 0
             else 0.0
         )
-        
+
         # Данные для графиков
         chart_data = {
             "total": metrics.total_tests,
@@ -124,7 +123,7 @@ class VisualTestReporter:
             "pass_rate": pass_rate,
             "fail_rate": fail_rate,
         }
-        
+
         # HTML шаблон
         html = f"""<!DOCTYPE html>
 <html lang="ru">
@@ -304,9 +303,9 @@ class VisualTestReporter:
 </body>
 </html>
 """
-        
+
         return html
-    
+
     def _generate_charts_section(self, chart_data: Dict) -> str:
         """Генерирует секцию с графиками."""
         return f"""
@@ -317,7 +316,7 @@ class VisualTestReporter:
             </div>
         </div>
         """
-    
+
     def _generate_chart_js(self, chart_data: Dict) -> str:
         """Генерирует JavaScript для графиков."""
         return f"""
@@ -353,19 +352,21 @@ class VisualTestReporter:
             }});
         }}
         """
-    
+
     def _generate_timeline_section(self, historical_data: List[TestMetrics]) -> str:
         """Генерирует секцию временной линии."""
         timeline_items = []
         for i, metrics in enumerate(historical_data[-10:]):  # Последние 10 записей
             status = "success" if metrics.failed_tests == 0 else "failure"
-            timeline_items.append(f"""
+            timeline_items.append(
+                f"""
             <div class="timeline-item {status}">
                 <strong>{metrics.timestamp or 'Unknown'}</strong>
                 <div>Tests: {metrics.total_tests} | Passed: {metrics.passed_tests} | Failed: {metrics.failed_tests}</div>
             </div>
-            """)
-        
+            """
+            )
+
         return f"""
         <div class="section">
             <h2>📅 Test Execution Timeline</h2>
@@ -374,7 +375,7 @@ class VisualTestReporter:
             </div>
         </div>
         """
-    
+
     def _generate_coverage_section(self, metrics: TestMetrics) -> str:
         """Генерирует секцию покрытия."""
         return f"""
@@ -392,4 +393,3 @@ class VisualTestReporter:
             </div>
         </div>
         """
-

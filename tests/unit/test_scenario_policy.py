@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 6752602405745602265 | DATE: 2025-11-19
+
 """
 Unit tests for Scenario Policy (experimental).
 """
@@ -41,7 +43,10 @@ def test_decide_step_execution_basic_levels() -> None:
     }
 
     # A1: read-only шаги могут быть auto, non_prod требует approval
-    assert decide_step_execution(step_read_only, AutonomyLevel.A1_SAFE_AUTOMATION) == StepDecision.AUTO
+    assert (
+        decide_step_execution(step_read_only, AutonomyLevel.A1_SAFE_AUTOMATION)
+        == StepDecision.AUTO
+    )
     assert decide_step_execution(step_non_prod, AutonomyLevel.A1_SAFE_AUTOMATION) in {
         StepDecision.NEEDS_APPROVAL,
         StepDecision.FORBIDDEN,
@@ -73,5 +78,3 @@ def test_assess_plan_execution() -> None:
     decisions = assess_plan_execution(plan, AutonomyLevel.A2_NON_PROD_CHANGES)
     assert set(decisions.keys()) == {"s1", "s2"}
     assert all(isinstance(v, StepDecision) for v in decisions.values())
-
-

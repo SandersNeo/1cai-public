@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 8998217439942035542 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """Send AWS cost report to Slack webhook (and optionally Teams)."""
 

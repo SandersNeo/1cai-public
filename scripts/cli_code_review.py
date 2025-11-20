@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 84852357476285808 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 CLI инструмент для Code Review

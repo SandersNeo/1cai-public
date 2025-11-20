@@ -1,10 +1,12 @@
+# [NEXUS IDENTITY] ID: 6109070275312414487 | DATE: 2025-11-19
+
 """
 Tests for EnablementGeneratorWithGraph (enablement_with_graph.py).
 """
 
 import pytest
 
-from src.ai.code_graph import Edge, EdgeKind, InMemoryCodeGraphBackend, Node, NodeKind
+from src.ai.code_graph import InMemoryCodeGraphBackend, Node, NodeKind
 from src.ai.agents.enablement_with_graph import EnablementGeneratorWithGraph
 
 
@@ -115,4 +117,3 @@ async def test_enablement_without_backend() -> None:
     assert "feature_name" in result
     # Без графа примеры должны быть пустыми
     assert all(len(m.get("examples", [])) == 0 for m in result["modules"])
-

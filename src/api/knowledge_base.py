@@ -1,13 +1,16 @@
+# [NEXUS IDENTITY] ID: -2939309114614425990 | DATE: 2025-11-19
+
 """
 API endpoints для работы с базой знаний по конфигурациям 1С
 Версия: 1.0.0
 """
 
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
-from typing import Optional, List, Literal
-from pathlib import Path
-from src.services.configuration_knowledge_base import ConfigurationKnowledgeBase, get_knowledge_base
+from typing import Optional, Literal
+from src.services.configuration_knowledge_base import (
+    get_knowledge_base,
+)
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -16,16 +19,18 @@ router = APIRouter()
 
 # ==================== МОДЕЛИ ДАННЫХ ====================
 
+
 class ConfigurationRequest(BaseModel):
     """Запрос информации о конфигурации"""
-    configName: Literal["erp", "ut", "zup", "buh", "holding", "buhbit", "do", "ka"] = Field(
-        ...,
-        description="Название конфигурации"
-    )
+
+    configName: Literal[
+        "erp", "ut", "zup", "buh", "holding", "buhbit", "do", "ka"
+    ] = Field(..., description="Название конфигурации")
 
 
 class ModuleDocumentationRequest(BaseModel):
     """Запрос на добавление документации модуля"""
+
     configName: str
     moduleName: str
     documentation: dict
@@ -33,6 +38,7 @@ class ModuleDocumentationRequest(BaseModel):
 
 class BestPracticeRequest(BaseModel):
     """Запрос на добавление best practice"""
+
     configName: str
     category: str
     practice: dict
@@ -40,6 +46,7 @@ class BestPracticeRequest(BaseModel):
 
 class PatternSearchRequest(BaseModel):
     """Запрос на поиск паттернов"""
+
     configName: Optional[str] = None
     patternType: Optional[str] = None
     query: Optional[str] = None
@@ -47,50 +54,55 @@ class PatternSearchRequest(BaseModel):
 
 class CodeRecommendationRequest(BaseModel):
     """Запрос рекомендаций на основе кода"""
-    code: str = Field(..., description="Код для анализа", max_length=100000)  # Limit length
-    configName: Optional[str] = Field(None, description="Название конфигурации (опционально)", max_length=50)
+
+    code: str = Field(
+        ..., description="Код для анализа", max_length=100000
+    )  # Limit length
+    configName: Optional[str] = Field(
+        None, description="Название конфигурации (опционально)", max_length=50
+    )
 
 
 # ==================== API ENDPOINTS ====================
+
 
 @router.get(
     "/configurations",
     tags=["Knowledge Base"],
     summary="Список поддерживаемых конфигураций",
-    description="Получение списка всех поддерживаемых типовых конфигураций 1С"
+    description="Получение списка всех поддерживаемых типовых конфигураций 1С",
 )
 async def get_configurations():
     """Список конфигураций"""
     kb = get_knowledge_base()
-    
+
     configurations = []
     for config_key in kb.SUPPORTED_CONFIGURATIONS:
         info = kb.get_configuration_info(config_key)
         if info:
-            configurations.append({
-                "id": config_key,
-                "name": info.get("name", config_key),
-                "modules_count": len(info.get("modules", [])),
-                "best_practices_count": len(info.get("best_practices", [])),
-                "patterns_count": len(info.get("common_patterns", []))
-            })
-    
-    return {
-        "configurations": configurations,
-        "total": len(configurations)
-    }
+            configurations.append(
+                {
+                    "id": config_key,
+                    "name": info.get("name", config_key),
+                    "modules_count": len(info.get("modules", [])),
+                    "best_practices_count": len(info.get("best_practices", [])),
+                    "patterns_count": len(info.get("common_patterns", [])),
+                }
+            )
+
+    return {"configurations": configurations, "total": len(configurations)}
 
 
 @router.get(
     "/configurations/{config_name}",
     tags=["Knowledge Base"],
     summary="Информация о конфигурации",
-    description="Получение подробной информации о конкретной конфигурации"
+    description="Получение подробной информации о конкретной конфигурации",
 )
 async def get_configuration_info(config_name: str):
     """
     Информация о конфигурации с валидацией входных данных
-    
+
     Best practices:
     - Sanitization имени конфигурации
     - Защита от path traversal
@@ -99,26 +111,21 @@ async def get_configuration_info(config_name: str):
     sanitized_name = config_name.strip().lower()[:50]  # Limit length and normalize
     if not sanitized_name:
         raise HTTPException(
-            status_code=400,
-            detail="Configuration name cannot be empty"
+            status_code=400, detail="Configuration name cannot be empty"
         )
-    
+
     # Prevent path traversal and dangerous characters
-    if '..' in sanitized_name or '/' in sanitized_name or '\\' in sanitized_name:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid configuration name"
-        )
-    
+    if ".." in sanitized_name or "/" in sanitized_name or "\\" in sanitized_name:
+        raise HTTPException(status_code=400, detail="Invalid configuration name")
+
     kb = get_knowledge_base()
     info = kb.get_configuration_info(sanitized_name)
-    
+
     if not info:
         raise HTTPException(
-            status_code=404,
-            detail=f"Конфигурация {sanitized_name} не найдена"
+            status_code=404, detail=f"Конфигурация {sanitized_name} не найдена"
         )
-    
+
     return info
 
 
@@ -126,12 +133,12 @@ async def get_configuration_info(config_name: str):
     "/recommendations",
     tags=["Knowledge Base"],
     summary="Рекомендации на основе кода",
-    description="Получение рекомендаций на основе анализа кода и базы знаний"
+    description="Получение рекомендаций на основе анализа кода и базы знаний",
 )
 async def get_recommendations(request: CodeRecommendationRequest):
     """
     Рекомендации на основе кода с валидацией входных данных
-    
+
     Best practices:
     - Валидация длины кода
     - Sanitization имени конфигурации
@@ -141,41 +148,31 @@ async def get_recommendations(request: CodeRecommendationRequest):
         # Input validation and sanitization (best practice)
         code = request.code.strip()
         if not code:
-            raise HTTPException(
-                status_code=400,
-                detail="Code cannot be empty"
-            )
-        
+            raise HTTPException(status_code=400, detail="Code cannot be empty")
+
         # Limit code length (prevent DoS)
         max_code_length = 100000  # 100KB max
         if len(code) > max_code_length:
             raise HTTPException(
                 status_code=400,
-                detail=f"Code too long. Maximum length: {max_code_length} characters"
+                detail=f"Code too long. Maximum length: {max_code_length} characters",
             )
-        
+
         # Sanitize config name if provided
         config_name = None
         if request.configName:
             config_name = request.configName.strip().lower()[:50]
             # Prevent path traversal
-            if '..' in config_name or '/' in config_name or '\\' in config_name:
+            if ".." in config_name or "/" in config_name or "\\" in config_name:
                 raise HTTPException(
-                    status_code=400,
-                    detail="Invalid configuration name"
+                    status_code=400, detail="Invalid configuration name"
                 )
-        
+
         kb = get_knowledge_base()
-        recommendations = kb.get_recommendations(
-            code=code,
-            config_name=config_name
-        )
-        
-        return {
-            "recommendations": recommendations,
-            "total": len(recommendations)
-        }
-    
+        recommendations = kb.get_recommendations(code=code, config_name=config_name)
+
+        return {"recommendations": recommendations, "total": len(recommendations)}
+
     except HTTPException:
         raise  # Re-raise HTTP exceptions as-is
     except Exception as e:
@@ -184,14 +181,15 @@ async def get_recommendations(request: CodeRecommendationRequest):
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "code_length": len(request.code) if hasattr(request, 'code') else 0,
-                "config_name": request.configName if hasattr(request, 'configName') else None
+                "code_length": len(request.code) if hasattr(request, "code") else 0,
+                "config_name": request.configName
+                if hasattr(request, "configName")
+                else None,
             },
-            exc_info=True
+            exc_info=True,
         )
         raise HTTPException(
-            status_code=500,
-            detail="An error occurred while getting recommendations"
+            status_code=500, detail="An error occurred while getting recommendations"
         )
 
 
@@ -199,12 +197,12 @@ async def get_recommendations(request: CodeRecommendationRequest):
     "/patterns/search",
     tags=["Knowledge Base"],
     summary="Поиск паттернов",
-    description="Поиск паттернов в базе знаний"
+    description="Поиск паттернов в базе знаний",
 )
 async def search_patterns(request: PatternSearchRequest):
     """
     Поиск паттернов с валидацией входных данных
-    
+
     Best practices:
     - Sanitization входных данных
     - Защита от path traversal
@@ -216,32 +214,26 @@ async def search_patterns(request: PatternSearchRequest):
         if request.configName:
             config_name = request.configName.strip().lower()[:50]
             # Prevent path traversal
-            if '..' in config_name or '/' in config_name or '\\' in config_name:
+            if ".." in config_name or "/" in config_name or "\\" in config_name:
                 raise HTTPException(
-                    status_code=400,
-                    detail="Invalid configuration name"
+                    status_code=400, detail="Invalid configuration name"
                 )
-        
+
         pattern_type = None
         if request.patternType:
             pattern_type = request.patternType.strip()[:100]  # Limit length
-        
+
         query = None
         if request.query:
             query = request.query.strip()[:500]  # Limit length
-        
+
         kb = get_knowledge_base()
         patterns = kb.search_patterns(
-            config_name=config_name,
-            pattern_type=pattern_type,
-            query=query
+            config_name=config_name, pattern_type=pattern_type, query=query
         )
-        
-        return {
-            "patterns": patterns,
-            "total": len(patterns)
-        }
-    
+
+        return {"patterns": patterns, "total": len(patterns)}
+
     except HTTPException:
         raise  # Re-raise HTTP exceptions as-is
     except Exception as e:
@@ -250,14 +242,17 @@ async def search_patterns(request: PatternSearchRequest):
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "config_name": request.configName if hasattr(request, 'configName') else None,
-                "pattern_type": request.patternType if hasattr(request, 'patternType') else None
+                "config_name": request.configName
+                if hasattr(request, "configName")
+                else None,
+                "pattern_type": request.patternType
+                if hasattr(request, "patternType")
+                else None,
             },
-            exc_info=True
+            exc_info=True,
         )
         raise HTTPException(
-            status_code=500,
-            detail="An error occurred while searching patterns"
+            status_code=500, detail="An error occurred while searching patterns"
         )
 
 
@@ -265,12 +260,12 @@ async def search_patterns(request: PatternSearchRequest):
     "/modules",
     tags=["Knowledge Base"],
     summary="Добавление документации модуля",
-    description="Добавление документации модуля в базу знаний"
+    description="Добавление документации модуля в базу знаний",
 )
 async def add_module_documentation(request: ModuleDocumentationRequest):
     """
     Добавление документации модуля с валидацией входных данных
-    
+
     Best practices:
     - Sanitization имен конфигурации и модуля
     - Защита от path traversal
@@ -281,42 +276,34 @@ async def add_module_documentation(request: ModuleDocumentationRequest):
         config_name = request.configName.strip().lower()[:50]
         if not config_name:
             raise HTTPException(
-                status_code=400,
-                detail="Configuration name cannot be empty"
+                status_code=400, detail="Configuration name cannot be empty"
             )
-        
+
         # Prevent path traversal
-        if '..' in config_name or '/' in config_name or '\\' in config_name:
-            raise HTTPException(
-                status_code=400,
-                detail="Invalid configuration name"
-            )
-        
+        if ".." in config_name or "/" in config_name or "\\" in config_name:
+            raise HTTPException(status_code=400, detail="Invalid configuration name")
+
         module_name = request.moduleName.strip()[:200]  # Limit length
         if not module_name:
-            raise HTTPException(
-                status_code=400,
-                detail="Module name cannot be empty"
-            )
-        
+            raise HTTPException(status_code=400, detail="Module name cannot be empty")
+
         kb = get_knowledge_base()
         success = kb.add_module_documentation(
             config_name=config_name,
             module_name=module_name,
-            documentation=request.documentation
+            documentation=request.documentation,
         )
-        
+
         if not success:
             raise HTTPException(
-                status_code=400,
-                detail=f"Не удалось добавить документацию модуля"
+                status_code=400, detail=f"Не удалось добавить документацию модуля"
             )
-        
+
         return {
             "success": True,
-            "message": f"Документация модуля {module_name} добавлена"
+            "message": f"Документация модуля {module_name} добавлена",
         }
-    
+
     except HTTPException:
         raise  # Re-raise HTTP exceptions as-is
     except Exception as e:
@@ -325,14 +312,18 @@ async def add_module_documentation(request: ModuleDocumentationRequest):
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "config_name": request.configName if hasattr(request, 'configName') else None,
-                "module_name": request.moduleName if hasattr(request, 'moduleName') else None
+                "config_name": request.configName
+                if hasattr(request, "configName")
+                else None,
+                "module_name": request.moduleName
+                if hasattr(request, "moduleName")
+                else None,
             },
-            exc_info=True
+            exc_info=True,
         )
         raise HTTPException(
             status_code=500,
-            detail="An error occurred while adding module documentation"
+            detail="An error occurred while adding module documentation",
         )
 
 
@@ -340,7 +331,7 @@ async def add_module_documentation(request: ModuleDocumentationRequest):
     "/best-practices",
     tags=["Knowledge Base"],
     summary="Добавление best practice",
-    description="Добавление best practice в базу знаний"
+    description="Добавление best practice в базу знаний",
 )
 async def add_best_practice(request: BestPracticeRequest):
     """Добавление best practice"""
@@ -349,20 +340,16 @@ async def add_best_practice(request: BestPracticeRequest):
         success = kb.add_best_practice(
             config_name=request.configName,
             category=request.category,
-            practice=request.practice
+            practice=request.practice,
         )
-        
+
         if not success:
             raise HTTPException(
-                status_code=400,
-                detail=f"Не удалось добавить best practice"
+                status_code=400, detail=f"Не удалось добавить best practice"
             )
-        
-        return {
-            "success": True,
-            "message": "Best practice добавлена"
-        }
-    
+
+        return {"success": True, "message": "Best practice добавлена"}
+
     except HTTPException:
         raise
     except Exception as e:
@@ -371,9 +358,11 @@ async def add_best_practice(request: BestPracticeRequest):
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "config_name": request.configName if hasattr(request, 'configName') else None
+                "config_name": request.configName
+                if hasattr(request, "configName")
+                else None,
             },
-            exc_info=True
+            exc_info=True,
         )
         raise HTTPException(status_code=500, detail="Ошибка добавления best practice")
 
@@ -382,47 +371,47 @@ async def add_best_practice(request: BestPracticeRequest):
     "/load-from-directory",
     tags=["Knowledge Base"],
     summary="Загрузка конфигураций из директории",
-    description="Загрузка конфигураций 1С из указанной директории"
+    description="Загрузка конфигураций 1С из указанной директории",
 )
 async def load_from_directory(directory_path: str):
     """Загрузка конфигураций из директории"""
     try:
         kb = get_knowledge_base()
         loaded_count = kb.load_from_directory(directory_path)
-        
+
         return {
             "success": True,
             "loaded_configurations": loaded_count,
-            "message": f"Загружено конфигураций: {loaded_count}"
+            "message": f"Загружено конфигураций: {loaded_count}",
         }
-    
+
     except Exception as e:
         logger.error(
             "Ошибка загрузки из директории",
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "directory_path": directory_path if 'directory_path' in locals() else None
+                "directory_path": directory_path
+                if "directory_path" in locals()
+                else None,
             },
-            exc_info=True
+            exc_info=True,
         )
         raise HTTPException(status_code=500, detail="Ошибка загрузки из директории")
 
 
 @router.get(
-    "/health",
-    tags=["Knowledge Base"],
-    summary="Проверка состояния базы знаний"
+    "/health", tags=["Knowledge Base"], summary="Проверка состояния базы знаний"
 )
 async def health_check():
     """Проверка доступности базы знаний"""
     kb = get_knowledge_base()
-    
+
     total_configs = 0
     total_modules = 0
     total_practices = 0
     total_patterns = 0
-    
+
     for config_key in kb.SUPPORTED_CONFIGURATIONS:
         info = kb.get_configuration_info(config_key)
         if info:
@@ -430,7 +419,7 @@ async def health_check():
             total_modules += len(info.get("modules", []))
             total_practices += len(info.get("best_practices", []))
             total_patterns += len(info.get("common_patterns", []))
-    
+
     return {
         "status": "healthy",
         "service": "knowledge-base",
@@ -439,7 +428,6 @@ async def health_check():
             "total_configurations": total_configs,
             "total_modules": total_modules,
             "total_best_practices": total_practices,
-            "total_patterns": total_patterns
-        }
+            "total_patterns": total_patterns,
+        },
     }
-

@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -1817665688267674061 | DATE: 2025-11-19
+
 from __future__ import annotations
 
 import os
@@ -29,7 +31,9 @@ class ConfluenceClient(BaseIntegrationClient):
         base_url = os.getenv("BA_CONFLUENCE_BASE_URL")
         token = os.getenv("BA_CONFLUENCE_TOKEN")
         if not base_url or not token:
-            raise IntegrationConfigError("BA_CONFLUENCE_BASE_URL and BA_CONFLUENCE_TOKEN must be configured.")
+            raise IntegrationConfigError(
+                "BA_CONFLUENCE_BASE_URL and BA_CONFLUENCE_TOKEN must be configured."
+            )
         return cls(base_url=base_url, token=token, transport=transport)
 
     async def create_page(
@@ -52,4 +56,3 @@ class ConfluenceClient(BaseIntegrationClient):
             payload["parentId"] = parent_id
         response = await self._request("POST", "/wiki/api/v2/pages", json=payload)
         return response.json()
-

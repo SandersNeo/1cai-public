@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -9072365439784840525 | DATE: 2025-11-19
+
 import pytest
 
 from src.ai.agents.business_analyst_agent_extended import IntegrationConnector
@@ -80,4 +82,3 @@ async def test_confluence_sync_missing_space(monkeypatch):
 
     assert result["status"] == "queued"
     assert result["reason"] == "space_key_missing"
-

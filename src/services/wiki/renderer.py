@@ -7,26 +7,29 @@ import re
 import marko
 from marko.inline import InlineElement
 from marko.block import BlockElement
-from typing import Optional, Dict, Any
 
 # --- Custom Elements ---
+
 
 class WikiLink(InlineElement):
     """
     Parses [[Slug]] or [[Slug|Label]]
     """
-    pattern = re.compile(r'\[\[(.*?)(?:\|(.*?))?\]\]')
+
+    pattern = re.compile(r"\[\[(.*?)(?:\|(.*?))?\]\]")
     priority = 5
 
     def __init__(self, match):
         self.target = match.group(1)
         self.label = match.group(2) or self.target
 
+
 class Transclusion(BlockElement):
     """
     Parses {{code:path.to.object}}
     """
-    pattern = re.compile(r'\{\{code:(.*?)\}\}')
+
+    pattern = re.compile(r"\{\{code:(.*?)\}\}")
     priority = 5
 
     def __init__(self, match):
@@ -42,7 +45,9 @@ class Transclusion(BlockElement):
         source.consume()
         return cls(m)
 
+
 # --- Custom Renderer Mixin ---
+
 
 class WikiRendererMixin:
     def render_wiki_link(self, element):
@@ -52,27 +57,31 @@ class WikiRendererMixin:
         return (
             f'<div class="code-transclusion" data-target="{element.target}">'
             f'<pre><code class="language-python"># Transcluded: {element.target}\n# (Content loading...)</code></pre>'
-            f'</div>'
+            f"</div>"
         )
 
+
 # --- Extension Object ---
+
 
 class WikiMarkoExtension:
     elements = [WikiLink, Transclusion]
     renderer_mixins = [WikiRendererMixin]
-    parser_mixins = [] # Required by marko
+    parser_mixins = []  # Required by marko
+
 
 # --- Main Renderer Class ---
+
 
 class WikiRenderer:
     """
     Renders Extended Markdown for the Enterprise Wiki using Marko.
     """
-    
+
     def __init__(self):
         self.markdown = marko.Markdown()
         self.markdown.use(WikiMarkoExtension)
-    
+
     def render(self, text: str) -> str:
         """
         Render markdown to HTML.

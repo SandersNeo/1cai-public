@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 1339118493824722792 | DATE: 2025-11-19
+
 import asyncio
 
 from src.ai.agents.business_analyst_agent_extended import BPMNGenerator
@@ -27,4 +29,3 @@ def test_bpmn_elements_escape_html():
 
     assert elements[0]["name"] == "Шаг: &lt;script&gt;alert(1)&lt;/script&gt;"
     assert elements[0]["raw_name"] == "Шаг: <script>alert(1)</script>"
-

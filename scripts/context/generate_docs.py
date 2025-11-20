@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 5589230260206006377 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Wrapper around alkoleft/ones_doc_gen.

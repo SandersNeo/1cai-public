@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 6575367605745973363 | DATE: 2025-11-19
+
 """
 QA Engineer AI Agent
 AI ассистент для тестировщиков
@@ -11,18 +13,20 @@ logger = logging.getLogger(__name__)
 
 class QAEngineerAgent:
     """AI агент для QA инженеров"""
-    
+
     def __init__(self):
         self.agent_name = "qwen3-coder"
-        
-    async def generate_vanessa_tests(self, module_name: str, functions: List[str]) -> str:
+
+    async def generate_vanessa_tests(
+        self, module_name: str, functions: List[str]
+    ) -> str:
         """
         Генерирует Vanessa BDD тесты
-        
+
         Args:
             module_name: Название модуля
             functions: Список функций для тестирования
-            
+
         Returns:
             .feature файл с BDD сценариями
         """
@@ -38,7 +42,7 @@ class QAEngineerAgent:
     И Я закрываю все окна клиентского приложения
 
 """
-        
+
         for func in functions:
             feature_file += f"""
 Сценарий: Тестирование функции {func}
@@ -47,7 +51,7 @@ class QAEngineerAgent:
     И результат соответствует ожидаемому значению
 
 """
-        
+
         feature_file += """
 Сценарий: Smoke test модуля
     Дано я создаю тестовые данные
@@ -55,16 +59,16 @@ class QAEngineerAgent:
     Тогда все операции завершены успешно
     И в логе нет ошибок
 """
-        
+
         return feature_file
-    
+
     async def generate_smoke_tests(self, configuration: str) -> List[Dict[str, str]]:
         """
         Генерирует smoke-тесты для конфигурации
-        
+
         Args:
             configuration: Название конфигурации
-            
+
         Returns:
             Список smoke-тестов
         """
@@ -74,9 +78,9 @@ class QAEngineerAgent:
                 "steps": [
                     "Запустить 1С",
                     "Открыть конфигурацию",
-                    "Проверить отсутствие ошибок в логе"
+                    "Проверить отсутствие ошибок в логе",
                 ],
-                "expected": "Конфигурация запускается без ошибок"
+                "expected": "Конфигурация запускается без ошибок",
             },
             {
                 "name": "Проверка создания документа Заказ",
@@ -84,46 +88,48 @@ class QAEngineerAgent:
                     "Открыть форму списка Заказы",
                     "Нажать кнопку Создать",
                     "Заполнить обязательные реквизиты",
-                    "Нажать Провести"
+                    "Нажать Провести",
                 ],
-                "expected": "Документ проводится успешно"
+                "expected": "Документ проводится успешно",
             },
             {
                 "name": "Проверка формирования отчета",
                 "steps": [
                     "Открыть отчет Продажи",
                     "Установить период: текущий месяц",
-                    "Нажать Сформировать"
+                    "Нажать Сформировать",
                 ],
-                "expected": "Отчет формируется < 5 сек"
+                "expected": "Отчет формируется < 5 сек",
             },
             {
                 "name": "Проверка обмена данными",
                 "steps": [
                     "Открыть обработку Обмен данными",
                     "Выполнить выгрузку",
-                    "Выполнить загрузку"
+                    "Выполнить загрузку",
                 ],
-                "expected": "Обмен выполнен без ошибок"
-            }
+                "expected": "Обмен выполнен без ошибок",
+            },
         ]
-    
+
     async def analyze_test_coverage(self, module_code: str) -> Dict[str, Any]:
         """
         Анализирует покрытие кода тестами
-        
+
         Args:
             module_code: Код модуля BSL
-            
+
         Returns:
             Анализ покрытия
         """
         # Простой анализ (в реальности нужен парсинг BSL)
-        lines = module_code.split('\n')
-        total_lines = len([l for l in lines if l.strip() and not l.strip().startswith('//')])
-        
+        lines = module_code.split("\n")
+        total_lines = len(
+            [l for l in lines if l.strip() and not l.strip().startswith("//")]
+        )
+
         # TODO: Реальный анализ покрытия
-        
+
         return {
             "total_lines": total_lines,
             "covered_lines": int(total_lines * 0.65),
@@ -131,32 +137,34 @@ class QAEngineerAgent:
             "uncovered_functions": [
                 "РассчитатьСумму",
                 "ПроверитьДоступность",
-                "СформироватьОтчет"
+                "СформироватьОтчет",
             ],
             "recommendations": [
                 "Добавить тесты для функции РассчитатьСумму",
                 "Протестировать граничные случаи",
-                "Добавить negative testing"
+                "Добавить negative testing",
             ],
             "complexity_analysis": {
                 "high_complexity_functions": [
                     {
                         "name": "ОбработатьДокумент",
                         "complexity": 15,
-                        "recommendation": "Упростить логику, разбить на меньшие функции"
+                        "recommendation": "Упростить логику, разбить на меньшие функции",
                     }
                 ]
-            }
+            },
         }
-    
-    async def generate_test_data(self, entity_type: str, count: int = 10) -> List[Dict[str, Any]]:
+
+    async def generate_test_data(
+        self, entity_type: str, count: int = 10
+    ) -> List[Dict[str, Any]]:
         """
         Генерирует тестовые данные
-        
+
         Args:
             entity_type: Тип сущности (Клиент, Товар и т.д.)
             count: Количество записей
-            
+
         Returns:
             Список тестовых данных
         """
@@ -167,7 +175,7 @@ class QAEngineerAgent:
                     "ИНН": f"{7700000000 + i}",
                     "КПП": "770001001",
                     "Телефон": f"+7 (495) {i:03d}-{i:02d}-{i:02d}",
-                    "Email": f"test{i}@example.com"
+                    "Email": f"test{i}@example.com",
                 }
                 for i in range(1, count + 1)
             ]
@@ -177,33 +185,33 @@ class QAEngineerAgent:
                     "Наименование": f"Тестовый товар {i}",
                     "Артикул": f"TEST-{i:04d}",
                     "Цена": 1000.00 * i,
-                    "Количество": 100 - i
+                    "Количество": 100 - i,
                 }
                 for i in range(1, count + 1)
             ]
         else:
             return []
-    
-    async def analyze_bug(self, bug_description: str, stacktrace: str = "") -> Dict[str, Any]:
+
+    async def analyze_bug(
+        self, bug_description: str, stacktrace: str = ""
+    ) -> Dict[str, Any]:
         """
         Анализирует баг и предлагает решение
-        
+
         Args:
             bug_description: Описание бага
             stacktrace: Stack trace (если есть)
-            
+
         Returns:
             Анализ и рекомендации
         """
         # TODO: AI анализ с использованием Qwen3-Coder
-        
+
         return {
             "severity": "High",
             "category": "Runtime Error",
             "root_cause": "Обращение к несуществующему элементу массива",
-            "affected_modules": [
-                "ОбщийМодуль.РаботаСМассивами"
-            ],
+            "affected_modules": ["ОбщийМодуль.РаботаСМассивами"],
             "recommended_fix": """
 Добавить проверку границ массива:
 
@@ -218,20 +226,18 @@ class QAEngineerAgent:
             "regression_tests": [
                 "Проверить с пустым массивом",
                 "Проверить с индексом -1",
-                "Проверить с индексом > размера массива"
+                "Проверить с индексом > размера массива",
             ],
-            "related_bugs": [
-                "BUG-123: Аналогичная проблема в другом модуле"
-            ]
+            "related_bugs": ["BUG-123: Аналогичная проблема в другом модуле"],
         }
-    
+
     async def generate_regression_tests(self, bug_fixes: List[str]) -> str:
         """
         Генерирует регрессионные тесты для исправленных багов
-        
+
         Args:
             bug_fixes: Список исправленных багов
-            
+
         Returns:
             Регрессионные тесты
         """
@@ -250,37 +256,36 @@ class QAEngineerAgent:
     И система работает корректно
 
 """
-        
+
         return tests
 
 
 # Example usage
 if __name__ == "__main__":
     import asyncio
-    
+
     async def test():
         agent = QAEngineerAgent()
-        
+
         # Test 1: Generate Vanessa tests
         print("=== Test 1: Generate Vanessa BDD Tests ===")
         vanessa = await agent.generate_vanessa_tests(
-            "ПродажиСервер",
-            ["СоздатьЗаказ", "РассчитатьСумму", "ПровестиДокумент"]
+            "ПродажиСервер", ["СоздатьЗаказ", "РассчитатьСумму", "ПровестиДокумент"]
         )
         print(vanessa[:300] + "...")
-        
+
         # Test 2: Smoke tests
         print("\n=== Test 2: Generate Smoke Tests ===")
         smoke = await agent.generate_smoke_tests("Управление продажами")
         print(f"Smoke tests: {len(smoke)}")
         for test in smoke:
             print(f"- {test['name']}")
-        
+
         # Test 3: Coverage analysis
         print("\n=== Test 3: Analyze Coverage ===")
-        coverage = await agent.analyze_test_coverage("Функция Test()\n  // code\nКонецФункции")
+        coverage = await agent.analyze_test_coverage(
+            "Функция Test()\n  // code\nКонецФункции"
+        )
         print(f"Coverage: {coverage['coverage_percent']}%")
-    
+
     asyncio.run(test())
-
-

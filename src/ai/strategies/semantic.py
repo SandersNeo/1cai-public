@@ -7,9 +7,10 @@ from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 
+
 class QdrantStrategy(AIStrategy):
     """Strategy for Semantic Search with Qdrant"""
-    
+
     def __init__(self):
         try:
             self.client = QdrantClient()
@@ -20,15 +21,18 @@ class QdrantStrategy(AIStrategy):
             self.client = None
             self.embedding_service = None
             self.is_available = False
-            
+
     @property
     def service_name(self) -> str:
         return "qdrant"
-        
+
     async def execute(self, query: str, context: Dict[str, Any]) -> Dict[str, Any]:
         if not self.is_available:
-            return {"error": "Vector search services not available", "service": self.service_name}
-            
+            return {
+                "error": "Vector search services not available",
+                "service": self.service_name,
+            }
+
         try:
             # Generate embedding
             query_vector = await self.embedding_service.generate_embedding(query)
@@ -66,4 +70,3 @@ class QdrantStrategy(AIStrategy):
         except Exception as e:
             logger.error(f"Qdrant strategy error: {e}", exc_info=True)
             return {"error": str(e), "service": self.service_name}
-

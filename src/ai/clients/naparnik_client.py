@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -6408177600490684543 | DATE: 2025-11-19
+
 """
 Asynchronous client for 1C:Напарник API.
 
@@ -28,7 +30,9 @@ logger = logging.getLogger(__name__)
 class NaparnikConfig:
     """Configuration holder for 1C:Напарник client."""
 
-    base_url: str = os.getenv("NAPARNIK_API_URL", "https://naparnik.platform.1c.ru/api/v1")
+    base_url: str = os.getenv(
+        "NAPARNIK_API_URL", "https://naparnik.platform.1c.ru/api/v1"
+    )
     api_key: Optional[str] = os.getenv("NAPARNIK_API_KEY")
     model_name: str = os.getenv("NAPARNIK_MODEL", "naparnik-pro")
     verify_ssl: bool = os.getenv("NAPARNIK_VERIFY_SSL", "true").lower() != "false"
@@ -116,7 +120,9 @@ class NaparnikClient:
                 ssl=self.config.verify_ssl,
             ) as response:
                 if response.status == 401:
-                    raise LLMNotConfiguredError("1C:Напарник API key is invalid or expired")
+                    raise LLMNotConfiguredError(
+                        "1C:Напарник API key is invalid or expired"
+                    )
 
                 if response.status != 200:
                     text = await response.text()
@@ -177,6 +183,7 @@ class NaparnikClient:
         if use_pool:
             try:
                 from src.ai.connection_pool import get_global_pool
+
                 pool = get_global_pool()
                 return await pool.get_session(self.config.base_url)
             except ImportError:
@@ -186,4 +193,3 @@ class NaparnikClient:
         if self._session is None or self._session.closed:
             self._session = aiohttp.ClientSession(timeout=self._timeout)
         return self._session
-

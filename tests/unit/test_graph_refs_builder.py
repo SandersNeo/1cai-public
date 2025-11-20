@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -408764451067444684 | DATE: 2025-11-19
+
 """
 Tests for GraphRefsBuilder (graph_refs_builder.py).
 """
@@ -5,7 +7,11 @@ Tests for GraphRefsBuilder (graph_refs_builder.py).
 import pytest
 
 from src.ai.code_graph import InMemoryCodeGraphBackend, NodeKind
-from src.ai.graph_refs_builder import GraphRefsBuilder, build_refs_for_feature, build_refs_for_service
+from src.ai.graph_refs_builder import (
+    GraphRefsBuilder,
+    build_refs_for_feature,
+    build_refs_for_service,
+)
 
 
 def test_build_refs_for_feature() -> None:
@@ -66,13 +72,22 @@ def test_infer_node_kind() -> None:
     assert builder._infer_node_kind("src/ai/orchestrator.py") == NodeKind.MODULE
 
     # Тест
-    assert builder._infer_node_kind("tests/unit/test_orchestrator.py") == NodeKind.TEST_CASE
+    assert (
+        builder._infer_node_kind("tests/unit/test_orchestrator.py")
+        == NodeKind.TEST_CASE
+    )
 
     # K8s deployment
-    assert builder._infer_node_kind("infrastructure/k8s/deployment.yaml") == NodeKind.K8S_DEPLOYMENT
+    assert (
+        builder._infer_node_kind("infrastructure/k8s/deployment.yaml")
+        == NodeKind.K8S_DEPLOYMENT
+    )
 
     # Helm chart
-    assert builder._infer_node_kind("infrastructure/helm/chart/values.yaml") == NodeKind.HELM_CHART
+    assert (
+        builder._infer_node_kind("infrastructure/helm/chart/values.yaml")
+        == NodeKind.HELM_CHART
+    )
 
     # Alert
     assert builder._infer_node_kind("monitoring/alerts.yml") == NodeKind.ALERT
@@ -106,7 +121,9 @@ def test_build_node_id() -> None:
     assert ".py" not in node_id
 
     # K8s deployment (расширение может остаться)
-    node_id = builder._build_node_id("infrastructure/k8s/deployment.yaml", NodeKind.K8S_DEPLOYMENT)
+    node_id = builder._build_node_id(
+        "infrastructure/k8s/deployment.yaml", NodeKind.K8S_DEPLOYMENT
+    )
     assert "deployment" in node_id
 
 
@@ -138,4 +155,3 @@ def test_graph_refs_builder_without_backend() -> None:
     # Построение refs должно работать без backend
     refs = builder.build_refs_for_feature("TEST", code_paths=["src/test.py"])
     assert len(refs) > 0
-

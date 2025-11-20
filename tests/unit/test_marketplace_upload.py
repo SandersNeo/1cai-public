@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -5710041942027674930 | DATE: 2025-11-19
+
 import io
 
 from fastapi import FastAPI
@@ -13,7 +15,9 @@ from src.security.auth import CurrentUser
 
 
 class DummyRepo:
-    def __init__(self, plugin_exists: bool = True, fail_upload: Exception | None = None):
+    def __init__(
+        self, plugin_exists: bool = True, fail_upload: Exception | None = None
+    ):
         self.plugin_exists = plugin_exists
         self.fail_upload = fail_upload
         self.last_call = None
@@ -54,7 +58,9 @@ class DummyRepo:
             "owner_username": "tester",
         }
 
-    async def store_artifact(self, plugin_id: str, data: bytes, filename: str, content_type: str | None):
+    async def store_artifact(
+        self, plugin_id: str, data: bytes, filename: str, content_type: str | None
+    ):
         if self.fail_upload:
             raise self.fail_upload
         self.last_call = {
@@ -129,4 +135,3 @@ def test_upload_storage_unavailable():
     )
 
     assert response.status_code == 503
-

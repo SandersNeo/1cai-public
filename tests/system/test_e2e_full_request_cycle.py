@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -5360098857298508603 | DATE: 2025-11-19
+
 """
 E2E тесты для полного цикла запроса с несколькими провайдерами и fallback.
 
@@ -14,7 +16,12 @@ import pytest
 from src.ai.orchestrator import AIOrchestrator
 from src.ai.intelligent_cache import IntelligentCache
 from src.ai.llm_provider_abstraction import LLMProviderAbstraction, QueryType
-from src.ai.scenario_hub import ScenarioPlan, ScenarioStep, ScenarioRiskLevel, AutonomyLevel
+from src.ai.scenario_hub import (
+    ScenarioPlan,
+    ScenarioStep,
+    ScenarioRiskLevel,
+    AutonomyLevel,
+)
 
 
 @pytest.mark.asyncio
@@ -38,11 +45,20 @@ async def test_e2e_full_request_cycle_with_provider_selection():
         if "_meta" in result:
             assert "intent" in result["_meta"]
             # Провайдер должен быть выбран автоматически
-            assert result["_meta"].get("selected_provider") is not None or "gigachat" in str(result) or "yandexgpt" in str(result) or "naparnik" in str(result)
+            assert (
+                result["_meta"].get("selected_provider") is not None
+                or "gigachat" in str(result)
+                or "yandexgpt" in str(result)
+                or "naparnik" in str(result)
+            )
 
     except Exception as e:
         # Ожидаем, что некоторые провайдеры могут быть недоступны
-        assert "not configured" in str(e).lower() or "network" in str(e).lower() or "credentials" in str(e).lower()
+        assert (
+            "not configured" in str(e).lower()
+            or "network" in str(e).lower()
+            or "credentials" in str(e).lower()
+        )
 
 
 @pytest.mark.asyncio
@@ -80,8 +96,10 @@ async def test_e2e_provider_fallback_on_error():
     if provider1:
         # Проверяем, что есть альтернативные провайдеры
         alternative_providers = [
-            p for p in abstraction.profiles.values()
-            if QueryType.RUSSIAN_TEXT in p.capabilities and p.provider_id != provider1.provider_id
+            p
+            for p in abstraction.profiles.values()
+            if QueryType.RUSSIAN_TEXT in p.capabilities
+            and p.provider_id != provider1.provider_id
         ]
 
         # Должен быть хотя бы один альтернативный провайдер для fallback
@@ -103,10 +121,7 @@ async def test_e2e_multiple_concurrent_requests():
         import asyncio
 
         # Выполняем запросы параллельно
-        tasks = [
-            orchestrator.process_query(query, context={})
-            for query in queries
-        ]
+        tasks = [orchestrator.process_query(query, context={}) for query in queries]
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -114,7 +129,9 @@ async def test_e2e_multiple_concurrent_requests():
         assert len(results) == len(queries)
 
         # Большинство запросов должны быть успешными
-        successful = sum(1 for r in results if r is not None and not isinstance(r, Exception))
+        successful = sum(
+            1 for r in results if r is not None and not isinstance(r, Exception)
+        )
         # Хотя бы один должен быть успешным (или все могут быть с ошибками если нет провайдеров)
         assert successful >= 0
 
@@ -222,6 +239,7 @@ async def test_e2e_full_scenario_execution():
 
     # Создаем простой сценарий
     from src.ai.scenario_hub import ScenarioGoal
+
     scenario_plan = ScenarioPlan(
         id="test_scenario_full",
         goal=ScenarioGoal(
@@ -257,4 +275,3 @@ async def test_e2e_full_scenario_execution():
 
     # В реальном сценарии здесь был бы вызов orchestrator.execute_scenario(scenario_plan)
     # Но для теста просто проверяем структуру
-

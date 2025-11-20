@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -1535977744442361141 | DATE: 2025-11-19
+
 """
 Global test helpers and monkey patches.
 

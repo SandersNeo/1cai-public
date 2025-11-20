@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -6690728770009980192 | DATE: 2025-11-19
+
 """
 Graph Refs Builder для Scenario Hub
 -----------------------------------
@@ -14,11 +16,10 @@ Graph Refs Builder для Scenario Hub
 from __future__ import annotations
 
 import logging
-import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import List, Optional
 
-from src.ai.code_graph import CodeGraphBackend, Node, NodeKind
+from src.ai.code_graph import CodeGraphBackend, NodeKind
 
 logger = logging.getLogger(__name__)
 
@@ -354,4 +355,3 @@ def build_refs_for_service(
         helm_chart_path=helm_chart_path,
         alert_paths=alert_paths,
     )
-

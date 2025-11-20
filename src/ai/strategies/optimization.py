@@ -1,10 +1,10 @@
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 import time
-import re
 from src.ai.strategies.base import AIStrategy
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
+
 
 class OptimizationStrategy(AIStrategy):
     def __init__(self, kimi_client=None, qwen_client=None, neo4j_client=None):
@@ -14,7 +14,7 @@ class OptimizationStrategy(AIStrategy):
 
     async def execute(self, query: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Handle code optimization requests - prioritizes Kimi-K2-Thinking for complex reasoning"""
-        
+
         code = context.get("code")
         if not code:
             return {"type": "optimization", "error": "No code provided in context"}
@@ -168,4 +168,3 @@ class OptimizationStrategy(AIStrategy):
                 exc_info=True,
             )
             return {"type": "optimization", "error": str(e)}
-

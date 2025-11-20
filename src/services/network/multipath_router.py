@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 4118869023884388007 | DATE: 2025-11-19
+
 """
 Multi-Path Router - Маршрутизация с несколькими путями
 Версия: 1.0.0
@@ -37,6 +39,7 @@ logger = logging.getLogger(__name__)
 
 class PathStatus(str, Enum):
     """Статус сетевого пути"""
+
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
@@ -46,6 +49,7 @@ class PathStatus(str, Enum):
 @dataclass
 class NetworkPath:
     """Сетевой путь"""
+
     path_id: str
     path_type: str  # primary, backup, vpn, proxy, etc.
     endpoint: str  # URL или IP
@@ -58,6 +62,7 @@ class NetworkPath:
 @dataclass
 class PathMetrics:
     """Метрики сетевого пути"""
+
     path_id: str
     status: PathStatus
     latency_ms: float = 0.0
@@ -71,14 +76,14 @@ class PathMetrics:
 class MultiPathRouter:
     """
     Маршрутизатор с поддержкой нескольких путей.
-    
+
     Особенности:
     - Несколько путей одновременно
     - Автоматический failover
     - Балансировка нагрузки
     - Адаптивный выбор пути
     """
-    
+
     def __init__(
         self,
         paths: Optional[List[NetworkPath]] = None,
@@ -94,34 +99,33 @@ class MultiPathRouter:
         self.paths = paths or []
         self.health_check_interval = health_check_interval
         self.failure_threshold = failure_threshold
-        
+
         self.path_metrics: Dict[str, PathMetrics] = {}
         self._health_check_task: Optional[asyncio.Task] = None
         self._stop_event = asyncio.Event()
-        
+
         # Инициализация метрик
         for path in self.paths:
             self.path_metrics[path.path_id] = PathMetrics(
-                path_id=path.path_id,
-                status=PathStatus.UNKNOWN
+                path_id=path.path_id, status=PathStatus.UNKNOWN
             )
-    
+
     async def start_health_monitoring(self):
         """Запустить мониторинг здоровья путей"""
         if self._health_check_task and not self._health_check_task.done():
             return
-        
+
         self._stop_event.clear()
         self._health_check_task = asyncio.create_task(self._health_check_loop())
         logger.info("Multi-path router health monitoring started")
-    
+
     async def stop_health_monitoring(self):
         """Остановить мониторинг"""
         self._stop_event.set()
         if self._health_check_task:
             await self._health_check_task
         logger.info("Multi-path router health monitoring stopped")
-    
+
     async def _health_check_loop(self):
         """Цикл проверки здоровья"""
         while not self._stop_event.is_set():
@@ -129,31 +133,30 @@ class MultiPathRouter:
                 await self._check_all_paths()
             except Exception as e:
                 logger.error(f"Error in health check loop: {e}", exc_info=True)
-            
+
             try:
                 await asyncio.wait_for(
-                    self._stop_event.wait(),
-                    timeout=self.health_check_interval
+                    self._stop_event.wait(), timeout=self.health_check_interval
                 )
             except asyncio.TimeoutError:
                 continue
-    
+
     async def _check_all_paths(self):
         """Проверить все пути"""
         tasks = []
         for path in self.paths:
             if path.enabled:
                 tasks.append(self._check_path(path))
-        
+
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
-    
+
     async def _check_path(self, path: NetworkPath):
         """Проверить один путь"""
         metrics = self.path_metrics.get(path.path_id)
         if not metrics:
             return
-        
+
         try:
             start_time = time.time()
             # Простая проверка доступности
@@ -161,17 +164,17 @@ class MultiPathRouter:
                 # Пробуем HEAD запрос для проверки
                 response = await client.head(path.endpoint, follow_redirects=True)
                 latency_ms = (time.time() - start_time) * 1000
-                
+
                 is_healthy = response.status_code < 400
-                
+
                 metrics.latency_ms = latency_ms
                 metrics.last_check = datetime.utcnow()
-                
+
                 if is_healthy:
                     metrics.success_count += 1
                     metrics.consecutive_successes += 1
                     metrics.consecutive_failures = 0
-                    
+
                     # Определяем статус
                     if latency_ms > 5000:  # > 5 секунд = degraded
                         metrics.status = PathStatus.DEGRADED
@@ -181,58 +184,52 @@ class MultiPathRouter:
                     metrics.failure_count += 1
                     metrics.consecutive_failures += 1
                     metrics.consecutive_successes = 0
-                    
+
                     if metrics.consecutive_failures >= self.failure_threshold:
                         metrics.status = PathStatus.UNHEALTHY
                     else:
                         metrics.status = PathStatus.DEGRADED
-                
+
                 # Обновляем метрики Prometheus
                 if network_path_health:
                     network_path_health.labels(
-                        path_id=path.path_id,
-                        path_type=path.path_type
+                        path_id=path.path_id, path_type=path.path_type
                     ).set(1.0 if metrics.status == PathStatus.HEALTHY else 0.5)
-                
+
                 if network_path_latency_ms:
                     network_path_latency_ms.labels(
-                        path_id=path.path_id,
-                        path_type=path.path_type
+                        path_id=path.path_id, path_type=path.path_type
                     ).set(latency_ms)
-        
+
         except Exception as e:
             metrics.failure_count += 1
             metrics.consecutive_failures += 1
             metrics.consecutive_successes = 0
             metrics.last_check = datetime.utcnow()
-            
+
             if metrics.consecutive_failures >= self.failure_threshold:
                 metrics.status = PathStatus.UNHEALTHY
             else:
                 metrics.status = PathStatus.DEGRADED
-            
+
             if network_path_health:
                 network_path_health.labels(
-                    path_id=path.path_id,
-                    path_type=path.path_type
+                    path_id=path.path_id, path_type=path.path_type
                 ).set(0.0)
-            
+
             logger.debug(f"Path {path.path_id} health check failed: {e}")
-    
+
     async def send_request(
-        self,
-        request_func: Callable[..., Awaitable[Any]],
-        *args,
-        **kwargs
+        self, request_func: Callable[..., Awaitable[Any]], *args, **kwargs
     ) -> Any:
         """
         Отправить запрос через лучший доступный путь.
-        
+
         Args:
             request_func: Функция для выполнения запроса
             *args: Аргументы функции
             **kwargs: Ключевые аргументы функции
-        
+
         Returns:
             Результат запроса
         """
@@ -240,60 +237,72 @@ class MultiPathRouter:
         sorted_paths = sorted(
             [p for p in self.paths if p.enabled],
             key=lambda x: (
-                0 if self.path_metrics.get(x.path_id, PathMetrics(x.path_id, PathStatus.UNKNOWN)).status == PathStatus.HEALTHY else 1,
-                x.priority
-            )
+                0
+                if self.path_metrics.get(
+                    x.path_id, PathMetrics(x.path_id, PathStatus.UNKNOWN)
+                ).status
+                == PathStatus.HEALTHY
+                else 1,
+                x.priority,
+            ),
         )
-        
+
         last_error: Optional[Exception] = None
-        
+
         for path in sorted_paths:
             metrics = self.path_metrics.get(path.path_id)
             if metrics and metrics.status == PathStatus.UNHEALTHY:
                 continue
-            
+
             try:
                 # Выполняем запрос через этот путь
                 result = await request_func(*args, **kwargs)
-                
+
                 # Успешный запрос
                 metrics.success_count += 1
                 metrics.consecutive_successes += 1
                 metrics.consecutive_failures = 0
-                
+
                 return result
-            
+
             except Exception as e:
                 last_error = e
                 logger.warning(f"Path {path.path_id} failed: {e}")
-                
+
                 # Обновляем метрики
                 metrics.failure_count += 1
                 metrics.consecutive_failures += 1
                 metrics.consecutive_successes = 0
-                
+
                 # Записываем failover
-                if path != sorted_paths[-1] and network_failover_total:  # Не последний путь
+                if (
+                    path != sorted_paths[-1] and network_failover_total
+                ):  # Не последний путь
                     next_path = sorted_paths[sorted_paths.index(path) + 1]
                     network_failover_total.labels(
                         from_path=path.path_id,
                         to_path=next_path.path_id,
-                        reason=str(type(e).__name__)
+                        reason=str(type(e).__name__),
                     ).inc()
-                
+
                 # Продолжаем к следующему пути
                 continue
-        
+
         # Все пути недоступны
         raise AllPathsFailedError(f"All network paths failed: {last_error}")
-    
+
     def get_healthy_paths(self) -> List[NetworkPath]:
         """Получить список здоровых путей"""
         return [
-            path for path in self.paths
-            if path.enabled and self.path_metrics.get(path.path_id, PathMetrics(path.path_id, PathStatus.UNKNOWN)).status == PathStatus.HEALTHY
+            path
+            for path in self.paths
+            if path.enabled
+            and self.path_metrics.get(
+                path.path_id, PathMetrics(path.path_id, PathStatus.UNKNOWN)
+            ).status
+            == PathStatus.HEALTHY
         ]
-    
+
     def get_path_metrics(self) -> Dict[str, PathMetrics]:
         """Получить метрики всех путей"""
         return self.path_metrics.copy()
@@ -301,5 +310,3 @@ class MultiPathRouter:
 
 class AllPathsFailedError(Exception):
     """Все сетевые пути недоступны"""
-    pass
-

@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -5263655790030642861 | DATE: 2025-11-19
+
 """Modules for analysing n8n workflow exports."""
 
 from __future__ import annotations

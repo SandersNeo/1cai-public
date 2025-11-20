@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 5619063836608662575 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Демонстрация HTTP кэширования с ETag для FastAPI.

@@ -1,10 +1,12 @@
+# [NEXUS IDENTITY] ID: 6396406680696838697 | DATE: 2025-11-19
+
 """
 Tests for GraphQueryHelper (code_graph_query_helper.py).
 """
 
 import pytest
 
-from src.ai.code_graph import Edge, EdgeKind, InMemoryCodeGraphBackend, Node, NodeKind
+from src.ai.code_graph import InMemoryCodeGraphBackend, Node, NodeKind
 from src.ai.code_graph_query_helper import GraphQueryHelper
 
 
@@ -171,4 +173,3 @@ async def test_helper_without_backend() -> None:
 
     scenarios = await helper.find_related_scenarios(["node1"])
     assert len(scenarios) == 0
-

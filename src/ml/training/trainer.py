@@ -1,17 +1,16 @@
+# [NEXUS IDENTITY] ID: 218521645790553672 | DATE: 2025-11-19
+
 """
 Обучающие пайплайны для моделей машинного обучения.
 Интеграция с Celery для background обучения и автоматического переобучения.
 """
 
-import asyncio
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Union, Tuple
+from datetime import datetime
+from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
 from enum import Enum
 import numpy as np
 import pandas as pd
-import pickle
-import json
 
 # Celery для background задач
 from celery import Celery
@@ -19,16 +18,18 @@ from celery.schedules import crontab
 from celery.result import AsyncResult
 
 # ML библиотеки
-from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.feature_selection import SelectKBest, f_classif, f_regression
-from sklearn.metrics import classification_report, confusion_matrix
 import optuna
 
-from src.ml.models.predictor import MLPredictor, SklearnPredictor, TensorFlowPredictor, ModelEnsemble, create_model, PredictionType
-from src.ml.metrics.collector import MetricsCollector, MetricType, AssistantRole
+from src.ml.models.predictor import (
+    ModelEnsemble,
+    create_model,
+    PredictionType,
+)
+from src.ml.metrics.collector import MetricsCollector, AssistantRole
 from src.ml.experiments.mlflow_manager import MLFlowManager
-from src.config import settings
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -36,6 +37,7 @@ logger = StructuredLogger(__name__).logger
 
 class TrainingStatus(Enum):
     """Статус обучения"""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -45,6 +47,7 @@ class TrainingStatus(Enum):
 
 class TrainingType(Enum):
     """Типы обучения"""
+
     INITIAL = "initial"
     CONTINUOUS = "continuous"
     HYPERPARAMETER_TUNING = "hyperparameter_tuning"
@@ -55,6 +58,7 @@ class TrainingType(Enum):
 @dataclass
 class TrainingJob:
     """Job обучения модели"""
+
     job_id: str
     model_name: str
     model_type: str
@@ -69,90 +73,104 @@ class TrainingJob:
 
 class DataPreprocessor:
     """Предобработка данных для обучения"""
-    
+
     def __init__(self):
         self.scalers = {}
         self.encoders = {}
         self.feature_selectors = {}
-        
+
     def prepare_features(
         self,
         df: pd.DataFrame,
         features: List[str],
         target: Optional[str] = None,
-        preprocessing_config: Optional[Dict] = None
+        preprocessing_config: Optional[Dict] = None,
     ) -> Tuple[pd.DataFrame, Optional[pd.Series]]:
         """Подготовка признаков"""
-        
+
         preprocessing_config = preprocessing_config or {}
-        
+
         # Выделение признаков и целевой переменной
         X = df[features].copy()
         y = df[target] if target else None
-        
+
         # Заполнение пропущенных значений
-        fill_method = preprocessing_config.get('fill_method', 'median')
+        fill_method = preprocessing_config.get("fill_method", "median")
         for col in X.columns:
-            if X[col].dtype in ['int64', 'float64']:
-                if fill_method == 'median':
+            if X[col].dtype in ["int64", "float64"]:
+                if fill_method == "median":
                     X[col] = X[col].fillna(X[col].median())
-                elif fill_method == 'mean':
+                elif fill_method == "mean":
                     X[col] = X[col].fillna(X[col].mean())
-                elif fill_method == 'zero':
+                elif fill_method == "zero":
                     X[col] = X[col].fillna(0)
             else:
-                X[col] = X[col].fillna('unknown')
-        
+                X[col] = X[col].fillna("unknown")
+
         # Кодирование категориальных переменных
-        categorical_encoding = preprocessing_config.get('categorical_encoding', 'label')
-        if categorical_encoding == 'label':
-            for col in X.select_dtypes(include=['object']).columns:
+        categorical_encoding = preprocessing_config.get("categorical_encoding", "label")
+        if categorical_encoding == "label":
+            for col in X.select_dtypes(include=["object"]).columns:
                 if col not in self.encoders:
                     self.encoders[col] = LabelEncoder()
                     X[col] = self.encoders[col].fit_transform(X[col])
                 else:
                     # Обработка новых категорий
-                    X[col] = X[col].map(lambda x: x if x in self.encoders[col].classes_ else 'unknown')
+                    X[col] = X[col].map(
+                        lambda x: x if x in self.encoders[col].classes_ else "unknown"
+                    )
                     # Добавляем новую категорию
                     unknown_class = len(self.encoders[col].classes_)
-                    self.encoders[col].classes_ = np.append(self.encoders[col].classes_, 'unknown')
-                    X[col] = X[col].map(lambda x: self.encoders[col].transform([x])[0] if x != 'unknown' else unknown_class)
-        
+                    self.encoders[col].classes_ = np.append(
+                        self.encoders[col].classes_, "unknown"
+                    )
+                    X[col] = X[col].map(
+                        lambda x: self.encoders[col].transform([x])[0]
+                        if x != "unknown"
+                        else unknown_class
+                    )
+
         # Нормализация числовых признаков
-        normalize = preprocessing_config.get('normalize', True)
+        normalize = preprocessing_config.get("normalize", True)
         if normalize:
             scaler = StandardScaler()
             numeric_cols = X.select_dtypes(include=[np.number]).columns
             X[numeric_cols] = scaler.fit_transform(X[numeric_cols])
-            self.scalers['standard_scaler'] = scaler
-        
+            self.scalers["standard_scaler"] = scaler
+
         # Отбор признаков
-        k_best = preprocessing_config.get('k_best_features')
+        k_best = preprocessing_config.get("k_best_features")
         if k_best and y is not None:
             if self._get_prediction_type(y) == PredictionType.CLASSIFICATION:
-                selector = SelectKBest(score_func=f_classif, k=min(k_best, len(features)))
+                selector = SelectKBest(
+                    score_func=f_classif, k=min(k_best, len(features))
+                )
             else:
-                selector = SelectKBest(score_func=f_regression, k=min(k_best, len(features)))
-            
+                selector = SelectKBest(
+                    score_func=f_regression, k=min(k_best, len(features))
+                )
+
             X_selected = selector.fit_transform(X, y)
-            selected_features = [features[i] for i in selector.get_support(indices=True)]
+            selected_features = [
+                features[i] for i in selector.get_support(indices=True)
+            ]
             X = pd.DataFrame(X_selected, columns=selected_features, index=X.index)
-            self.feature_selectors['k_best'] = selector
-            
+            self.feature_selectors["k_best"] = selector
+
             logger.info(
                 "Отобрано признаков",
                 extra={
                     "selected_count": len(selected_features),
-                    "total_count": len(features)
-                }
+                    "total_count": len(features),
+                },
             )
-        
+
         return X, y
-    
+
     def _get_prediction_type(self, y: pd.Series) -> str:
         """Определение типа задачи по целевой переменной"""
-        
-        if y.dtype == 'object' or y.nunique() < 10:
+
+        if y.dtype == "object" or y.nunique() < 10:
             return PredictionType.CLASSIFICATION
         else:
             return PredictionType.REGRESSION
@@ -160,12 +178,12 @@ class DataPreprocessor:
 
 class ModelTrainer:
     """Основной класс для обучения моделей"""
-    
+
     def __init__(
         self,
         mlflow_manager: Optional[MLFlowManager] = None,
         metrics_collector: Optional[MetricsCollector] = None,
-        celery_app: Optional[Celery] = None
+        celery_app: Optional[Celery] = None,
     ):
         self.mlflow_manager = mlflow_manager or MLFlowManager()
         self.metrics_collector = metrics_collector or MetricsCollector()
@@ -183,22 +201,22 @@ class ModelTrainer:
         training_data: pd.DataFrame,
         training_type: TrainingType = TrainingType.INITIAL,
         hyperparameters: Optional[Dict] = None,
-        preprocessing_config: Optional[Dict] = None
+        preprocessing_config: Optional[Dict] = None,
     ) -> str:
         """Создание job для обучения"""
-        
+
         job_id = f"{model_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        
+
         job = TrainingJob(
             job_id=job_id,
             model_name=model_name,
             model_type=model_type,
             training_type=training_type,
-            status=TrainingStatus.PENDING
+            status=TrainingStatus.PENDING,
         )
-        
+
         self.active_jobs[job_id] = job
-        
+
         # Запуск Celery задачи
         if self.celery_app:
             task = self._train_model_task.delay(
@@ -207,32 +225,29 @@ class ModelTrainer:
                 model_type=model_type,
                 features=features,
                 target=target,
-                training_data=training_data.to_dict('records'),
+                training_data=training_data.to_dict("records"),
                 training_type=training_type.value,
                 hyperparameters=hyperparameters,
-                preprocessing_config=preprocessing_config
+                preprocessing_config=preprocessing_config,
             )
             job.celery_task_id = task.id
-            
-            logger.info(
-                "Создан Celery task для обучения",
-                extra={"task_id": task.id}
-            )
-        
+
+            logger.info("Создан Celery task для обучения", extra={"task_id": task.id})
+
         return job_id
 
     def get_job_status(self, job_id: str) -> TrainingJob:
         """Получение статуса job"""
-        
+
         if job_id not in self.active_jobs:
             raise ValueError(f"Job {job_id} не найден")
-        
+
         job = self.active_jobs[job_id]
-        
+
         # Обновляем статус из Celery если доступно
-        if hasattr(job, 'celery_task_id') and self.celery_app:
+        if hasattr(job, "celery_task_id") and self.celery_app:
             task = AsyncResult(job.celery_task_id, app=self.celery_app)
-            
+
             if task.ready():
                 if task.successful():
                     job.status = TrainingStatus.COMPLETED
@@ -241,9 +256,9 @@ class ModelTrainer:
                 else:
                     job.status = TrainingStatus.FAILED
                     job.error_message = str(task.info)
-            elif task.state == 'PROGRESS':
+            elif task.state == "PROGRESS":
                 job.status = TrainingStatus.RUNNING
-        
+
         return job
 
     def train_model(
@@ -257,21 +272,21 @@ class ModelTrainer:
         validation_split: float = 0.2,
         hyperparameters: Optional[Dict] = None,
         preprocessing_config: Optional[Dict] = None,
-        experiment_name: Optional[str] = None
+        experiment_name: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Прямое обучение модели без Celery"""
-        
+
         start_time = datetime.utcnow()
-        
+
         try:
             # Предобработка данных
             X, y = self.preprocessor.prepare_features(
                 training_data, features, target, preprocessing_config
             )
-            
+
             # Определение типа задачи
             prediction_type = self.preprocessor._get_prediction_type(y)
-            
+
             # Разделение данных
             if prediction_type == PredictionType.CLASSIFICATION:
                 X_train, X_test, y_train, y_test = train_test_split(
@@ -281,7 +296,7 @@ class ModelTrainer:
                 X_train, X_test, y_train, y_test = train_test_split(
                     X, y, test_size=test_size, random_state=42
                 )
-            
+
             # Создание модели
             model = create_model(
                 model_type=model_type,
@@ -290,78 +305,88 @@ class ModelTrainer:
                 features=features,
                 target=target,
                 model_params=hyperparameters,
-                mlflow_manager=self.mlflow_manager
+                mlflow_manager=self.mlflow_manager,
             )
-            
+
             # Обучение
             model.fit(X_train, y_train)
-            
+
             # Оценка модели
             train_metrics = model.evaluate(X_train, y_train)
             test_metrics = model.evaluate(X_test, y_test)
-            
+
             # Логирование в MLflow
             if experiment_name:
                 with self.mlflow_manager.start_experiment(experiment_name):
-                    self.mlflow_manager.log_params({
-                        'model_name': model_name,
-                        'model_type': model_type,
-                        'features_count': len(features),
-                        'train_samples': len(X_train),
-                        'test_samples': len(X_test),
-                        'test_size': test_size
-                    })
-                    
-                    all_metrics = {**train_metrics, **{f'test_{k}': v for k, v in test_metrics.items()}}
+                    self.mlflow_manager.log_params(
+                        {
+                            "model_name": model_name,
+                            "model_type": model_type,
+                            "features_count": len(features),
+                            "train_samples": len(X_train),
+                            "test_samples": len(X_test),
+                            "test_size": test_size,
+                        }
+                    )
+
+                    all_metrics = {
+                        **train_metrics,
+                        **{f"test_{k}": v for k, v in test_metrics.items()},
+                    }
                     self.mlflow_manager.log_metrics(all_metrics)
-                    
+
                     # Логирование модели
                     self.mlflow_manager.log_model(
                         model=model,
                         model_name=model_name,
                         model_type=model_type,
-                        input_example=X_train.head(5).to_dict('records')
+                        input_example=X_train.head(5).to_dict("records"),
                     )
-            
+
             end_time = datetime.utcnow()
             training_duration = (end_time - start_time).total_seconds()
-            
+
             result = {
-                'model': model,
-                'train_metrics': train_metrics,
-                'test_metrics': test_metrics,
-                'training_duration_seconds': training_duration,
-                'features_used': features,
-                'preprocessing_config': preprocessing_config
+                "model": model,
+                "train_metrics": train_metrics,
+                "test_metrics": test_metrics,
+                "training_duration_seconds": training_duration,
+                "features_used": features,
+                "preprocessing_config": preprocessing_config,
             }
-            
+
             # Сохранение метрик
             self.metrics_collector.record_user_satisfaction(
                 assistant_role=AssistantRole.ARCHITECT,  # По умолчанию
-                satisfaction_score=test_metrics.get('accuracy', test_metrics.get('r2_score', 0)),
+                satisfaction_score=test_metrics.get(
+                    "accuracy", test_metrics.get("r2_score", 0)
+                ),
                 project_id="model_training",
-                context={'model_name': model_name, 'training_duration': training_duration}
+                context={
+                    "model_name": model_name,
+                    "training_duration": training_duration,
+                },
             )
-            
+
             logger.info(
                 "Модель обучена",
                 extra={
                     "model_name": model_name,
-                    "training_duration_seconds": round(training_duration, 2)
-                }
+                    "training_duration_seconds": round(training_duration, 2),
+                },
             )
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(
                 "Ошибка обучения модели",
                 extra={
                     "model_name": model_name,
                     "error": str(e),
-                    "error_type": type(e).__name__
+                    "error_type": type(e).__name__,
                 },
-                exc_info=True
+                exc_info=True,
             )
             raise
 
@@ -374,43 +399,38 @@ class ModelTrainer:
         training_data: pd.DataFrame,
         param_space: Dict[str, Any],
         n_trials: int = 100,
-        experiment_name: Optional[str] = None
+        experiment_name: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Оптимизация гиперпараметров с Optuna"""
-        
+
         start_time = datetime.utcnow()
-        
+
         try:
             # Предобработка данных
             X, y = self.preprocessor.prepare_features(training_data, features, target)
             X_train, X_test, y_train, y_test = train_test_split(
                 X, y, test_size=0.2, random_state=42
             )
-            
+
             def objective(trial):
                 """Целевая функция для оптимизации"""
-                
+
                 # Создание параметров для текущей попытки
                 current_params = {}
                 for param_name, param_config in param_space.items():
-                    if param_config['type'] == 'int':
+                    if param_config["type"] == "int":
                         current_params[param_name] = trial.suggest_int(
-                            param_name, 
-                            param_config['low'], 
-                            param_config['high']
+                            param_name, param_config["low"], param_config["high"]
                         )
-                    elif param_config['type'] == 'float':
+                    elif param_config["type"] == "float":
                         current_params[param_name] = trial.suggest_float(
-                            param_name,
-                            param_config['low'],
-                            param_config['high']
+                            param_name, param_config["low"], param_config["high"]
                         )
-                    elif param_config['type'] == 'choice':
+                    elif param_config["type"] == "choice":
                         current_params[param_name] = trial.suggest_categorical(
-                            param_name,
-                            param_config['choices']
+                            param_name, param_config["choices"]
                         )
-                
+
                 # Создание и обучение модели
                 model = create_model(
                     model_type=model_type,
@@ -418,24 +438,24 @@ class ModelTrainer:
                     prediction_type=self.preprocessor._get_prediction_type(y),
                     features=features,
                     target=target,
-                    model_params=current_params
+                    model_params=current_params,
                 )
-                
+
                 model.fit(X_train, y_train)
-                
+
                 # Оценка
                 metrics = model.evaluate(X_test, y_test)
-                
+
                 # Возвращаем главную метрику для оптимизации
                 if model.prediction_type == PredictionType.CLASSIFICATION:
-                    return metrics.get('accuracy', 0)
+                    return metrics.get("accuracy", 0)
                 else:
-                    return metrics.get('r2_score', 0)
-            
+                    return metrics.get("r2_score", 0)
+
             # Создание study и оптимизация
-            study = optuna.create_study(direction='maximize')
+            study = optuna.create_study(direction="maximize")
             study.optimize(objective, n_trials=n_trials)
-            
+
             # Обучение финальной модели с лучшими параметрами
             best_params = study.best_params
             final_model = create_model(
@@ -444,61 +464,58 @@ class ModelTrainer:
                 prediction_type=self.preprocessor._get_prediction_type(y),
                 features=features,
                 target=target,
-                model_params=best_params
+                model_params=best_params,
             )
-            
+
             final_model.fit(X_train, y_train)
             final_metrics = final_model.evaluate(X_test, y_test)
-            
+
             end_time = datetime.utcnow()
             tuning_duration = (end_time - start_time).total_seconds()
-            
+
             result = {
-                'best_params': best_params,
-                'best_score': study.best_value,
-                'model': final_model,
-                'metrics': final_metrics,
-                'tuning_duration_seconds': tuning_duration,
-                'study_stats': {
-                    'n_trials': n_trials,
-                    'best_trial_number': study.best_trial.number
-                }
+                "best_params": best_params,
+                "best_score": study.best_value,
+                "model": final_model,
+                "metrics": final_metrics,
+                "tuning_duration_seconds": tuning_duration,
+                "study_stats": {
+                    "n_trials": n_trials,
+                    "best_trial_number": study.best_trial.number,
+                },
             }
-            
+
             # Логирование результатов
             if experiment_name:
                 with self.mlflow_manager.start_experiment(experiment_name):
                     self.mlflow_manager.log_params(best_params)
-                    self.mlflow_manager.log_metrics({
-                        'best_score': study.best_value,
-                        'n_trials': n_trials,
-                        'tuning_duration': tuning_duration
-                    })
-                    
-                    self.mlflow_manager.log_model(
-                        model=final_model,
-                        model_name=model_name,
-                        model_type=model_type
+                    self.mlflow_manager.log_metrics(
+                        {
+                            "best_score": study.best_value,
+                            "n_trials": n_trials,
+                            "tuning_duration": tuning_duration,
+                        }
                     )
-            
+
+                    self.mlflow_manager.log_model(
+                        model=final_model, model_name=model_name, model_type=model_type
+                    )
+
             logger.info(
                 "Гиперпараметры оптимизированы",
                 extra={
                     "tuning_duration_seconds": round(tuning_duration, 2),
-                    "best_score": round(study.best_value, 4)
-                }
+                    "best_score": round(study.best_value, 4),
+                },
             )
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(
                 "Ошибка оптимизации гиперпараметров",
-                extra={
-                    "error": str(e),
-                    "error_type": type(e).__name__
-                },
-                exc_info=True
+                extra={"error": str(e), "error_type": type(e).__name__},
+                exc_info=True,
             )
             raise
 
@@ -508,94 +525,91 @@ class ModelTrainer:
         features: List[str],
         target: str,
         training_data: pd.DataFrame,
-        ensemble_method: str = 'average'
+        ensemble_method: str = "average",
     ) -> ModelEnsemble:
         """Создание ансамбля моделей"""
-        
+
         models = []
-        
+
         for config in model_configs:
             model_result = self.train_model(
-                model_name=config['name'],
-                model_type=config['type'],
+                model_name=config["name"],
+                model_type=config["type"],
                 features=features,
                 target=target,
                 training_data=training_data,
-                hyperparameters=config.get('hyperparameters'),
-                experiment_name=config.get('experiment_name')
+                hyperparameters=config.get("hyperparameters"),
+                experiment_name=config.get("experiment_name"),
             )
-            models.append(model_result['model'])
-        
+            models.append(model_result["model"])
+
         ensemble = ModelEnsemble(models=models, ensemble_method=ensemble_method)
-        
+
         logger.info(
             "Создан ансамбль моделей",
-            extra={
-                "models_count": len(models),
-                "ensemble_method": ensemble_method
-            }
+            extra={"models_count": len(models), "ensemble_method": ensemble_method},
         )
-        
+
         return ensemble
 
     def schedule_continuous_training(self, cron_schedule: str = "0 2 * * *"):
         """Планирование непрерывного обучения через Celery"""
-        
+
         if not self.celery_app:
             raise ValueError("Celery не инициализирован")
-        
+
         @self.celery_app.on_after_configure.connect
         def setup_periodic_tasks(sender, **kwargs):
             """Настройка периодических задач"""
-            
+
             sender.add_periodic_task(
                 crontab(hour=2, minute=0),  # Ежедневно в 2:00
                 self._retrain_all_models_task.s(),
-                name='retrain_all_models'
+                name="retrain_all_models",
             )
-            
+
             sender.add_periodic_task(
                 crontab(hour=6, minute=0),  # Каждые 6 часов
                 self._update_feature_store_task.s(),
-                name='update_feature_store'
+                name="update_feature_store",
             )
 
     @celery_app.task
     def _train_model_task(self, job_id: str, **kwargs):
         """Celery task для обучения модели"""
-        
-        training_data = pd.DataFrame(kwargs['training_data'])
-        
+
+        training_data = pd.DataFrame(kwargs["training_data"])
+
         result = self.train_model(
-            model_name=kwargs['model_name'],
-            model_type=kwargs['model_type'],
-            features=kwargs['features'],
-            target=kwargs['target'],
+            model_name=kwargs["model_name"],
+            model_type=kwargs["model_type"],
+            features=kwargs["features"],
+            target=kwargs["target"],
             training_data=training_data,
-            hyperparameters=kwargs.get('hyperparameters'),
-            preprocessing_config=kwargs.get('preprocessing_config'),
-            experiment_name=f"{kwargs['model_name']}_training"
+            hyperparameters=kwargs.get("hyperparameters"),
+            preprocessing_config=kwargs.get("preprocessing_config"),
+            experiment_name=f"{kwargs['model_name']}_training",
         )
-        
+
         return result
 
     @celery_app.task
     def _retrain_all_models_task(self):
         """Переобучение всех моделей"""
-        
+
         self.logger.info("Запуск переобучения всех моделей")
-        
+
         # Здесь можно добавить логику переобучения всех моделей
         # на основе новых данных
-        
+
         return {"status": "completed", "models_retrained": 0}
 
     @celery_app.task
     def _update_feature_store_task(self):
         """Обновление Feature Store"""
-        
+
         self.logger.info("Обновление Feature Store")
-        
+
         # Обновление фичей для новых данных
-        
+
         return {"status": "completed", "features_updated": 0}

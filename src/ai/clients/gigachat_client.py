@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 3469964817106375621 | DATE: 2025-11-19
+
 """
 Asynchronous client for GigaChat (Sber Devices) LLM.
 
@@ -27,8 +29,12 @@ logger = logging.getLogger(__name__)
 class GigaChatConfig:
     """Configuration holder for GigaChat client."""
 
-    base_url: str = os.getenv("GIGACHAT_API_URL", "https://gigachat.devices.sberbank.ru/api/v1")
-    token_url: str = os.getenv("GIGACHAT_TOKEN_URL", "https://ngw.devices.sberbank.ru:9443/api/v2/oauth")
+    base_url: str = os.getenv(
+        "GIGACHAT_API_URL", "https://gigachat.devices.sberbank.ru/api/v1"
+    )
+    token_url: str = os.getenv(
+        "GIGACHAT_TOKEN_URL", "https://ngw.devices.sberbank.ru:9443/api/v2/oauth"
+    )
     scope: str = os.getenv("GIGACHAT_SCOPE", "GIGACHAT_API_PERS")
     client_id: Optional[str] = os.getenv("GIGACHAT_CLIENT_ID")
     client_secret: Optional[str] = os.getenv("GIGACHAT_CLIENT_SECRET")
@@ -51,7 +57,11 @@ class GigaChatClient:
         """Returns True when we have enough data to perform API calls."""
         return bool(
             self._access_token
-            or (self.config.client_id and self.config.client_secret and self.config.token_url)
+            or (
+                self.config.client_id
+                and self.config.client_secret
+                and self.config.token_url
+            )
         )
 
     async def close(self) -> None:
@@ -89,7 +99,10 @@ class GigaChatClient:
         payload = {
             "model": "GigaChat",
             "messages": [
-                {"role": "system", "content": system_prompt or "Ты помогатель аналитика."},
+                {
+                    "role": "system",
+                    "content": system_prompt or "Ты помогатель аналитика.",
+                },
                 {"role": "user", "content": prompt},
             ],
             "temperature": temperature,
@@ -154,6 +167,7 @@ class GigaChatClient:
         if use_pool:
             try:
                 from src.ai.connection_pool import get_global_pool
+
                 pool = get_global_pool()
                 return await pool.get_session(self.config.base_url)
             except ImportError:
@@ -165,7 +179,11 @@ class GigaChatClient:
         return self._session
 
     async def _ensure_token(self, force: bool = False) -> None:
-        if self._access_token and not force and time.time() < self._token_expires_at - 60:
+        if (
+            self._access_token
+            and not force
+            and time.time() < self._token_expires_at - 60
+        ):
             return
 
         if self.config.access_token and not force:
@@ -208,15 +226,18 @@ class GigaChatClient:
             ) as response:
                 if response.status != 200:
                     text = await response.text()
-                    raise LLMCallError(f"GigaChat token request failed: HTTP {response.status} {text}")
+                    raise LLMCallError(
+                        f"GigaChat token request failed: HTTP {response.status} {text}"
+                    )
 
                 payload = await response.json()
                 self._access_token = payload.get("access_token")
                 expires_in = payload.get("expires_in", 3600)
                 if not self._access_token:
-                    raise LLMCallError(f"GigaChat token response invalid: {json.dumps(payload)}")
+                    raise LLMCallError(
+                        f"GigaChat token response invalid: {json.dumps(payload)}"
+                    )
                 self._token_expires_at = time.time() + int(expires_in)
 
         except aiohttp.ClientError as exc:
             raise LLMCallError(f"GigaChat token network error: {exc}") from exc
-

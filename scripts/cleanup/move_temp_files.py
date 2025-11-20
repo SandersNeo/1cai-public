@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 3509518722577735006 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """Перемещение временных файлов из корня в docs/reports/"""
 

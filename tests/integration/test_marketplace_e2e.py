@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 5039146811883525688 | DATE: 2025-11-19
+
 """
 E2E tests for marketplace API with authentication and role-based access.
 These tests rely on dependency overrides so we can exercise the FastAPI router
@@ -45,7 +47,9 @@ class DummyMarketplaceRepo:
         self.plugins = {}
         self.complaints = []
 
-    async def create_plugin(self, plugin_id, owner_id, owner_username, payload, download_url):
+    async def create_plugin(
+        self, plugin_id, owner_id, owner_username, payload, download_url
+    ):
         plugin = {
             "id": plugin_id,
             "plugin_id": plugin_id,
@@ -94,7 +98,9 @@ class DummyMarketplaceRepo:
         plugin["updated_at"] = "2025-11-15T00:00:01Z"
         return plugin
 
-    async def add_complaint(self, complaint_id, plugin_id, user_id, reason, details=None):
+    async def add_complaint(
+        self, complaint_id, plugin_id, user_id, reason, details=None
+    ):
         if plugin_id not in self.plugins:
             return False
         self.complaints.append(
@@ -289,4 +295,3 @@ async def test_marketplace_authorization_flow(client, developer_user, regular_us
     assert forbidden_response.status_code == 403
 
     app.dependency_overrides.clear()
-

@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 6060644966728006161 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Поиск реальных API эндпоинтов ИТС через анализ JavaScript кода

@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 7244191789325133853 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """Sync Azure Key Vault secrets into Vault KV."""
 

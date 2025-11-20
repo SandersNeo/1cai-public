@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -2852057521250608898 | DATE: 2025-11-19
+
 """Utilities to extract plain text from various document formats."""
 
 from __future__ import annotations
@@ -5,7 +7,6 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import Optional
 
 try:  # pragma: no cover - import guarded for optional dependency
     from docx import Document as DocxDocument
@@ -46,13 +47,17 @@ def read_document(path: Path, *, encoding: str = "utf-8") -> str:
     try:
         return path.read_text(encoding=encoding)
     except UnicodeDecodeError:
-        logger.warning("Failed to decode %s with %s; returning empty string", path, encoding)
+        logger.warning(
+            "Failed to decode %s with %s; returning empty string", path, encoding
+        )
         return ""
 
 
 def _read_docx(path: Path) -> str:
     if DocxDocument is None:
-        logger.warning("python-docx is not installed; returning empty text for %s", path)
+        logger.warning(
+            "python-docx is not installed; returning empty text for %s", path
+        )
         return ""
     document = DocxDocument(path)
     parts = []
@@ -73,4 +78,3 @@ def _read_pdf(path: Path) -> str:
         except Exception as exc:  # pragma: no cover - safety net
             logger.warning("Failed to extract PDF text from %s: %s", path, exc)
     return "\n".join(parts)
-

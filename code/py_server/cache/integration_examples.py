@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 6832659371708019264 | DATE: 2025-11-19
+
 """
 Интеграция MCP Tools Cache с mcp_server.py и onec_client.py
 

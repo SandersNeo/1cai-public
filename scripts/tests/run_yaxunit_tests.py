@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 7206692917995728065 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Запуск YAxUnit тестов через 1С:Предприятие.

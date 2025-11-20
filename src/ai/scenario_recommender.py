@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 139558015001871068 | DATE: 2025-11-19
+
 """
 Scenario Recommender с Unified Change Graph
 -------------------------------------------
@@ -12,8 +14,7 @@ import logging
 import time
 from typing import Any, Dict, List, Optional, Set
 
-from src.ai.code_graph import CodeGraphBackend, Node, NodeKind
-from src.ai.scenario_hub import ScenarioPlan, ScenarioStep
+from src.ai.code_graph import CodeGraphBackend, NodeKind
 
 logger = logging.getLogger(__name__)
 
@@ -126,9 +127,7 @@ class ScenarioRecommender:
 
         return recommendations
 
-    def _infer_task_type(
-        self, query: str, graph_nodes: List[str]
-    ) -> str:
+    def _infer_task_type(self, query: str, graph_nodes: List[str]) -> str:
         """
         Определить тип задачи на основе запроса и узлов графа.
 
@@ -174,9 +173,7 @@ class ScenarioRecommender:
 
         return "ba_dev_qa"  # По умолчанию
 
-    def _get_scenarios_by_task_type(
-        self, task_type: str
-    ) -> Dict[str, Dict[str, Any]]:
+    def _get_scenarios_by_task_type(self, task_type: str) -> Dict[str, Dict[str, Any]]:
         """Получить сценарии для типа задачи."""
         scenarios = {
             "ba_dev_qa": {
@@ -225,9 +222,7 @@ class ScenarioRecommender:
 
         # Проверка ключевых слов в запросе
         keywords = scenario_info.get("keywords", [])
-        matched_keywords = sum(
-            1 for keyword in keywords if keyword in query_lower
-        )
+        matched_keywords = sum(1 for keyword in keywords if keyword in query_lower)
         if keywords:
             score += (matched_keywords / len(keywords)) * 0.5
 
@@ -393,9 +388,7 @@ class ImpactAnalyzer:
             logger.debug("Failed to find related tests: %s", e)
             return []
 
-    def _determine_impact_level(
-        self, num_nodes: int, num_tests: int
-    ) -> str:
+    def _determine_impact_level(self, num_nodes: int, num_tests: int) -> str:
         """Определить уровень влияния."""
         total = num_nodes + num_tests
 
@@ -437,4 +430,3 @@ class ImpactAnalyzer:
             )
 
         return recommendations
-

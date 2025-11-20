@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -270427538935926887 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Diagnostics for LLM providers declared in config/llm_providers.yaml.

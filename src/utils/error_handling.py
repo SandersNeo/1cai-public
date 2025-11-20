@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 3208893905318328916 | DATE: 2025-11-19
+
 """
 Centralized Error Handling
 Версия: 2.1.0
@@ -16,12 +18,10 @@ Features:
 - User-friendly error messages
 """
 
-import logging
 from typing import Optional, Dict, Any
 from fastapi import HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
-from starlette.exceptions import HTTPException as StarletteHTTPException
 from src.utils.structured_logging import StructuredLogger
 
 structured_logger = StructuredLogger(__name__)
@@ -43,9 +43,11 @@ def _safe_request_method(request: Request) -> str:
         scope = getattr(request, "scope", {}) or {}
         return scope.get("method", "UNKNOWN")
 
+
 # Error categories
 class ErrorCategory:
     """Error categories for better error handling"""
+
     VALIDATION = "validation_error"
     AUTHENTICATION = "authentication_error"
     AUTHORIZATION = "authorization_error"
@@ -58,36 +60,37 @@ class ErrorCategory:
 
 class ErrorCode:
     """Standard error codes"""
+
     # Validation
     INVALID_INPUT = "INVALID_INPUT"
     MISSING_REQUIRED_FIELD = "MISSING_REQUIRED_FIELD"
     INVALID_FORMAT = "INVALID_FORMAT"
-    
+
     # Authentication
     INVALID_TOKEN = "INVALID_TOKEN"
     TOKEN_EXPIRED = "TOKEN_EXPIRED"
     MISSING_AUTH_HEADER = "MISSING_AUTH_HEADER"
-    
+
     # Authorization
     INSUFFICIENT_PERMISSIONS = "INSUFFICIENT_PERMISSIONS"
     FORBIDDEN_RESOURCE = "FORBIDDEN_RESOURCE"
-    
+
     # Not Found
     RESOURCE_NOT_FOUND = "RESOURCE_NOT_FOUND"
     ENDPOINT_NOT_FOUND = "ENDPOINT_NOT_FOUND"
-    
+
     # Rate Limit
     RATE_LIMIT_EXCEEDED = "RATE_LIMIT_EXCEEDED"
-    
+
     # Internal
     INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR"
     DATABASE_ERROR = "DATABASE_ERROR"
     CACHE_ERROR = "CACHE_ERROR"
-    
+
     # External Service
     SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE"
     TIMEOUT = "TIMEOUT"
-    
+
     # Business Logic
     BUSINESS_RULE_VIOLATION = "BUSINESS_RULE_VIOLATION"
     INVALID_STATE = "INVALID_STATE"
@@ -96,10 +99,10 @@ class ErrorCode:
 class APIError(HTTPException):
     """
     Custom API error with structured information
-    
+
     Best practice: Use structured errors for better client handling
     """
-    
+
     def __init__(
         self,
         status_code: int,
@@ -114,7 +117,7 @@ class APIError(HTTPException):
         self.category = category
         self.details = details or {}
         self.request_id = request_id
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert error to dictionary"""
         return {
@@ -131,11 +134,11 @@ class APIError(HTTPException):
 async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
     """
     Custom HTTP exception handler
-    
+
     Best practice: Return structured error responses
     """
     request_id = getattr(request.state, "request_id", None)
-    
+
     # Determine error category and code
     if exc.status_code == 404:
         category = ErrorCategory.NOT_FOUND
@@ -152,7 +155,7 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> JSONRe
     else:
         category = ErrorCategory.INTERNAL
         error_code = ErrorCode.INTERNAL_SERVER_ERROR
-    
+
     error_response = {
         "error": {
             "code": error_code,
@@ -161,7 +164,7 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> JSONRe
             "request_id": request_id,
         }
     }
-    
+
     # Log error with structured logging
     logger.error(
         "HTTP exception",
@@ -173,33 +176,37 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> JSONRe
             "error_code": error_code,
             "category": category,
             "error_type": type(exc).__name__,
-            "detail": exc.detail
+            "detail": exc.detail,
         },
-        exc_info=exc.status_code >= 500  # Full traceback for server errors
+        exc_info=exc.status_code >= 500,  # Full traceback for server errors
     )
-    
+
     return JSONResponse(
         status_code=exc.status_code,
         content=error_response,
     )
 
 
-async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
     """
     Custom validation exception handler
-    
+
     Best practice: Provide detailed validation errors
     """
     request_id = getattr(request.state, "request_id", None)
-    
+
     errors = []
     for error in exc.errors():
-        errors.append({
-            "field": ".".join(str(loc) for loc in error["loc"]),
-            "message": error["msg"],
-            "type": error["type"],
-        })
-    
+        errors.append(
+            {
+                "field": ".".join(str(loc) for loc in error["loc"]),
+                "message": error["msg"],
+                "type": error["type"],
+            }
+        )
+
     error_response = {
         "error": {
             "code": ErrorCode.INVALID_INPUT,
@@ -211,7 +218,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             "request_id": request_id,
         }
     }
-    
+
     logger.warning(
         f"Validation error: {len(errors)} field(s) failed validation",
         extra={
@@ -219,10 +226,10 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             "path": _safe_request_path(request),
             "method": _safe_request_method(request),
             "errors_count": len(errors),
-            "errors": errors
-        }
+            "errors": errors,
+        },
     )
-    
+
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content=error_response,
@@ -232,11 +239,11 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """
     General exception handler for unhandled exceptions
-    
+
     Best practice: Don't expose internal errors to clients
     """
     request_id = getattr(request.state, "request_id", None)
-    
+
     # Log full exception with structured logging
     logger.error(
         "Unhandled exception",
@@ -247,11 +254,11 @@ async def general_exception_handler(request: Request, exc: Exception) -> JSONRes
             "path": _safe_request_path(request),
             "method": _safe_request_method(request),
             "exception_type": type(exc).__name__,
-            "exception_message": str(exc)
+            "exception_message": str(exc),
         },
-        exc_info=True
+        exc_info=True,
     )
-    
+
     error_response = {
         "error": {
             "code": ErrorCode.INTERNAL_SERVER_ERROR,
@@ -260,7 +267,7 @@ async def general_exception_handler(request: Request, exc: Exception) -> JSONRes
             "request_id": request_id,
         }
     }
-    
+
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content=error_response,
@@ -270,7 +277,7 @@ async def general_exception_handler(request: Request, exc: Exception) -> JSONRes
 def register_error_handlers(app):
     """
     Register all error handlers with FastAPI app
-    
+
     Usage:
         from src.utils.error_handling import register_error_handlers
         register_error_handlers(app)
@@ -278,6 +285,5 @@ def register_error_handlers(app):
     app.add_exception_handler(HTTPException, http_exception_handler)
     app.add_exception_handler(RequestValidationError, validation_exception_handler)
     app.add_exception_handler(Exception, general_exception_handler)
-    
-    logger.info("✅ Error handlers registered")
 
+    logger.info("✅ Error handlers registered")

@@ -1,14 +1,15 @@
+# [NEXUS IDENTITY] ID: -35508739372294776 | DATE: 2025-11-19
+
 """Высокоуровневый логгер событий."""
 
 from __future__ import annotations
 
 import json
-from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
-from .events import EventRecord, ISO_FORMAT, _now_utc
+from .events import EventRecord, _now_utc
 from .storage import SQLiteEventStore
 
 
@@ -59,7 +60,9 @@ class EventLogger:
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         out_path = self.outbox_dir / f"events-{timestamp}.json"
         serialized = [event.to_dict() for event in events]
-        out_path.write_text(json.dumps(serialized, ensure_ascii=False, indent=2), encoding="utf-8")
+        out_path.write_text(
+            json.dumps(serialized, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
 
         self._store.mark_synced((event.record_id for event in events), _now_utc())
         return out_path
@@ -73,7 +76,9 @@ class EventLogger:
     def recent(self, limit: int = 20) -> List[EventRecord]:
         return self._store.fetch_recent(limit=limit)
 
-    def import_events(self, events: Iterable[EventRecord], *, mark_synced: bool = True) -> int:
+    def import_events(
+        self, events: Iterable[EventRecord], *, mark_synced: bool = True
+    ) -> int:
         synced_at = _now_utc() if mark_synced else None
         return self._store.import_events(events, synced_at=synced_at)
 
@@ -85,4 +90,3 @@ class EventLogger:
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self.close()
-

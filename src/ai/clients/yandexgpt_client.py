@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -4876162559593894968 | DATE: 2025-11-19
+
 """
 Async client for YandexGPT API.
 
@@ -14,7 +16,6 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
 import aiohttp
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
 
 from .exceptions import LLMCallError, LLMNotConfiguredError
 
@@ -23,7 +24,9 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class YandexGPTConfig:
-    base_url: str = os.getenv("YANDEXGPT_API_URL", "https://llm.api.cloud.yandex.net/llm/v1alpha")
+    base_url: str = os.getenv(
+        "YANDEXGPT_API_URL", "https://llm.api.cloud.yandex.net/llm/v1alpha"
+    )
     folder_id: Optional[str] = os.getenv("YANDEXGPT_FOLDER_ID")
     api_key: Optional[str] = os.getenv("YANDEXGPT_API_KEY")
     model_name: str = os.getenv("YANDEXGPT_MODEL", "yandexgpt/latest")
@@ -72,7 +75,10 @@ class YandexGPTClient:
         }
 
         messages = [
-            {"role": "system", "text": system_prompt or "Assistant for business analyst tasks."},
+            {
+                "role": "system",
+                "text": system_prompt or "Assistant for business analyst tasks.",
+            },
             {"role": "user", "text": prompt},
         ]
 
@@ -125,6 +131,7 @@ class YandexGPTClient:
         if use_pool:
             try:
                 from src.ai.connection_pool import get_global_pool
+
                 pool = get_global_pool()
                 return await pool.get_session(self.config.base_url)
             except ImportError:
@@ -134,4 +141,3 @@ class YandexGPTClient:
         if self._session is None or self._session.closed:
             self._session = aiohttp.ClientSession(timeout=self._timeout)
         return self._session
-

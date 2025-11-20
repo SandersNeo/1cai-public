@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 4584524652348813128 | DATE: 2025-11-19
+
 """
 Business Analyst AI Agent Extended.
 
@@ -16,9 +18,14 @@ import re
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Union
 
-from src.ai.clients import GigaChatClient, LLMCallError, LLMNotConfiguredError, YandexGPTClient
+from src.ai.clients import (
+    GigaChatClient,
+    LLMCallError,
+    LLMNotConfiguredError,
+    YandexGPTClient,
+)
 from src.ai.utils.document_loader import read_document
 from src.integrations.confluence import ConfluenceClient
 from src.integrations.exceptions import IntegrationConfigError
@@ -83,7 +90,9 @@ class RequirementsExtractor:
         *,
         source_path: Optional[str] = None,
     ) -> Dict[str, Any]:
-        logger.info("Extracting requirements (heuristics) for document type %s", document_type)
+        logger.info(
+            "Extracting requirements (heuristics) for document type %s", document_type
+        )
 
         sentences = self._split_sentences(document_text)
         functional: List[Dict[str, Any]] = []
@@ -102,7 +111,9 @@ class RequirementsExtractor:
                     if not match:
                         continue
                     body = match.groupdict().get("body") or match.group(0)
-                    requirement = self._build_requirement(req_type, body, cleaned, sentence_index=idx)
+                    requirement = self._build_requirement(
+                        req_type, body, cleaned, sentence_index=idx
+                    )
                     if req_type == "functional":
                         functional.append(requirement)
                     elif req_type == "non_functional":
@@ -179,14 +190,22 @@ class RequirementsExtractor:
         body = _normalize_whitespace(body)
         sentence = _normalize_whitespace(sentence)
 
-        prefix = {"functional": "FR", "non_functional": "NFR", "constraint": "CON"}[req_type]
+        prefix = {"functional": "FR", "non_functional": "NFR", "constraint": "CON"}[
+            req_type
+        ]
         requirement_id = f"{prefix}-{sentence_index + 1:03d}"
 
         priority = "medium"
         lowered = sentence.lower()
-        if any(keyword in lowered for keyword in ("обязательно", "критично", "срочно", "must")):
+        if any(
+            keyword in lowered
+            for keyword in ("обязательно", "критично", "срочно", "must")
+        ):
             priority = "high"
-        elif any(keyword in lowered for keyword in ("желательно", "может", "опционально", "nice to have")):
+        elif any(
+            keyword in lowered
+            for keyword in ("желательно", "может", "опционально", "nice to have")
+        ):
             priority = "low"
 
         confidence = 0.65
@@ -385,17 +404,19 @@ class BPMNGenerator:
     def __init__(self) -> None:
         self.default_lane = "System"
         self._max_label_length = 120
-        self._mermaid_translation = str.maketrans({
-            "[": "(",
-            "]": ")",
-            "{": "(",
-            "}": ")",
-            "<": " ",
-            ">": " ",
-            "`": " ",
-            '"': " ",
-            "'": " ",
-        })
+        self._mermaid_translation = str.maketrans(
+            {
+                "[": "(",
+                "]": ")",
+                "{": "(",
+                "}": ")",
+                "<": " ",
+                ">": " ",
+                "`": " ",
+                '"': " ",
+                "'": " ",
+            }
+        )
 
     def _sanitize_step(self, text: str, *, for_mermaid: bool) -> str:
         cleaned = re.sub(r"\s+", " ", text or "").strip()
@@ -458,15 +479,13 @@ class BPMNGenerator:
 
 class GapAnalyzer:
     """Анализатор разрывов между текущим и желаемым состоянием"""
-    
+
     async def perform_gap_analysis(
-        self,
-        current_state: Dict,
-        desired_state: Dict
+        self, current_state: Dict, desired_state: Dict
     ) -> Dict[str, Any]:
         """
         Gap анализ
-        
+
         Args:
             current_state: {
                 "processes": [...],
@@ -478,187 +497,202 @@ class GapAnalyzer:
                 "systems": [...],
                 "capabilities": [...]
             }
-        
+
         Returns:
             Детальный gap analysis с roadmap
         """
         logger.info("Performing gap analysis")
-        
+
         gaps = []
-        
+
         # Analyze processes
         current_processes = set(current_state.get("processes", []))
         desired_processes = set(desired_state.get("processes", []))
         missing_processes = desired_processes - current_processes
-        
+
         for process in missing_processes:
-            gaps.append({
-                "area": "Processes",
-                "gap": process,
-                "current": "Not implemented",
-                "desired": "Automated process",
-                "impact": "high",
-                "effort": "medium",
-                "priority": 8
-            })
-        
+            gaps.append(
+                {
+                    "area": "Processes",
+                    "gap": process,
+                    "current": "Not implemented",
+                    "desired": "Automated process",
+                    "impact": "high",
+                    "effort": "medium",
+                    "priority": 8,
+                }
+            )
+
         # Analyze systems
         current_systems = set(current_state.get("systems", []))
         desired_systems = set(desired_state.get("systems", []))
         missing_systems = desired_systems - current_systems
-        
+
         for system in missing_systems:
-            gaps.append({
-                "area": "Systems",
-                "gap": system,
-                "current": "Not available",
-                "desired": "Integrated system",
-                "impact": "high",
-                "effort": "high",
-                "priority": 7
-            })
-        
+            gaps.append(
+                {
+                    "area": "Systems",
+                    "gap": system,
+                    "current": "Not available",
+                    "desired": "Integrated system",
+                    "impact": "high",
+                    "effort": "high",
+                    "priority": 7,
+                }
+            )
+
         # Analyze capabilities
         current_capabilities = set(current_state.get("capabilities", []))
         desired_capabilities = set(desired_state.get("capabilities", []))
         missing_capabilities = desired_capabilities - current_capabilities
-        
+
         for capability in missing_capabilities:
-            gaps.append({
-                "area": "Capabilities",
-                "gap": capability,
-                "current": "Manual/Limited",
-                "desired": "Full capability",
-                "impact": "medium",
-                "effort": "medium",
-                "priority": 6
-            })
-        
+            gaps.append(
+                {
+                    "area": "Capabilities",
+                    "gap": capability,
+                    "current": "Manual/Limited",
+                    "desired": "Full capability",
+                    "impact": "medium",
+                    "effort": "medium",
+                    "priority": 6,
+                }
+            )
+
         # Sort by priority
         gaps.sort(key=lambda x: x["priority"], reverse=True)
-        
+
         # Generate roadmap
         roadmap = self._generate_roadmap(gaps)
-        
+
         # Estimate cost and timeline
         total_effort_days = sum(
-            {"low": 10, "medium": 30, "high": 90}.get(gap["effort"], 30)
-            for gap in gaps
+            {"low": 10, "medium": 30, "high": 90}.get(gap["effort"], 30) for gap in gaps
         )
-        
+
         return {
             "gaps_found": len(gaps),
             "gaps": gaps,
             "roadmap": roadmap,
-            "estimated_timeline_months": total_effort_days // 20,  # Business days to months
+            "estimated_timeline_months": total_effort_days
+            // 20,  # Business days to months
             "estimated_cost_eur": total_effort_days * 500,  # €500/day
-            "priority_gaps": [g for g in gaps if g["priority"] >= 7]
+            "priority_gaps": [g for g in gaps if g["priority"] >= 7],
         }
-    
+
     def _generate_roadmap(self, gaps: List[Dict]) -> List[Dict]:
         """Генерация дорожной карты"""
         roadmap = []
-        
+
         # Phase 1: High priority, low effort
-        phase1 = [g for g in gaps if g["priority"] >= 7 and g["effort"] in ["low", "medium"]]
+        phase1 = [
+            g for g in gaps if g["priority"] >= 7 and g["effort"] in ["low", "medium"]
+        ]
         if phase1:
-            roadmap.append({
-                "phase": "Phase 1: Quick Wins",
-                "duration_months": 1,
-                "gaps": [g["gap"] for g in phase1]
-            })
-        
+            roadmap.append(
+                {
+                    "phase": "Phase 1: Quick Wins",
+                    "duration_months": 1,
+                    "gaps": [g["gap"] for g in phase1],
+                }
+            )
+
         # Phase 2: High priority, high effort
         phase2 = [g for g in gaps if g["priority"] >= 7 and g["effort"] == "high"]
         if phase2:
-            roadmap.append({
-                "phase": "Phase 2: Strategic Initiatives",
-                "duration_months": 3,
-                "gaps": [g["gap"] for g in phase2]
-            })
-        
+            roadmap.append(
+                {
+                    "phase": "Phase 2: Strategic Initiatives",
+                    "duration_months": 3,
+                    "gaps": [g["gap"] for g in phase2],
+                }
+            )
+
         # Phase 3: Medium priority
         phase3 = [g for g in gaps if g["priority"] < 7]
         if phase3:
-            roadmap.append({
-                "phase": "Phase 3: Improvements",
-                "duration_months": 2,
-                "gaps": [g["gap"] for g in phase3]
-            })
-        
+            roadmap.append(
+                {
+                    "phase": "Phase 3: Improvements",
+                    "duration_months": 2,
+                    "gaps": [g["gap"] for g in phase3],
+                }
+            )
+
         return roadmap
 
 
 class TraceabilityMatrixGenerator:
     """Генератор матрицы прослеживаемости требований"""
-    
+
     async def generate_matrix(
-        self,
-        requirements: List[Dict],
-        test_cases: List[Dict]
+        self, requirements: List[Dict], test_cases: List[Dict]
     ) -> Dict[str, Any]:
         """
         Генерация матрицы прослеживаемости
-        
+
         Args:
             requirements: [{id, title, ...}]
             test_cases: [{id, requirement_ids, ...}]
-        
+
         Returns:
             Матрица с coverage analysis
         """
         logger.info("Generating traceability matrix")
-        
+
         matrix = []
-        
+
         for req in requirements:
             req_id = req.get("id")
-            
+
             # Find test cases covering this requirement
             covering_tests = [
-                tc for tc in test_cases
-                if req_id in tc.get("requirement_ids", [])
+                tc for tc in test_cases if req_id in tc.get("requirement_ids", [])
             ]
-            
-            matrix.append({
-                "requirement_id": req_id,
-                "requirement_title": req.get("title"),
-                "test_cases": [tc.get("id") for tc in covering_tests],
-                "coverage": "100%" if covering_tests else "0%",
-                "test_count": len(covering_tests)
-            })
-        
+
+            matrix.append(
+                {
+                    "requirement_id": req_id,
+                    "requirement_title": req.get("title"),
+                    "test_cases": [tc.get("id") for tc in covering_tests],
+                    "coverage": "100%" if covering_tests else "0%",
+                    "test_count": len(covering_tests),
+                }
+            )
+
         # Coverage summary
         total_reqs = len(requirements)
         covered_reqs = sum(1 for m in matrix if m["test_count"] > 0)
-        coverage_percent = int((covered_reqs / total_reqs) * 100) if total_reqs > 0 else 0
-        
+        coverage_percent = (
+            int((covered_reqs / total_reqs) * 100) if total_reqs > 0 else 0
+        )
+
         return {
             "matrix": matrix,
             "coverage_summary": {
                 "total_requirements": total_reqs,
                 "covered_requirements": covered_reqs,
                 "uncovered_requirements": total_reqs - covered_reqs,
-                "coverage_percent": coverage_percent
+                "coverage_percent": coverage_percent,
             },
             "uncovered_requirements": [
                 m["requirement_id"] for m in matrix if m["test_count"] == 0
             ],
-            "generated_at": datetime.now().isoformat()
+            "generated_at": datetime.now().isoformat(),
         }
 
 
 class BusinessAnalystAgentExtended:
     """
     Расширенный Business Analyst AI ассистент
-    
+
     Возможности:
     - Requirements Extraction (NLP)
     - BPMN Generation
     - Gap Analysis
     - Traceability Matrix
     """
-    
+
     def __init__(self) -> None:
         self.requirements_extractor = RequirementsExtractor()
         self.bpmn_generator = BPMNGenerator()
@@ -710,35 +744,28 @@ class BusinessAnalystAgentExtended:
         file_path = Path(path)
         text = read_document(file_path)
         inferred_type = document_type or self._infer_document_type(file_path)
-        return await self.extract_requirements(text, inferred_type, source_path=str(file_path))
-    
-    async def generate_bpmn(
-        self,
-        process_description: str
-    ) -> Dict[str, Any]:
+        return await self.extract_requirements(
+            text, inferred_type, source_path=str(file_path)
+        )
+
+    async def generate_bpmn(self, process_description: str) -> Dict[str, Any]:
         """Генерация BPMN диаграммы"""
         return await self.bpmn_generator.generate_bpmn(process_description)
-    
+
     async def analyze_gap(
-        self,
-        current_state: Dict,
-        desired_state: Dict
+        self, current_state: Dict, desired_state: Dict
     ) -> Dict[str, Any]:
         """Gap анализ"""
         return await self.gap_analyzer.perform_gap_analysis(
-            current_state,
-            desired_state
+            current_state, desired_state
         )
-    
+
     async def generate_traceability_matrix(
-        self,
-        requirements: List[Dict],
-        test_cases: List[Dict]
+        self, requirements: List[Dict], test_cases: List[Dict]
     ) -> Dict[str, Any]:
         """Матрица прослеживаемости"""
         return await self.traceability_generator.generate_matrix(
-            requirements,
-            test_cases
+            requirements, test_cases
         )
 
     # === BA‑03: Process & Journey Modelling ===
@@ -769,7 +796,9 @@ class BusinessAnalystAgentExtended:
         if use_graph:
             try:
                 from src.ai.code_graph import InMemoryCodeGraphBackend
-                from src.ai.agents.process_modelling_with_graph import ProcessModellerWithGraph
+                from src.ai.agents.process_modelling_with_graph import (
+                    ProcessModellerWithGraph,
+                )
 
                 backend = InMemoryCodeGraphBackend()
                 process_modeller = ProcessModellerWithGraph(backend)
@@ -793,7 +822,8 @@ class BusinessAnalystAgentExtended:
 
             except Exception as e:
                 logger.debug(
-                    "Failed to use graph-based process modelling, falling back to basic: %s", e
+                    "Failed to use graph-based process modelling, falling back to basic: %s",
+                    e,
                 )
                 # Fallback на базовый подход
 
@@ -832,7 +862,9 @@ class BusinessAnalystAgentExtended:
         if use_graph:
             try:
                 from src.ai.code_graph import InMemoryCodeGraphBackend
-                from src.ai.agents.process_modelling_with_graph import ProcessModellerWithGraph
+                from src.ai.agents.process_modelling_with_graph import (
+                    ProcessModellerWithGraph,
+                )
 
                 backend = InMemoryCodeGraphBackend()
                 process_modeller = ProcessModellerWithGraph(backend)
@@ -855,7 +887,8 @@ class BusinessAnalystAgentExtended:
 
             except Exception as e:
                 logger.debug(
-                    "Failed to use graph-based journey mapping, falling back to basic: %s", e
+                    "Failed to use graph-based journey mapping, falling back to basic: %s",
+                    e,
                 )
 
         # Базовый подход (без графа)
@@ -887,7 +920,9 @@ class BusinessAnalystAgentExtended:
         """
         try:
             from src.ai.code_graph import InMemoryCodeGraphBackend
-            from src.ai.agents.process_modelling_with_graph import ProcessModellerWithGraph
+            from src.ai.agents.process_modelling_with_graph import (
+                ProcessModellerWithGraph,
+            )
 
             backend = InMemoryCodeGraphBackend()
             process_modeller = ProcessModellerWithGraph(backend)
@@ -956,7 +991,8 @@ class BusinessAnalystAgentExtended:
 
             except Exception as e:
                 logger.debug(
-                    "Failed to use graph-based KPI generation, falling back to basic: %s", e
+                    "Failed to use graph-based KPI generation, falling back to basic: %s",
+                    e,
                 )
                 # Fallback на базовый подход
 
@@ -1027,7 +1063,9 @@ class BusinessAnalystAgentExtended:
                 traceability_graph = TraceabilityWithGraph(backend)
 
                 # Извлечь ID требований
-                requirement_ids = [req.get("id") for req in requirements if req.get("id")]
+                requirement_ids = [
+                    req.get("id") for req in requirements if req.get("id")
+                ]
 
                 # Построить полный отчёт с использованием графа
                 full_report = await traceability_graph.build_full_traceability_report(
@@ -1038,7 +1076,8 @@ class BusinessAnalystAgentExtended:
 
             except Exception as e:
                 logger.debug(
-                    "Failed to use graph-based traceability, falling back to basic: %s", e
+                    "Failed to use graph-based traceability, falling back to basic: %s",
+                    e,
                 )
                 # Fallback на базовый генератор
 
@@ -1111,7 +1150,9 @@ class BusinessAnalystAgentExtended:
         if use_graph:
             try:
                 from src.ai.code_graph import InMemoryCodeGraphBackend
-                from src.ai.agents.integrations_with_graph import IntegrationSyncWithGraph
+                from src.ai.agents.integrations_with_graph import (
+                    IntegrationSyncWithGraph,
+                )
 
                 backend = InMemoryCodeGraphBackend()
                 integration_sync = IntegrationSyncWithGraph(backend)
@@ -1155,7 +1196,9 @@ class BusinessAnalystAgentExtended:
         if use_graph:
             try:
                 from src.ai.code_graph import InMemoryCodeGraphBackend
-                from src.ai.agents.integrations_with_graph import IntegrationSyncWithGraph
+                from src.ai.agents.integrations_with_graph import (
+                    IntegrationSyncWithGraph,
+                )
 
                 backend = InMemoryCodeGraphBackend()
                 integration_sync = IntegrationSyncWithGraph(backend)
@@ -1209,7 +1252,9 @@ class BusinessAnalystAgentExtended:
         if use_graph:
             try:
                 from src.ai.code_graph import InMemoryCodeGraphBackend
-                from src.ai.agents.integrations_with_graph import IntegrationSyncWithGraph
+                from src.ai.agents.integrations_with_graph import (
+                    IntegrationSyncWithGraph,
+                )
 
                 backend = InMemoryCodeGraphBackend()
                 integration_sync = IntegrationSyncWithGraph(backend)
@@ -1224,9 +1269,7 @@ class BusinessAnalystAgentExtended:
                 return result
 
             except Exception as e:
-                logger.debug(
-                    "Failed to sync BPMN with graph, using basic sync: %s", e
-                )
+                logger.debug("Failed to sync BPMN with graph, using basic sync: %s", e)
 
         # Базовый подход (без графа)
         return {
@@ -1258,7 +1301,9 @@ class BusinessAnalystAgentExtended:
         if use_graph:
             try:
                 from src.ai.code_graph import InMemoryCodeGraphBackend
-                from src.ai.agents.integrations_with_graph import IntegrationSyncWithGraph
+                from src.ai.agents.integrations_with_graph import (
+                    IntegrationSyncWithGraph,
+                )
 
                 backend = InMemoryCodeGraphBackend()
                 integration_sync = IntegrationSyncWithGraph(backend)
@@ -1273,9 +1318,7 @@ class BusinessAnalystAgentExtended:
                 return result
 
             except Exception as e:
-                logger.debug(
-                    "Failed to sync KPI with graph, using basic sync: %s", e
-                )
+                logger.debug("Failed to sync KPI with graph, using basic sync: %s", e)
 
         return {
             "ba_feature": "BA-06",
@@ -1306,7 +1349,9 @@ class BusinessAnalystAgentExtended:
         if use_graph:
             try:
                 from src.ai.code_graph import InMemoryCodeGraphBackend
-                from src.ai.agents.integrations_with_graph import IntegrationSyncWithGraph
+                from src.ai.agents.integrations_with_graph import (
+                    IntegrationSyncWithGraph,
+                )
 
                 backend = InMemoryCodeGraphBackend()
                 integration_sync = IntegrationSyncWithGraph(backend)
@@ -1358,7 +1403,9 @@ class BusinessAnalystAgentExtended:
         if use_graph:
             try:
                 from src.ai.code_graph import InMemoryCodeGraphBackend
-                from src.ai.agents.enablement_with_graph import EnablementGeneratorWithGraph
+                from src.ai.agents.enablement_with_graph import (
+                    EnablementGeneratorWithGraph,
+                )
 
                 backend = InMemoryCodeGraphBackend()
                 enablement_generator = EnablementGeneratorWithGraph(backend)
@@ -1429,7 +1476,9 @@ class BusinessAnalystAgentExtended:
         if use_graph:
             try:
                 from src.ai.code_graph import InMemoryCodeGraphBackend
-                from src.ai.agents.enablement_with_graph import EnablementGeneratorWithGraph
+                from src.ai.agents.enablement_with_graph import (
+                    EnablementGeneratorWithGraph,
+                )
 
                 backend = InMemoryCodeGraphBackend()
                 enablement_generator = EnablementGeneratorWithGraph(backend)
@@ -1444,9 +1493,7 @@ class BusinessAnalystAgentExtended:
                 return result
 
             except Exception as e:
-                logger.debug(
-                    "Failed to generate guide with graph, using basic: %s", e
-                )
+                logger.debug("Failed to generate guide with graph, using basic: %s", e)
 
         # Базовый подход (без графа)
         return {
@@ -1485,7 +1532,9 @@ class BusinessAnalystAgentExtended:
         if use_graph:
             try:
                 from src.ai.code_graph import InMemoryCodeGraphBackend
-                from src.ai.agents.enablement_with_graph import EnablementGeneratorWithGraph
+                from src.ai.agents.enablement_with_graph import (
+                    EnablementGeneratorWithGraph,
+                )
 
                 backend = InMemoryCodeGraphBackend()
                 enablement_generator = EnablementGeneratorWithGraph(backend)
@@ -1537,7 +1586,9 @@ class BusinessAnalystAgentExtended:
         if use_graph:
             try:
                 from src.ai.code_graph import InMemoryCodeGraphBackend
-                from src.ai.agents.enablement_with_graph import EnablementGeneratorWithGraph
+                from src.ai.agents.enablement_with_graph import (
+                    EnablementGeneratorWithGraph,
+                )
 
                 backend = InMemoryCodeGraphBackend()
                 enablement_generator = EnablementGeneratorWithGraph(backend)
@@ -1588,7 +1639,9 @@ class RequirementsLLMEnhancer:
         gigachat: Optional[GigaChatClient],
         yandex: Optional[YandexGPTClient],
     ) -> None:
-        self.clients = [client for client in (gigachat, yandex) if client and client.is_configured]
+        self.clients = [
+            client for client in (gigachat, yandex) if client and client.is_configured
+        ]
 
     async def enhance(self, data: Dict[str, Any], original_text: str) -> Dict[str, Any]:
         if not self.clients:
@@ -1600,7 +1653,9 @@ class RequirementsLLMEnhancer:
             try:
                 response = await client.generate(prompt, response_format="json")
             except (LLMNotConfiguredError, LLMCallError) as exc:
-                logger.warning("LLM enhancement failed for %s: %s", client.__class__.__name__, exc)
+                logger.warning(
+                    "LLM enhancement failed for %s: %s", client.__class__.__name__, exc
+                )
                 continue
 
             message = response.get("text") or ""
@@ -1611,7 +1666,9 @@ class RequirementsLLMEnhancer:
                 merged["summary"]["llm_provider"] = client.__class__.__name__
                 return merged
             except json.JSONDecodeError:
-                logger.warning("Failed to parse LLM response as JSON, skipping provider %s", client)
+                logger.warning(
+                    "Failed to parse LLM response as JSON, skipping provider %s", client
+                )
                 continue
 
         data["summary"]["llm_used"] = False
@@ -1626,13 +1683,17 @@ class RequirementsLLMEnhancer:
             "non_functional_requirements, constraints, user_stories, acceptance_criteria, stakeholders."
             "\nСохраняй идентификаторы, если корректируешь запись.\n"
         )
-        prompt += f"\nТекст документа:\n\"\"\"\n{original_text[:4000]}\n\"\"\"\n"
+        prompt += f'\nТекст документа:\n"""\n{original_text[:4000]}\n"""\n'
         prompt += f"\nТекущее резюме: {json.dumps(summary, ensure_ascii=False)}"
         return prompt
 
     def _merge(self, base: Dict[str, Any], llm_data: Dict[str, Any]) -> Dict[str, Any]:
         def _merge_list(key: str) -> List[Any]:
-            existing = {item["id"]: item for item in base.get(key, []) if isinstance(item, dict) and "id" in item}
+            existing = {
+                item["id"]: item
+                for item in base.get(key, [])
+                if isinstance(item, dict) and "id" in item
+            }
             additional = []
             for item in llm_data.get(key, []):
                 if isinstance(item, dict) and "id" in item:
@@ -1643,15 +1704,20 @@ class RequirementsLLMEnhancer:
 
         merged = dict(base)
         merged["functional_requirements"] = _merge_list("functional_requirements")
-        merged["non_functional_requirements"] = _merge_list("non_functional_requirements")
+        merged["non_functional_requirements"] = _merge_list(
+            "non_functional_requirements"
+        )
         merged["constraints"] = _merge_list("constraints")
-        merged["user_stories"] = llm_data.get("user_stories", merged.get("user_stories", []))
+        merged["user_stories"] = llm_data.get(
+            "user_stories", merged.get("user_stories", [])
+        )
         merged["acceptance_criteria"] = llm_data.get(
             "acceptance_criteria", merged.get("acceptance_criteria", [])
         )
         merged["stakeholders"] = list(
             sorted(
-                set(merged.get("stakeholders", [])) | set(llm_data.get("stakeholders", []))
+                set(merged.get("stakeholders", []))
+                | set(llm_data.get("stakeholders", []))
             )
         )
         return merged
@@ -1671,7 +1737,9 @@ class IntegrationConnector:
         docflow_client: Optional[OneCDocflowClient] = None,
     ) -> None:
         self.jira_client = jira_client or self._init_client(JiraClient)
-        self.confluence_client = confluence_client or self._init_client(ConfluenceClient)
+        self.confluence_client = confluence_client or self._init_client(
+            ConfluenceClient
+        )
         self.powerbi_client = powerbi_client or self._init_client(PowerBIClient)
         self.docflow_client = docflow_client or self._init_client(OneCDocflowClient)
 
@@ -1683,7 +1751,9 @@ class IntegrationConnector:
         except IntegrationConfigError:
             return None
 
-    async def sync(self, artefact: Dict[str, Any], targets: Optional[Iterable[str]] = None) -> Dict[str, Any]:
+    async def sync(
+        self, artefact: Dict[str, Any], targets: Optional[Iterable[str]] = None
+    ) -> Dict[str, Any]:
         targets_list = list(targets) if targets else ["jira", "confluence"]
         results: List[Dict[str, Any]] = []
         for target in targets_list:
@@ -1703,7 +1773,12 @@ class IntegrationConnector:
     async def aclose(self) -> None:
         tasks = [
             client.aclose()
-            for client in (self.jira_client, self.confluence_client, self.powerbi_client, self.docflow_client)
+            for client in (
+                self.jira_client,
+                self.confluence_client,
+                self.powerbi_client,
+                self.docflow_client,
+            )
             if client
         ]
         if tasks:
@@ -1713,10 +1788,17 @@ class IntegrationConnector:
         if not self.jira_client:
             return self._queued("jira", "not_configured")
         metadata = artefact.get("metadata", {})
-        project_key = metadata.get("project_key") or os.getenv("BA_JIRA_DEFAULT_PROJECT")
+        project_key = metadata.get("project_key") or os.getenv(
+            "BA_JIRA_DEFAULT_PROJECT"
+        )
         if not project_key:
             return self._queued("jira", "project_key_missing")
-        summary = metadata.get("summary") or metadata.get("title") or artefact.get("title") or "BA Artefact"
+        summary = (
+            metadata.get("summary")
+            or metadata.get("title")
+            or artefact.get("title")
+            or "BA Artefact"
+        )
         description = metadata.get("description") or artefact.get("content", "")
         fields = metadata.get("jira_fields")
         summary = self._safe_text(summary, max_len=255, fallback="BA Artefact")
@@ -1741,7 +1823,12 @@ class IntegrationConnector:
         space_key = metadata.get("space_key") or os.getenv("BA_CONFLUENCE_SPACE_KEY")
         if not space_key:
             return self._queued("confluence", "space_key_missing")
-        title = metadata.get("title") or metadata.get("summary") or artefact.get("title") or "BA Artefact"
+        title = (
+            metadata.get("title")
+            or metadata.get("summary")
+            or artefact.get("title")
+            or "BA Artefact"
+        )
         raw_body = metadata.get("body") or artefact.get("content") or ""
         body = self._as_paragraphs(raw_body)
         response = await self.confluence_client.create_page(
@@ -1760,7 +1847,9 @@ class IntegrationConnector:
         if not self.powerbi_client:
             return self._queued("powerbi", "not_configured")
         metadata = artefact.get("metadata", {})
-        workspace_id = metadata.get("workspace_id") or os.getenv("BA_POWERBI_WORKSPACE_ID")
+        workspace_id = metadata.get("workspace_id") or os.getenv(
+            "BA_POWERBI_WORKSPACE_ID"
+        )
         dataset_id = metadata.get("dataset_id") or os.getenv("BA_POWERBI_DATASET_ID")
         if not workspace_id or not dataset_id:
             return self._queued("powerbi", "dataset_not_configured")
@@ -1775,7 +1864,12 @@ class IntegrationConnector:
         if not self.docflow_client:
             return self._queued("1c_docflow", "not_configured")
         metadata = artefact.get("metadata", {})
-        title = metadata.get("title") or metadata.get("summary") or artefact.get("title") or "BA Artefact"
+        title = (
+            metadata.get("title")
+            or metadata.get("summary")
+            or artefact.get("title")
+            or "BA Artefact"
+        )
         description = metadata.get("description") or artefact.get("content", "")
         description = self._safe_text(description, max_len=8000, fallback=title)
         category = metadata.get("category") or "BA"
@@ -1809,9 +1903,9 @@ class IntegrationConnector:
 
     def _as_paragraphs(self, value: str) -> str:
         text = self._safe_text(value, max_len=20000, fallback="No content")
-        paragraphs = [html.escape(part.strip()) for part in text.splitlines() if part.strip()]
+        paragraphs = [
+            html.escape(part.strip()) for part in text.splitlines() if part.strip()
+        ]
         if not paragraphs:
             return "<p>No content</p>"
         return "".join(f"<p>{part}</p>" for part in paragraphs)
-
-

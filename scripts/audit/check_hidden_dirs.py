@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 5140096759017394770 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Scan the repository for tracked directories, которые начинаются с точки,

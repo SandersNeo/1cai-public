@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -3820360358467594041 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Миграция данных из PostgreSQL в Neo4j

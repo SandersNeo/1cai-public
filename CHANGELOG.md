@@ -23,6 +23,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### ✨ Added (Wiki 2.0)
+- **Frontend Knowledge Portal**: Новый React-интерфейс (`frontend-wiki`) для документации.
+  - Monaco Editor для редактирования кода.
+  - Markdown Viewer с подсветкой синтаксиса.
+  - Mermaid.js рендеринг диаграмм.
+  - Иерархическая навигация (Tree View).
+  - Demo Mode (Mock API) для просмотра без бэкенда.
+- **CodeSync Service**: Сервис автоматической синхронизации кода с документацией.
+  - Сканирование `src/` и генерация страниц.
+  - AST-анализ для извлечения классов и функций.
+  - Авто-генерация диаграмм зависимостей и классов (Mermaid).
+- **Wiki API**: Расширен функционал Backend.
+  - `GET /wiki/pages`: Список страниц с пагинацией.
+  - `CodeSyncService` воркер для фонового обновления.
+- **Testing**: Обновлены интеграционные тесты Wiki API (`tests/integration/test_wiki_api.py`).
+
 ### ✨ Added
 - Локальная интеграция `bsl-language-server`: docker-compose сервис, make-таргеты для управления и скрипт `scripts/parsers/check_bsl_language_server.py` для health/AST проверки.
 - `BSLASTParser` теперь читает `BSL_LANGUAGE_SERVER_URL`, валидирует доступность LSP и корректно откатывается на regex-парсер.

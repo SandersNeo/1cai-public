@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 209032674465852828 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Neural BSL Parser - Революционный парсер на нейросетях

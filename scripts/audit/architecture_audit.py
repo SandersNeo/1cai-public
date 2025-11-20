@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -1165468818019676896 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Архитектурный аудит проекта 1С AI Stack.

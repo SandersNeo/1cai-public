@@ -1,5 +1,4 @@
 import re
-import logging
 from typing import Dict, List, Any, Optional
 from enum import Enum
 from dataclasses import dataclass
@@ -8,8 +7,10 @@ from src.ai.scenario_hub import ScenarioRiskLevel
 
 logger = StructuredLogger(__name__).logger
 
+
 class QueryType(Enum):
     """Types of queries"""
+
     STANDARD_1C = "standard_1c"
     GRAPH_QUERY = "graph_query"
     CODE_GENERATION = "code_generation"
@@ -18,8 +19,10 @@ class QueryType(Enum):
     OPTIMIZATION = "optimization"
     UNKNOWN = "unknown"
 
+
 class AIService(Enum):
     """Available AI services"""
+
     EXTERNAL_AI = "external_ai"
     QWEN_CODER = "qwen_coder"
     NEO4J = "neo4j"
@@ -30,15 +33,18 @@ class AIService(Enum):
     KIMI_K2 = "kimi_k2"
     TABNINE = "tabnine"
 
+
 @dataclass
 class QueryIntent:
     """Query intent analysis result"""
+
     query_type: QueryType
     confidence: float
     keywords: List[str]
     context_type: Optional[str]
     preferred_services: List[AIService]
     suggested_tools: List[str]
+
 
 class QueryClassifier:
     """Classifies user queries to determine routing"""
@@ -48,6 +54,7 @@ class QueryClassifier:
         self.llm_abstraction = None
         try:
             from src.ai.llm_provider_abstraction import LLMProviderAbstraction
+
             self.llm_abstraction = LLMProviderAbstraction()
             logger.info("LLM Provider Abstraction initialized")
         except Exception as e:
@@ -57,15 +64,26 @@ class QueryClassifier:
     RULES = {
         QueryType.STANDARD_1C: {
             "keywords": [
-                "типовая", "типовой", "стандартн", "в УТ", "в ERP", "в ЗУП", "в БУХ",
-                "как сделано", "как реализовано",
+                "типовая",
+                "типовой",
+                "стандартн",
+                "в УТ",
+                "в ERP",
+                "в ЗУП",
+                "в БУХ",
+                "как сделано",
+                "как реализовано",
             ],
             "patterns": [
                 r"как\s+(сделано|реализовано)\s+в\s+(УТ|ERP|ЗУП|БУХ)",
                 r"типов(ая|ой|ое|ые)\s+",
                 r"стандартн(ый|ая|ое|ые)\s+",
             ],
-            "services": [AIService.NAPARNIK, AIService.EXTERNAL_AI, AIService.QWEN_CODER],
+            "services": [
+                AIService.NAPARNIK,
+                AIService.EXTERNAL_AI,
+                AIService.QWEN_CODER,
+            ],
         },
         QueryType.UNKNOWN: {
             "keywords": [],
@@ -74,8 +92,13 @@ class QueryClassifier:
         },
         QueryType.GRAPH_QUERY: {
             "keywords": [
-                "зависимости", "связи", "где используется", "кто вызывает",
-                "граф", "иерархия", "найди все связи",
+                "зависимости",
+                "связи",
+                "где используется",
+                "кто вызывает",
+                "граф",
+                "иерархия",
+                "найди все связи",
             ],
             "patterns": [
                 r"где\s+использу(ется|ют|ется)",
@@ -87,19 +110,34 @@ class QueryClassifier:
         },
         QueryType.CODE_GENERATION: {
             "keywords": [
-                "создай", "напиши", "сгенерируй", "добавь", "реализуй",
-                "функция", "процедура", "метод",
+                "создай",
+                "напиши",
+                "сгенерируй",
+                "добавь",
+                "реализуй",
+                "функция",
+                "процедура",
+                "метод",
             ],
             "patterns": [
                 r"(создай|напиши|сгенерируй)\s+(функци|процедур)",
                 r"реализуй\s+",
                 r"добавь\s+(функци|процедур|метод)",
             ],
-            "services": [AIService.QWEN_CODER, AIService.TABNINE, AIService.EXTERNAL_AI],
+            "services": [
+                AIService.QWEN_CODER,
+                AIService.TABNINE,
+                AIService.EXTERNAL_AI,
+            ],
         },
         QueryType.SEMANTIC_SEARCH: {
             "keywords": [
-                "похожий", "похожая", "подобн", "аналогичный", "есть ли", "найди код",
+                "похожий",
+                "похожая",
+                "подобн",
+                "аналогичный",
+                "есть ли",
+                "найди код",
             ],
             "patterns": [
                 r"найди\s+похож",
@@ -110,7 +148,11 @@ class QueryClassifier:
         },
         QueryType.OPTIMIZATION: {
             "keywords": [
-                "оптимизируй", "ускорь", "улучш", "рефакторинг", "производительность",
+                "оптимизируй",
+                "ускорь",
+                "улучш",
+                "рефакторинг",
+                "производительность",
             ],
             "patterns": [
                 r"(оптимизируй|улучш|ускор)",
@@ -148,14 +190,14 @@ class QueryClassifier:
         # Robust rule matching
         for query_type, rules in self.RULES.items():
             score = 0.0
-            
+
             # Check keywords
             if "keywords" in rules:
                 for keyword in rules["keywords"]:
                     if keyword.lower() in query_lower:
                         score += 1.0
                         matched_keywords.append(keyword)
-            
+
             # Check patterns
             if "patterns" in rules:
                 for pattern in rules["patterns"]:
@@ -163,14 +205,18 @@ class QueryClassifier:
                         if re.search(pattern, query_lower, re.IGNORECASE):
                             score += 2.0
                     except re.error:
-                        logger.warning(f"Invalid regex pattern for {query_type}: {pattern}")
-            
+                        logger.warning(
+                            f"Invalid regex pattern for {query_type}: {pattern}"
+                        )
+
             scores[query_type] = score
 
         if scores:
             best_type = max(scores, key=scores.get)
             # Normalize confidence
-            confidence = min(scores[best_type] / 5.0, 1.0) if scores[best_type] > 0 else 0.0
+            confidence = (
+                min(scores[best_type] / 5.0, 1.0) if scores[best_type] > 0 else 0.0
+            )
             if confidence == 0.0:
                 best_type = QueryType.UNKNOWN
         else:
@@ -181,14 +227,17 @@ class QueryClassifier:
         if best_type != QueryType.UNKNOWN:
             preferred_services = self.RULES[best_type].get("services", [])
         else:
-            preferred_services = self.RULES.get(QueryType.UNKNOWN, {}).get("services", [])
+            preferred_services = self.RULES.get(QueryType.UNKNOWN, {}).get(
+                "services", []
+            )
 
         suggested_tools: List[str] = []
         try:
             # Robust tool registry loading
             from src.ai.tool_registry_examples import build_example_tool_registry
+
             registry = build_example_tool_registry()
-            
+
             if best_type in [QueryType.STANDARD_1C, QueryType.ARCHITECTURE]:
                 suggested_tools.append("ba_requirements_extract")
             elif best_type == QueryType.CODE_GENERATION:
@@ -206,7 +255,7 @@ class QueryClassifier:
                 except Exception as e:
                     logger.debug("Failed to add LLM tools to suggestions: %s", e)
         except ImportError:
-             logger.debug("Tool registry examples not available")
+            logger.debug("Tool registry examples not available")
         except Exception as e:
             logger.warning("Tool suggestions failed", extra={"error": str(e)})
 
@@ -216,5 +265,5 @@ class QueryClassifier:
             keywords=matched_keywords,
             context_type=context.get("type") if context else None,
             preferred_services=preferred_services,
-            suggested_tools=list(set(suggested_tools)), # Deduplicate
+            suggested_tools=list(set(suggested_tools)),  # Deduplicate
         )

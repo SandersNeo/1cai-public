@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 7512410328672895696 | DATE: 2025-11-19
+
 """
 LLM Provider Abstraction Layer
 ------------------------------
@@ -12,7 +14,6 @@ LLM Provider Abstraction Layer
 from __future__ import annotations
 
 import logging
-import time
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set
@@ -50,13 +51,17 @@ class ModelProfile:
 
     provider_id: str  # Идентификатор провайдера (kimi, qwen, gigachat, etc.)
     model_name: str  # Название модели
-    capabilities: Set[QueryType] = field(default_factory=set)  # Поддерживаемые типы запросов
+    capabilities: Set[QueryType] = field(
+        default_factory=set
+    )  # Поддерживаемые типы запросов
     risk_level: RiskLevel = RiskLevel.MEDIUM  # Уровень риска
     cost_per_1k_tokens: float = 0.0  # Стоимость за 1K токенов (USD)
     avg_latency_ms: int = 1000  # Средняя latency в миллисекундах
     max_tokens: int = 4096  # Максимальное количество токенов
     supports_streaming: bool = False  # Поддержка streaming
-    compliance: List[str] = field(default_factory=list)  # Соответствие требованиям (152-ФЗ, GDPR, etc.)
+    compliance: List[str] = field(
+        default_factory=list
+    )  # Соответствие требованиям (152-ФЗ, GDPR, etc.)
     description: str = ""  # Описание модели
 
     def to_dict(self) -> Dict[str, Any]:
@@ -296,7 +301,10 @@ class LLMProviderAbstraction:
         self.profiles[key] = profile
         logger.debug(
             "Registered model profile",
-            extra={"provider_id": profile.provider_id, "model_name": profile.model_name},
+            extra={
+                "provider_id": profile.provider_id,
+                "model_name": profile.model_name,
+            },
         )
 
     def get_profile(self, provider_id: str, model_name: str) -> Optional[ModelProfile]:
@@ -424,7 +432,8 @@ class LLMProviderAbstraction:
             tool = {
                 "id": f"llm:{profile.provider_id}:{profile.model_name}",
                 "name": f"LLM: {profile.provider_id}/{profile.model_name}",
-                "description": profile.description or f"LLM model {profile.model_name} from {profile.provider_id}",
+                "description": profile.description
+                or f"LLM model {profile.model_name} from {profile.provider_id}",
                 "version": "1.0.0",
                 "schema": {
                     "type": "object",
@@ -458,4 +467,3 @@ class LLMProviderAbstraction:
             tools.append(tool)
 
         return tools
-

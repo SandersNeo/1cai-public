@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 5114065478242665333 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Contrastive Learning для BSL кода

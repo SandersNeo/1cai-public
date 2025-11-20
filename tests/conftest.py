@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -7711410859576978082 | DATE: 2025-11-19
+
 """
 Pytest Configuration
 Общие fixtures и настройки для всех тестов
@@ -129,7 +131,7 @@ async def db_conn(db_pool):
 @pytest.fixture
 def sample_bsl_code():
     """Sample BSL code for testing"""
-    return '''
+    return """
 // Рассчитывает сумму заказа
 //
 // Параметры:
@@ -167,13 +169,13 @@ def sample_bsl_code():
     КонецПопытки;
     
 КонецФункции
-'''
+"""
 
 
 @pytest.fixture
 def vulnerable_bsl_code():
     """Vulnerable BSL code for security testing"""
-    return '''
+    return """
 Функция ПолучитьДанныеПользователя(ИДПользователя)
     // SQL Injection vulnerability
     Запрос = Новый Запрос;
@@ -185,20 +187,20 @@ def vulnerable_bsl_code():
     
     Возврат Запрос.Выполнить();
 КонецФункции
-'''
+"""
 
 
 @pytest.fixture
 def mock_tenant_data():
     """Mock tenant data"""
     return {
-        'id': 'test-tenant-123',
-        'name': 'Test Company',
-        'email': 'test@example.com',
-        'plan': 'professional',
-        'status': 'active',
-        'api_calls_limit': 10000,
-        'storage_limit_gb': 100
+        "id": "test-tenant-123",
+        "name": "Test Company",
+        "email": "test@example.com",
+        "plan": "professional",
+        "status": "active",
+        "api_calls_limit": 10000,
+        "storage_limit_gb": 100,
     }
 
 
@@ -206,19 +208,19 @@ def mock_tenant_data():
 def mock_github_pr():
     """Mock GitHub PR data"""
     return {
-        'number': 42,
-        'repository': 'test/repo',
-        'title': 'Add new feature',
-        'author': 'developer',
-        'files': [
+        "number": 42,
+        "repository": "test/repo",
+        "title": "Add new feature",
+        "author": "developer",
+        "files": [
             {
-                'filename': 'src/test.bsl',
-                'status': 'added',
-                'additions': 50,
-                'deletions': 0,
-                'patch': '+ Функция НоваяФункция()\n+ КонецФункции'
+                "filename": "src/test.bsl",
+                "status": "added",
+                "additions": 50,
+                "deletions": 0,
+                "patch": "+ Функция НоваяФункция()\n+ КонецФункции",
             }
-        ]
+        ],
     }
 
 
@@ -226,18 +228,18 @@ def mock_github_pr():
 def mock_stripe_event():
     """Mock Stripe webhook event"""
     return {
-        'id': 'evt_test_123',
-        'type': 'invoice.payment_succeeded',
-        'created': 1234567890,
-        'data': {
-            'object': {
-                'id': 'in_test_123',
-                'customer': 'cus_test_123',
-                'amount_paid': 29900,
-                'currency': 'usd',
-                'status': 'paid'
+        "id": "evt_test_123",
+        "type": "invoice.payment_succeeded",
+        "created": 1234567890,
+        "data": {
+            "object": {
+                "id": "in_test_123",
+                "customer": "cus_test_123",
+                "amount_paid": 29900,
+                "currency": "usd",
+                "status": "paid",
             }
-        }
+        },
     }
 
 
@@ -288,6 +290,7 @@ def mock_embedding():
 
 # ----- Environment preparation -------------------------------------------------
 
+
 @pytest.fixture(scope="session", autouse=True)
 def _ensure_required_env_vars():
     """Задает обязательные переменные окружения для Settings/Pydantic."""
@@ -303,20 +306,13 @@ def _ensure_required_env_vars():
 
     yield
 
+
 # Markers
 def pytest_configure(config):
     config.addinivalue_line(
         "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
     )
-    config.addinivalue_line(
-        "markers", "integration: marks tests as integration tests"
-    )
-    config.addinivalue_line(
-        "markers", "system: marks tests as system/e2e tests"
-    )
-    config.addinivalue_line(
-        "markers", "performance: marks tests as performance tests"
-    )
-    config.addinivalue_line(
-        "markers", "security: marks tests as security tests"
-    )
+    config.addinivalue_line("markers", "integration: marks tests as integration tests")
+    config.addinivalue_line("markers", "system: marks tests as system/e2e tests")
+    config.addinivalue_line("markers", "performance: marks tests as performance tests")
+    config.addinivalue_line("markers", "security: marks tests as security tests")

@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -7781790871916911284 | DATE: 2025-11-19
+
 """Admin endpoints for viewing security audit log."""
 
 from __future__ import annotations
@@ -105,5 +107,3 @@ async def list_audit_entries(
         limit=limit,
         offset=offset,
     )
-
-

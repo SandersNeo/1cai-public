@@ -1,8 +1,9 @@
+# [NEXUS IDENTITY] ID: -2625136310240892915 | DATE: 2025-11-19
+
 """
 Tests for LLM Provider Abstraction (llm_provider_abstraction.py).
 """
 
-import pytest
 
 from src.ai.llm_provider_abstraction import (
     LLMProviderAbstraction,
@@ -151,4 +152,3 @@ def test_to_tool_registry_format() -> None:
     assert all("schema" in tool for tool in tools)
     assert all("cost" in tool for tool in tools)
     assert all("risks" in tool for tool in tools)
-

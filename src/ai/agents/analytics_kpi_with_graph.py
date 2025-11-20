@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -1017500679021558599 | DATE: 2025-11-19
+
 """
 Analytics & KPI Toolkit с Unified Change Graph
 ----------------------------------------------
@@ -356,7 +358,9 @@ GROUP BY feature_id
                     "description": kpi.get("description", ""),
                     "fields": ["timestamp", "value"],
                     "group_by": ["category"] if kpi.get("category") else None,
-                    "recommended_tool": "Grafana" if kpi.get("category") == "technical" else "Power BI",
+                    "recommended_tool": "Grafana"
+                    if kpi.get("category") == "technical"
+                    else "Power BI",
                 }
             )
 
@@ -464,4 +468,3 @@ GROUP BY feature_id
             "visualizations": [],
             "generated_at": datetime.utcnow().isoformat(),
         }
-

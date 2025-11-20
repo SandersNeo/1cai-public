@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 7201574716413124520 | DATE: 2025-11-19
+
 """
 Performance Benchmarks - Бенчмарки для всех компонентов
 ======================================================
@@ -18,15 +20,14 @@ Performance Benchmarks - Бенчмарки для всех компоненто
 - Scalability
 """
 
-import asyncio
 import logging
 import time
 import tracemalloc
 import psutil
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional
-from statistics import mean, median, stdev
+from typing import Any, Dict, List
+from statistics import mean
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class BenchmarkResult:
     """Результат бенчмарка"""
-    
+
     name: str
     iterations: int
     total_time: float
@@ -49,7 +50,7 @@ class BenchmarkResult:
     cpu_avg: float  # %
     errors: int = 0
     timestamp: datetime = field(default_factory=datetime.utcnow)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Сериализация результата"""
         return {
@@ -66,56 +67,52 @@ class BenchmarkResult:
             "memory_peak": self.memory_peak,
             "cpu_avg": self.cpu_avg,
             "errors": self.errors,
-            "timestamp": self.timestamp.isoformat()
+            "timestamp": self.timestamp.isoformat(),
         }
 
 
 class BenchmarkRunner:
     """Запуск бенчмарков"""
-    
+
     def __init__(self):
         self.results: List[BenchmarkResult] = []
-    
+
     async def benchmark_event_bus(
-        self,
-        event_bus,
-        iterations: int = 1000,
-        concurrent: int = 10
+        self, event_bus, iterations: int = 1000, concurrent: int = 10
     ) -> BenchmarkResult:
         """Бенчмарк Event Bus"""
         from src.infrastructure.event_bus import Event, EventType
-        
+
         tracemalloc.start()
         process = psutil.Process()
         cpu_before = process.cpu_percent()
-        
+
         times = []
         errors = 0
-        
+
         start_time = time.time()
-        
+
         for i in range(iterations):
             try:
                 iter_start = time.time()
-                
+
                 event = Event(
-                    type=EventType.ML_TRAINING_STARTED,
-                    payload={"iteration": i}
+                    type=EventType.ML_TRAINING_STARTED, payload={"iteration": i}
                 )
                 await event_bus.publish(event)
-                
+
                 iter_time = (time.time() - iter_start) * 1000  # ms
                 times.append(iter_time)
             except Exception as e:
                 errors += 1
                 logger.error(f"Error in benchmark iteration {i}: {e}")
-        
+
         total_time = time.time() - start_time
-        
+
         # Статистика
         times_sorted = sorted(times)
         n = len(times_sorted)
-        
+
         result = BenchmarkResult(
             name="event_bus_publish",
             iterations=iterations,
@@ -123,35 +120,33 @@ class BenchmarkRunner:
             avg_time=mean(times) if times else 0,
             min_time=min(times) if times else 0,
             max_time=max(times) if times else 0,
-            p50_time=times_sorted[n//2] if times_sorted else 0,
-            p95_time=times_sorted[int(n*0.95)] if times_sorted else 0,
-            p99_time=times_sorted[int(n*0.99)] if times_sorted else 0,
+            p50_time=times_sorted[n // 2] if times_sorted else 0,
+            p95_time=times_sorted[int(n * 0.95)] if times_sorted else 0,
+            p99_time=times_sorted[int(n * 0.99)] if times_sorted else 0,
             throughput=iterations / total_time if total_time > 0 else 0,
             memory_peak=tracemalloc.get_traced_memory()[1] / 1024 / 1024,  # MB
             cpu_avg=process.cpu_percent() - cpu_before,
-            errors=errors
+            errors=errors,
         )
-        
+
         tracemalloc.stop()
         self.results.append(result)
-        
+
         return result
-    
+
     async def benchmark_self_evolving(
-        self,
-        evolving_ai,
-        iterations: int = 10
+        self, evolving_ai, iterations: int = 10
     ) -> BenchmarkResult:
         """Бенчмарк Self-Evolving AI"""
         tracemalloc.start()
         process = psutil.Process()
         cpu_before = process.cpu_percent()
-        
+
         times = []
         errors = 0
-        
+
         start_time = time.time()
-        
+
         for i in range(iterations):
             try:
                 iter_start = time.time()
@@ -161,12 +156,12 @@ class BenchmarkRunner:
             except Exception as e:
                 errors += 1
                 logger.error(f"Error in evolution {i}: {e}")
-        
+
         total_time = time.time() - start_time
-        
+
         times_sorted = sorted(times)
         n = len(times_sorted)
-        
+
         result = BenchmarkResult(
             name="self_evolving_ai",
             iterations=iterations,
@@ -174,57 +169,54 @@ class BenchmarkRunner:
             avg_time=mean(times) if times else 0,
             min_time=min(times) if times else 0,
             max_time=max(times) if times else 0,
-            p50_time=times_sorted[n//2] if times_sorted else 0,
-            p95_time=times_sorted[int(n*0.95)] if times_sorted else 0,
-            p99_time=times_sorted[int(n*0.99)] if times_sorted else 0,
+            p50_time=times_sorted[n // 2] if times_sorted else 0,
+            p95_time=times_sorted[int(n * 0.95)] if times_sorted else 0,
+            p99_time=times_sorted[int(n * 0.99)] if times_sorted else 0,
             throughput=iterations / total_time if total_time > 0 else 0,
             memory_peak=tracemalloc.get_traced_memory()[1] / 1024 / 1024,
             cpu_avg=process.cpu_percent() - cpu_before,
-            errors=errors
+            errors=errors,
         )
-        
+
         tracemalloc.stop()
         self.results.append(result)
-        
+
         return result
-    
+
     async def benchmark_self_healing(
-        self,
-        healing_code,
-        iterations: int = 100
+        self, healing_code, iterations: int = 100
     ) -> BenchmarkResult:
         """Бенчмарк Self-Healing Code"""
         tracemalloc.start()
         process = psutil.Process()
         cpu_before = process.cpu_percent()
-        
+
         times = []
         errors = 0
-        
+
         start_time = time.time()
-        
+
         for i in range(iterations):
             try:
                 iter_start = time.time()
-                
+
                 # Симуляция ошибки
                 error = ValueError(f"Test error {i}")
                 await healing_code.handle_error(
-                    error,
-                    context={"file_path": "test.py", "line_number": i}
+                    error, context={"file_path": "test.py", "line_number": i}
                 )
-                
+
                 iter_time = (time.time() - iter_start) * 1000
                 times.append(iter_time)
             except Exception as e:
                 errors += 1
                 logger.error(f"Error in healing {i}: {e}")
-        
+
         total_time = time.time() - start_time
-        
+
         times_sorted = sorted(times)
         n = len(times_sorted)
-        
+
         result = BenchmarkResult(
             name="self_healing_code",
             iterations=iterations,
@@ -232,31 +224,31 @@ class BenchmarkRunner:
             avg_time=mean(times) if times else 0,
             min_time=min(times) if times else 0,
             max_time=max(times) if times else 0,
-            p50_time=times_sorted[n//2] if times_sorted else 0,
-            p95_time=times_sorted[int(n*0.95)] if times_sorted else 0,
-            p99_time=times_sorted[int(n*0.99)] if times_sorted else 0,
+            p50_time=times_sorted[n // 2] if times_sorted else 0,
+            p95_time=times_sorted[int(n * 0.95)] if times_sorted else 0,
+            p99_time=times_sorted[int(n * 0.99)] if times_sorted else 0,
             throughput=iterations / total_time if total_time > 0 else 0,
             memory_peak=tracemalloc.get_traced_memory()[1] / 1024 / 1024,
             cpu_avg=process.cpu_percent() - cpu_before,
-            errors=errors
+            errors=errors,
         )
-        
+
         tracemalloc.stop()
         self.results.append(result)
-        
+
         return result
-    
+
     def get_all_results(self) -> List[BenchmarkResult]:
         """Получение всех результатов"""
         return self.results.copy()
-    
+
     def generate_report(self) -> str:
         """Генерация отчета"""
         report = ["=" * 80]
         report.append("PERFORMANCE BENCHMARKS REPORT")
         report.append("=" * 80)
         report.append("")
-        
+
         for result in self.results:
             report.append(f"Benchmark: {result.name}")
             report.append(f"  Iterations: {result.iterations}")
@@ -270,6 +262,5 @@ class BenchmarkRunner:
             report.append(f"  CPU avg: {result.cpu_avg:.2f}%")
             report.append(f"  Errors: {result.errors}")
             report.append("")
-        
-        return "\n".join(report)
 
+        return "\n".join(report)

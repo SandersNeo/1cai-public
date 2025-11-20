@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 423925438387148747 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Render PlantUML diagrams under docs/architecture to PNG (and optional SVG).

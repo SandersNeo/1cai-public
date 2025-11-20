@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -629484157201820076 | DATE: 2025-11-19
+
 """
 E2E тесты для Scenario Hub с Unified Change Graph
 --------------------------------------------------
@@ -156,9 +158,7 @@ async def test_e2e_scenario_plan_with_graph_refs() -> None:
 
     # 4. Проверить, что graph_refs присутствуют
     assert len(plan.steps) > 0
-    assert all(
-        "graph_refs" in (step.metadata or {}) for step in plan.steps
-    )
+    assert all("graph_refs" in (step.metadata or {}) for step in plan.steps)
 
 
 @pytest.mark.asyncio
@@ -201,4 +201,3 @@ async def test_e2e_orchestrator_with_scenario_recommendation() -> None:
         if scenarios:
             assert all("scenario_id" in s for s in scenarios)
             assert all("relevance_score" in s for s in scenarios)
-

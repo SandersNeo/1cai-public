@@ -1,8 +1,7 @@
-import logging
 from typing import Dict, Any, Optional
 from dataclasses import asdict
 
-from fastapi import APIRouter, HTTPException, Query, Body, Depends
+from fastapi import APIRouter, HTTPException, Query, Body
 
 from src.ai.orchestrator import orchestrator
 from src.utils.structured_logging import StructuredLogger
@@ -11,14 +10,16 @@ logger = StructuredLogger(__name__).logger
 
 router = APIRouter(tags=["AI Orchestrator"])
 
+
 @router.get("/api/scenarios/examples")
 async def get_scenario_examples(
     autonomy: Optional[str] = Query(None, description="Autonomy level")
 ) -> Dict[str, Any]:
     try:
         from src.ai.scenario_examples import (
-            example_ba_dev_qa_scenario, example_dr_rehearsal_scenario, example_code_review_scenario
+            example_ba_dev_qa_scenario,
         )
+
         # Simplified for demo purposes as per original
         ba_plan = example_ba_dev_qa_scenario("DEMO_FEATURE")
         return {"scenarios": [asdict(ba_plan)]}
@@ -29,10 +30,14 @@ async def get_scenario_examples(
         logger.error(f"Error getting scenario examples: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
+
 @router.get("/api/scenarios/dry-run")
-async def dry_run_playbook_endpoint(path: str = Query(...), autonomy: Optional[str] = None) -> Dict[str, Any]:
+async def dry_run_playbook_endpoint(
+    path: str = Query(...), autonomy: Optional[str] = None
+) -> Dict[str, Any]:
     try:
         from src.ai.playbook_executor import dry_run_playbook_to_dict
+
         report = dry_run_playbook_to_dict(path, autonomy=autonomy)
         return {"report": report}
     except ImportError:
@@ -42,10 +47,12 @@ async def dry_run_playbook_endpoint(path: str = Query(...), autonomy: Optional[s
         logger.error(f"Error executing dry run: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.get("/api/tools/registry/examples")
 async def get_tool_registry_examples() -> Dict[str, Any]:
     try:
         from src.ai.tool_registry_examples import list_example_tools
+
         tools = [asdict(t) for t in list_example_tools()]
         return {"tools": tools}
     except ImportError:
@@ -55,16 +62,22 @@ async def get_tool_registry_examples() -> Dict[str, Any]:
         logger.error(f"Error getting tool registry examples: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
+
 @router.post("/api/code-graph/1c/build")
 async def build_1c_code_graph(
-    module_code: str = Body(...), module_path: str = Body(...), export_json: bool = False
+    module_code: str = Body(...),
+    module_path: str = Body(...),
+    export_json: bool = False,
 ) -> Dict[str, Any]:
     try:
         from src.ai.code_graph import InMemoryCodeGraphBackend
         from src.ai.code_graph_1c_builder import OneCCodeGraphBuilder
+
         backend = InMemoryCodeGraphBackend()
         builder = OneCCodeGraphBuilder(backend, use_ast_parser=True)
-        stats = await builder.build_from_module(module_path, module_code, {"source": "api"})
+        stats = await builder.build_from_module(
+            module_path, module_code, {"source": "api"}
+        )
         return {"status": "success", "stats": stats}
     except ImportError:
         logger.error("Code graph modules not found")
@@ -72,6 +85,7 @@ async def build_1c_code_graph(
     except Exception as e:
         logger.error(f"Error building code graph: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/api/ai/query")
 async def ai_query(query: str, context: Optional[Dict] = None):

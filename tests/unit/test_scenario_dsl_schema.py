@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -6447429635531186042 | DATE: 2025-11-19
+
 import json
 from dataclasses import asdict
 from pathlib import Path
@@ -12,7 +14,9 @@ from src.ai.scenario_examples import (
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = ROOT / "docs" / "architecture" / "SCENARIO_DSL_SCHEMA.json"
-EXTERNAL_PLAN_PATH = ROOT / "docs" / "architecture" / "examples" / "scenario_plan_ba_dev_qa.json"
+EXTERNAL_PLAN_PATH = (
+    ROOT / "docs" / "architecture" / "examples" / "scenario_plan_ba_dev_qa.json"
+)
 
 
 def _load_schema():
@@ -44,6 +48,6 @@ def test_example_scenarios_conform_to_schema():
     with EXTERNAL_PLAN_PATH.open("r", encoding="utf-8") as f:
         external_data = json.load(f)
     errors = list(validator.iter_errors(external_data))
-    assert not errors, f"External ScenarioPlan example violates schema: {[e.message for e in errors]}"
-
-
+    assert (
+        not errors
+    ), f"External ScenarioPlan example violates schema: {[e.message for e in errors]}"

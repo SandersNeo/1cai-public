@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -6679837132039013486 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Utilities for parsing BSL code using tree-sitter.

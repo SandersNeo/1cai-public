@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -8013991353093750602 | DATE: 2025-11-19
+
 """Security audit logging utilities."""
 
 from __future__ import annotations
@@ -52,7 +54,9 @@ class AuditLogger:
             loop = None
 
         if loop and not loop.is_closed():
-            loop.create_task(self._write_db(timestamp, actor, action, target, metadata or {}))
+            loop.create_task(
+                self._write_db(timestamp, actor, action, target, metadata or {})
+            )
         # если нет активного event loop, просто пропускаем запись в БД (файл уже сохранён)
 
     async def _write_db(
@@ -96,4 +100,3 @@ def get_audit_logger() -> AuditLogger:
 
 
 __all__ = ["AuditLogger", "get_audit_logger"]
-

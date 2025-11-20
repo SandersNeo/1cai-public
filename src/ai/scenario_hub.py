@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -5127080697703299148 | DATE: 2025-11-19
+
 """
 Scenario Hub & Execution Plans
 ------------------------------
@@ -23,7 +25,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 
 class ScenarioRiskLevel(str, Enum):
@@ -199,5 +201,3 @@ def compute_trust_score(
         level = "low"
 
     return TrustScore(score=score, level=level, reasons=reasons)
-
-

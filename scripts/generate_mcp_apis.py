@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 4003825395139932036 | DATE: 2025-11-19
+
 """
 Скрипт для генерации TypeScript APIs из MCP tools
 

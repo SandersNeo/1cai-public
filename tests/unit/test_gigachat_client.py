@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 4904973869498905578 | DATE: 2025-11-19
+
 """
 Unit tests for GigaChatClient.
 
@@ -54,5 +56,3 @@ class TestGigaChatClient:
 
         with pytest.raises(LLMNotConfiguredError):
             await client.generate("test")
-
-

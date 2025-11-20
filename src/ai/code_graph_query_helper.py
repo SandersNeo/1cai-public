@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -4059153903753565871 | DATE: 2025-11-19
+
 """
 Graph Query Helper для Orchestrator
 -----------------------------------
@@ -258,9 +260,7 @@ class GraphQueryHelper:
         # Фильтровать по ключевому слову в display_name
         keyword_lower = keyword.lower()
         matched = [
-            node
-            for node in all_nodes
-            if keyword_lower in node.display_name.lower()
+            node for node in all_nodes if keyword_lower in node.display_name.lower()
         ]
 
         return matched
@@ -275,7 +275,9 @@ class GraphQueryHelper:
             return []
 
         # Поиск по label
-        nodes = await self.backend.find_nodes(label=keyword, kind=node_kinds[0] if node_kinds else None)
+        nodes = await self.backend.find_nodes(
+            label=keyword, kind=node_kinds[0] if node_kinds else None
+        )
         return nodes
 
     async def _search_by_props(
@@ -353,4 +355,3 @@ class GraphQueryHelper:
         unique_nodes.sort(key=score, reverse=True)
 
         return unique_nodes
-

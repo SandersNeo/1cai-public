@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 5557252461554627038 | DATE: 2025-11-19
+
 """
 Secure Developer AI Agent
 Based on Agents Rule of Two: [AB] Configuration
@@ -15,7 +17,6 @@ from datetime import datetime, timedelta
 from src.security.ai_security_layer import (
     AISecurityLayer,
     AgentRuleOfTwoConfig,
-    SecurityCheck
 )
 
 
@@ -23,29 +24,27 @@ class DeveloperAISecure:
     """
     Secure Developer AI - требует human approval для всех изменений
     """
-    
+
     def __init__(self, ai_model=None):
         self.ai_model = ai_model
         self.security = AISecurityLayer()
-        
+
         # Конфигурация Rule of Two
         self.config = AgentRuleOfTwoConfig(
-            can_process_untrusted=True,   # [A] - принимает любой prompt
-            can_access_sensitive=True,     # [B] - видит репозиторий
-            can_change_state=False         # [C] - НЕ пишет автоматически
+            can_process_untrusted=True,  # [A] - принимает любой prompt
+            can_access_sensitive=True,  # [B] - видит репозиторий
+            can_change_state=False,  # [C] - НЕ пишет автоматически
         )
-        
+
         # Временное хранилище pending suggestions
         self._pending_suggestions = {}
-    
+
     def generate_code(
-        self,
-        prompt: str,
-        context: Optional[Dict[str, Any]] = None
+        self, prompt: str, context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
         Генерирует код с AI
-        
+
         Returns:
             {
                 'suggestion': generated code,
@@ -56,249 +55,232 @@ class DeveloperAISecure:
             }
         """
         context = context or {}
-        
+
         # Проверка входа через security layer
         input_check = self.security.validate_input(
             user_input=prompt,
-            agent_id='developer_ai_secure',
+            agent_id="developer_ai_secure",
             agent_config=self.config,
-            context=context
+            context=context,
         )
-        
+
         if not input_check.allowed:
             return {
-                'error': input_check.reason,
-                'blocked': True,
-                'details': input_check.details
+                "error": input_check.reason,
+                "blocked": True,
+                "details": input_check.details,
             }
-        
+
         # Генерация кода с AI
         try:
             suggestion = self._generate_with_ai(prompt, context)
         except Exception as e:
-            return {
-                'error': f'AI generation failed: {str(e)}',
-                'blocked': True
-            }
-        
+            return {"error": f"AI generation failed: {str(e)}", "blocked": True}
+
         # Проверка выхода через security layer
         output_check = self.security.validate_output(
             ai_output=suggestion,
-            agent_id='developer_ai_secure',
+            agent_id="developer_ai_secure",
             agent_config=self.config,
-            context=context
+            context=context,
         )
-        
+
         if not output_check.allowed:
-            return {
-                'error': output_check.reason,
-                'blocked': True
-            }
-        
+            return {"error": output_check.reason, "blocked": True}
+
         # Если был redacted - используем redacted версию
-        final_suggestion = output_check.details.get('output', suggestion)
-        
+        final_suggestion = output_check.details.get("output", suggestion)
+
         # Анализ безопасности кода
         safety_analysis = self._analyze_code_safety(final_suggestion)
-        
+
         # Генерация approval token
         token = str(uuid.uuid4())
-        
+
         # Сохраняем для последующего approval
         self._pending_suggestions[token] = {
-            'suggestion': final_suggestion,
-            'created_at': datetime.now(),
-            'prompt': prompt,
-            'context': context,
-            'safety': safety_analysis,
-            'approved': False
+            "suggestion": final_suggestion,
+            "created_at": datetime.now(),
+            "prompt": prompt,
+            "context": context,
+            "safety": safety_analysis,
+            "approved": False,
         }
-        
+
         return {
-            'success': True,
-            'suggestion': final_suggestion,
-            'token': token,
-            'safety': safety_analysis,
-            'requires_approval': True,
-            'can_auto_apply': safety_analysis['score'] > 0.95,
-            'preview_url': f'/api/code-review/preview/{token}',
-            'redacted': output_check.details.get('redacted', False)
+            "success": True,
+            "suggestion": final_suggestion,
+            "token": token,
+            "safety": safety_analysis,
+            "requires_approval": True,
+            "can_auto_apply": safety_analysis["score"] > 0.95,
+            "preview_url": f"/api/code-review/preview/{token}",
+            "redacted": output_check.details.get("redacted", False),
         }
-    
+
     def apply_suggestion(
-        self,
-        token: str,
-        approved_by_user: str,
-        changes_made: Optional[str] = None
+        self, token: str, approved_by_user: str, changes_made: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Применяет suggestion ТОЛЬКО после human approval
-        
+
         Args:
             token: Approval token от generate_code()
             approved_by_user: User ID кто одобрил
             changes_made: Опциональные изменения от пользователя
-        
+
         Returns:
             Result of application
         """
         # Проверка токена
         if token not in self._pending_suggestions:
-            return {
-                'error': 'Invalid or expired token',
-                'blocked': True
-            }
-        
+            return {"error": "Invalid or expired token", "blocked": True}
+
         suggestion_data = self._pending_suggestions[token]
-        
+
         # Проверка expiration (30 минут)
-        if datetime.now() - suggestion_data['created_at'] > timedelta(minutes=30):
+        if datetime.now() - suggestion_data["created_at"] > timedelta(minutes=30):
             del self._pending_suggestions[token]
-            return {
-                'error': 'Token expired (30 min limit)',
-                'blocked': True
-            }
-        
+            return {"error": "Token expired (30 min limit)", "blocked": True}
+
         # Получаем финальный код
-        final_code = changes_made if changes_made else suggestion_data['suggestion']
-        
+        final_code = changes_made if changes_made else suggestion_data["suggestion"]
+
         # Повторная проверка безопасности
         safety = self._analyze_code_safety(final_code)
-        
-        if safety['score'] < 0.5:
+
+        if safety["score"] < 0.5:
             return {
-                'error': 'Code safety score too low',
-                'blocked': True,
-                'safety': safety
+                "error": "Code safety score too low",
+                "blocked": True,
+                "safety": safety,
             }
-        
+
         # Audit logging
         self.security.audit_logger.log_ai_request(
-            agent_id='developer_ai_secure',
+            agent_id="developer_ai_secure",
             user_id=approved_by_user,
-            input_hash=self.security._hash_input(suggestion_data['prompt']),
+            input_hash=self.security._hash_input(suggestion_data["prompt"]),
             rule_of_two_config=self.config.get_config_code(),
-            approved_by_human=True  # ✅ КРИТИЧНО - human одобрил!
+            approved_by_human=True,  # ✅ КРИТИЧНО - human одобрил!
         )
-        
+
         # Применяем изменения
         try:
             result = self._write_to_repository(
-                code=final_code,
-                author=approved_by_user,
-                co_author='AI-Assistant'
+                code=final_code, author=approved_by_user, co_author="AI-Assistant"
             )
-            
+
             # Удаляем из pending
             del self._pending_suggestions[token]
-            
+
             return {
-                'success': True,
-                'applied': True,
-                'result': result,
-                'commit_sha': result.get('commit_sha')
+                "success": True,
+                "applied": True,
+                "result": result,
+                "commit_sha": result.get("commit_sha"),
             }
-        
+
         except Exception as e:
-            return {
-                'error': f'Failed to apply: {str(e)}',
-                'blocked': True
-            }
-    
+            return {"error": f"Failed to apply: {str(e)}", "blocked": True}
+
     def bulk_approve_safe_suggestions(
-        self,
-        tokens: List[str],
-        approved_by_user: str
+        self, tokens: List[str], approved_by_user: str
     ) -> Dict[str, Any]:
         """
         Bulk approval для multiple suggestions
         Применяется только к "safe" suggestions (score > 0.95)
         """
-        results = {
-            'approved': [],
-            'rejected': [],
-            'errors': []
-        }
-        
+        results = {"approved": [], "rejected": [], "errors": []}
+
         for token in tokens:
             if token not in self._pending_suggestions:
-                results['errors'].append({'token': token, 'reason': 'Invalid token'})
+                results["errors"].append({"token": token, "reason": "Invalid token"})
                 continue
-            
+
             suggestion = self._pending_suggestions[token]
-            
+
             # Только безопасные можно bulk approve
-            if suggestion['safety']['score'] > 0.95:
+            if suggestion["safety"]["score"] > 0.95:
                 result = self.apply_suggestion(token, approved_by_user)
-                if result.get('success'):
-                    results['approved'].append(token)
+                if result.get("success"):
+                    results["approved"].append(token)
                 else:
-                    results['rejected'].append({'token': token, 'reason': result.get('error')})
+                    results["rejected"].append(
+                        {"token": token, "reason": result.get("error")}
+                    )
             else:
-                results['rejected'].append({
-                    'token': token,
-                    'reason': 'Safety score too low for bulk approval'
-                })
-        
+                results["rejected"].append(
+                    {"token": token, "reason": "Safety score too low for bulk approval"}
+                )
+
         return results
-    
+
     def _generate_with_ai(self, prompt: str, context: Dict[str, Any]) -> str:
         """Генерация кода с AI (placeholder)"""
         # В продакшене: вызов OpenAI/Qwen
         if self.ai_model:
             return self.ai_model.generate(prompt, context)
-        
+
         # Mock для тестирования
         return f"# Generated code for: {prompt}\n\ndef example_function():\n    pass"
-    
+
     def _analyze_code_safety(self, code: str) -> Dict[str, Any]:
         """Анализ безопасности сгенерированного кода"""
         concerns = []
         score = 1.0
-        
+
         # Check 1: Hardcoded credentials
         if self._contains_credentials(code):
-            concerns.append({
-                'severity': 'CRITICAL',
-                'issue': 'Hardcoded credentials detected',
-                'line': self._find_credential_lines(code)
-            })
+            concerns.append(
+                {
+                    "severity": "CRITICAL",
+                    "issue": "Hardcoded credentials detected",
+                    "line": self._find_credential_lines(code),
+                }
+            )
             score -= 0.5
-        
+
         # Check 2: SQL injection vulnerability
         if self._has_sql_injection_vuln(code):
-            concerns.append({
-                'severity': 'HIGH',
-                'issue': 'Potential SQL injection vulnerability',
-                'suggestion': 'Use parameterized queries'
-            })
+            concerns.append(
+                {
+                    "severity": "HIGH",
+                    "issue": "Potential SQL injection vulnerability",
+                    "suggestion": "Use parameterized queries",
+                }
+            )
             score -= 0.3
-        
+
         # Check 3: XSS vulnerability
         if self._has_xss_vuln(code):
-            concerns.append({
-                'severity': 'HIGH',
-                'issue': 'Potential XSS vulnerability',
-                'suggestion': 'Sanitize user input'
-            })
+            concerns.append(
+                {
+                    "severity": "HIGH",
+                    "issue": "Potential XSS vulnerability",
+                    "suggestion": "Sanitize user input",
+                }
+            )
             score -= 0.3
-        
+
         # Check 4: Dangerous operations
         if self._has_dangerous_operations(code):
-            concerns.append({
-                'severity': 'MEDIUM',
-                'issue': 'Dangerous operation (eval, exec, etc.)',
-                'suggestion': 'Use safer alternatives'
-            })
+            concerns.append(
+                {
+                    "severity": "MEDIUM",
+                    "issue": "Dangerous operation (eval, exec, etc.)",
+                    "suggestion": "Use safer alternatives",
+                }
+            )
             score -= 0.2
-        
+
         return {
-            'score': max(0, score),
-            'concerns': concerns,
-            'safe': len(concerns) == 0,
-            'auto_approvable': score > 0.95
+            "score": max(0, score),
+            "concerns": concerns,
+            "safe": len(concerns) == 0,
+            "auto_approvable": score > 0.95,
         }
-    
+
     def _contains_credentials(self, code: str) -> bool:
         """Детектирует hardcoded credentials"""
         patterns = [
@@ -306,21 +288,21 @@ class DeveloperAISecure:
             r'api[_-]?key\s*=\s*["\'][^"\']+["\']',
             r'secret\s*=\s*["\'][^"\']+["\']',
         ]
-        
+
         for pattern in patterns:
             if re.search(pattern, code, re.IGNORECASE):
                 return True
-        
+
         return False
-    
+
     def _find_credential_lines(self, code: str) -> List[int]:
         """Находит строки с credentials"""
         lines = []
-        for i, line in enumerate(code.split('\n'), 1):
+        for i, line in enumerate(code.split("\n"), 1):
             if self._contains_credentials(line):
                 lines.append(i)
         return lines
-    
+
     def _has_sql_injection_vuln(self, code: str) -> bool:
         """Детектирует SQL injection vulnerabilities"""
         # String concatenation in SQL
@@ -329,47 +311,42 @@ class DeveloperAISecure:
             r'query\(["\'].*\+.*["\']',
             r'f["\']SELECT.*{.*}',
         ]
-        
+
         for pattern in patterns:
             if re.search(pattern, code, re.IGNORECASE):
                 return True
-        
+
         return False
-    
+
     def _has_xss_vuln(self, code: str) -> bool:
         """Детектирует XSS vulnerabilities"""
         patterns = [
-            r'innerHTML\s*=',
-            r'dangerouslySetInnerHTML',
-            r'<script>.*</script>',
+            r"innerHTML\s*=",
+            r"dangerouslySetInnerHTML",
+            r"<script>.*</script>",
         ]
-        
+
         for pattern in patterns:
             if re.search(pattern, code, re.IGNORECASE):
                 return True
-        
+
         return False
-    
+
     def _has_dangerous_operations(self, code: str) -> bool:
         """Детектирует опасные операции"""
-        dangerous = ['eval(', 'exec(', 'compile(', '__import__']
-        
+        dangerous = ["eval(", "exec(", "compile(", "__import__"]
+
         return any(op in code for op in dangerous)
-    
+
     def _write_to_repository(
-        self,
-        code: str,
-        author: str,
-        co_author: str = 'AI-Assistant'
+        self, code: str, author: str, co_author: str = "AI-Assistant"
     ) -> Dict[str, Any]:
         """Запись в репозиторий (placeholder)"""
         # В продакшене: Git commit
         return {
-            'success': True,
-            'commit_sha': 'abc123',
-            'author': author,
-            'co_author': co_author,
-            'timestamp': datetime.now().isoformat()
+            "success": True,
+            "commit_sha": "abc123",
+            "author": author,
+            "co_author": co_author,
+            "timestamp": datetime.now().isoformat(),
         }
-
-

@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -3993155687098389644 | DATE: 2025-11-19
+
 import pytest
 
 from src.ai.agents.business_analyst_agent_extended import IntegrationConnector
@@ -29,4 +31,3 @@ def test_as_paragraphs_escapes_html(connector):
     assert "<script>" not in html_value
     assert html_value.count("<p>") == 2
     assert "&lt;script&gt;" in html_value
-

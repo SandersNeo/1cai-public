@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 334285730937897781 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Миграция данных из JSON (knowledge_base) в PostgreSQL

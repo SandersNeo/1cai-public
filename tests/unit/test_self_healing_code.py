@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -4333945343996695257 | DATE: 2025-11-19
+
 """
 Unit tests for Self-Healing Code - 1000% coverage
 =================================================
@@ -5,12 +7,7 @@ Unit tests for Self-Healing Code - 1000% coverage
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-from src.ai.self_healing_code import (
-    SelfHealingCode,
-    CodeError,
-    CodeFix,
-    ErrorSeverity
-)
+from src.ai.self_healing_code import SelfHealingCode, CodeError, CodeFix
 from src.ai.llm_provider_abstraction import LLMProviderAbstraction
 from src.infrastructure.event_bus import EventBus
 
@@ -48,9 +45,9 @@ async def test_handle_error(self_healing_code):
     """Тест обработки ошибки"""
     error = ValueError("Test error")
     context = {"file_path": "test.py", "line_number": 10}
-    
+
     fix = await self_healing_code.handle_error(error, context)
-    
+
     # Может быть None если нет исправлений
     assert fix is None or isinstance(fix, CodeFix)
     assert len(self_healing_code._errors) > 0
@@ -61,9 +58,9 @@ async def test_create_error(self_healing_code):
     """Тест создания объекта ошибки"""
     error = ValueError("Test error")
     context = {"file_path": "test.py", "line_number": 10}
-    
+
     code_error = self_healing_code._create_error(error, context)
-    
+
     assert isinstance(code_error, CodeError)
     assert code_error.error_type == "ValueError"
     assert code_error.file_path == "test.py"
@@ -77,11 +74,11 @@ async def test_analyze_error(self_healing_code):
         error_type="ValueError",
         error_message="Test error",
         file_path="test.py",
-        line_number=10
+        line_number=10,
     )
-    
+
     analysis = await self_healing_code._analyze_error(error)
-    
+
     assert isinstance(analysis, dict)
     assert "root_cause" in analysis
 
@@ -93,12 +90,12 @@ async def test_generate_fixes(self_healing_code):
         error_type="ValueError",
         error_message="Test error",
         file_path="test.py",
-        line_number=10
+        line_number=10,
     )
     analysis = {"root_cause": "Test cause"}
-    
+
     fixes = await self_healing_code._generate_fixes(error, analysis)
-    
+
     assert isinstance(fixes, list)
 
 
@@ -110,12 +107,12 @@ async def test_test_fixes(self_healing_code):
             error_id="test-error",
             description="Test fix",
             original_code="bad code",
-            fixed_code="good code"
+            fixed_code="good code",
         )
     ]
-    
+
     tested = await self_healing_code._test_fixes(fixes)
-    
+
     assert len(tested) <= len(fixes)
     for fix in tested:
         assert fix.test_results is not None
@@ -126,19 +123,15 @@ async def test_select_best_fix(self_healing_code):
     """Тест выбора лучшего исправления"""
     fixes = [
         CodeFix(
-            error_id="test",
-            confidence=0.9,
-            test_results={"unit_tests": {"passed": 10}}
+            error_id="test", confidence=0.9, test_results={"unit_tests": {"passed": 10}}
         ),
         CodeFix(
-            error_id="test",
-            confidence=0.7,
-            test_results={"unit_tests": {"passed": 5}}
-        )
+            error_id="test", confidence=0.7, test_results={"unit_tests": {"passed": 5}}
+        ),
     ]
-    
+
     best = self_healing_code._select_best_fix(fixes)
-    
+
     assert best.confidence == 0.9
 
 
@@ -149,11 +142,11 @@ async def test_apply_fix(self_healing_code):
         error_id="test",
         description="Test fix",
         original_code="bad code",
-        fixed_code="good code"
+        fixed_code="good code",
     )
-    
+
     applied = await self_healing_code._apply_fix(fix)
-    
+
     assert applied is True
     assert fix.applied is True
     assert len(self_healing_code._fixes) > 0
@@ -163,7 +156,7 @@ async def test_apply_fix(self_healing_code):
 async def test_healing_stats(self_healing_code):
     """Тест статистики самовосстановления"""
     stats = self_healing_code.get_healing_stats()
-    
+
     assert "total_errors" in stats
     assert "total_fixes_generated" in stats
     assert "applied_fixes" in stats
@@ -175,10 +168,10 @@ async def test_healing_stats(self_healing_code):
 async def test_enable_disable_healing(self_healing_code):
     """Тест включения/отключения самовосстановления"""
     assert self_healing_code._healing_enabled is True
-    
+
     self_healing_code.disable_healing()
     assert self_healing_code._healing_enabled is False
-    
+
     self_healing_code.enable_healing()
     assert self_healing_code._healing_enabled is True
 
@@ -187,9 +180,8 @@ async def test_enable_disable_healing(self_healing_code):
 async def test_handle_error_when_disabled(self_healing_code):
     """Тест обработки ошибки когда самовосстановление отключено"""
     self_healing_code.disable_healing()
-    
+
     error = ValueError("Test error")
     fix = await self_healing_code.handle_error(error)
-    
-    assert fix is None
 
+    assert fix is None

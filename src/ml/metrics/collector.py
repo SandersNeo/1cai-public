@@ -1,23 +1,29 @@
+# [NEXUS IDENTITY] ID: 2257211876705318003 | DATE: 2025-11-19
+
 """
 Сборщик метрик эффективности AI-ассистентов.
 Отслеживает качество анализа требований, генерации диаграмм и оценки рисков.
 """
 
-import asyncio
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
 from enum import Enum
-import json
 import numpy as np
 
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Text, JSON
+from sqlalchemy import (
+    create_engine,
+    Column,
+    String,
+    Float,
+    DateTime,
+    JSON,
+)
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 
-from pydantic import BaseModel
 from src.config import settings
 from src.utils.structured_logging import StructuredLogger
 
@@ -29,6 +35,7 @@ Base = declarative_base()
 
 class MetricType(Enum):
     """Типы метрик эффективности"""
+
     REQUIREMENT_ANALYSIS_ACCURACY = "requirement_analysis_accuracy"
     DIAGRAM_QUALITY_SCORE = "diagram_quality_score"
     RISK_ASSESSMENT_PRECISION = "risk_assessment_precision"
@@ -39,6 +46,7 @@ class MetricType(Enum):
 
 class AssistantRole(Enum):
     """Роли AI-ассистентов"""
+
     ARCHITECT = "architect"
     DEVELOPER = "developer"
     TESTER = "tester"
@@ -48,6 +56,7 @@ class AssistantRole(Enum):
 @dataclass
 class MetricRecord:
     """Запись о метрике"""
+
     metric_type: MetricType
     assistant_role: AssistantRole
     value: float
@@ -60,6 +69,7 @@ class MetricRecord:
 
 class MetricEvent(Base):
     """Модель события метрики в БД"""
+
     __tablename__ = "metric_events"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -76,10 +86,12 @@ class MetricEvent(Base):
 
 class MetricsDatabase:
     """БД для хранения метрик"""
-    
+
     def __init__(self):
         self.engine = create_engine(settings.DATABASE_URL)
-        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+        self.SessionLocal = sessionmaker(
+            autocommit=False, autoflush=False, bind=self.engine
+        )
         Base.metadata.create_all(bind=self.engine)
 
     def save_metric(self, record: MetricRecord) -> str:
@@ -94,16 +106,13 @@ class MetricsDatabase:
                 project_id=record.project_id,
                 user_id=record.user_id,
                 context=record.context,
-                feedback_score=record.feedback_score
+                feedback_score=record.feedback_score,
             )
             session.add(event)
             session.commit()
             logger.info(
                 "Сохранена метрика",
-                extra={
-                    "metric_type": record.metric_type.value,
-                    "value": record.value
-                }
+                extra={"metric_type": record.metric_type.value, "value": record.value},
             )
             return str(event.id)
         except Exception as e:
@@ -112,9 +121,11 @@ class MetricsDatabase:
                 extra={
                     "error": str(e),
                     "error_type": type(e).__name__,
-                    "metric_type": record.metric_type.value if hasattr(record, 'metric_type') else None
+                    "metric_type": record.metric_type.value
+                    if hasattr(record, "metric_type")
+                    else None,
                 },
-                exc_info=True
+                exc_info=True,
             )
             session.rollback()
             raise
@@ -122,11 +133,11 @@ class MetricsDatabase:
             session.close()
 
     def get_metrics(
-        self, 
+        self,
         metric_type: MetricType,
         assistant_role: AssistantRole,
         hours_back: int = 24,
-        project_id: Optional[str] = None
+        project_id: Optional[str] = None,
     ) -> List[Dict]:
         """Получение метрик за период"""
         session = self.SessionLocal()
@@ -134,72 +145,71 @@ class MetricsDatabase:
             query = session.query(MetricEvent).filter(
                 MetricEvent.metric_type == metric_type.value,
                 MetricEvent.assistant_role == assistant_role.value,
-                MetricEvent.timestamp >= datetime.utcnow() - timedelta(hours=hours_back)
+                MetricEvent.timestamp
+                >= datetime.utcnow() - timedelta(hours=hours_back),
             )
-            
+
             if project_id:
                 query = query.filter(MetricEvent.project_id == project_id)
-            
+
             events = query.order_by(MetricEvent.timestamp.desc()).all()
-            
+
             return [asdict(event) for event in events]
         finally:
             session.close()
 
     def get_aggregated_metrics(
-        self,
-        metric_type: MetricType,
-        hours_back: int = 24
+        self, metric_type: MetricType, hours_back: int = 24
     ) -> Dict[str, float]:
         """Агрегированные метрики за период"""
         events = self.get_metrics(metric_type, None, hours_back)
-        
+
         if not events:
             return {}
-            
-        values = [event['value'] for event in events]
-        
+
+        values = [event["value"] for event in events]
+
         return {
-            'mean': np.mean(values),
-            'median': np.median(values),
-            'std': np.std(values),
-            'min': np.min(values),
-            'max': np.max(values),
-            'count': len(values)
+            "mean": np.mean(values),
+            "median": np.median(values),
+            "std": np.std(values),
+            "min": np.min(values),
+            "max": np.max(values),
+            "count": len(values),
         }
 
 
 class MetricsCollector:
     """Основной сборщик метрик эффективности"""
-    
+
     def __init__(self):
         self.db = MetricsDatabase()
         self.logger = logging.getLogger(f"{__name__}.MetricsCollector")
-        
+
     async def record_requirement_analysis_accuracy(
         self,
         assistant_role: AssistantRole,
         predicted_requirements: List[Dict],
         actual_requirements: List[Dict],
         project_id: str,
-        context: Optional[Dict] = None
+        context: Optional[Dict] = None,
     ) -> str:
         """Запись точности анализа требований"""
-        
+
         # Расчет точности анализа
         accuracy = self._calculate_requirements_accuracy(
             predicted_requirements, actual_requirements
         )
-        
+
         record = MetricRecord(
             metric_type=MetricType.REQUIREMENT_ANALYSIS_ACCURACY,
             assistant_role=assistant_role,
             value=accuracy,
             timestamp=datetime.utcnow(),
             project_id=project_id,
-            context=context
+            context=context,
         )
-        
+
         metric_id = self.db.save_metric(record)
         self.logger.info(
             f"Сохранена точность анализа требований для {assistant_role.value}: {accuracy:.3f}"
@@ -212,13 +222,13 @@ class MetricsCollector:
         generated_diagram: str,
         user_feedback: Optional[float] = None,
         project_id: str = "",
-        context: Optional[Dict] = None
+        context: Optional[Dict] = None,
     ) -> str:
         """Запись качества диаграммы"""
-        
+
         # Расчет качества диаграммы
         quality_score = self._calculate_diagram_quality(generated_diagram)
-        
+
         record = MetricRecord(
             metric_type=MetricType.DIAGRAM_QUALITY_SCORE,
             assistant_role=assistant_role,
@@ -226,9 +236,9 @@ class MetricsCollector:
             timestamp=datetime.utcnow(),
             project_id=project_id,
             context=context,
-            feedback_score=user_feedback
+            feedback_score=user_feedback,
         )
-        
+
         metric_id = self.db.save_metric(record)
         self.logger.info(
             f"Сохранено качество диаграммы для {assistant_role.value}: {quality_score:.3f}"
@@ -241,23 +251,21 @@ class MetricsCollector:
         predicted_risks: List[Dict],
         actual_risks: List[Dict],
         project_id: str,
-        context: Optional[Dict] = None
+        context: Optional[Dict] = None,
     ) -> str:
         """Запись точности оценки рисков"""
-        
-        precision = self._calculate_risk_precision(
-            predicted_risks, actual_risks
-        )
-        
+
+        precision = self._calculate_risk_precision(predicted_risks, actual_risks)
+
         record = MetricRecord(
             metric_type=MetricType.RISK_ASSESSMENT_PRECISION,
             assistant_role=assistant_role,
             value=precision,
             timestamp=datetime.utcnow(),
             project_id=project_id,
-            context=context
+            context=context,
         )
-        
+
         metric_id = self.db.save_metric(record)
         self.logger.info(
             f"Сохранена точность оценки рисков для {assistant_role.value}: {precision:.3f}"
@@ -269,19 +277,19 @@ class MetricsCollector:
         assistant_role: AssistantRole,
         response_time: float,
         project_id: str,
-        context: Optional[Dict] = None
+        context: Optional[Dict] = None,
     ) -> str:
         """Запись времени ответа"""
-        
+
         record = MetricRecord(
             metric_type=MetricType.RESPONSE_TIME,
             assistant_role=assistant_role,
             value=response_time,
             timestamp=datetime.utcnow(),
             project_id=project_id,
-            context=context
+            context=context,
         )
-        
+
         metric_id = self.db.save_metric(record)
         self.logger.info(
             f"Сохранено время ответа для {assistant_role.value}: {response_time:.3f}с"
@@ -294,10 +302,10 @@ class MetricsCollector:
         satisfaction_score: float,
         project_id: str,
         user_id: Optional[str] = None,
-        context: Optional[Dict] = None
+        context: Optional[Dict] = None,
     ) -> str:
         """Запись удовлетворенности пользователя"""
-        
+
         record = MetricRecord(
             metric_type=MetricType.USER_SATISFACTION,
             assistant_role=assistant_role,
@@ -305,9 +313,9 @@ class MetricsCollector:
             timestamp=datetime.utcnow(),
             project_id=project_id,
             user_id=user_id,
-            context=context
+            context=context,
         )
-        
+
         metric_id = self.db.save_metric(record)
         self.logger.info(
             f"Сохранена удовлетворенность для {assistant_role.value}: {satisfaction_score:.3f}"
@@ -315,93 +323,92 @@ class MetricsCollector:
         return metric_id
 
     def _calculate_requirements_accuracy(
-        self, 
-        predicted: List[Dict], 
-        actual: List[Dict]
+        self, predicted: List[Dict], actual: List[Dict]
     ) -> float:
         """Расчет точности анализа требований"""
-        
+
         if not predicted or not actual:
             return 0.0
-            
+
         # Преобразуем в множества для сравнения
-        predicted_texts = {item.get('text', '').lower().strip() for item in predicted}
-        actual_texts = {item.get('text', '').lower().strip() for item in actual}
-        
+        predicted_texts = {item.get("text", "").lower().strip() for item in predicted}
+        actual_texts = {item.get("text", "").lower().strip() for item in actual}
+
         # Пересечение и объединение
         intersection = predicted_texts & actual_texts
         union = predicted_texts | actual_texts
-        
+
         # Jaccard Similarity
         accuracy = len(intersection) / len(union) if union else 0.0
-        
+
         return min(accuracy, 1.0)
 
     def _calculate_diagram_quality(self, diagram: str) -> float:
         """Расчет качества диаграммы"""
-        
+
         if not diagram:
             return 0.0
-            
+
         # Базовая оценка качества диаграммы
         quality_factors = []
-        
+
         # Проверка наличия базовых элементов Mermaid
-        mermaid_keywords = ['graph', 'flowchart', 'sequenceDiagram', 'classDiagram']
-        keyword_score = sum(1 for keyword in mermaid_keywords if keyword in diagram.lower())
+        mermaid_keywords = ["graph", "flowchart", "sequenceDiagram", "classDiagram"]
+        keyword_score = sum(
+            1 for keyword in mermaid_keywords if keyword in diagram.lower()
+        )
         quality_factors.append(keyword_score / len(mermaid_keywords))
-        
+
         # Проверка наличия узлов и связей
-        node_score = 1.0 if diagram.count('-->') > 0 or diagram.count('->') > 0 else 0.0
+        node_score = 1.0 if diagram.count("-->") > 0 or diagram.count("->") > 0 else 0.0
         quality_factors.append(node_score)
-        
+
         # Проверка корректной структуры
-        structure_score = 1.0 if diagram.count('{') == diagram.count('}') else 0.0
+        structure_score = 1.0 if diagram.count("{") == diagram.count("}") else 0.0
         quality_factors.append(structure_score)
-        
+
         return np.mean(quality_factors)
 
     def _calculate_risk_precision(
-        self,
-        predicted_risks: List[Dict],
-        actual_risks: List[Dict]
+        self, predicted_risks: List[Dict], actual_risks: List[Dict]
     ) -> float:
         """Расчет точности оценки рисков"""
-        
+
         if not predicted_risks or not actual_risks:
             return 0.0
-            
+
         # Извлекаем описания рисков
         predicted_descriptions = {
-            risk.get('description', '').lower().strip() 
-            for risk in predicted_risks
+            risk.get("description", "").lower().strip() for risk in predicted_risks
         }
         actual_descriptions = {
-            risk.get('description', '').lower().strip()
-            for risk in actual_risks
+            risk.get("description", "").lower().strip() for risk in actual_risks
         }
-        
+
         # Пересечение и точность
         intersection = predicted_descriptions & actual_descriptions
-        
-        precision = len(intersection) / len(predicted_descriptions) if predicted_descriptions else 0.0
-        
+
+        precision = (
+            len(intersection) / len(predicted_descriptions)
+            if predicted_descriptions
+            else 0.0
+        )
+
         return min(precision, 1.0)
 
     async def get_performance_summary(
-        self,
-        hours_back: int = 24
+        self, hours_back: int = 24
     ) -> Dict[str, Dict[str, float]]:
         """Сводка производительности всех ассистентов"""
-        
+
         summary = {}
-        
+
         for role in AssistantRole:
             summary[role.value] = {}
-            
+
             for metric_type in MetricType:
                 aggregated = self.db.get_aggregated_metrics(metric_type, hours_back)
                 if aggregated:
                     summary[role.value][metric_type.value] = aggregated
-        
+
         return summary

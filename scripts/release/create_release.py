@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -6501785320939176179 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Create release notes and optional git tag for a new version.

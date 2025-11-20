@@ -1,9 +1,11 @@
+# [NEXUS IDENTITY] ID: 7000908388845377340 | DATE: 2025-11-19
+
 from __future__ import annotations
 
 import os
 from typing import Any, Dict, Optional
 
-from .base_client import BaseIntegrationClient, require_env
+from .base_client import BaseIntegrationClient
 from .exceptions import IntegrationConfigError
 
 
@@ -31,7 +33,9 @@ class JiraClient(BaseIntegrationClient):
         base_url = os.getenv("BA_JIRA_BASE_URL")
         token = os.getenv("BA_JIRA_TOKEN")
         if not base_url or not token:
-            raise IntegrationConfigError("BA_JIRA_BASE_URL and BA_JIRA_TOKEN must be configured.")
+            raise IntegrationConfigError(
+                "BA_JIRA_BASE_URL and BA_JIRA_TOKEN must be configured."
+            )
         return cls(base_url=base_url, token=token, transport=transport)
 
     async def create_issue(
@@ -64,4 +68,3 @@ class JiraClient(BaseIntegrationClient):
             f"{self.ISSUE_ENDPOINT}/{issue_key}",
             json={"fields": fields},
         )
-

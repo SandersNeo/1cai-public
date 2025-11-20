@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -1999338560375047581 | DATE: 2025-11-19
+
 from __future__ import annotations
 
 import asyncio
@@ -138,7 +140,9 @@ class BASessionManager:
         self._write_audit(session_id, event_type, payload)
         track_ba_session_event(event_type)
 
-    async def send_private(self, session_id: str, user_id: str, message: Dict[str, Any]) -> None:
+    async def send_private(
+        self, session_id: str, user_id: str, message: Dict[str, Any]
+    ) -> None:
         session = self._sessions.get(session_id)
         if not session:
             return
@@ -151,7 +155,9 @@ class BASessionManager:
             "timestamp": datetime.utcnow().isoformat(),
         }
         await participant.websocket.send_json(payload)
-        self._append_history(session, {"event_type": "private", "target": user_id, **payload})
+        self._append_history(
+            session, {"event_type": "private", "target": user_id, **payload}
+        )
         self._write_audit(session_id, "private", {"target": user_id, **payload})
         track_ba_session_event("private")
 
@@ -195,7 +201,9 @@ class BASessionManager:
         if len(session.history) > 500:
             session.history = session.history[-500:]
 
-    def _write_audit(self, session_id: str, event_type: str, data: Dict[str, Any]) -> None:
+    def _write_audit(
+        self, session_id: str, event_type: str, data: Dict[str, Any]
+    ) -> None:
         record = {
             "session_id": session_id,
             "event_type": event_type,
@@ -212,7 +220,9 @@ class BASessionManager:
 
     def _update_metrics(self) -> None:
         sessions_count = len(self._sessions)
-        participants_count = sum(len(session.participants) for session in self._sessions.values())
+        participants_count = sum(
+            len(session.participants) for session in self._sessions.values()
+        )
         set_ba_session_counts(sessions_count, participants_count)
 
 

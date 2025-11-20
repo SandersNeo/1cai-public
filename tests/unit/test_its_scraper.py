@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -9044220303696958570 | DATE: 2025-11-19
+
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -110,7 +112,9 @@ def test_persist_article_creates_versions(tmp_path: Path) -> None:
     persisted = list(persist_article(first_article, config, existing_meta=None))
     assert persisted
 
-    metadata_path = tmp_path / slugify("https://example.com/article-1") / config.metadata_filename
+    metadata_path = (
+        tmp_path / slugify("https://example.com/article-1") / config.metadata_filename
+    )
     existing_meta = json.loads(metadata_path.read_text(encoding="utf-8"))
 
     second_article = Article(
@@ -135,4 +139,3 @@ def test_persist_article_creates_versions(tmp_path: Path) -> None:
     assert any(versions_dir.iterdir())
     new_meta = json.loads(metadata_path.read_text(encoding="utf-8"))
     assert new_meta["meta"]["previous_version"] == existing_meta.get("fetched_at")
-

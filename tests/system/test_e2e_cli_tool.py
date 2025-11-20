@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 7613368709692011512 | DATE: 2025-11-19
+
 """
 E2E тесты для CLI инструмента
 ------------------------------
@@ -108,4 +110,3 @@ async def test_e2e_cli_llm_providers_command() -> None:
     assert "providers" in data
     assert "total" in data
     assert data["total"] > 0
-

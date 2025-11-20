@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 4283341078064663194 | DATE: 2025-11-19
+
 """
 Integrations & Collaboration с Unified Change Graph
 ---------------------------------------------------
@@ -12,7 +14,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from src.ai.code_graph import CodeGraphBackend, EdgeKind, Node, NodeKind
+from src.ai.code_graph import CodeGraphBackend, EdgeKind, Node
 
 logger = logging.getLogger(__name__)
 
@@ -386,4 +388,3 @@ class IntegrationSyncWithGraph:
             lines.append("")
 
         return "\n".join(lines)
-

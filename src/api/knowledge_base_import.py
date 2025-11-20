@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 962687204371806439 | DATE: 2025-11-19
+
 """
 API для импорта данных в базу знаний из различных источников
 Версия: 1.0.0
@@ -9,7 +11,6 @@ from typing import List, Dict, Any, Optional
 import json
 import csv
 import io
-from pathlib import Path
 
 from src.services.configuration_knowledge_base import get_knowledge_base
 from src.utils.structured_logging import StructuredLogger
@@ -22,13 +23,17 @@ logger = StructuredLogger(__name__).logger
 
 class ImportRequest(BaseModel):
     """Запрос на импорт данных"""
+
     config_name: str = Field(..., description="Название конфигурации")
     source: str = Field(default="manual", description="Источник данных")
-    overwrite: bool = Field(default=False, description="Перезаписать существующие данные")
+    overwrite: bool = Field(
+        default=False, description="Перезаписать существующие данные"
+    )
 
 
 class ModuleImport(BaseModel):
     """Импорт модуля"""
+
     name: str
     description: str = ""
     code: str = ""
@@ -40,6 +45,7 @@ class ModuleImport(BaseModel):
 
 class BestPracticeImport(BaseModel):
     """Импорт best practice"""
+
     title: str
     description: str
     category: str = "general"
@@ -49,6 +55,7 @@ class BestPracticeImport(BaseModel):
 
 class BulkImportRequest(BaseModel):
     """Массовый импорт"""
+
     config_name: str
     modules: List[ModuleImport] = []
     best_practices: List[BestPracticeImport] = []
@@ -57,13 +64,11 @@ class BulkImportRequest(BaseModel):
 
 @router.post("/import/json", summary="Импорт из JSON")
 async def import_from_json(
-    config_name: str,
-    file: UploadFile = File(...),
-    overwrite: bool = False
+    config_name: str, file: UploadFile = File(...), overwrite: bool = False
 ):
     """
     Импорт данных из JSON файла
-    
+
     Формат JSON:
     {
         "modules": [
@@ -86,11 +91,11 @@ async def import_from_json(
     try:
         # Читаем файл
         content = await file.read()
-        data = json.loads(content.decode('utf-8'))
-        
+        data = json.loads(content.decode("utf-8"))
+
         imported_modules = 0
         imported_practices = 0
-        
+
         # Импортируем модули
         for module_data in data.get("modules", []):
             try:
@@ -104,20 +109,17 @@ async def import_from_json(
                         "object_type": module_data.get("object_type"),
                         "object_name": module_data.get("object_name"),
                         "module_type": module_data.get("module_type"),
-                        "source": data.get("source", "json_import")
-                    }
+                        "source": data.get("source", "json_import"),
+                    },
                 )
                 imported_modules += 1
             except Exception as e:
                 logger.error(
                     "Ошибка импорта модуля",
-                    extra={
-                        "error": str(e),
-                        "error_type": type(e).__name__
-                    },
-                    exc_info=True
+                    extra={"error": str(e), "error_type": type(e).__name__},
+                    exc_info=True,
                 )
-        
+
         # Импортируем best practices
         for practice_data in data.get("best_practices", []):
             try:
@@ -129,29 +131,26 @@ async def import_from_json(
                         "description": practice_data.get("description", ""),
                         "code_examples": practice_data.get("code_examples", []),
                         "tags": practice_data.get("tags", []),
-                        "source": data.get("source", "json_import")
-                    }
+                        "source": data.get("source", "json_import"),
+                    },
                 )
                 imported_practices += 1
             except Exception as e:
                 logger.error(
                     "Ошибка импорта practice",
-                    extra={
-                        "error": str(e),
-                        "error_type": type(e).__name__
-                    },
-                    exc_info=True
+                    extra={"error": str(e), "error_type": type(e).__name__},
+                    exc_info=True,
                 )
-        
+
         return {
             "status": "success",
             "imported": {
                 "modules": imported_modules,
-                "best_practices": imported_practices
+                "best_practices": imported_practices,
             },
-            "config_name": config_name
+            "config_name": config_name,
         }
-        
+
     except json.JSONDecodeError as e:
         raise HTTPException(status_code=400, detail=f"Ошибка парсинга JSON: {e}")
     except Exception as e:
@@ -162,24 +161,24 @@ async def import_from_json(
 async def import_from_csv(
     config_name: str,
     file: UploadFile = File(...),
-    type: str = "modules"  # modules или best_practices
+    type: str = "modules",  # modules или best_practices
 ):
     """
     Импорт данных из CSV файла
-    
+
     Для модулей колонки: name, description, code, object_type, object_name
     Для best_practices колонки: title, description, category
     """
     try:
         # Читаем файл
         content = await file.read()
-        csv_content = content.decode('utf-8-sig')  # Поддержка BOM
-        
+        csv_content = content.decode("utf-8-sig")  # Поддержка BOM
+
         reader = csv.DictReader(io.StringIO(csv_content))
         rows = list(reader)
-        
+
         imported = 0
-        
+
         if type == "modules":
             for row in rows:
                 try:
@@ -192,20 +191,17 @@ async def import_from_csv(
                             "object_type": row.get("object_type"),
                             "object_name": row.get("object_name"),
                             "module_type": row.get("module_type"),
-                            "source": "csv_import"
-                        }
+                            "source": "csv_import",
+                        },
                     )
                     imported += 1
                 except Exception as e:
                     logger.error(
                         "Ошибка импорта модуля",
-                        extra={
-                            "error": str(e),
-                            "error_type": type(e).__name__
-                        },
-                        exc_info=True
+                        extra={"error": str(e), "error_type": type(e).__name__},
+                        exc_info=True,
                     )
-        
+
         elif type == "best_practices":
             for row in rows:
                 try:
@@ -215,29 +211,30 @@ async def import_from_csv(
                         practice={
                             "title": row.get("title", ""),
                             "description": row.get("description", ""),
-                            "code_examples": [row.get("code_example", "")] if row.get("code_example") else [],
-                            "tags": row.get("tags", "").split(",") if row.get("tags") else [],
-                            "source": "csv_import"
-                        }
+                            "code_examples": [row.get("code_example", "")]
+                            if row.get("code_example")
+                            else [],
+                            "tags": row.get("tags", "").split(",")
+                            if row.get("tags")
+                            else [],
+                            "source": "csv_import",
+                        },
                     )
                     imported += 1
                 except Exception as e:
                     logger.error(
                         "Ошибка импорта practice",
-                        extra={
-                            "error": str(e),
-                            "error_type": type(e).__name__
-                        },
-                        exc_info=True
+                        extra={"error": str(e), "error_type": type(e).__name__},
+                        exc_info=True,
                     )
-        
+
         return {
             "status": "success",
             "imported": imported,
             "type": type,
-            "config_name": config_name
+            "config_name": config_name,
         }
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка импорта CSV: {e}")
 
@@ -246,13 +243,13 @@ async def import_from_csv(
 async def bulk_import(request: BulkImportRequest):
     """
     Массовый импорт модулей и best practices
-    
+
     Удобно для программного наполнения базы знаний
     """
     try:
         imported_modules = 0
         imported_practices = 0
-        
+
         # Импортируем модули
         for module in request.modules:
             try:
@@ -266,8 +263,8 @@ async def bulk_import(request: BulkImportRequest):
                         "object_type": module.object_type,
                         "object_name": module.object_name,
                         "module_type": module.module_type,
-                        "source": request.source
-                    }
+                        "source": request.source,
+                    },
                 )
                 imported_modules += 1
             except Exception as e:
@@ -276,11 +273,11 @@ async def bulk_import(request: BulkImportRequest):
                     extra={
                         "module_name": module.name,
                         "error": str(e),
-                        "error_type": type(e).__name__
+                        "error_type": type(e).__name__,
                     },
-                    exc_info=True
+                    exc_info=True,
                 )
-        
+
         # Импортируем best practices
         for practice in request.best_practices:
             try:
@@ -292,8 +289,8 @@ async def bulk_import(request: BulkImportRequest):
                         "description": practice.description,
                         "code_examples": practice.code_examples,
                         "tags": practice.tags,
-                        "source": request.source
-                    }
+                        "source": request.source,
+                    },
                 )
                 imported_practices += 1
             except Exception as e:
@@ -302,20 +299,20 @@ async def bulk_import(request: BulkImportRequest):
                     extra={
                         "practice_title": practice.title,
                         "error": str(e),
-                        "error_type": type(e).__name__
+                        "error_type": type(e).__name__,
                     },
-                    exc_info=True
+                    exc_info=True,
                 )
-        
+
         return {
             "status": "success",
             "imported": {
                 "modules": imported_modules,
-                "best_practices": imported_practices
+                "best_practices": imported_practices,
             },
-            "config_name": request.config_name
+            "config_name": request.config_name,
         }
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка массового импорта: {e}")
 
@@ -335,12 +332,12 @@ async def download_json_template():
                         "name": "ПолучитьКлиента",
                         "type": "Функция",
                         "params": ["ИмяКлиента"],
-                        "description": "Получает клиента по имени"
+                        "description": "Получает клиента по имени",
                     }
                 ],
                 "object_type": "CommonModule",
                 "object_name": "РаботаСКлиентами",
-                "module_type": "Module"
+                "module_type": "Module",
             }
         ],
         "best_practices": [
@@ -348,14 +345,12 @@ async def download_json_template():
                 "title": "Оптимизация запросов",
                 "description": "Используйте индексы и ограничивайте количество записей",
                 "category": "performance",
-                "code_examples": [
-                    "Запрос.УстановитьПараметр(\"Лимит\", 100);"
-                ],
-                "tags": ["performance", "query", "optimization"]
+                "code_examples": ['Запрос.УстановитьПараметр("Лимит", 100);'],
+                "tags": ["performance", "query", "optimization"],
             }
-        ]
+        ],
     }
-    
+
     return template
 
 
@@ -365,17 +360,10 @@ async def download_csv_template(type: str = "modules"):
     if type == "modules":
         # Возвращаем пример CSV для модулей
         template = "name,description,code,object_type,object_name,module_type\n"
-        template += "ОбщийМодуль_РаботаСКлиентами,Модуль для работы с клиентами,\"// Пример кода\",CommonModule,РаботаСКлиентами,Module\n"
+        template += 'ОбщийМодуль_РаботаСКлиентами,Модуль для работы с клиентами,"// Пример кода",CommonModule,РаботаСКлиентами,Module\n'
     else:
         # Шаблон для best practices
         template = "title,description,category,code_example,tags\n"
-        template += "Оптимизация запросов,Используйте индексы,performance,\"Запрос.УстановитьПараметр(\\\"Лимит\\\", 100)\",\"performance,query\"\n"
-    
+        template += 'Оптимизация запросов,Используйте индексы,performance,"Запрос.УстановитьПараметр(\\"Лимит\\", 100)","performance,query"\n'
+
     return {"template": template, "type": type}
-
-
-
-
-
-
-

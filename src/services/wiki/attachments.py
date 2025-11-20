@@ -11,52 +11,54 @@ from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 
+
 class WikiAttachmentStorage:
     """
     Service for managing wiki attachments.
     """
-    
+
     def __init__(self):
         self.bucket_name = os.getenv("WIKI_ATTACHMENTS_BUCKET", "wiki-attachments")
         self.s3_client = self._init_client()
-        
+
     def _init_client(self):
         endpoint = os.getenv("S3_ENDPOINT")
         access_key = os.getenv("S3_ACCESS_KEY")
         secret_key = os.getenv("S3_SECRET_KEY")
-        
+
         if not endpoint or not access_key:
             logger.warning("S3 configuration missing. Attachments will fail.")
             return None
-            
+
         return boto3.client(
-            's3',
+            "s3",
             endpoint_url=endpoint,
             aws_access_key_id=access_key,
-            aws_secret_access_key=secret_key
+            aws_secret_access_key=secret_key,
         )
 
-    async def upload_file(self, file_content: bytes, filename: str, content_type: str) -> Optional[str]:
+    async def upload_file(
+        self, file_content: bytes, filename: str, content_type: str
+    ) -> Optional[str]:
         """
         Upload file to S3 and return public URL.
         """
         if not self.s3_client:
             raise RuntimeError("S3 client not configured")
-            
+
         try:
             self.s3_client.put_object(
                 Bucket=self.bucket_name,
                 Key=filename,
                 Body=file_content,
-                ContentType=content_type
+                ContentType=content_type,
             )
-            
+
             # Construct URL (assuming public read or presigned)
             # For MVP we assume endpoint + bucket + key
             endpoint = os.getenv("S3_ENDPOINT_PUBLIC", os.getenv("S3_ENDPOINT"))
             return f"{endpoint}/{self.bucket_name}/{filename}"
-            
+
         except ClientError as e:
             logger.error(f"Failed to upload attachment {filename}: {e}", exc_info=True)
             return None
-

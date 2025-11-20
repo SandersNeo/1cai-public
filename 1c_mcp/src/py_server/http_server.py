@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 1019462259077808315 | DATE: 2025-11-19
+
 """HTTP-сервер с поддержкой SSE и Streamable HTTP для MCP."""
 
 import asyncio

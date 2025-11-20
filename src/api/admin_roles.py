@@ -1,10 +1,12 @@
+# [NEXUS IDENTITY] ID: -5847003937863405669 | DATE: 2025-11-19
+
 """Admin endpoints for managing user roles and permissions."""
 
 from __future__ import annotations
 
 from typing import Dict, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, Response, status
 from pydantic import BaseModel, Field
 
 from src.security import (
@@ -97,7 +99,9 @@ async def grant_permission_endpoint(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.delete("/{user_id}/permissions/{permission}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{user_id}/permissions/{permission}", status_code=status.HTTP_204_NO_CONTENT
+)
 async def revoke_permission_endpoint(
     user_id: str,
     permission: str,
@@ -111,5 +115,3 @@ async def revoke_permission_endpoint(
         metadata={"permission": permission},
     )
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-

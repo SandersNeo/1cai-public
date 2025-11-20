@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -9045350730865047282 | DATE: 2025-11-19
+
 """
 Traceability & Compliance с Unified Change Graph
 ------------------------------------------------
@@ -12,7 +14,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set
 
-from src.ai.code_graph import CodeGraphBackend, EdgeKind, Node, NodeKind
+from src.ai.code_graph import CodeGraphBackend, EdgeKind, Node
 
 logger = logging.getLogger(__name__)
 
@@ -181,7 +183,9 @@ class TraceabilityWithGraph:
         # Общая статистика
         total_reqs = len(requirement_ids)
         full_coverage = sum(1 for m in matrix if m.get("coverage") == "full")
-        partial_coverage = sum(1 for m in matrix if m.get("coverage", "").startswith("partial"))
+        partial_coverage = sum(
+            1 for m in matrix if m.get("coverage", "").startswith("partial")
+        )
         no_coverage = sum(1 for m in matrix if m.get("coverage") == "none")
 
         return {
@@ -191,7 +195,9 @@ class TraceabilityWithGraph:
                 "full_coverage": full_coverage,
                 "partial_coverage": partial_coverage,
                 "no_coverage": no_coverage,
-                "coverage_percent": int((full_coverage / total_reqs) * 100) if total_reqs > 0 else 0,
+                "coverage_percent": int((full_coverage / total_reqs) * 100)
+                if total_reqs > 0
+                else 0,
             },
             "generated_at": datetime.utcnow().isoformat(),
         }
@@ -349,4 +355,3 @@ class TraceabilityWithGraph:
             },
             "generated_at": datetime.utcnow().isoformat(),
         }
-

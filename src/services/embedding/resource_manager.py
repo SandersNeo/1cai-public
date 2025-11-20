@@ -2,12 +2,14 @@ import time
 import os
 from threading import Lock
 from typing import Dict, Any
-from src.utils.circuit_breaker import CircuitBreaker, CircuitState
+from src.utils.circuit_breaker import CircuitBreaker
+
 
 class ResourceManager:
     """
     Manages resources, statistics, and circuit breakers for EmbeddingService.
     """
+
     def __init__(self):
         self.device_stats = {
             "cpu_requests": 0,
@@ -48,20 +50,24 @@ class ResourceManager:
                     self.device_stats["cpu_requests"] += 1
                 elif device == "hybrid":
                     self.device_stats["hybrid_requests"] += 1
-                
+
                 self.device_stats["total_tokens_processed"] += tokens
 
     def update_performance(self, device: str, duration: float, items_count: int):
-        if items_count == 0: return
+        if items_count == 0:
+            return
         with self._performance_lock:
-            if device not in self._device_performance: return
+            if device not in self._device_performance:
+                return
             perf = self._device_performance[device]
             time_per_item = duration / items_count
             alpha = 0.3
             if perf["request_count"] == 0:
                 perf["avg_time"] = time_per_item
             else:
-                perf["avg_time"] = alpha * time_per_item + (1 - alpha) * perf["avg_time"]
+                perf["avg_time"] = (
+                    alpha * time_per_item + (1 - alpha) * perf["avg_time"]
+                )
             perf["request_count"] += 1
             perf["last_update"] = time.time()
 
@@ -73,4 +79,3 @@ class ResourceManager:
     def get_stats(self) -> Dict[str, Any]:
         with self._stats_lock:
             return self.device_stats.copy()
-

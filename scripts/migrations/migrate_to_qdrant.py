@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 3676127756062018682 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Миграция данных из PostgreSQL в Qdrant

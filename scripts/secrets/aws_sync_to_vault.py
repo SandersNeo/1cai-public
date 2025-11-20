@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -4326263936345997538 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """Sync selected AWS Secrets Manager entries into Vault KV."""
 

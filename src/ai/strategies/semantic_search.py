@@ -1,9 +1,10 @@
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 import asyncio
 from src.ai.strategies.base import AIStrategy
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
+
 
 class SemanticSearchStrategy(AIStrategy):
     def __init__(self, qdrant_client=None, embedding_service=None):
@@ -19,8 +20,9 @@ class SemanticSearchStrategy(AIStrategy):
             # Generate embedding for the query
             # Assuming embedding_service is passed or we import it if not
             if not self.embedding_service:
-                 from src.services.embedding_service import EmbeddingService
-                 self.embedding_service = EmbeddingService()
+                from src.services.embedding_service import EmbeddingService
+
+                self.embedding_service = EmbeddingService()
 
             query_embedding = await self.embedding_service.generate_embedding(query)
 
@@ -33,6 +35,7 @@ class SemanticSearchStrategy(AIStrategy):
             try:
                 if not self.qdrant_client:
                     from src.db.qdrant_client import QdrantClient
+
                     self.qdrant_client = QdrantClient()
 
                 # Search for similar code
@@ -88,4 +91,3 @@ class SemanticSearchStrategy(AIStrategy):
                 exc_info=True,
             )
             return {"type": "semantic_search", "error": str(e), "service": "qdrant"}
-

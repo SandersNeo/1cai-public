@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -6404960691531610685 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Проверка соответствия README.md -> реальному коду

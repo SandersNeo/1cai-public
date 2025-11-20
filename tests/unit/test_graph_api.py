@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 714594101778786205 | DATE: 2025-11-19
+
 """
 Unit tests for Graph API semantic search endpoint.
 """
@@ -16,7 +18,9 @@ class DummyQdrant:
         self.calls = []
 
     def search_code(self, query_vector, config_filter=None, limit=10):
-        self.calls.append({"vector": query_vector, "config": config_filter, "limit": limit})
+        self.calls.append(
+            {"vector": query_vector, "config": config_filter, "limit": limit}
+        )
         return [
             {"id": "1", "score": 0.9, "payload": {"name": "Func1"}},
             {"id": "2", "score": 0.8, "payload": {"name": "Func2"}},
@@ -105,4 +109,3 @@ def test_semantic_search_handles_empty_embedding(client):
 
     assert response.status_code == 503
     assert graph_api.qdrant_client.calls == []
-

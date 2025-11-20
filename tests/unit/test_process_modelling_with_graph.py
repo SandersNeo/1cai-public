@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -1289640793020185127 | DATE: 2025-11-19
+
 """
 Tests for ProcessModellerWithGraph (process_modelling_with_graph.py).
 """
@@ -115,4 +117,3 @@ async def test_process_modelling_without_backend() -> None:
     assert "diagram" in result
     # Без графа graph_refs должны быть пустыми
     assert result.get("graph_refs", []) == []
-

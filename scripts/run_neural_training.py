@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 367632098140888647 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Полный pipeline обучения Neural BSL Parser

@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 7169653715806574755 | DATE: 2025-11-19
+
 """Module registry for security agent."""
 
 from .bsl import BSLStaticSecurityModule

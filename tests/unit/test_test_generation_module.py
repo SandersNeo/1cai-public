@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 8078522488586248809 | DATE: 2025-11-19
+
 from typing import Any, Dict, List
 
 import pytest
@@ -50,7 +52,12 @@ def test_extract_parameters_detailed_complex_signature():
 
     assert params == [
         {"name": "Первый", "type": "Число", "default_value": "10", "required": False},
-        {"name": "Второй", "type": None, "default_value": "Неопределено", "required": False},
+        {
+            "name": "Второй",
+            "type": None,
+            "default_value": "Неопределено",
+            "required": False,
+        },
         {"name": "Третий", "type": None, "default_value": None, "required": True},
     ]
 
@@ -123,7 +130,9 @@ async def test_generate_test_cases_fallback(monkeypatch, caplog):
 
 @pytest.mark.asyncio
 async def test_generate_bsl_tests_pipeline(monkeypatch):
-    async def fake_generate_test_cases(func: Dict[str, Any], include_edge_cases: bool) -> List[Dict[str, Any]]:
+    async def fake_generate_test_cases(
+        func: Dict[str, Any], include_edge_cases: bool
+    ) -> List[Dict[str, Any]]:
         assert include_edge_cases is True
         return [
             {
@@ -137,12 +146,12 @@ async def test_generate_bsl_tests_pipeline(monkeypatch):
             }
         ]
 
-    monkeypatch.setattr(test_generation, "generate_test_cases", fake_generate_test_cases)
+    monkeypatch.setattr(
+        test_generation, "generate_test_cases", fake_generate_test_cases
+    )
 
     tests = await test_generation.generate_bsl_tests(_make_bsl_sample())
 
     assert tests, "Pipeline should produce tests"
     assert tests[0]["framework"] == "xUnitFor1C"
     assert tests[0]["coverage"]["lines"] >= 0
-
-

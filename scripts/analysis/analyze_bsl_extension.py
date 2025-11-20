@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -3473255762372880890 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Анализ плагина Language 1C (BSL) для VS Code

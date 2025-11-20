@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -7885671255942011735 | DATE: 2025-11-19
+
 """
 Unit tests for NaparnikClient.
 
@@ -25,11 +27,17 @@ class TestNaparnikConfig:
         monkeypatch.setenv("NAPARNIK_MODEL", "test-model")
         # Импортируем заново после изменения env, или используем прямое создание
         import os
+
         config = NaparnikConfig(
-            base_url=os.getenv("NAPARNIK_API_URL", "https://naparnik.platform.1c.ru/api/v1"),
-            model_name=os.getenv("NAPARNIK_MODEL", "naparnik-pro")
+            base_url=os.getenv(
+                "NAPARNIK_API_URL", "https://naparnik.platform.1c.ru/api/v1"
+            ),
+            model_name=os.getenv("NAPARNIK_MODEL", "naparnik-pro"),
         )
-        assert "test.naparnik.ru" in config.base_url or config.base_url == "https://test.naparnik.ru/api"
+        assert (
+            "test.naparnik.ru" in config.base_url
+            or config.base_url == "https://test.naparnik.ru/api"
+        )
         assert config.model_name == "test-model"
 
 
@@ -78,4 +86,3 @@ class TestNaparnikClient:
         # Закрываем
         await client.close()
         assert client._session is None or client._session.closed
-

@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 2205564168717675422 | DATE: 2025-11-19
+
 """
 PostgreSQL repository for marketplace data with caching and storage helpers.
 Версия: 2.1.0
@@ -12,7 +14,6 @@ from __future__ import annotations
 import json
 import os
 import asyncio
-from datetime import datetime
 import re
 import uuid
 from typing import Any, Dict, List, Optional, Tuple
@@ -62,7 +63,9 @@ class MarketplaceRepository:
         if "create_bucket" not in self.storage_config:
             self.storage_config["create_bucket"] = True
         elif not isinstance(self.storage_config["create_bucket"], bool):
-            self.storage_config["create_bucket"] = str(self.storage_config["create_bucket"]).lower() not in {
+            self.storage_config["create_bucket"] = str(
+                self.storage_config["create_bucket"]
+            ).lower() not in {
                 "false",
                 "0",
                 "no",
@@ -178,48 +181,58 @@ class MarketplaceRepository:
         if not plugin_id or not isinstance(plugin_id, str):
             logger.warning(
                 "Invalid plugin_id in create_plugin",
-                extra={"plugin_id_type": type(plugin_id).__name__ if plugin_id else None}
+                extra={
+                    "plugin_id_type": type(plugin_id).__name__ if plugin_id else None
+                },
             )
             raise ValueError("plugin_id must be a non-empty string")
-        
+
         if not owner_id or not isinstance(owner_id, str):
             logger.warning(
                 "Invalid owner_id in create_plugin",
-                extra={"owner_id_type": type(owner_id).__name__ if owner_id else None}
+                extra={"owner_id_type": type(owner_id).__name__ if owner_id else None},
             )
             raise ValueError("owner_id must be a non-empty string")
-        
+
         if not owner_username or not isinstance(owner_username, str):
             logger.warning(
                 "Invalid owner_username in create_plugin",
-                extra={"owner_username_type": type(owner_username).__name__ if owner_username else None}
+                extra={
+                    "owner_username_type": type(owner_username).__name__
+                    if owner_username
+                    else None
+                },
             )
             raise ValueError("owner_username must be a non-empty string")
-        
+
         if not isinstance(payload, dict):
             logger.warning(
                 "Invalid payload type in create_plugin",
-                extra={"payload_type": type(payload).__name__}
+                extra={"payload_type": type(payload).__name__},
             )
             raise ValueError("payload must be a dictionary")
-        
+
         if not download_url or not isinstance(download_url, str):
             logger.warning(
                 "Invalid download_url in create_plugin",
-                extra={"download_url_type": type(download_url).__name__ if download_url else None}
+                extra={
+                    "download_url_type": type(download_url).__name__
+                    if download_url
+                    else None
+                },
             )
             raise ValueError("download_url must be a non-empty string")
-        
+
         # Validate required fields
         if "name" not in payload or not payload["name"]:
             raise ValueError("payload must contain 'name' field")
-        
+
         if "description" not in payload or not payload["description"]:
             raise ValueError("payload must contain 'description' field")
-        
+
         if "version" not in payload or not payload["version"]:
             raise ValueError("payload must contain 'version' field")
-        
+
         category_value = payload.get("category")
         if hasattr(category_value, "value"):
             category_value = category_value.value
@@ -297,26 +310,26 @@ class MarketplaceRepository:
         try:
             async with self.pool.acquire() as conn:
                 record = await conn.fetchrow(query, *values)
-            
+
             if not record:
                 logger.warning(
                     "Failed to create plugin - no record returned",
-                    extra={"plugin_id": plugin_id, "owner_id": owner_id}
+                    extra={"plugin_id": plugin_id, "owner_id": owner_id},
                 )
                 raise ValueError("Failed to create plugin")
-            
+
             await self._invalidate_caches()
-            
+
             logger.info(
                 "Plugin created successfully",
                 extra={
                     "plugin_id": plugin_id,
                     "owner_id": owner_id,
                     "name": payload.get("name"),
-                    "category": category_value
-                }
+                    "category": category_value,
+                },
             )
-            
+
             return self._record_to_plugin(record)
         except Exception as e:
             logger.error(
@@ -324,9 +337,9 @@ class MarketplaceRepository:
                 extra={
                     "plugin_id": plugin_id,
                     "owner_id": owner_id,
-                    "error_type": type(e).__name__
+                    "error_type": type(e).__name__,
                 },
-                exc_info=True
+                exc_info=True,
             )
             raise
 
@@ -341,24 +354,26 @@ class MarketplaceRepository:
         if not plugin_id or not isinstance(plugin_id, str):
             logger.warning(
                 "Invalid plugin_id in store_artifact",
-                extra={"plugin_id_type": type(plugin_id).__name__ if plugin_id else None}
+                extra={
+                    "plugin_id_type": type(plugin_id).__name__ if plugin_id else None
+                },
             )
             raise ValueError("plugin_id must be a non-empty string")
-        
+
         if not data or not isinstance(data, bytes):
             logger.warning(
                 "Invalid data in store_artifact",
-                extra={"data_type": type(data).__name__ if data else None}
+                extra={"data_type": type(data).__name__ if data else None},
             )
             raise ValueError("Artifact data must be non-empty bytes")
-        
+
         if not filename or not isinstance(filename, str):
             logger.warning(
                 "Invalid filename in store_artifact",
-                extra={"filename_type": type(filename).__name__ if filename else None}
+                extra={"filename_type": type(filename).__name__ if filename else None},
             )
             raise ValueError("filename must be a non-empty string")
-        
+
         # Validate file size (prevent DoS)
         max_file_size = 100 * 1024 * 1024  # 100MB max
         if len(data) > max_file_size:
@@ -368,22 +383,26 @@ class MarketplaceRepository:
                     "plugin_id": plugin_id,
                     "filename": filename,
                     "file_size": len(data),
-                    "max_size": max_file_size
-                }
+                    "max_size": max_file_size,
+                },
             )
-            raise ValueError(f"Artifact file too large: {len(data)} bytes. Maximum: {max_file_size} bytes")
-        
+            raise ValueError(
+                f"Artifact file too large: {len(data)} bytes. Maximum: {max_file_size} bytes"
+            )
+
         # Sanitize filename (prevent path traversal)
         filename = os.path.basename(filename)  # Remove any path components
         if not filename or filename == "." or filename == "..":
             logger.warning(
                 "Filename sanitized to invalid value",
-                extra={"plugin_id": plugin_id, "original_filename": filename}
+                extra={"plugin_id": plugin_id, "original_filename": filename},
             )
             raise ValueError("Invalid filename")
-        
+
         if not self._s3_available:
-            raise RuntimeError("Object storage is not configured for marketplace artifacts")
+            raise RuntimeError(
+                "Object storage is not configured for marketplace artifacts"
+            )
 
         await self._ensure_bucket()
 
@@ -406,15 +425,15 @@ class MarketplaceRepository:
 
         try:
             await loop.run_in_executor(None, _upload)
-            
+
             logger.info(
                 "Artifact uploaded successfully",
                 extra={
                     "plugin_id": plugin_id,
                     "object_key": object_key,
                     "artifact_filename": filename,
-                    "size": len(data)
-                }
+                    "size": len(data),
+                },
             )
         except (BotoCoreError, ClientError) as exc:
             logger.error(
@@ -423,9 +442,9 @@ class MarketplaceRepository:
                     "plugin_id": plugin_id,
                     "object_key": object_key,
                     "artifact_filename": filename,
-                    "error_type": type(exc).__name__
+                    "error_type": type(exc).__name__,
                 },
-                exc_info=True
+                exc_info=True,
             )
             raise RuntimeError(f"Failed to upload artifact: {exc}") from exc
 
@@ -448,17 +467,17 @@ class MarketplaceRepository:
             if not record:
                 logger.warning(
                     "Plugin not found after artifact upload",
-                    extra={"plugin_id": plugin_id}
+                    extra={"plugin_id": plugin_id},
                 )
                 raise ValueError("Plugin not found")
 
             await self._invalidate_caches(plugin_id)
-            
+
             logger.info(
                 "Plugin artifact path updated",
-                extra={"plugin_id": plugin_id, "artifact_path": object_key}
+                extra={"plugin_id": plugin_id, "artifact_path": object_key},
             )
-            
+
             return self._record_to_plugin(record)
         except ValueError:
             raise
@@ -468,9 +487,9 @@ class MarketplaceRepository:
                 extra={
                     "plugin_id": plugin_id,
                     "object_key": object_key,
-                    "error_type": type(e).__name__
+                    "error_type": type(e).__name__,
                 },
-                exc_info=True
+                exc_info=True,
             )
             raise
 
@@ -479,10 +498,12 @@ class MarketplaceRepository:
         if not plugin_id or not isinstance(plugin_id, str):
             logger.warning(
                 "Invalid plugin_id in get_plugin",
-                extra={"plugin_id_type": type(plugin_id).__name__ if plugin_id else None}
+                extra={
+                    "plugin_id_type": type(plugin_id).__name__ if plugin_id else None
+                },
             )
             return None
-        
+
         try:
             async with self.pool.acquire() as conn:
                 record = await conn.fetchrow(
@@ -495,15 +516,14 @@ class MarketplaceRepository:
         except Exception as e:
             logger.error(
                 f"Error getting plugin: {e}",
-                extra={
-                    "plugin_id": plugin_id,
-                    "error_type": type(e).__name__
-                },
-                exc_info=True
+                extra={"plugin_id": plugin_id, "error_type": type(e).__name__},
+                exc_info=True,
             )
             return None
 
-    async def update_plugin(self, plugin_id: str, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    async def update_plugin(
+        self, plugin_id: str, update_data: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
         if not update_data:
             return await self.get_plugin(plugin_id)
 
@@ -610,7 +630,9 @@ class MarketplaceRepository:
         total = records[0]["total_count"]
         return [self._record_to_plugin(rec) for rec in records], total
 
-    async def record_install(self, plugin_id: str, user_id: str) -> Optional[Dict[str, Any]]:
+    async def record_install(
+        self, plugin_id: str, user_id: str
+    ) -> Optional[Dict[str, Any]]:
         async with self.pool.acquire() as conn:
             async with conn.transaction():
                 plugin = await conn.fetchrow(
@@ -652,7 +674,9 @@ class MarketplaceRepository:
             return self._record_to_plugin(record)
         return None
 
-    async def remove_install(self, plugin_id: str, user_id: str) -> Optional[Dict[str, Any]]:
+    async def remove_install(
+        self, plugin_id: str, user_id: str
+    ) -> Optional[Dict[str, Any]]:
         async with self.pool.acquire() as conn:
             async with conn.transaction():
                 plugin = await conn.fetchrow(
@@ -803,7 +827,7 @@ class MarketplaceRepository:
     async def get_plugin_stats(self, plugin_id: str) -> Optional[Dict[str, Any]]:
         """
         Get plugin statistics with optimized single query
-        
+
         Best practice: Use single query with CTE/aggregations instead of multiple queries
         """
         async with self.pool.acquire() as conn:
@@ -843,26 +867,35 @@ class MarketplaceRepository:
                 """,
                 plugin_id,
             )
-            
+
             if not result:
                 return None
-            
+
             plugin = dict(result)
-            
+
             # Build rating distribution
             rating_distribution = {i: 0 for i in range(1, 6)}
             if plugin.get("rating_dist"):
                 import json
-                dist = json.loads(plugin["rating_dist"]) if isinstance(plugin["rating_dist"], str) else plugin["rating_dist"]
+
+                dist = (
+                    json.loads(plugin["rating_dist"])
+                    if isinstance(plugin["rating_dist"], str)
+                    else plugin["rating_dist"]
+                )
                 if isinstance(dist, dict):
                     for rating, count in dist.items():
                         rating_distribution[int(rating)] = count
             stats = {
                 "plugin_id": plugin_id,
                 "downloads_total": plugin["downloads"],
-                "downloads_last_30_days": plugin["downloads"],  # TODO: Calculate actual last 30 days
+                "downloads_last_30_days": plugin[
+                    "downloads"
+                ],  # TODO: Calculate actual last 30 days
                 "installs_active": plugin["installs_active"],
-                "rating_average": float(plugin["avg_rating"] or plugin.get("rating") or 0),
+                "rating_average": float(
+                    plugin["avg_rating"] or plugin.get("rating") or 0
+                ),
                 "rating_distribution": rating_distribution,
                 "reviews_count": plugin["reviews_count"],
                 "favorites_count": plugin["favorites_count"],
@@ -887,7 +920,9 @@ class MarketplaceRepository:
             )
         counts = {row["category"]: row["count"] for row in rows}
         if self.cache:
-            await self.cache.set(self.CATEGORY_CACHE_KEY, json.dumps(counts), ex=self.CACHE_TTL_SECONDS)
+            await self.cache.set(
+                self.CATEGORY_CACHE_KEY, json.dumps(counts), ex=self.CACHE_TTL_SECONDS
+            )
         return counts
 
     async def get_featured_plugins(self, limit: int) -> List[Dict[str, Any]]:
@@ -908,7 +943,9 @@ class MarketplaceRepository:
             )
         plugins = [self._record_to_plugin(record) for record in records]
         if self.cache:
-            await self.cache.set(cache_key, json.dumps(plugins, default=str), ex=self.CACHE_TTL_SECONDS)
+            await self.cache.set(
+                cache_key, json.dumps(plugins, default=str), ex=self.CACHE_TTL_SECONDS
+            )
         return plugins
 
     async def get_trending_plugins(self, limit: int) -> List[Dict[str, Any]]:
@@ -929,7 +966,9 @@ class MarketplaceRepository:
             )
         plugins = [self._record_to_plugin(record) for record in records]
         if self.cache:
-            await self.cache.set(cache_key, json.dumps(plugins, default=str), ex=self.CACHE_TTL_SECONDS)
+            await self.cache.set(
+                cache_key, json.dumps(plugins, default=str), ex=self.CACHE_TTL_SECONDS
+            )
         return plugins
 
     async def add_complaint(
@@ -983,7 +1022,9 @@ class MarketplaceRepository:
             "status": "ready",
             "plugin_id": plugin["plugin_id"],
             "download_url": presigned_url or plugin.get("download_url"),
-            "message": "Download link generated" if presigned_url else "Download will be implemented in production",
+            "message": "Download link generated"
+            if presigned_url
+            else "Download will be implemented in production",
             "files": ["manifest.json", "README.md", "plugin.py"],
         }
 
@@ -1086,20 +1127,26 @@ class MarketplaceRepository:
     def _s3_available(self) -> bool:
         has_bucket = bool(self.storage_config.get("bucket"))
         has_credentials = bool(
-            self.storage_config.get("access_key")
-            or os.getenv("AWS_ACCESS_KEY_ID")
+            self.storage_config.get("access_key") or os.getenv("AWS_ACCESS_KEY_ID")
         ) and bool(
-            self.storage_config.get("secret_key")
-            or os.getenv("AWS_SECRET_ACCESS_KEY")
+            self.storage_config.get("secret_key") or os.getenv("AWS_SECRET_ACCESS_KEY")
         )
-        return has_bucket and has_credentials and (boto3 is not None or self._s3_client is not None)
+        return (
+            has_bucket
+            and has_credentials
+            and (boto3 is not None or self._s3_client is not None)
+        )
 
     def _get_s3_client(self):
         if not self._s3_available:
             return None
         if self._s3_client is None:
-            access_key = self.storage_config.get("access_key") or os.getenv("AWS_ACCESS_KEY_ID")
-            secret_key = self.storage_config.get("secret_key") or os.getenv("AWS_SECRET_ACCESS_KEY")
+            access_key = self.storage_config.get("access_key") or os.getenv(
+                "AWS_ACCESS_KEY_ID"
+            )
+            secret_key = self.storage_config.get("secret_key") or os.getenv(
+                "AWS_SECRET_ACCESS_KEY"
+            )
             session = boto3.session.Session(
                 aws_access_key_id=access_key,
                 aws_secret_access_key=secret_key,
@@ -1128,11 +1175,15 @@ class MarketplaceRepository:
                 if error_code not in {"404", "NoSuchBucket", "NotFound"}:
                     raise
             if not self.storage_config.get("create_bucket", True):
-                raise RuntimeError(f"S3 bucket '{bucket}' does not exist and auto-creation is disabled")
+                raise RuntimeError(
+                    f"S3 bucket '{bucket}' does not exist and auto-creation is disabled"
+                )
             create_kwargs: Dict[str, Any] = {"Bucket": bucket}
             region = self.storage_config.get("region")
             if region and region not in {"", "us-east-1"}:
-                create_kwargs["CreateBucketConfiguration"] = {"LocationConstraint": region}
+                create_kwargs["CreateBucketConfiguration"] = {
+                    "LocationConstraint": region
+                }
             client.create_bucket(**create_kwargs)
 
         loop = asyncio.get_running_loop()

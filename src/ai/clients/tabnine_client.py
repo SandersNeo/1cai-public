@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 422531480815478020 | DATE: 2025-11-19
+
 """
 Async client for Tabnine API.
 
@@ -11,13 +13,17 @@ when credentials are not provided, allowing local development without network ac
 
 from __future__ import annotations
 
-import logging
 import os
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
 import httpx
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 from src.utils.structured_logging import StructuredLogger
 from .exceptions import LLMCallError, LLMNotConfiguredError
@@ -31,17 +37,17 @@ class TabnineConfig:
 
     # API endpoint (default Tabnine API)
     base_url: str = os.getenv("TABNINE_API_URL", "https://api.tabnine.com/v1")
-    
+
     # JWT authentication token
     auth_token: Optional[str] = os.getenv("TABNINE_AUTH_TOKEN")
-    
+
     # Model settings
     model_name: str = os.getenv("TABNINE_MODEL", "tabnine-pro")
-    
+
     # Request settings
     verify_ssl: bool = os.getenv("TABNINE_VERIFY_SSL", "true").lower() != "false"
     timeout_seconds: float = float(os.getenv("TABNINE_TIMEOUT_SECONDS", "30.0"))
-    
+
     # Generation settings
     max_tokens: int = int(os.getenv("TABNINE_MAX_TOKENS", "2048"))
     temperature: float = float(os.getenv("TABNINE_TEMPERATURE", "0.2"))
@@ -50,7 +56,7 @@ class TabnineConfig:
 class TabnineClient:
     """
     Async client for interacting with the Tabnine API.
-    
+
     Supports JWT token authentication and provides code completion
     and generation capabilities.
     """
@@ -69,8 +75,7 @@ class TabnineClient:
         """Get or create HTTP client."""
         if self._client is None:
             self._client = httpx.AsyncClient(
-                timeout=self._timeout,
-                verify=self.config.verify_ssl
+                timeout=self._timeout, verify=self.config.verify_ssl
             )
         return self._client
 
@@ -89,7 +94,7 @@ class TabnineClient:
     @retry(
         retry=retry_if_exception_type((httpx.TimeoutException, httpx.NetworkError)),
         stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=2, max=10)
+        wait=wait_exponential(multiplier=1, min=2, max=10),
     )
     async def generate(
         self,
@@ -140,7 +145,9 @@ class TabnineClient:
         )
 
         # Use config defaults if not specified
-        temperature = temperature if temperature is not None else self.config.temperature
+        temperature = (
+            temperature if temperature is not None else self.config.temperature
+        )
         max_tokens = max_tokens if max_tokens is not None else self.config.max_tokens
 
         # Build messages
@@ -171,8 +178,8 @@ class TabnineClient:
                     "model": self.config.model_name,
                     "prompt_length": len(prompt),
                     "temperature": temperature,
-                    "base_url": self.config.base_url
-                }
+                    "base_url": self.config.base_url,
+                },
             )
 
             response = await client.post(
@@ -226,7 +233,7 @@ class TabnineClient:
             # Fallback: return raw data
             logger.warning(
                 "Unexpected Tabnine response format",
-                extra={"response_keys": list(data.keys())}
+                extra={"response_keys": list(data.keys())},
             )
             return {
                 "text": str(data),
@@ -247,9 +254,9 @@ class TabnineClient:
                 extra={
                     "status_code": e.response.status_code,
                     "error": error_text,
-                    "prompt_length": len(prompt)
+                    "prompt_length": len(prompt),
                 },
-                exc_info=True
+                exc_info=True,
             )
             raise LLMCallError(f"Tabnine API error: {error_text}") from e
 
@@ -258,8 +265,8 @@ class TabnineClient:
                 "Tabnine API timeout",
                 extra={
                     "timeout": self.config.timeout_seconds,
-                    "prompt_length": len(prompt)
-                }
+                    "prompt_length": len(prompt),
+                },
             )
             raise LLMCallError(
                 f"Tabnine API timeout after {self.config.timeout_seconds}s"
@@ -268,22 +275,16 @@ class TabnineClient:
         except httpx.RequestError as e:
             logger.error(
                 "Tabnine API request error",
-                extra={
-                    "error": str(e),
-                    "error_type": type(e).__name__
-                },
-                exc_info=True
+                extra={"error": str(e), "error_type": type(e).__name__},
+                exc_info=True,
             )
             raise LLMCallError(f"Tabnine API request failed: {str(e)}") from e
 
         except Exception as e:
             logger.error(
                 "Unexpected error in Tabnine API call",
-                extra={
-                    "error": str(e),
-                    "error_type": type(e).__name__
-                },
-                exc_info=True
+                extra={"error": str(e), "error_type": type(e).__name__},
+                exc_info=True,
             )
             raise LLMCallError(f"Unexpected error: {str(e)}") from e
 
@@ -321,4 +322,3 @@ class TabnineClient:
             context=context,
             temperature=0.1,  # Lower temperature for code completion
         )
-

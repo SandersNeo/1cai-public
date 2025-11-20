@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 3323633353630428890 | DATE: 2025-11-19
+
 """
 Network Resilience Components
 Версия: 1.0.0
@@ -28,7 +30,10 @@ from .traffic_shaper import TrafficShaper, TrafficShapeConfig
 from .vpn_manager import VPNManager, VPNTunnel, TunnelStatus
 from .protocol_obfuscator import ProtocolObfuscator
 from .http3_client import HTTP3Client
-from .network_resilience_layer import NetworkResilienceLayer, get_network_resilience_layer
+from .network_resilience_layer import (
+    NetworkResilienceLayer,
+    get_network_resilience_layer,
+)
 
 __all__ = [
     "DNSManager",
@@ -51,4 +56,3 @@ __all__ = [
     "NetworkResilienceLayer",
     "get_network_resilience_layer",
 ]
-

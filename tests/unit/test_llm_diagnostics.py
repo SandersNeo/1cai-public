@@ -1,7 +1,7 @@
-import types
+# [NEXUS IDENTITY] ID: 2828195407131263640 | DATE: 2025-11-19
+
 
 import httpx
-import pytest
 
 from scripts.diagnostics import check_llm_endpoints as diag
 
@@ -72,4 +72,3 @@ def test_check_provider_success(monkeypatch):
     assert result.status == "ok"
     assert result.http_status == 200
     assert result.latency_ms is not None
-

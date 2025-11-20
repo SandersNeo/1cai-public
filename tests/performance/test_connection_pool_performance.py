@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 7113442219232533829 | DATE: 2025-11-19
+
 """
 Performance tests for ConnectionPool.
 """
@@ -88,7 +90,9 @@ async def test_connection_pool_memory_efficiency():
     """Тест эффективности использования памяти (проверка утечек)."""
     import sys
 
-    initial_size = len([obj for obj in sys.get_objects() if isinstance(obj, ConnectionPool)])
+    initial_size = len(
+        [obj for obj in sys.get_objects() if isinstance(obj, ConnectionPool)]
+    )
 
     # Создаем и закрываем много пулов
     for _ in range(10):
@@ -100,7 +104,8 @@ async def test_connection_pool_memory_efficiency():
 
     # Проверяем, что пулы корректно удаляются (нет утечек)
     # (Упрощенная проверка - в реальности нужны более сложные инструменты)
-    final_size = len([obj for obj in sys.get_objects() if isinstance(obj, ConnectionPool)])
+    final_size = len(
+        [obj for obj in sys.get_objects() if isinstance(obj, ConnectionPool)]
+    )
     # Глобальный пул остается
     assert final_size <= initial_size + 1
-

@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -3078919085858154681 | DATE: 2025-11-19
+
 """
 LLM Provider Health Monitor
 Версия: 1.0.0
@@ -11,7 +13,7 @@ import asyncio
 import logging
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 from typing import Dict, Optional, Callable, Any
 import httpx
@@ -23,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 class ProviderHealthStatus(str, Enum):
     """Статус здоровья провайдера"""
+
     HEALTHY = "healthy"
     UNHEALTHY = "unhealthy"
     UNKNOWN = "unknown"
@@ -32,6 +35,7 @@ class ProviderHealthStatus(str, Enum):
 @dataclass
 class ProviderHealth:
     """Информация о здоровье провайдера"""
+
     provider_name: str
     status: ProviderHealthStatus
     last_check: datetime
@@ -47,14 +51,14 @@ class ProviderHealth:
 class LLMHealthMonitor:
     """
     Мониторинг здоровья LLM провайдеров с автоматическим переключением.
-    
+
     Особенности:
     - Периодическая проверка доступности провайдеров
     - Отслеживание latency и error rate
     - Автоматическое определение нездоровых провайдеров
     - Callback для уведомлений об изменении статуса
     """
-    
+
     def __init__(
         self,
         manager: LLMProviderManager,
@@ -79,12 +83,14 @@ class LLMHealthMonitor:
         self.recovery_threshold = recovery_threshold
         self.timeout = timeout_seconds
         self.degraded_latency_ms = degraded_latency_ms
-        
+
         self.health_status: Dict[str, ProviderHealth] = {}
         self._monitoring_task: Optional[asyncio.Task] = None
         self._stop_event = asyncio.Event()
-        self._status_callbacks: list[Callable[[str, ProviderHealthStatus, ProviderHealthStatus], None]] = []
-        
+        self._status_callbacks: list[
+            Callable[[str, ProviderHealthStatus, ProviderHealthStatus], None]
+        ] = []
+
         # Инициализация статусов для всех провайдеров
         for provider in self.manager.providers.values():
             if provider.enabled:
@@ -93,28 +99,31 @@ class LLMHealthMonitor:
                     status=ProviderHealthStatus.UNKNOWN,
                     last_check=datetime.utcnow(),
                 )
-    
-    def add_status_callback(self, callback: Callable[[str, ProviderHealthStatus, ProviderHealthStatus], None]) -> None:
+
+    def add_status_callback(
+        self,
+        callback: Callable[[str, ProviderHealthStatus, ProviderHealthStatus], None],
+    ) -> None:
         """Добавить callback для уведомлений об изменении статуса"""
         self._status_callbacks.append(callback)
-    
+
     async def start_monitoring(self) -> None:
         """Запустить периодический мониторинг"""
         if self._monitoring_task and not self._monitoring_task.done():
             logger.warning("Health monitoring already running")
             return
-        
+
         self._stop_event.clear()
         self._monitoring_task = asyncio.create_task(self._monitoring_loop())
         logger.info("LLM Health Monitor started")
-    
+
     async def stop_monitoring(self) -> None:
         """Остановить мониторинг"""
         self._stop_event.set()
         if self._monitoring_task:
             await self._monitoring_task
         logger.info("LLM Health Monitor stopped")
-    
+
     async def _monitoring_loop(self) -> None:
         """Основной цикл мониторинга"""
         while not self._stop_event.is_set():
@@ -122,26 +131,25 @@ class LLMHealthMonitor:
                 await self._check_all_providers()
             except Exception as e:
                 logger.error(f"Error in health monitoring loop: {e}", exc_info=True)
-            
+
             # Ждём до следующей проверки или остановки
             try:
                 await asyncio.wait_for(
-                    self._stop_event.wait(),
-                    timeout=self.check_interval
+                    self._stop_event.wait(), timeout=self.check_interval
                 )
             except asyncio.TimeoutError:
                 continue
-    
+
     async def _check_all_providers(self) -> None:
         """Проверить все провайдеры"""
         tasks = []
         for provider in self.manager.providers.values():
             if provider.enabled:
                 tasks.append(self._check_provider(provider))
-        
+
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
-    
+
     async def _check_provider(self, provider: ProviderConfig) -> None:
         """Проверить один провайдер"""
         health = self.health_status.get(provider.name)
@@ -152,24 +160,24 @@ class LLMHealthMonitor:
                 last_check=datetime.utcnow(),
             )
             self.health_status[provider.name] = health
-        
+
         old_status = health.status
-        
+
         try:
             # Выполняем health check
             start_time = time.time()
             is_healthy = await self._perform_health_check(provider)
             latency_ms = (time.time() - start_time) * 1000
-            
+
             health.last_check = datetime.utcnow()
             health.latency_ms = latency_ms
-            
+
             if is_healthy:
                 health.success_count += 1
                 health.consecutive_successes += 1
                 health.consecutive_failures = 0
                 health.last_error = None
-                
+
                 # Определяем статус на основе latency
                 if latency_ms > self.degraded_latency_ms:
                     new_status = ProviderHealthStatus.DEGRADED
@@ -177,19 +185,23 @@ class LLMHealthMonitor:
                     new_status = ProviderHealthStatus.HEALTHY
                 else:
                     # В процессе восстановления
-                    new_status = ProviderHealthStatus.HEALTHY if old_status == ProviderHealthStatus.HEALTHY else old_status
+                    new_status = (
+                        ProviderHealthStatus.HEALTHY
+                        if old_status == ProviderHealthStatus.HEALTHY
+                        else old_status
+                    )
             else:
                 health.failure_count += 1
                 health.consecutive_failures += 1
                 health.consecutive_successes = 0
-                
+
                 if health.consecutive_failures >= self.failure_threshold:
                     new_status = ProviderHealthStatus.UNHEALTHY
                 else:
                     new_status = ProviderHealthStatus.DEGRADED
-            
+
             health.status = new_status
-            
+
             # Уведомляем об изменении статуса
             if old_status != new_status:
                 logger.info(
@@ -201,25 +213,25 @@ class LLMHealthMonitor:
                         callback(provider.name, old_status, new_status)
                     except Exception as e:
                         logger.warning(f"Error in status callback: {e}", exc_info=True)
-        
+
         except Exception as e:
             health.failure_count += 1
             health.consecutive_failures += 1
             health.consecutive_successes = 0
             health.last_error = str(e)
             health.last_check = datetime.utcnow()
-            
+
             if health.consecutive_failures >= self.failure_threshold:
                 health.status = ProviderHealthStatus.UNHEALTHY
             else:
                 health.status = ProviderHealthStatus.DEGRADED
-            
+
             logger.warning(f"Health check failed for {provider.name}: {e}")
-    
+
     async def _perform_health_check(self, provider: ProviderConfig) -> bool:
         """
         Выполнить health check для провайдера.
-        
+
         Для remote провайдеров проверяем доступность base_url.
         Для self-hosted провайдеров проверяем health endpoint.
         """
@@ -232,16 +244,16 @@ class LLMHealthMonitor:
                     health_url = f"{provider.base_url}health"
                 else:
                     health_url = f"{provider.base_url}/health"
-            
+
             # Если base_url пустой, пробуем использовать известные endpoints
             if not health_url or health_url == "/health":
                 # Fallback на base_url из конфига
                 health_url = provider.base_url
-            
+
             if not health_url:
                 # Нет URL для проверки, считаем что провайдер недоступен
                 return False
-            
+
             # Выполняем HTTP запрос
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 try:
@@ -253,34 +265,42 @@ class LLMHealthMonitor:
                     # Для некоторых провайдеров /health может не существовать
                     # Пробуем просто проверить доступность base_url
                     try:
-                        response = await client.get(provider.base_url, follow_redirects=True)
-                        return response.status_code < 500  # Любой ответ кроме 5xx = доступен
+                        response = await client.get(
+                            provider.base_url, follow_redirects=True
+                        )
+                        return (
+                            response.status_code < 500
+                        )  # Любой ответ кроме 5xx = доступен
                     except Exception:
                         return False
-        
+
         except Exception as e:
             logger.debug(f"Health check error for {provider.name}: {e}")
             return False
-    
+
     def get_provider_health(self, provider_name: str) -> Optional[ProviderHealth]:
         """Получить статус здоровья провайдера"""
         return self.health_status.get(provider_name)
-    
+
     def is_provider_healthy(self, provider_name: str) -> bool:
         """Проверить, здоров ли провайдер"""
         health = self.get_provider_health(provider_name)
         if not health:
             return False
-        return health.status in {ProviderHealthStatus.HEALTHY, ProviderHealthStatus.DEGRADED}
-    
+        return health.status in {
+            ProviderHealthStatus.HEALTHY,
+            ProviderHealthStatus.DEGRADED,
+        }
+
     def get_healthy_providers(self) -> list[str]:
         """Получить список здоровых провайдеров"""
         return [
-            name for name, health in self.health_status.items()
-            if health.status in {ProviderHealthStatus.HEALTHY, ProviderHealthStatus.DEGRADED}
+            name
+            for name, health in self.health_status.items()
+            if health.status
+            in {ProviderHealthStatus.HEALTHY, ProviderHealthStatus.DEGRADED}
         ]
-    
+
     def get_all_health_status(self) -> Dict[str, ProviderHealth]:
         """Получить статус всех провайдеров"""
         return self.health_status.copy()
-

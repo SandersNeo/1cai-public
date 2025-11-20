@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -2448965570719013132 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Безопасная очистка archive_package

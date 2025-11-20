@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 2070332358772139552 | DATE: 2025-11-19
+
 import json
 from contextlib import contextmanager
 
@@ -43,11 +45,15 @@ def test_multi_user_session_flow(tmp_path):
 
     try:
         with client() as test_client:
-            with test_client.websocket_connect("/ba-sessions/ws/e2e?user_id=lead&role=lead") as lead_ws:
+            with test_client.websocket_connect(
+                "/ba-sessions/ws/e2e?user_id=lead&role=lead"
+            ) as lead_ws:
                 _drain_until(lead_ws, "connected")
                 _drain_until(lead_ws, "system")
 
-                with test_client.websocket_connect("/ba-sessions/ws/e2e?user_id=analyst&role=analyst") as analyst_ws:
+                with test_client.websocket_connect(
+                    "/ba-sessions/ws/e2e?user_id=analyst&role=analyst"
+                ) as analyst_ws:
                     _drain_until(analyst_ws, "connected")
                     _drain_until(analyst_ws, "system")
 
@@ -66,11 +72,13 @@ def test_multi_user_session_flow(tmp_path):
         assert ba_ws_active_participants._value.get() == 0
 
         assert audit_file.exists()
-        records = [json.loads(line) for line in audit_file.read_text(encoding="utf-8").splitlines()]
+        records = [
+            json.loads(line)
+            for line in audit_file.read_text(encoding="utf-8").splitlines()
+        ]
         event_types = {record["event_type"] for record in records}
         assert {"join", "chat", "leave", "session_closed"} <= event_types
     finally:
         ba_session_manager.audit_path = old_audit_path
         ba_session_manager.clear()
         set_ba_session_counts(0, 0)
-

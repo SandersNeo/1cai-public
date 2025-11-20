@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -6677885269777976439 | DATE: 2025-11-19
+
 """
 Tests for ScenarioRecommender and ImpactAnalyzer (scenario_recommender.py).
 """
@@ -66,9 +68,7 @@ async def test_infer_task_type() -> None:
     assert task_type == "ba_dev_qa"
 
     # Тест для code review
-    task_type = recommender._infer_task_type(
-        "Проверить код на безопасность", []
-    )
+    task_type = recommender._infer_task_type("Проверить код на безопасность", [])
     assert task_type == "code_review"
 
     # Тест для DR
@@ -136,4 +136,3 @@ async def test_determine_impact_level() -> None:
     # Высокий уровень
     level = analyzer._determine_impact_level(10, 5)
     assert level == "high"
-

@@ -1,9 +1,18 @@
+# [NEXUS IDENTITY] ID: 4918963077187091487 | DATE: 2025-11-19
+
 from __future__ import annotations
 
 import logging
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Body, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import (
+    APIRouter,
+    Body,
+    HTTPException,
+    Query,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -52,7 +61,12 @@ async def ba_session_ws(
         )
         await ba_session_manager.broadcast(
             session_id,
-            {"type": "system", "event": "user_joined", "user_id": user_id, "role": role},
+            {
+                "type": "system",
+                "event": "user_joined",
+                "user_id": user_id,
+                "role": role,
+            },
             sender="system",
         )
 
@@ -108,8 +122,12 @@ class TraceabilityRequest(BaseModel):
     requirement_ids: List[str] = Body(..., description="Список ID требований")
     include_code: bool = Body(default=True, description="Включать связи с кодом")
     include_tests: bool = Body(default=True, description="Включать связи с тестами")
-    include_incidents: bool = Body(default=True, description="Включать связи с инцидентами")
-    use_graph: bool = Body(default=True, description="Использовать Unified Change Graph")
+    include_incidents: bool = Body(
+        default=True, description="Включать связи с инцидентами"
+    )
+    use_graph: bool = Body(
+        default=True, description="Использовать Unified Change Graph"
+    )
 
 
 @router.post("/traceability/matrix")
@@ -121,13 +139,17 @@ async def build_traceability_matrix(request: TraceabilityRequest) -> Dict[str, A
     requirements → code → tests → incidents.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import BusinessAnalystAgentExtended
+        from src.ai.agents.business_analyst_agent_extended import (
+            BusinessAnalystAgentExtended,
+        )
 
         agent = BusinessAnalystAgentExtended()
 
         # Преобразовать requirement_ids в формат requirements/test_cases
         # (для совместимости с существующим API)
-        requirements = [{"id": req_id, "title": req_id} for req_id in request.requirement_ids]
+        requirements = [
+            {"id": req_id, "title": req_id} for req_id in request.requirement_ids
+        ]
         test_cases = []  # Тесты будут найдены через граф
 
         result = await agent.build_traceability_and_risks(
@@ -144,7 +166,9 @@ async def build_traceability_matrix(request: TraceabilityRequest) -> Dict[str, A
             extra={"error": str(e), "error_type": type(e).__name__},
             exc_info=True,
         )
-        raise HTTPException(status_code=500, detail=f"Failed to build traceability matrix: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to build traceability matrix: {str(e)}"
+        )
 
 
 @router.post("/traceability/risk-register")
@@ -180,7 +204,9 @@ async def build_risk_register(
             extra={"error": str(e), "error_type": type(e).__name__},
             exc_info=True,
         )
-        raise HTTPException(status_code=500, detail=f"Failed to build risk register: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to build risk register: {str(e)}"
+        )
 
 
 @router.post("/traceability/full-report")
@@ -214,7 +240,8 @@ async def build_full_traceability_report(
             exc_info=True,
         )
         raise HTTPException(
-            status_code=500, detail=f"Failed to build full traceability report: {str(e)}"
+            status_code=500,
+            detail=f"Failed to build full traceability report: {str(e)}",
         )
 
 
@@ -225,10 +252,14 @@ class KPIGenerationRequest(BaseModel):
     """Request для генерации KPI."""
 
     initiative_name: str = Body(..., description="Название инициативы/фичи")
-    feature_id: Optional[str] = Body(default=None, description="ID фичи/требования для поиска в графе")
+    feature_id: Optional[str] = Body(
+        default=None, description="ID фичи/требования для поиска в графе"
+    )
     include_technical: bool = Body(default=True, description="Включать технические KPI")
     include_business: bool = Body(default=True, description="Включать бизнес KPI")
-    use_graph: bool = Body(default=True, description="Использовать Unified Change Graph")
+    use_graph: bool = Body(
+        default=True, description="Использовать Unified Change Graph"
+    )
 
 
 @router.post("/analytics/kpi")
@@ -240,7 +271,9 @@ async def generate_kpis(request: KPIGenerationRequest) -> Dict[str, Any]:
     на основе реальных метрик (code coverage, test coverage, incident rate, etc.).
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import BusinessAnalystAgentExtended
+        from src.ai.agents.business_analyst_agent_extended import (
+            BusinessAnalystAgentExtended,
+        )
 
         agent = BusinessAnalystAgentExtended()
 
@@ -258,7 +291,9 @@ async def generate_kpis(request: KPIGenerationRequest) -> Dict[str, Any]:
             extra={"error": str(e), "error_type": type(e).__name__},
             exc_info=True,
         )
-        raise HTTPException(status_code=500, detail=f"Failed to generate KPIs: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate KPIs: {str(e)}"
+        )
 
 
 # === BA-03: Process & Journey Modelling API ===
@@ -268,18 +303,32 @@ class ProcessModelRequest(BaseModel):
     """Request для генерации модели процесса."""
 
     description: str = Body(..., description="Текстовое описание процесса")
-    requirement_id: Optional[str] = Body(default=None, description="ID требования для связи с графом")
-    format: str = Body(default="mermaid", description="Формат вывода (mermaid, plantuml, json)")
-    use_graph: bool = Body(default=True, description="Использовать Unified Change Graph")
+    requirement_id: Optional[str] = Body(
+        default=None, description="ID требования для связи с графом"
+    )
+    format: str = Body(
+        default="mermaid", description="Формат вывода (mermaid, plantuml, json)"
+    )
+    use_graph: bool = Body(
+        default=True, description="Использовать Unified Change Graph"
+    )
 
 
 class JourneyMapRequest(BaseModel):
     """Request для генерации Customer Journey Map."""
 
-    journey_description: str = Body(..., description="Текстовое описание customer journey")
-    stages: Optional[List[str]] = Body(default=None, description="Список стадий (опционально)")
-    format: str = Body(default="mermaid", description="Формат вывода (mermaid, plantuml, json)")
-    use_graph: bool = Body(default=True, description="Использовать Unified Change Graph")
+    journey_description: str = Body(
+        ..., description="Текстовое описание customer journey"
+    )
+    stages: Optional[List[str]] = Body(
+        default=None, description="Список стадий (опционально)"
+    )
+    format: str = Body(
+        default="mermaid", description="Формат вывода (mermaid, plantuml, json)"
+    )
+    use_graph: bool = Body(
+        default=True, description="Использовать Unified Change Graph"
+    )
 
 
 @router.post("/process/model")
@@ -290,7 +339,9 @@ async def generate_process_model(request: ProcessModelRequest) -> Dict[str, Any]
     Использует Unified Change Graph для связи процесса с кодом, требованиями и тестами.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import BusinessAnalystAgentExtended
+        from src.ai.agents.business_analyst_agent_extended import (
+            BusinessAnalystAgentExtended,
+        )
 
         agent = BusinessAnalystAgentExtended()
 
@@ -309,7 +360,9 @@ async def generate_process_model(request: ProcessModelRequest) -> Dict[str, Any]
             extra={"error": str(e), "error_type": type(e).__name__},
             exc_info=True,
         )
-        raise HTTPException(status_code=500, detail=f"Failed to generate process model: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate process model: {str(e)}"
+        )
 
 
 @router.post("/process/journey-map")
@@ -320,7 +373,9 @@ async def generate_journey_map(request: JourneyMapRequest) -> Dict[str, Any]:
     Использует Unified Change Graph для поиска touchpoints (API endpoints, модули).
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import BusinessAnalystAgentExtended
+        from src.ai.agents.business_analyst_agent_extended import (
+            BusinessAnalystAgentExtended,
+        )
 
         agent = BusinessAnalystAgentExtended()
 
@@ -339,12 +394,16 @@ async def generate_journey_map(request: JourneyMapRequest) -> Dict[str, Any]:
             extra={"error": str(e), "error_type": type(e).__name__},
             exc_info=True,
         )
-        raise HTTPException(status_code=500, detail=f"Failed to generate journey map: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate journey map: {str(e)}"
+        )
 
 
 @router.post("/process/validate")
 async def validate_process(
-    process_model: Dict[str, Any] = Body(..., description="Модель процесса для валидации"),
+    process_model: Dict[str, Any] = Body(
+        ..., description="Модель процесса для валидации"
+    ),
 ) -> Dict[str, Any]:
     """
     Валидировать модель процесса.
@@ -353,7 +412,9 @@ async def validate_process(
     и связей с кодом/тестами через граф.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import BusinessAnalystAgentExtended
+        from src.ai.agents.business_analyst_agent_extended import (
+            BusinessAnalystAgentExtended,
+        )
 
         agent = BusinessAnalystAgentExtended()
 
@@ -367,7 +428,9 @@ async def validate_process(
             extra={"error": str(e), "error_type": type(e).__name__},
             exc_info=True,
         )
-        raise HTTPException(status_code=500, detail=f"Failed to validate process: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to validate process: {str(e)}"
+        )
 
 
 # === BA-06: Integrations & Collaboration API ===
@@ -378,17 +441,27 @@ class SyncRequirementsRequest(BaseModel):
 
     requirement_ids: List[str] = Body(..., description="Список ID требований")
     project_key: Optional[str] = Body(default=None, description="Ключ проекта Jira")
-    issue_type: str = Body(default="Story", description="Тип задачи (Story, Task, Epic)")
-    use_graph: bool = Body(default=True, description="Использовать Unified Change Graph")
+    issue_type: str = Body(
+        default="Story", description="Тип задачи (Story, Task, Epic)"
+    )
+    use_graph: bool = Body(
+        default=True, description="Использовать Unified Change Graph"
+    )
 
 
 class SyncBPMNRequest(BaseModel):
     """Request для синхронизации BPMN в Confluence."""
 
     process_model: Dict[str, Any] = Body(..., description="Модель процесса")
-    space_key: Optional[str] = Body(default=None, description="Ключ пространства Confluence")
-    parent_page_id: Optional[str] = Body(default=None, description="ID родительской страницы")
-    use_graph: bool = Body(default=True, description="Использовать Unified Change Graph")
+    space_key: Optional[str] = Body(
+        default=None, description="Ключ пространства Confluence"
+    )
+    parent_page_id: Optional[str] = Body(
+        default=None, description="ID родительской страницы"
+    )
+    use_graph: bool = Body(
+        default=True, description="Использовать Unified Change Graph"
+    )
 
 
 @router.post("/integrations/sync-requirements-jira")
@@ -400,7 +473,9 @@ async def sync_requirements_to_jira(request: SyncRequirementsRequest) -> Dict[st
     ссылки на код и тесты из Unified Change Graph.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import BusinessAnalystAgentExtended
+        from src.ai.agents.business_analyst_agent_extended import (
+            BusinessAnalystAgentExtended,
+        )
 
         agent = BusinessAnalystAgentExtended()
 
@@ -433,7 +508,9 @@ async def sync_bpmn_to_confluence(request: SyncBPMNRequest) -> Dict[str, Any]:
     ссылками на код/тесты из Unified Change Graph.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import BusinessAnalystAgentExtended
+        from src.ai.agents.business_analyst_agent_extended import (
+            BusinessAnalystAgentExtended,
+        )
 
         agent = BusinessAnalystAgentExtended()
 
@@ -460,15 +537,23 @@ async def sync_bpmn_to_confluence(request: SyncBPMNRequest) -> Dict[str, Any]:
 @router.post("/integrations/sync-kpi-confluence")
 async def sync_kpi_to_confluence(
     kpi_report: Dict[str, Any] = Body(..., description="Отчёт KPI"),
-    space_key: Optional[str] = Body(default=None, description="Ключ пространства Confluence"),
-    parent_page_id: Optional[str] = Body(default=None, description="ID родительской страницы"),
-    use_graph: bool = Body(default=True, description="Использовать Unified Change Graph"),
+    space_key: Optional[str] = Body(
+        default=None, description="Ключ пространства Confluence"
+    ),
+    parent_page_id: Optional[str] = Body(
+        default=None, description="ID родительской страницы"
+    ),
+    use_graph: bool = Body(
+        default=True, description="Использовать Unified Change Graph"
+    ),
 ) -> Dict[str, Any]:
     """
     Синхронизировать KPI отчёт в Confluence.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import BusinessAnalystAgentExtended
+        from src.ai.agents.business_analyst_agent_extended import (
+            BusinessAnalystAgentExtended,
+        )
 
         agent = BusinessAnalystAgentExtended()
 
@@ -487,21 +572,31 @@ async def sync_kpi_to_confluence(
             extra={"error": str(e), "error_type": type(e).__name__},
             exc_info=True,
         )
-        raise HTTPException(status_code=500, detail=f"Failed to sync KPI to Confluence: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to sync KPI to Confluence: {str(e)}"
+        )
 
 
 @router.post("/integrations/sync-traceability-confluence")
 async def sync_traceability_to_confluence(
     traceability_report: Dict[str, Any] = Body(..., description="Отчёт traceability"),
-    space_key: Optional[str] = Body(default=None, description="Ключ пространства Confluence"),
-    parent_page_id: Optional[str] = Body(default=None, description="ID родительской страницы"),
-    use_graph: bool = Body(default=True, description="Использовать Unified Change Graph"),
+    space_key: Optional[str] = Body(
+        default=None, description="Ключ пространства Confluence"
+    ),
+    parent_page_id: Optional[str] = Body(
+        default=None, description="ID родительской страницы"
+    ),
+    use_graph: bool = Body(
+        default=True, description="Использовать Unified Change Graph"
+    ),
 ) -> Dict[str, Any]:
     """
     Синхронизировать Traceability matrix в Confluence.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import BusinessAnalystAgentExtended
+        from src.ai.agents.business_analyst_agent_extended import (
+            BusinessAnalystAgentExtended,
+        )
 
         agent = BusinessAnalystAgentExtended()
 
@@ -521,7 +616,8 @@ async def sync_traceability_to_confluence(
             exc_info=True,
         )
         raise HTTPException(
-            status_code=500, detail=f"Failed to sync traceability to Confluence: {str(e)}"
+            status_code=500,
+            detail=f"Failed to sync traceability to Confluence: {str(e)}",
         )
 
 
@@ -534,25 +630,38 @@ class EnablementPlanRequest(BaseModel):
     feature_name: str = Body(..., description="Название фичи")
     audience: str = Body(default="BA+Dev+QA", description="Целевая аудитория")
     include_examples: bool = Body(default=True, description="Включать примеры из графа")
-    use_graph: bool = Body(default=True, description="Использовать Unified Change Graph")
+    use_graph: bool = Body(
+        default=True, description="Использовать Unified Change Graph"
+    )
 
 
 class GuideRequest(BaseModel):
     """Request для генерации гайда."""
 
     topic: str = Body(..., description="Тема гайда")
-    format: str = Body(default="markdown", description="Формат вывода (markdown, confluence, html)")
-    include_code_examples: bool = Body(default=True, description="Включать примеры кода из графа")
-    use_graph: bool = Body(default=True, description="Использовать Unified Change Graph")
+    format: str = Body(
+        default="markdown", description="Формат вывода (markdown, confluence, html)"
+    )
+    include_code_examples: bool = Body(
+        default=True, description="Включать примеры кода из графа"
+    )
+    use_graph: bool = Body(
+        default=True, description="Использовать Unified Change Graph"
+    )
 
 
 class PresentationRequest(BaseModel):
     """Request для генерации outline презентации."""
 
     topic: str = Body(..., description="Тема презентации")
-    audience: str = Body(default="stakeholders", description="Аудитория (stakeholders, technical, executive)")
+    audience: str = Body(
+        default="stakeholders",
+        description="Аудитория (stakeholders, technical, executive)",
+    )
     duration_minutes: int = Body(default=30, description="Длительность в минутах")
-    use_graph: bool = Body(default=True, description="Использовать Unified Change Graph")
+    use_graph: bool = Body(
+        default=True, description="Использовать Unified Change Graph"
+    )
 
 
 @router.post("/enablement/plan")
@@ -564,7 +673,9 @@ async def generate_enablement_plan(request: EnablementPlanRequest) -> Dict[str, 
     и связанных артефактов.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import BusinessAnalystAgentExtended
+        from src.ai.agents.business_analyst_agent_extended import (
+            BusinessAnalystAgentExtended,
+        )
 
         agent = BusinessAnalystAgentExtended()
 
@@ -594,7 +705,9 @@ async def generate_guide(request: GuideRequest) -> Dict[str, Any]:
     Сгенерировать гайд по теме с примерами из графа.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import BusinessAnalystAgentExtended
+        from src.ai.agents.business_analyst_agent_extended import (
+            BusinessAnalystAgentExtended,
+        )
 
         agent = BusinessAnalystAgentExtended()
 
@@ -613,7 +726,9 @@ async def generate_guide(request: GuideRequest) -> Dict[str, Any]:
             extra={"error": str(e), "error_type": type(e).__name__},
             exc_info=True,
         )
-        raise HTTPException(status_code=500, detail=f"Failed to generate guide: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate guide: {str(e)}"
+        )
 
 
 @router.post("/enablement/presentation")
@@ -622,7 +737,9 @@ async def generate_presentation(request: PresentationRequest) -> Dict[str, Any]:
     Сгенерировать outline презентации.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import BusinessAnalystAgentExtended
+        from src.ai.agents.business_analyst_agent_extended import (
+            BusinessAnalystAgentExtended,
+        )
 
         agent = BusinessAnalystAgentExtended()
 
@@ -649,14 +766,20 @@ async def generate_presentation(request: PresentationRequest) -> Dict[str, Any]:
 @router.post("/enablement/onboarding-checklist")
 async def generate_onboarding_checklist(
     role: str = Body(default="BA", description="Роль (BA, Dev, QA, Product)"),
-    include_practical_tasks: bool = Body(default=True, description="Включать практические задачи из графа"),
-    use_graph: bool = Body(default=True, description="Использовать Unified Change Graph"),
+    include_practical_tasks: bool = Body(
+        default=True, description="Включать практические задачи из графа"
+    ),
+    use_graph: bool = Body(
+        default=True, description="Использовать Unified Change Graph"
+    ),
 ) -> Dict[str, Any]:
     """
     Сгенерировать onboarding чек-лист для роли.
     """
     try:
-        from src.ai.agents.business_analyst_agent_extended import BusinessAnalystAgentExtended
+        from src.ai.agents.business_analyst_agent_extended import (
+            BusinessAnalystAgentExtended,
+        )
 
         agent = BusinessAnalystAgentExtended()
 
@@ -677,4 +800,3 @@ async def generate_onboarding_checklist(
         raise HTTPException(
             status_code=500, detail=f"Failed to generate onboarding checklist: {str(e)}"
         )
-

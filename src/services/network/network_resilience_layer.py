@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 1914586492552961708 | DATE: 2025-11-19
+
 """
 Network Resilience Layer - Интеграция всех сетевых компонентов
 Версия: 1.0.0
@@ -28,7 +30,7 @@ from typing import Any, Callable, Dict, Optional, Awaitable
 from .dns_manager import DNSManager, get_dns_manager
 from .tcp_optimizer import TCPOptimizer, get_tcp_optimizer
 from .multipath_router import MultiPathRouter, NetworkPath
-from .traffic_shaper import TrafficShaper, TrafficShapeConfig
+from .traffic_shaper import TrafficShaper
 from .vpn_manager import VPNManager, VPNTunnel
 from .protocol_obfuscator import ProtocolObfuscator
 
@@ -38,7 +40,7 @@ logger = logging.getLogger(__name__)
 class NetworkResilienceLayer:
     """
     Слой сетевой отказоустойчивости.
-    
+
     Объединяет все компоненты для обеспечения максимальной отказоустойчивости:
     - DNS резолв с DoH/DoT
     - TCP оптимизация
@@ -47,7 +49,7 @@ class NetworkResilienceLayer:
     - VPN туннели
     - Protocol obfuscation
     """
-    
+
     def __init__(
         self,
         enable_dns: bool = True,
@@ -74,7 +76,7 @@ class NetworkResilienceLayer:
                 logger.info("DNS Manager initialized")
             except Exception as e:
                 logger.warning(f"Failed to initialize DNS Manager: {e}")
-        
+
         # TCP Optimizer
         self.tcp_optimizer: Optional[TCPOptimizer] = None
         if enable_tcp_optimization:
@@ -88,7 +90,7 @@ class NetworkResilienceLayer:
                 logger.info("TCP Optimizer initialized")
             except Exception as e:
                 logger.warning(f"Failed to initialize TCP Optimizer: {e}")
-        
+
         # Multi-Path Router
         self.multipath_router: Optional[MultiPathRouter] = None
         if enable_multipath:
@@ -98,7 +100,7 @@ class NetworkResilienceLayer:
                 logger.info("Multi-Path Router initialized")
             except Exception as e:
                 logger.warning(f"Failed to initialize Multi-Path Router: {e}")
-        
+
         # Traffic Shaper
         self.traffic_shaper: Optional[TrafficShaper] = None
         if enable_traffic_shaping:
@@ -107,7 +109,7 @@ class NetworkResilienceLayer:
                 logger.info("Traffic Shaper initialized")
             except Exception as e:
                 logger.warning(f"Failed to initialize Traffic Shaper: {e}")
-        
+
         # VPN Manager
         self.vpn_manager: Optional[VPNManager] = None
         if enable_vpn:
@@ -117,7 +119,7 @@ class NetworkResilienceLayer:
                 logger.info("VPN Manager initialized")
             except Exception as e:
                 logger.warning(f"Failed to initialize VPN Manager: {e}")
-        
+
         # Protocol Obfuscator
         self.protocol_obfuscator: Optional[ProtocolObfuscator] = None
         if enable_obfuscation:
@@ -126,15 +128,15 @@ class NetworkResilienceLayer:
                 logger.info("Protocol Obfuscator initialized")
             except Exception as e:
                 logger.warning(f"Failed to initialize Protocol Obfuscator: {e}")
-    
+
     async def resolve_domain(self, domain: str, record_type: str = "A") -> list[str]:
         """
         Резолвить домен с использованием DNS Manager.
-        
+
         Args:
             domain: Домен для резолва
             record_type: Тип записи
-        
+
         Returns:
             Список IP-адресов
         """
@@ -143,8 +145,9 @@ class NetworkResilienceLayer:
         else:
             # Fallback на стандартный DNS
             import socket
+
             return [socket.gethostbyname(domain)]
-    
+
     async def send_request(
         self,
         request_func: Callable[..., Awaitable[Any]],
@@ -152,11 +155,11 @@ class NetworkResilienceLayer:
         use_multipath: bool = True,
         use_traffic_shaping: bool = False,
         use_obfuscation: bool = False,
-        **kwargs
+        **kwargs,
     ) -> Any:
         """
         Отправить запрос с использованием всех доступных механизмов.
-        
+
         Args:
             request_func: Функция для выполнения запроса
             *args: Аргументы функции
@@ -164,7 +167,7 @@ class NetworkResilienceLayer:
             use_traffic_shaping: Использовать traffic shaping
             use_obfuscation: Использовать protocol obfuscation
             **kwargs: Ключевые аргументы функции
-        
+
         Returns:
             Результат запроса
         """
@@ -173,63 +176,69 @@ class NetworkResilienceLayer:
             # Обфускация применяется на уровне данных
             # Здесь упрощённая версия
             pass
-        
+
         # Используем multi-path если доступен
         if use_multipath and self.multipath_router:
             return await self.multipath_router.send_request(
-                request_func,
-                *args,
-                **kwargs
+                request_func, *args, **kwargs
             )
         else:
             # Прямой вызов
             return await request_func(*args, **kwargs)
-    
+
     def add_network_path(self, path: NetworkPath):
         """Добавить сетевой путь"""
         if self.multipath_router:
             self.multipath_router.paths.append(path)
             from .multipath_router import PathMetrics, PathStatus
+
             self.multipath_router.path_metrics[path.path_id] = PathMetrics(
-                path_id=path.path_id,
-                status=PathStatus.UNKNOWN
+                path_id=path.path_id, status=PathStatus.UNKNOWN
             )
-    
+
     def add_vpn_tunnel(self, tunnel: VPNTunnel):
         """Добавить VPN туннель"""
         if self.vpn_manager:
             self.vpn_manager.tunnels.append(tunnel)
             asyncio.create_task(self.vpn_manager.start_tunnel(tunnel))
-    
+
     def get_status(self) -> Dict[str, Any]:
         """Получить статус всех компонентов"""
         status = {
             "dns_manager": {
                 "enabled": self.dns_manager is not None,
-                "stats": self.dns_manager.get_resolver_stats() if self.dns_manager else {}
+                "stats": self.dns_manager.get_resolver_stats()
+                if self.dns_manager
+                else {},
             },
             "tcp_optimizer": {
                 "enabled": self.tcp_optimizer is not None,
-                "config": self.tcp_optimizer.get_current_config() if self.tcp_optimizer else {}
+                "config": self.tcp_optimizer.get_current_config()
+                if self.tcp_optimizer
+                else {},
             },
             "multipath_router": {
                 "enabled": self.multipath_router is not None,
-                "healthy_paths": len(self.multipath_router.get_healthy_paths()) if self.multipath_router else 0,
-                "metrics": self.multipath_router.get_path_metrics() if self.multipath_router else {}
+                "healthy_paths": len(self.multipath_router.get_healthy_paths())
+                if self.multipath_router
+                else 0,
+                "metrics": self.multipath_router.get_path_metrics()
+                if self.multipath_router
+                else {},
             },
-            "traffic_shaper": {
-                "enabled": self.traffic_shaper is not None
-            },
+            "traffic_shaper": {"enabled": self.traffic_shaper is not None},
             "vpn_manager": {
                 "enabled": self.vpn_manager is not None,
-                "healthy_tunnels": len(self.vpn_manager.get_healthy_tunnels()) if self.vpn_manager else 0,
-                "metrics": self.vpn_manager.get_tunnel_metrics() if self.vpn_manager else {}
+                "healthy_tunnels": len(self.vpn_manager.get_healthy_tunnels())
+                if self.vpn_manager
+                else 0,
+                "metrics": self.vpn_manager.get_tunnel_metrics()
+                if self.vpn_manager
+                else {},
             },
-            "protocol_obfuscator": {
-                "enabled": self.protocol_obfuscator is not None
-            }
+            "protocol_obfuscator": {"enabled": self.protocol_obfuscator is not None},
         }
-        
+
         return status
 
 
@@ -243,4 +252,3 @@ def get_network_resilience_layer() -> NetworkResilienceLayer:
     if _network_resilience_layer is None:
         _network_resilience_layer = NetworkResilienceLayer()
     return _network_resilience_layer
-

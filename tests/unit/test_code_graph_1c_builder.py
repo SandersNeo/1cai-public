@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -5858402278412248907 | DATE: 2025-11-19
+
 """
 Tests for 1C Code Graph Builder (OneCCodeGraphBuilder).
 """
@@ -51,12 +53,16 @@ async def test_build_from_simple_module() -> None:
     assert "bsl" in module_node.labels
 
     # Проверяем, что функции созданы
-    func_node = await backend.get_node("function:ОбщийМодуль.УправлениеЗаказами:СоздатьЗаказ")
+    func_node = await backend.get_node(
+        "function:ОбщийМодуль.УправлениеЗаказами:СоздатьЗаказ"
+    )
     assert func_node is not None
     assert func_node.kind == NodeKind.FUNCTION
     assert func_node.props.get("exported") is True
 
-    proc_node = await backend.get_node("procedure:ОбщийМодуль.УправлениеЗаказами:ОбновитьЗаказ")
+    proc_node = await backend.get_node(
+        "procedure:ОбщийМодуль.УправлениеЗаказами:ОбновитьЗаказ"
+    )
     assert proc_node is not None
 
 
@@ -182,7 +188,9 @@ async def test_build_from_directory(tmp_path) -> None:
         encoding="utf-8",
     )
 
-    stats = await builder.build_from_directory(str(tmp_path), pattern="*.bsl", recursive=False)
+    stats = await builder.build_from_directory(
+        str(tmp_path), pattern="*.bsl", recursive=False
+    )
 
     assert stats["total_modules"] == 2
     assert stats["total_nodes"] > 0
@@ -288,7 +296,9 @@ async def test_build_from_directory_with_no_files(tmp_path) -> None:
     backend = InMemoryCodeGraphBackend()
     builder = OneCCodeGraphBuilder(backend, use_ast_parser=False)
 
-    stats = await builder.build_from_directory(str(tmp_path), pattern="*.bsl", recursive=False)
+    stats = await builder.build_from_directory(
+        str(tmp_path), pattern="*.bsl", recursive=False
+    )
 
     assert stats["total_modules"] == 0
     assert stats["total_nodes"] == 0

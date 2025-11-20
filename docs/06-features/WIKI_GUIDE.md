@@ -1,10 +1,11 @@
 # Wiki Module Documentation
 
-## Overview
+## Vision & Roadmap (Google Code Wiki Standard)
 
-The Wiki module provides a version-controlled knowledge base system integrated into the platform. It supports Markdown content, blueprints (templates), file attachments, and comments.
-
-**Current Status**: `Beta` (Backend Functional, Frontend Pending)
+We aim to match **Google Code Wiki** standards:
+1.  **Living Documentation**: Auto-updated from code.
+2.  **Deep Linking**: Symbols in docs link directly to code definitions.
+3.  **Visuals**: Auto-generated architecture diagrams.
 
 ## Features
 

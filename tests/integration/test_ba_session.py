@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 3778290254917409902 | DATE: 2025-11-19
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -10,12 +12,16 @@ def test_ba_websocket_session_broadcast():
     ba_session_manager.clear()
     client = TestClient(app)
 
-    with client.websocket_connect("/ba-sessions/ws/demo?user_id=lead&role=lead") as lead_ws:
+    with client.websocket_connect(
+        "/ba-sessions/ws/demo?user_id=lead&role=lead"
+    ) as lead_ws:
         lead_join = lead_ws.receive_json()
         assert lead_join["event"] == "user_joined"
         assert lead_join["user_id"] == "lead"
 
-        with client.websocket_connect("/ba-sessions/ws/demo?user_id=analyst&role=analyst") as analyst_ws:
+        with client.websocket_connect(
+            "/ba-sessions/ws/demo?user_id=analyst&role=analyst"
+        ) as analyst_ws:
             analyst_join = analyst_ws.receive_json()
             assert analyst_join["event"] == "user_joined"
             assert analyst_join["user_id"] == "analyst"
@@ -47,5 +53,3 @@ def test_ba_websocket_session_broadcast():
     response = client.get("/ba-sessions")
     assert response.status_code == 200
     assert response.json() == {"sessions": []}
-
-

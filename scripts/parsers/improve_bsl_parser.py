@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -5321116463824006533 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Улучшенный парсер BSL кода на основе анализа Language 1C (BSL)

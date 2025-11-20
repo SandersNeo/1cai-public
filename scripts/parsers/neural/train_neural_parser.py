@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -8369004506399884659 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Обучение Neural BSL Parser

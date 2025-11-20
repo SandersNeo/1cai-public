@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 1130977040246567662 | DATE: 2025-11-19
+
 """Unit tests for the JWT AuthService."""
 
 from datetime import timedelta
@@ -43,4 +45,3 @@ def test_service_token_auth(auth_service: AuthService) -> None:
 
 def test_invalid_service_token(auth_service: AuthService) -> None:
     assert auth_service.authenticate_service_token("bad-token") is None
-

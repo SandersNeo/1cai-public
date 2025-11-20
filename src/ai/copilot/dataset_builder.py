@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 3295439782080269364 | DATE: 2025-11-19
+
 """
 BSL Dataset Builder
 Расширенный builder для создания обучающего dataset из разных источников
@@ -5,7 +7,7 @@ BSL Dataset Builder
 
 import asyncio
 import json
-from typing import List, Dict, Optional
+from typing import List, Optional
 from pathlib import Path
 from datetime import datetime
 from src.utils.structured_logging import StructuredLogger
@@ -15,22 +17,18 @@ logger = StructuredLogger(__name__).logger
 
 class BSLDatasetBuilder:
     """Расширенный builder для BSL dataset"""
-    
+
     def __init__(self, output_dir: str = "datasets/bsl"):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        
+
         self.examples = []
-        self.stats = {
-            "total_examples": 0,
-            "sources": {},
-            "categories": {}
-        }
-    
+        self.stats = {"total_examples": 0, "sources": {}, "categories": {}}
+
     async def build_from_postgres(self, db_connection):
         """
         Извлечение примеров из PostgreSQL
-        
+
         Queries:
         - functions с description и code_preview
         - procedures с examples
@@ -55,63 +53,60 @@ class BSLDatasetBuilder:
             ORDER BY RANDOM()
             LIMIT 1000
             """
-            
+
             # TODO: Выполнить запрос
             # rows = await db_connection.fetch(query)
-            
+
             # Mock для демонстрации
             rows = []
-            
+
             for row in rows:
                 example = {
                     "instruction": f"Создай функцию: {row['description']}",
                     "input": f"Модуль: {row['module_name']}, Конфигурация: {row['configuration_name']}",
-                    "output": row['code_preview'],
+                    "output": row["code_preview"],
                     "metadata": {
                         "source": "postgres",
-                        "configuration": row['configuration_name'],
-                        "type": row['metadata_type'],
-                        "module": row['module_name']
-                    }
+                        "configuration": row["configuration_name"],
+                        "type": row["metadata_type"],
+                        "module": row["module_name"],
+                    },
                 }
-                
+
                 self.examples.append(example)
-                self._update_stats("postgres", row['configuration_name'])
-            
+                self._update_stats("postgres", row["configuration_name"])
+
             logger.info(
                 "Extracted examples from PostgreSQL",
-                extra={"examples_count": len(rows)}
+                extra={"examples_count": len(rows)},
             )
-            
+
         except Exception as e:
             logger.error(
                 "PostgreSQL extraction error",
-                extra={
-                    "error": str(e),
-                    "error_type": type(e).__name__
-                },
-                exc_info=True
+                extra={"error": str(e), "error_type": type(e).__name__},
+                exc_info=True,
             )
-    
+
     async def build_from_github(self, repos: Optional[List[str]] = None):
         """
         Извлечение BSL кода из публичных GitHub репозиториев
-        
+
         Popular repos:
         - 1C-Company/ssl_*
         - oscript-library/*
         - popular community libraries
         """
-        
+
         default_repos = [
             "1C-Company/ssl_1c_bsl",
             "oscript-library/opm",
             "oscript-library/logos",
             # Добавить больше популярных репозиториев
         ]
-        
+
         repos_to_scan = repos or default_repos
-        
+
         for repo in repos_to_scan:
             try:
                 await self._process_github_repo(repo)
@@ -121,34 +116,28 @@ class BSLDatasetBuilder:
                     extra={
                         "repo": repo,
                         "error": str(e),
-                        "error_type": type(e).__name__
+                        "error_type": type(e).__name__,
                     },
-                    exc_info=True
+                    exc_info=True,
                 )
-        
-        logger.info(
-            "Processed GitHub repos",
-            extra={"repos_count": len(repos_to_scan)}
-        )
-    
+
+        logger.info("Processed GitHub repos", extra={"repos_count": len(repos_to_scan)})
+
     async def _process_github_repo(self, repo: str):
         """Обработка одного GitHub репозитория"""
-        
+
         # TODO: GitHub API integration
         # 1. Clone or fetch repo
         # 2. Find all .bsl/.os files
         # 3. Parse functions with comments
         # 4. Create instruction-output pairs
-        
-        logger.info(
-            "Processing repo",
-            extra={"repo": repo}
-        )
-    
+
+        logger.info("Processing repo", extra={"repo": repo})
+
     def add_common_patterns(self):
         """
         Добавить распространенные паттерны BSL
-        
+
         Categories:
         - CRUD операции
         - Работа с формами
@@ -157,13 +146,13 @@ class BSLDatasetBuilder:
         - Обработка ошибок
         - Циклы и условия
         """
-        
+
         patterns = [
             {
                 "category": "CRUD",
                 "instruction": "Создай функцию для получения элемента справочника по наименованию",
                 "input": "Справочник: Номенклатура",
-                "output": '''
+                "output": """
 Функция ПолучитьНоменклатуруПоНаименованию(Наименование) Экспорт
     
     Запрос = Новый Запрос;
@@ -188,13 +177,13 @@ class BSLDatasetBuilder:
     КонецЕсли;
     
 КонецФункции
-'''
+""",
             },
             {
                 "category": "Forms",
                 "instruction": "Создай процедуру для открытия формы элемента",
                 "input": "Параметры: Элемент (ссылка), ТолькоПросмотр (Булево)",
-                "output": '''
+                "output": """
 Процедура ОткрытьФормуЭлемента(Элемент, ТолькоПросмотр = Ложь) Экспорт
     
     Если НЕ ЗначениеЗаполнено(Элемент) Тогда
@@ -214,13 +203,13 @@ class BSLDatasetBuilder:
     );
     
 КонецПроцедуры
-'''
+""",
             },
             {
                 "category": "HTTP",
                 "instruction": "Создай функцию для GET запроса к REST API",
                 "input": "URL, заголовки, таймаут",
-                "output": '''
+                "output": """
 Функция ВыполнитьGETЗапрос(URL, Заголовки = Неопределено, Таймаут = 30) Экспорт
     
     HTTPСоединение = Новый HTTPСоединение(
@@ -264,13 +253,13 @@ class BSLDatasetBuilder:
     КонецПопытки;
     
 КонецФункции
-'''
+""",
             },
             {
                 "category": "Files",
                 "instruction": "Напиши функцию для чтения текстового файла",
                 "input": "Путь к файлу, кодировка",
-                "output": '''
+                "output": """
 Функция ПрочитатьТекстовыйФайл(ПутьКФайлу, Кодировка = "UTF-8") Экспорт
     
     ФайлОбъект = Новый Файл(ПутьКФайлу);
@@ -298,13 +287,13 @@ class BSLDatasetBuilder:
     КонецПопытки;
     
 КонецФункции
-'''
+""",
             },
             {
                 "category": "Error Handling",
                 "instruction": "Создай процедуру для обработки и логирования ошибок",
                 "input": "Текст ошибки, контекст, критичность",
-                "output": '''
+                "output": """
 Процедура ОбработатьОшибку(ТекстОшибки, Контекст = "", Критичная = Ложь) Экспорт
     
     // Формируем сообщение
@@ -337,13 +326,13 @@ class BSLDatasetBuilder:
     КонецЕсли;
     
 КонецПроцедуры
-'''
+""",
             },
             {
                 "category": "Collections",
                 "instruction": "Создай функцию для фильтрации массива по условию",
                 "input": "Массив значений, функция-фильтр",
-                "output": '''
+                "output": """
 // Фильтрует массив по условию
 //
 // Параметры:
@@ -387,34 +376,31 @@ class BSLDatasetBuilder:
     КонецПопытки;
     
 КонецФункции
-'''
-            }
+""",
+            },
         ]
-        
+
         for pattern in patterns:
             self.examples.append(pattern)
             self._update_stats("patterns", pattern.get("category", "other"))
-        
-        logger.info(
-            "Added common patterns",
-            extra={"patterns_count": len(patterns)}
-        )
-    
+
+        logger.info("Added common patterns", extra={"patterns_count": len(patterns)})
+
     def add_refactoring_examples(self):
         """
         Примеры рефакторинга кода
-        
+
         Формат:
         - instruction: "Отрефактори этот код"
         - input: плохой код
         - output: улучшенный код + объяснение
         """
-        
+
         refactoring_examples = [
             {
                 "category": "refactoring",
                 "instruction": "Отрефактори этот код: убери дублирование",
-                "input": '''
+                "input": """
 Функция ПолучитьЦенуТовара1(Товар)
     Запрос = Новый Запрос;
     Запрос.Текст = "ВЫБРАТЬ Цена ИЗ Справочник.Товары ГДЕ Ссылка = &Товар";
@@ -442,8 +428,8 @@ class BSLDatasetBuilder:
         Возврат 0;
     КонецЕсли;
 КонецФункции
-''',
-                "output": '''
+""",
+                "output": """
 // Рефакторинг: Объединил дублированный код в одну функцию
 
 Функция ПолучитьЦенуТовара(Товар) Экспорт
@@ -474,12 +460,12 @@ class BSLDatasetBuilder:
 // 2. Добавлена проверка заполненности в начале
 // 3. Упрощена логика с помощью тернарного оператора
 // 4. Улучшена читаемость запроса (форматирование)
-'''
+""",
             },
             {
                 "category": "performance",
                 "instruction": "Оптимизируй этот код: избегай N+1 запросов",
-                "input": '''
+                "input": """
 Процедура ЗаполнитьЦеныВТаблице(ТабличнаяЧасть)
     
     Для Каждого Строка Из ТабличнаяЧасть Цикл
@@ -498,8 +484,8 @@ class BSLDatasetBuilder:
     КонецЦикла;
     
 КонецПроцедуры
-''',
-                "output": '''
+""",
+                "output": """
 // Оптимизация: один запрос вместо N запросов
 
 Процедура ЗаполнитьЦеныВТаблице(ТабличнаяЧасть) Экспорт
@@ -553,27 +539,27 @@ class BSLDatasetBuilder:
 // 2. Используем Соответствие для O(1) поиска вместо O(N)
 // 3. Добавлена проверка на пустой массив
 // 4. Производительность улучшена в 10-100 раз
-'''
-            }
+""",
+            },
         ]
-        
+
         for example in refactoring_examples:
             self.examples.append(example)
             self._update_stats("refactoring", example.get("category", "other"))
-        
+
         logger.info(
             "Added refactoring examples",
-            extra={"examples_count": len(refactoring_examples)}
+            extra={"examples_count": len(refactoring_examples)},
         )
-    
+
     def add_optimization_examples(self):
         """Примеры оптимизации производительности"""
-        
+
         optimization_examples = [
             {
                 "category": "query_optimization",
                 "instruction": "Оптимизируй этот запрос",
-                "input": '''
+                "input": """
 ВЫБРАТЬ
     Документ.Номер,
     Документ.Дата,
@@ -584,8 +570,8 @@ class BSLDatasetBuilder:
     Документ.РеализацияТоваровУслуг КАК Документ
 ГДЕ
     Документ.Проведен = ИСТИНА
-''',
-                "output": '''
+""",
+                "output": """
 // Оптимизация: добавлены индексы и упрощены обращения
 
 ВЫБРАТЬ
@@ -613,218 +599,213 @@ class BSLDatasetBuilder:
 // 2. Использование индексов по Ссылке
 // 3. Алиасы для всех полей
 // 4. Избегаем множественных обращений к Контрагент
-'''
+""",
             }
         ]
-        
+
         for example in optimization_examples:
             self.examples.append(example)
             self._update_stats("optimization", example.get("category", "other"))
-        
+
         logger.info(
             "Added optimization examples",
-            extra={"examples_count": len(optimization_examples)}
+            extra={"examples_count": len(optimization_examples)},
         )
-    
+
     def _update_stats(self, source: str, category: str):
         """Обновить статистику"""
         self.stats["total_examples"] = len(self.examples)
-        
+
         if source not in self.stats["sources"]:
             self.stats["sources"][source] = 0
         self.stats["sources"][source] += 1
-        
+
         if category not in self.stats["categories"]:
             self.stats["categories"][category] = 0
         self.stats["categories"][category] += 1
-    
+
     def save_for_finetuning(self, model_format: str = "alpaca"):
         """
         Сохранить dataset в формате для fine-tuning
-        
+
         Formats:
         - alpaca: Alpaca instruction format (универсальный)
         - llama: Meta Llama format
         - openai: OpenAI fine-tuning format
         - huggingface: Hugging Face datasets format
         """
-        
+
         if model_format == "alpaca":
             output_file = self.output_dir / "bsl_alpaca_train.jsonl"
-            
-            with open(output_file, 'w', encoding='utf-8') as f:
+
+            with open(output_file, "w", encoding="utf-8") as f:
                 for example in self.examples:
                     alpaca_format = {
                         "instruction": example.get("instruction", ""),
                         "input": example.get("input", ""),
                         "output": example.get("output", ""),
-                        "system": "Ты - эксперт по разработке на языке 1С:Предприятие (BSL). Помогаешь писать качественный, читаемый и оптимизированный код."
+                        "system": "Ты - эксперт по разработке на языке 1С:Предприятие (BSL). Помогаешь писать качественный, читаемый и оптимизированный код.",
                     }
-                    
-                    f.write(json.dumps(alpaca_format, ensure_ascii=False) + '\n')
-            
+
+                    f.write(json.dumps(alpaca_format, ensure_ascii=False) + "\n")
+
             logger.info(
                 "Alpaca format saved",
-                extra={"output_file": str(output_file), "format": "alpaca"}
+                extra={"output_file": str(output_file), "format": "alpaca"},
             )
-        
+
         elif model_format == "openai":
             output_file = self.output_dir / "bsl_openai_train.jsonl"
-            
-            with open(output_file, 'w', encoding='utf-8') as f:
+
+            with open(output_file, "w", encoding="utf-8") as f:
                 for example in self.examples:
                     openai_format = {
                         "messages": [
                             {
                                 "role": "system",
-                                "content": "Ты - эксперт по разработке на языке 1С:Предприятие (BSL)."
+                                "content": "Ты - эксперт по разработке на языке 1С:Предприятие (BSL).",
                             },
                             {
                                 "role": "user",
-                                "content": f"{example['instruction']}\n\n{example.get('input', '')}"
+                                "content": f"{example['instruction']}\n\n{example.get('input', '')}",
                             },
-                            {
-                                "role": "assistant",
-                                "content": example["output"]
-                            }
+                            {"role": "assistant", "content": example["output"]},
                         ]
                     }
-                    
-                    f.write(json.dumps(openai_format, ensure_ascii=False) + '\n')
-            
+
+                    f.write(json.dumps(openai_format, ensure_ascii=False) + "\n")
+
             logger.info(
                 "OpenAI format saved",
-                extra={"output_file": str(output_file), "format": "openai"}
+                extra={"output_file": str(output_file), "format": "openai"},
             )
-        
+
         elif model_format == "huggingface":
             output_file = self.output_dir / "bsl_hf_train.jsonl"
-            
-            with open(output_file, 'w', encoding='utf-8') as f:
+
+            with open(output_file, "w", encoding="utf-8") as f:
                 for example in self.examples:
                     hf_format = {
                         "text": f"<|user|>\n{example['instruction']}\n{example.get('input', '')}\n<|assistant|>\n{example['output']}"
                     }
-                    
-                    f.write(json.dumps(hf_format, ensure_ascii=False) + '\n')
-            
+
+                    f.write(json.dumps(hf_format, ensure_ascii=False) + "\n")
+
             logger.info(
                 "HuggingFace format saved",
-                extra={"output_file": str(output_file), "format": "huggingface"}
+                extra={"output_file": str(output_file), "format": "huggingface"},
             )
-        
+
         return str(output_file)
-    
+
     def save_statistics(self):
         """Сохранить статистику dataset"""
-        
+
         stats_file = self.output_dir / "dataset_stats.json"
-        
-        with open(stats_file, 'w', encoding='utf-8') as f:
-            json.dump({
-                **self.stats,
-                "generated_at": datetime.utcnow().isoformat(),
-                "examples": len(self.examples)
-            }, f, ensure_ascii=False, indent=2)
-        
-        logger.info(
-            "Statistics saved",
-            extra={"stats_file": str(stats_file)}
-        )
-        
+
+        with open(stats_file, "w", encoding="utf-8") as f:
+            json.dump(
+                {
+                    **self.stats,
+                    "generated_at": datetime.utcnow().isoformat(),
+                    "examples": len(self.examples),
+                },
+                f,
+                ensure_ascii=False,
+                indent=2,
+            )
+
+        logger.info("Statistics saved", extra={"stats_file": str(stats_file)})
+
         return stats_file
-    
+
     def split_dataset(self, train_ratio: float = 0.8):
         """
         Разделить dataset на train/val/test
-        
+
         Args:
             train_ratio: Доля train (default: 80%)
         """
         import random
-        
+
         # Shuffle
         random.shuffle(self.examples)
-        
+
         total = len(self.examples)
         train_size = int(total * train_ratio)
         val_size = int(total * 0.1)
-        
+
         train_examples = self.examples[:train_size]
-        val_examples = self.examples[train_size:train_size + val_size]
-        test_examples = self.examples[train_size + val_size:]
-        
+        val_examples = self.examples[train_size : train_size + val_size]
+        test_examples = self.examples[train_size + val_size :]
+
         # Save splits
-        splits = {
-            "train": train_examples,
-            "val": val_examples,
-            "test": test_examples
-        }
-        
+        splits = {"train": train_examples, "val": val_examples, "test": test_examples}
+
         for split_name, examples in splits.items():
             split_file = self.output_dir / f"bsl_{split_name}.jsonl"
-            
-            with open(split_file, 'w', encoding='utf-8') as f:
+
+            with open(split_file, "w", encoding="utf-8") as f:
                 for example in examples:
-                    f.write(json.dumps(example, ensure_ascii=False) + '\n')
-            
+                    f.write(json.dumps(example, ensure_ascii=False) + "\n")
+
             logger.info(
                 "Dataset split saved",
                 extra={
                     "split_name": split_name,
                     "examples_count": len(examples),
-                    "split_file": str(split_file)
-                }
+                    "split_file": str(split_file),
+                },
             )
-        
+
         return splits
 
 
 # CLI usage
 async def main():
     """Основной скрипт для подготовки dataset"""
-    
+
     print("🚀 Starting BSL Dataset Builder...")
-    
+
     builder = BSLDatasetBuilder()
-    
+
     # 1. Добавляем общие паттерны
     print("📝 Adding common patterns...")
     builder.add_common_patterns()
-    
+
     # 2. Добавляем примеры рефакторинга
     print("🔧 Adding refactoring examples...")
     builder.add_refactoring_examples()
-    
+
     # 3. Добавляем примеры оптимизации
     print("⚡ Adding optimization examples...")
     builder.add_optimization_examples()
-    
+
     # 4. Извлекаем из PostgreSQL (если доступен)
     # print("🗄️ Extracting from PostgreSQL...")
     # await builder.build_from_postgres(db_connection)
-    
+
     # 5. Извлекаем из GitHub (опционально)
     # print("🐙 Scraping GitHub...")
     # await builder.build_from_github()
-    
+
     print(f"\n✅ Total examples: {len(builder.examples)}")
-    
+
     # 6. Сохраняем в разных форматах
     print("\n💾 Saving datasets...")
-    
+
     builder.save_for_finetuning("alpaca")
     builder.save_for_finetuning("openai")
     builder.save_for_finetuning("huggingface")
-    
+
     # 7. Разделяем на train/val/test
     print("\n📊 Splitting dataset...")
     builder.split_dataset(train_ratio=0.8)
-    
+
     # 8. Сохраняем статистику
     print("\n📈 Saving statistics...")
     builder.save_statistics()
-    
+
     print(f"\n🎉 Dataset готов! Проверьте папку: {builder.output_dir}")
     print(f"\nСтатистика:")
     print(f"- Всего примеров: {builder.stats['total_examples']}")
@@ -834,4 +815,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-

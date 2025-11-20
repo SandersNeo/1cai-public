@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -4219370191420720158 | DATE: 2025-11-19
+
 """Хранилище событий на базе SQLite."""
 
 from __future__ import annotations
@@ -94,7 +96,9 @@ class SQLiteEventStore:
         if not record_ids:
             return
         placeholders = ",".join("?" for _ in record_ids)
-        query = "UPDATE events SET synced_at = ? WHERE record_id IN ({})".format(placeholders)
+        query = "UPDATE events SET synced_at = ? WHERE record_id IN ({})".format(
+            placeholders
+        )
         with self._connection:
             self._connection.execute(
                 query,
@@ -108,7 +112,9 @@ class SQLiteEventStore:
         (count,) = cursor.fetchone()
         return int(count)
 
-    def import_events(self, events: Iterable[EventRecord], *, synced_at: Optional[str] = None) -> int:
+    def import_events(
+        self, events: Iterable[EventRecord], *, synced_at: Optional[str] = None
+    ) -> int:
         records = list(events)
         for event in records:
             self.add_event(event, synced_at=synced_at)
@@ -122,4 +128,3 @@ class SQLiteEventStore:
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self.close()
-

@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 8622078410692119222 | DATE: 2025-11-19
+
 """
 Load Tests для системы Rate Limiting с использованием Locust
 

@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -1923665214090260209 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 generate_dr_postmortem.py - Автоматическое создание черновика постмортема после DR rehearsal.

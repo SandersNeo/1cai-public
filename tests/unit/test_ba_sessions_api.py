@@ -1,6 +1,7 @@
+# [NEXUS IDENTITY] ID: 1077299926330946863 | DATE: 2025-11-19
+
 from fastapi.testclient import TestClient
 
-from src.api.ba_sessions import router
 from src.services.ba_session_manager import ba_session_manager
 from src.main import app
 
@@ -22,4 +23,3 @@ def test_get_session_not_found():
     client = TestClient(app)
     response = client.get("/ba-sessions/nonexistent")
     assert response.status_code == 404
-

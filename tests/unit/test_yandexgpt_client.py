@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -4178675071333388261 | DATE: 2025-11-19
+
 """
 Unit tests for YandexGPTClient.
 
@@ -34,5 +36,3 @@ class TestYandexGPTClient:
 
         with pytest.raises(LLMNotConfiguredError):
             await client.generate("prompt")
-
-

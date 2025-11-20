@@ -1,4 +1,5 @@
-import asyncio
+# [NEXUS IDENTITY] ID: -858150394946314802 | DATE: 2025-11-19
+
 
 import pytest
 
@@ -29,7 +30,9 @@ async def test_analyze_performance_with_slow_query_and_lock():
             sql="SELECT * FROM sales",
         ),
         TechLogEvent(
-            timestamp=analyzer.__class__.__mro__[0].__mro__[0]  # заглушка, не используется
+            timestamp=analyzer.__class__.__mro__[0].__mro__[
+                0
+            ]  # заглушка, не используется
             if False
             else analyzer.__class__.__mro__[0].__mro__[0],
             duration_ms=1000,
@@ -78,5 +81,3 @@ async def test_generate_ai_recommendations_for_slow_query_issue():
     sql_rec = next((r for r in recs if r["category"] == "SQL Performance"), None)
     assert sql_rec is not None
     assert "use_sql_optimizer" in sql_rec["action"]
-
-

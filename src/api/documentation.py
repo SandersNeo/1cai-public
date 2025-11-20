@@ -1,9 +1,10 @@
+# [NEXUS IDENTITY] ID: 7206634223125478583 | DATE: 2025-11-19
+
 """
 API endpoints для автоматической генерации документации
 Версия: 1.0.0
 """
 
-import logging
 import asyncio
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
@@ -11,9 +12,8 @@ from typing import Optional, Literal, List, Dict, Any
 from datetime import datetime
 from src.services.documentation_generation_service import get_documentation_generator
 from src.utils.structured_logging import StructuredLogger
-from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi import Limiter
 from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
 
 limiter = Limiter(key_func=get_remote_address)
 logger = StructuredLogger(__name__).logger

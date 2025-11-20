@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 7234445431799216721 | DATE: 2025-11-19
+
 """
 Integration-style tests for src.api.graph_api using TestClient with mocked dependencies.
 """
@@ -40,7 +42,11 @@ class DummyNeo4jClient:
 
     def search_objects_by_type(self, object_type, config_name):
         return [
-            {"type": object_type, "name": f"{config_name}::{object_type}", "description": "demo"}
+            {
+                "type": object_type,
+                "name": f"{config_name}::{object_type}",
+                "description": "demo",
+            }
         ]
 
     def get_function_dependencies(self, module_name, function_name):
@@ -193,4 +199,3 @@ def test_semantic_search_uses_embeddings_and_qdrant(graph_test_client):
     assert deps["embeddings"].last_input.startswith("Find sales")
     assert deps["qdrant"].last_search["config_filter"] == "UT"
     assert deps["qdrant"].last_search["limit"] == 5
-

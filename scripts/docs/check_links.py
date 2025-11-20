@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 6510560743803819403 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Скрипт для проверки всех markdown ссылок в проекте.

@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -8768759180312072458 | DATE: 2025-11-19
+
 """Небольшой скрипт для демонстрации работы EventLogger."""
 
 from pathlib import Path

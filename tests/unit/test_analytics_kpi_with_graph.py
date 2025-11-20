@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 1955752185931703533 | DATE: 2025-11-19
+
 """
 Tests for KPIGeneratorWithGraph (analytics_kpi_with_graph.py).
 """
@@ -169,4 +171,3 @@ async def test_kpi_generation_without_backend() -> None:
     assert "visualizations" in result
     # Должны быть шаблонные KPI
     assert len(result["kpis"]) > 0
-

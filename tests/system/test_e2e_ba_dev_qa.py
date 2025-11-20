@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -538460258692220442 | DATE: 2025-11-19
+
 """
 E2E: Business Analyst → Developer AI Secure → QA Engineer AI
 
@@ -64,7 +66,9 @@ async def test_e2e_ba_dev_qa_flow():
             "requires_approval": True,
         }
 
-    with patch.object(dev_agent, "generate_code", new=AsyncMock(side_effect=fake_generate_code)):
+    with patch.object(
+        dev_agent, "generate_code", new=AsyncMock(side_effect=fake_generate_code)
+    ):
         draft = await dev_agent.generate_code(ba_requirements["business_goal"])
 
     assert draft["requires_approval"] is True
@@ -106,7 +110,9 @@ async def test_e2e_ba_dev_qa_flow():
             "coverage_estimate": 0.75,
         }
 
-    with patch.object(qa_agent, "generate_tests", new=AsyncMock(side_effect=fake_generate_tests)):
+    with patch.object(
+        qa_agent, "generate_tests", new=AsyncMock(side_effect=fake_generate_tests)
+    ):
         qa_result = await qa_agent.generate_tests(draft["code"], "РассчитатьСкидку")
 
     tests = qa_result["tests"]
@@ -116,5 +122,3 @@ async def test_e2e_ba_dev_qa_flow():
 
     coverage = qa_result["coverage_estimate"]
     assert 0 < coverage <= 1, "coverage_estimate должен быть в диапазоне (0, 1]"
-
-

@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -2967909051829139602 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Создание dataset для обучения ML моделей

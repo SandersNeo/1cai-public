@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -3368632149663324459 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 LLM Client для 1C AI MCP Code Generation

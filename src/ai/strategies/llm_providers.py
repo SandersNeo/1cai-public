@@ -9,6 +9,7 @@ from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 
+
 class GigaChatStrategy(AIStrategy):
     def __init__(self):
         try:
@@ -24,14 +25,17 @@ class GigaChatStrategy(AIStrategy):
     async def execute(self, query: str, context: Dict[str, Any]) -> Dict[str, Any]:
         if not self.is_available:
             return {"status": "skipped", "message": "GigaChat not configured"}
-        
-        system_prompt = context.get("system_prompt", "Вы — эксперт-аналитик. Отвечайте на русском языке.")
+
+        system_prompt = context.get(
+            "system_prompt", "Вы — эксперт-аналитик. Отвечайте на русском языке."
+        )
         return await self.client.generate(
             prompt=query,
             system_prompt=system_prompt,
             temperature=0.7,
-            max_tokens=context.get("max_tokens", 4096)
+            max_tokens=context.get("max_tokens", 4096),
         )
+
 
 class YandexGPTStrategy(AIStrategy):
     def __init__(self):
@@ -48,14 +52,17 @@ class YandexGPTStrategy(AIStrategy):
     async def execute(self, query: str, context: Dict[str, Any]) -> Dict[str, Any]:
         if not self.is_available:
             return {"status": "skipped", "message": "YandexGPT not configured"}
-            
-        system_prompt = context.get("system_prompt", "Вы — эксперт-аналитик. Отвечайте на русском языке.")
+
+        system_prompt = context.get(
+            "system_prompt", "Вы — эксперт-аналитик. Отвечайте на русском языке."
+        )
         return await self.client.generate(
             prompt=query,
             system_prompt=system_prompt,
             temperature=0.7,
-            max_tokens=context.get("max_tokens", 4096)
+            max_tokens=context.get("max_tokens", 4096),
         )
+
 
 class NaparnikStrategy(AIStrategy):
     def __init__(self):
@@ -72,14 +79,17 @@ class NaparnikStrategy(AIStrategy):
     async def execute(self, query: str, context: Dict[str, Any]) -> Dict[str, Any]:
         if not self.is_available:
             return {"status": "skipped", "message": "Naparnik not configured"}
-            
-        system_prompt = context.get("system_prompt", "Вы — эксперт-помощник для разработчиков 1С:Enterprise.")
+
+        system_prompt = context.get(
+            "system_prompt", "Вы — эксперт-помощник для разработчиков 1С:Enterprise."
+        )
         return await self.client.generate(
             prompt=query,
             system_prompt=system_prompt,
             temperature=0.3,
-            max_tokens=context.get("max_tokens", 4096)
+            max_tokens=context.get("max_tokens", 4096),
         )
+
 
 class OllamaStrategy(AIStrategy):
     def __init__(self):
@@ -96,7 +106,7 @@ class OllamaStrategy(AIStrategy):
     async def execute(self, query: str, context: Dict[str, Any]) -> Dict[str, Any]:
         if not self.is_available:
             return {"status": "skipped", "message": "Ollama not configured"}
-            
+
         model_name = context.get("ollama_model", "llama3")
         system_prompt = context.get("system_prompt", "You are a helpful AI assistant.")
         return await self.client.generate(
@@ -104,8 +114,9 @@ class OllamaStrategy(AIStrategy):
             model_name=model_name,
             system_prompt=system_prompt,
             temperature=context.get("temperature", 0.7),
-            max_tokens=context.get("max_tokens", 4096)
+            max_tokens=context.get("max_tokens", 4096),
         )
+
 
 class TabnineStrategy(AIStrategy):
     def __init__(self):
@@ -122,13 +133,15 @@ class TabnineStrategy(AIStrategy):
     async def execute(self, query: str, context: Dict[str, Any]) -> Dict[str, Any]:
         if not self.is_available:
             return {"status": "skipped", "message": "Tabnine not configured"}
-            
-        system_prompt = context.get("system_prompt", "You are an expert AI assistant specialized in code generation.")
+
+        system_prompt = context.get(
+            "system_prompt",
+            "You are an expert AI assistant specialized in code generation.",
+        )
         return await self.client.generate(
             prompt=query,
             system_prompt=system_prompt,
             temperature=context.get("temperature", 0.2),
             max_tokens=context.get("max_tokens", 2048),
-            context=context.get("code_context")
+            context=context.get("code_context"),
         )
-

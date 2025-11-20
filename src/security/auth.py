@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 2068138963340429857 | DATE: 2025-11-19
+
 """
 JWT-based authentication utilities.
 Версия: 2.1.0
@@ -9,7 +11,6 @@ JWT-based authentication utilities.
 from __future__ import annotations
 
 import json
-import logging
 import os
 import secrets
 from datetime import datetime, timedelta, timezone
@@ -22,7 +23,6 @@ from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from src.security.audit import AuditLogger, get_audit_logger
 from src.security.roles import enrich_user_from_db
 from src.utils.structured_logging import StructuredLogger
 
@@ -75,7 +75,9 @@ class CurrentUser(BaseModel):
         return any(role in self.roles for role in required_roles)
 
     def has_permission(self, *required_permissions: str) -> bool:
-        return any(permission in self.permissions for permission in required_permissions)
+        return any(
+            permission in self.permissions for permission in required_permissions
+        )
 
 
 DEFAULT_DEMO_USERS = [
@@ -109,7 +111,9 @@ class AuthService:
         self._service_tokens: Dict[str, CurrentUser] = self._load_service_tokens()
 
         if self.settings.jwt_secret == "CHANGE_ME":
-            logger.warning("JWT_SECRET uses default value. Set a secure secret for production!")
+            logger.warning(
+                "JWT_SECRET uses default value. Set a secure secret for production!"
+            )
 
     def _load_users(self) -> Dict[str, UserCredentials]:
         raw_users: List[dict]
@@ -121,7 +125,9 @@ class AuthService:
                 raw_users = DEFAULT_DEMO_USERS
         else:
             if os.getenv("AUTH_DEMO_USERS") is None:
-                logger.info("Using default demo users. Configure AUTH_DEMO_USERS for production.")
+                logger.info(
+                    "Using default demo users. Configure AUTH_DEMO_USERS for production."
+                )
             raw_users = DEFAULT_DEMO_USERS
 
         users: Dict[str, UserCredentials] = {}
@@ -181,7 +187,9 @@ class AuthService:
             logger.info("Loaded %d service API tokens", len(token_map))
         return token_map
 
-    def authenticate_user(self, username: str, password: str) -> Optional[UserCredentials]:
+    def authenticate_user(
+        self, username: str, password: str
+    ) -> Optional[UserCredentials]:
         user = self._users.get(username)
         if not user:
             return None
@@ -189,10 +197,12 @@ class AuthService:
             return None
         return user
 
-    def create_access_token(self, user: UserCredentials, expires_delta: Optional[timedelta] = None) -> str:
+    def create_access_token(
+        self, user: UserCredentials, expires_delta: Optional[timedelta] = None
+    ) -> str:
         """
         Create JWT access token with best practices
-        
+
         Features:
         - Short expiration time (default 60 minutes)
         - UTC timestamps
@@ -211,27 +221,27 @@ class AuthService:
             "full_name": user.full_name,
             "email": user.email,
             "iat": int(now.timestamp()),  # Issued at (Unix timestamp)
-            "exp": int((now + expires_delta).timestamp()),  # Expiration (Unix timestamp)
+            "exp": int(
+                (now + expires_delta).timestamp()
+            ),  # Expiration (Unix timestamp)
             "type": "access",  # Token type for clarity
         }
 
         # Best practice: Use secure secret and algorithm
         token = jwt.encode(
-            payload,
-            self.settings.jwt_secret,
-            algorithm=self.settings.jwt_algorithm
+            payload, self.settings.jwt_secret, algorithm=self.settings.jwt_algorithm
         )
         return token
-    
+
     def create_refresh_token(self, user: UserCredentials) -> str:
         """
         Create refresh token for token renewal
-        
+
         Best practice: Longer expiration (7-30 days) for refresh tokens
         """
         expires_delta = timedelta(days=7)  # Refresh tokens last 7 days
         now = datetime.now(timezone.utc)
-        
+
         payload = {
             "sub": user.user_id,
             "username": user.username,
@@ -239,19 +249,17 @@ class AuthService:
             "exp": int((now + expires_delta).timestamp()),
             "type": "refresh",  # Different type for refresh tokens
         }
-        
+
         # Use same secret but different type
         token = jwt.encode(
-            payload,
-            self.settings.jwt_secret,
-            algorithm=self.settings.jwt_algorithm
+            payload, self.settings.jwt_secret, algorithm=self.settings.jwt_algorithm
         )
         return token
 
     def decode_token(self, token: str, token_type: str = "access") -> CurrentUser:
         """
         Decode and validate JWT token with best practices
-        
+
         Features:
         - Token expiration validation
         - Token type validation
@@ -267,15 +275,12 @@ class AuthService:
                     "verify_signature": True,
                     "verify_exp": True,
                     "verify_iat": True,
-                }
+                },
             )
         except jwt.ExpiredSignatureError as exc:
             logger.warning(
                 "JWT expired",
-                extra={
-                    "error_type": "ExpiredSignatureError",
-                    "token_type": token_type
-                }
+                extra={"error_type": "ExpiredSignatureError", "token_type": token_type},
             )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -285,10 +290,7 @@ class AuthService:
         except jwt.InvalidTokenError as exc:
             logger.warning(
                 "JWT invalid",
-                extra={
-                    "error_type": "InvalidTokenError",
-                    "token_type": token_type
-                }
+                extra={"error_type": "InvalidTokenError", "token_type": token_type},
             )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -298,11 +300,8 @@ class AuthService:
         except jwt.PyJWTError as exc:
             logger.warning(
                 "JWT decode error",
-                extra={
-                    "error_type": type(exc).__name__,
-                    "token_type": token_type
-                },
-                exc_info=True
+                extra={"error_type": type(exc).__name__, "token_type": token_type},
+                exc_info=True,
             )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -314,10 +313,7 @@ class AuthService:
         if payload.get("type") != token_type:
             logger.warning(
                 "Invalid token type",
-                extra={
-                    "expected_type": token_type,
-                    "actual_type": payload.get("type")
-                }
+                extra={"expected_type": token_type, "actual_type": payload.get("type")},
             )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -363,7 +359,9 @@ def get_auth_service() -> AuthService:
     return AuthService(get_auth_settings())
 
 
-async def get_current_user(request: Request, token: Optional[str] = Depends(oauth2_scheme)) -> CurrentUser:
+async def get_current_user(
+    request: Request, token: Optional[str] = Depends(oauth2_scheme)
+) -> CurrentUser:
     auth_service = get_auth_service()
 
     if token:
@@ -413,5 +411,3 @@ def require_permissions(*permissions: str):
         return user
 
     return dependency
-
-

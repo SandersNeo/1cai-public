@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -2251607152439564770 | DATE: 2025-11-19
+
 """
 Marketplace API
 Версия: 2.1.0
@@ -12,20 +14,27 @@ Production readiness improvements:
     - Periodic cache refresh scheduler and audit-friendly logging
 """
 
-import logging
 import os
 import uuid
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, Query, Response
+from fastapi import (
+    APIRouter,
+    HTTPException,
+    Depends,
+    UploadFile,
+    File,
+    Query,
+    Response,
+)
 from starlette.requests import Request
 from pydantic import BaseModel, Field
 from enum import Enum
 
 from src.security import CurrentUser, get_audit_logger, get_current_user, require_roles
 from src.db.marketplace_repository import MarketplaceRepository
-from src.middleware.rate_limiter import limiter, PUBLIC_RATE_LIMIT
+from src.middleware.rate_limiter import limiter
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -33,7 +42,9 @@ logger = StructuredLogger(__name__).logger
 router = APIRouter(prefix="/marketplace", tags=["marketplace"])
 audit_logger = get_audit_logger()
 
-MAX_ARTIFACT_SIZE_BYTES = int(os.getenv("MARKETPLACE_MAX_ARTIFACT_SIZE_MB", "25")) * 1024 * 1024
+MAX_ARTIFACT_SIZE_BYTES = (
+    int(os.getenv("MARKETPLACE_MAX_ARTIFACT_SIZE_MB", "25")) * 1024 * 1024
+)
 
 
 def get_marketplace_repository(request: Request) -> MarketplaceRepository:
@@ -45,8 +56,10 @@ def get_marketplace_repository(request: Request) -> MarketplaceRepository:
 
 # ==================== Models ====================
 
+
 class PluginCategory(str, Enum):
     """Категории плагинов"""
+
     AI_AGENT = "ai_agent"
     CODE_TOOL = "code_tool"
     INTEGRATION = "integration"
@@ -59,6 +72,7 @@ class PluginCategory(str, Enum):
 
 class PluginStatus(str, Enum):
     """Статус плагина в marketplace"""
+
     PENDING = "pending"  # На модерации
     APPROVED = "approved"  # Одобрен
     REJECTED = "rejected"  # Отклонен
@@ -68,6 +82,7 @@ class PluginStatus(str, Enum):
 
 class PluginVisibility(str, Enum):
     """Видимость плагина"""
+
     PUBLIC = "public"  # Доступен всем
     PRIVATE = "private"  # Только автору
     UNLISTED = "unlisted"  # По прямой ссылке
@@ -75,6 +90,7 @@ class PluginVisibility(str, Enum):
 
 class PluginSubmitRequest(BaseModel):
     """Запрос на публикацию плагина"""
+
     name: str = Field(..., min_length=3, max_length=100)
     description: str = Field(..., min_length=10, max_length=1000)
     category: PluginCategory
@@ -85,16 +101,20 @@ class PluginSubmitRequest(BaseModel):
     license: str = Field(default="MIT")
     keywords: List[str] = Field(default_factory=list)
     visibility: PluginVisibility = PluginVisibility.PUBLIC
-    
+
     # Compatibility
     min_version: str = Field(default="1.0.0")
-    supported_platforms: List[str] = Field(default_factory=lambda: ["telegram", "mcp", "edt"])
-    
+    supported_platforms: List[str] = Field(
+        default_factory=lambda: ["telegram", "mcp", "edt"]
+    )
+
     # Resources
     icon_url: Optional[str] = None
     screenshot_urls: List[str] = Field(default_factory=list)
-    artifact_path: Optional[str] = Field(default=None, description="S3 object key with plugin bundle")
-    
+    artifact_path: Optional[str] = Field(
+        default=None, description="S3 object key with plugin bundle"
+    )
+
     # Documentation
     readme: Optional[str] = None
     changelog: Optional[str] = None
@@ -102,6 +122,7 @@ class PluginSubmitRequest(BaseModel):
 
 class PluginUpdateRequest(BaseModel):
     """Запрос на обновление плагина"""
+
     version: Optional[str] = Field(None, pattern=r"^\d+\.\d+\.\d+$")
     description: Optional[str] = Field(None, min_length=10, max_length=1000)
     changelog: Optional[str] = None
@@ -111,11 +132,14 @@ class PluginUpdateRequest(BaseModel):
     icon_url: Optional[str] = None
     screenshot_urls: Optional[List[str]] = None
     readme: Optional[str] = None
-    artifact_path: Optional[str] = Field(None, description="S3 object key with plugin bundle")
+    artifact_path: Optional[str] = Field(
+        None, description="S3 object key with plugin bundle"
+    )
 
 
 class PluginSearchRequest(BaseModel):
     """Запрос поиска плагинов"""
+
     query: Optional[str] = None
     category: Optional[PluginCategory] = None
     author: Optional[str] = None
@@ -129,6 +153,7 @@ class PluginSearchRequest(BaseModel):
 
 class PluginResponse(BaseModel):
     """Ответ с информацией о плагине"""
+
     id: str
     plugin_id: str
     name: str
@@ -138,13 +163,13 @@ class PluginResponse(BaseModel):
     author: str
     status: PluginStatus
     visibility: PluginVisibility
-    
+
     # Stats
     downloads: int = 0
     rating: float = 0.0
     ratings_count: int = 0
     installs: int = 0
-    
+
     # URLs
     homepage: Optional[str] = None
     repository: Optional[str] = None
@@ -152,18 +177,18 @@ class PluginResponse(BaseModel):
     icon_url: Optional[str] = None
     screenshot_urls: List[str] = Field(default_factory=list)
     artifact_path: Optional[str] = None
-    
+
     # Metadata
     license: str
     keywords: List[str] = Field(default_factory=list)
     min_version: str
     supported_platforms: List[str] = Field(default_factory=list)
-    
+
     # Timestamps
     created_at: datetime
     updated_at: datetime
     published_at: Optional[datetime] = None
-    
+
     # Features
     featured: bool = False
     verified: bool = False
@@ -171,6 +196,7 @@ class PluginResponse(BaseModel):
 
 class PluginReviewRequest(BaseModel):
     """Запрос на review плагина"""
+
     rating: int = Field(..., ge=1, le=5)
     comment: Optional[str] = Field(None, max_length=500)
     pros: Optional[str] = Field(None, max_length=200)
@@ -179,6 +205,7 @@ class PluginReviewRequest(BaseModel):
 
 class PluginReviewResponse(BaseModel):
     """Ответ с отзывом"""
+
     id: str
     plugin_id: str
     user_id: str
@@ -193,6 +220,7 @@ class PluginReviewResponse(BaseModel):
 
 class PluginSearchResponse(BaseModel):
     """Ответ на поиск плагинов"""
+
     plugins: List[PluginResponse]
     total: int
     page: int
@@ -202,6 +230,7 @@ class PluginSearchResponse(BaseModel):
 
 class PluginStatsResponse(BaseModel):
     """Статистика плагина"""
+
     plugin_id: str
     downloads_total: int
     downloads_last_30_days: int
@@ -210,13 +239,14 @@ class PluginStatsResponse(BaseModel):
     rating_distribution: Dict[int, int]  # {5: 100, 4: 50, ...}
     reviews_count: int
     favorites_count: int
-    
+
     # Trending
     downloads_trend: str  # "up" | "down" | "stable"
     rating_trend: str
 
 
 # ==================== Endpoints ====================
+
 
 @router.post(
     "/plugins",
@@ -248,10 +278,10 @@ class PluginStatsResponse(BaseModel):
                         "id": "plugin_abc123",
                         "name": "My Awesome Plugin",
                         "status": "pending",
-                        "created_at": "2025-11-07T12:00:00Z"
+                        "created_at": "2025-11-07T12:00:00Z",
                     }
                 }
-            }
+            },
         },
         400: {"description": "Invalid plugin data"},
         401: {"description": "Unauthorized"},
@@ -269,7 +299,7 @@ async def submit_plugin(
 ):
     """
     Публикация нового плагина
-    
+
     Процесс:
     1. Валидация данных
     2. Создание записи с статусом PENDING
@@ -282,13 +312,13 @@ async def submit_plugin(
         sanitized_name = plugin.name.strip()[:200]  # Limit length
         if not sanitized_name:
             raise HTTPException(status_code=400, detail="Plugin name cannot be empty")
-        
+
         plugin_id = f"plugin_{uuid.uuid4().hex}"
         payload = plugin.model_dump()
         payload["status"] = PluginStatus.PENDING.value
         payload.setdefault("visibility", PluginVisibility.PUBLIC.value)
         payload["name"] = sanitized_name  # Use sanitized name
-        
+
         # Sanitize owner_username
         owner_username = (current_user.username or current_user.user_id).strip()[:100]
 
@@ -305,8 +335,8 @@ async def submit_plugin(
             extra={
                 "plugin_id": plugin_id,
                 "plugin_name": plugin.name,
-                "user_id": current_user.user_id
-            }
+                "user_id": current_user.user_id,
+            },
         )
         audit_logger.log_action(
             actor=current_user.user_id,
@@ -316,15 +346,12 @@ async def submit_plugin(
         )
 
         return PluginResponse(**persisted)
-        
+
     except Exception as e:
         logger.error(
             "Plugin submission error",
-            extra={
-                "error": str(e),
-                "error_type": type(e).__name__
-            },
-            exc_info=True
+            extra={"error": str(e), "error_type": type(e).__name__},
+            exc_info=True,
         )
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -365,18 +392,22 @@ async def submit_plugin(
                         "total": 0,
                         "page": 1,
                         "page_size": 20,
-                        "total_pages": 0
+                        "total_pages": 0,
                     }
                 }
-            }
+            },
         }
     },
 )
 async def search_plugins(
-    query: Optional[str] = Query(None, description="Search query (name, description, keywords)"),
+    query: Optional[str] = Query(
+        None, description="Search query (name, description, keywords)"
+    ),
     category: Optional[PluginCategory] = Query(None, description="Filter by category"),
     author: Optional[str] = Query(None, description="Filter by author username"),
-    sort_by: str = Query("rating", description="Sort field: rating, downloads, updated, name"),
+    sort_by: str = Query(
+        "rating", description="Sort field: rating, downloads, updated, name"
+    ),
     order: str = Query("desc", description="Sort order: asc, desc"),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Results per page"),
@@ -384,12 +415,12 @@ async def search_plugins(
 ):
     """
     Поиск плагинов в marketplace
-    
+
     Фильтры:
     - query: Поиск по имени/описанию/тегам
     - category: Категория
     - author: Автор
-    
+
     Сортировка:
     - rating: По рейтингу
     - downloads: По скачиваниям
@@ -416,15 +447,12 @@ async def search_plugins(
             page_size=page_size,
             total_pages=total_pages,
         )
-        
+
     except Exception as e:
         logger.error(
             "Plugin search error",
-            extra={
-                "error": str(e),
-                "error_type": type(e).__name__
-            },
-            exc_info=True
+            extra={"error": str(e), "error_type": type(e).__name__},
+            exc_info=True,
         )
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -445,30 +473,29 @@ async def get_plugin(
 
 @router.put("/plugins/{plugin_id}", response_model=PluginResponse)
 async def update_plugin(
-    plugin_id: str, 
+    plugin_id: str,
     update: PluginUpdateRequest,
     current_user: CurrentUser = Depends(get_current_user),
     repo: MarketplaceRepository = Depends(get_marketplace_repository),
 ):
     """
     Обновление плагина
-    
+
     Только автор может обновлять свой плагин
-    
+
     Note:
         В production: user_id должен получаться из auth middleware (JWT token)
     """
-    
+
     plugin = await repo.get_plugin(plugin_id)
     if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
 
     if not _check_authorization(current_user, plugin):
         raise HTTPException(
-            status_code=403, 
-            detail="You don't have permission to update this plugin"
+            status_code=403, detail="You don't have permission to update this plugin"
         )
-    
+
     # Обновляем поля
     update_data = update.model_dump(exclude_unset=True)
     if not update_data:
@@ -492,7 +519,9 @@ async def update_plugin(
     return PluginResponse(**updated)
 
 
-@router.post("/plugins/{plugin_id}/artifact", response_model=PluginResponse, status_code=201)
+@router.post(
+    "/plugins/{plugin_id}/artifact", response_model=PluginResponse, status_code=201
+)
 @limiter.limit("10/minute")  # Rate limit: 10 uploads per minute
 async def upload_plugin_artifact(
     request: Request,
@@ -554,9 +583,9 @@ async def upload_plugin_artifact(
             extra={
                 "error": str(exc),
                 "error_type": type(exc).__name__,
-                "plugin_id": plugin_id
+                "plugin_id": plugin_id,
             },
-            exc_info=True
+            exc_info=True,
         )
         raise HTTPException(status_code=500, detail="Failed to store artifact") from exc
 
@@ -582,24 +611,23 @@ async def delete_plugin(
 ):
     """
     Удаление плагина
-    
+
     Мягкое удаление - статус → REMOVED
     Только автор или админ могут удалять плагин
-    
+
     Note:
         В production: user_id должен получаться из auth middleware (JWT token)
     """
-    
+
     plugin = await repo.get_plugin(plugin_id)
     if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
 
     if not _check_authorization(current_user, plugin):
         raise HTTPException(
-            status_code=403,
-            detail="You don't have permission to delete this plugin"
+            status_code=403, detail="You don't have permission to delete this plugin"
         )
-    
+
     removed = await repo.soft_delete_plugin(plugin_id)
     logger.info("Plugin removed: %s by user %s", plugin_id, current_user.user_id)
     audit_logger.log_action(
@@ -620,10 +648,10 @@ async def install_plugin(
 ):
     """
     Установка плагина
-    
+
     Увеличивает счетчики downloads и installs
     """
-    
+
     updated = await repo.record_install(plugin_id, current_user.user_id)
     if not updated:
         raise HTTPException(status_code=404, detail="Plugin not found")
@@ -644,13 +672,13 @@ async def uninstall_plugin(
     repo: MarketplaceRepository = Depends(get_marketplace_repository),
 ):
     """Удаление плагина"""
-    
+
     updated = await repo.remove_install(plugin_id, current_user.user_id)
     if not updated:
         raise HTTPException(status_code=404, detail="Plugin not found")
 
     logger.info("Plugin uninstalled: %s by user %s", plugin_id, current_user.user_id)
-    
+
     return {"status": "uninstalled", "plugin_id": plugin_id}
 
 
@@ -660,7 +688,7 @@ async def get_plugin_stats(
     repo: MarketplaceRepository = Depends(get_marketplace_repository),
 ):
     """Получить статистику плагина"""
-    
+
     stats = await repo.get_plugin_stats(plugin_id)
     if not stats:
         raise HTTPException(status_code=404, detail="Plugin not found")
@@ -677,13 +705,13 @@ async def submit_review(
 ):
     """
     Отзыв на плагин
-    
+
     Только пользователи, установившие плагин, могут оставлять отзывы
-    
+
     Note:
         В production: user_id должен получаться из auth middleware (JWT token)
     """
-    
+
     plugin = await repo.get_plugin(plugin_id)
     if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
@@ -691,9 +719,9 @@ async def submit_review(
     if not await repo.user_has_installed(plugin_id, current_user.user_id):
         raise HTTPException(
             status_code=403,
-            detail="You must install the plugin before leaving a review"
+            detail="You must install the plugin before leaving a review",
         )
-    
+
     review_id = f"review_{uuid.uuid4().hex}"
     display_name = current_user.full_name or current_user.username
     if not display_name and len(current_user.user_id) >= 4:
@@ -721,7 +749,7 @@ async def submit_review(
         target=plugin_id,
         metadata={"review_id": review_id, "rating": review.rating},
     )
-    
+
     return PluginReviewResponse(**stored)
 
 
@@ -733,7 +761,7 @@ async def get_plugin_reviews(
     repo: MarketplaceRepository = Depends(get_marketplace_repository),
 ) -> Dict[str, Any]:
     """Получить отзывы о плагине"""
-    
+
     plugin = await repo.get_plugin(plugin_id)
     if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
@@ -786,7 +814,7 @@ async def get_categories(
             {
                 "id": cat.value,
                 "name": cat.value.replace("_", " ").title(),
-                "count": category_counts.get(cat.value, 0)
+                "count": category_counts.get(cat.value, 0),
             }
             for cat in PluginCategory
         ]
@@ -800,9 +828,7 @@ async def get_featured_plugins(
 ):
     """Получить избранные плагины"""
     featured = await repo.get_featured_plugins(limit)
-    return {
-        "plugins": [PluginResponse(**p) for p in featured]
-    }
+    return {"plugins": [PluginResponse(**p) for p in featured]}
 
 
 @router.get("/trending")
@@ -813,13 +839,13 @@ async def get_trending_plugins(
 ):
     """
     Получить трендовые плагины
-    
+
     Критерии:
     - Рост скачиваний за период
     - Новые плагины с хорошим рейтингом
     - Активность (обновления, отзывы)
     """
-    
+
     plugins = await repo.get_trending_plugins(limit)
     return {
         "plugins": [PluginResponse(**p) for p in plugins],
@@ -835,19 +861,21 @@ async def add_to_favorites(
 ):
     """
     Добавить плагин в избранное
-    
+
     Note:
         В production: user_id должен получаться из auth middleware (JWT token)
     """
-    
+
     plugin = await repo.get_plugin(plugin_id)
     if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
 
     await repo.add_favorite(plugin_id, current_user.user_id)
 
-    logger.info("Plugin %s added to favorites by user %s", plugin_id, current_user.user_id)
-    
+    logger.info(
+        "Plugin %s added to favorites by user %s", plugin_id, current_user.user_id
+    )
+
     return {"status": "added", "plugin_id": plugin_id}
 
 
@@ -859,19 +887,21 @@ async def remove_from_favorites(
 ):
     """
     Удалить плагин из избранного
-    
+
     Note:
         В production: user_id должен получаться из auth middleware (JWT token)
     """
-    
+
     plugin = await repo.get_plugin(plugin_id)
     if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
 
     await repo.remove_favorite(plugin_id, current_user.user_id)
 
-    logger.info("Plugin %s removed from favorites by user %s", plugin_id, current_user.user_id)
-    
+    logger.info(
+        "Plugin %s removed from favorites by user %s", plugin_id, current_user.user_id
+    )
+
     return {"status": "removed", "plugin_id": plugin_id}
 
 
@@ -885,18 +915,18 @@ async def report_plugin(
 ):
     """
     Пожаловаться на плагин
-    
+
     Причины:
     - malware: Вредоносный код
     - spam: Спам
     - inappropriate: Неприемлемый контент
     - copyright: Нарушение авторских прав
     - other: Другое
-    
+
     Note:
         В production: user_id должен получаться из auth middleware (JWT token)
     """
-    
+
     plugin = await repo.get_plugin(plugin_id)
     if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
@@ -910,7 +940,9 @@ async def report_plugin(
         details=details,
     )
 
-    logger.warning("Plugin %s reported by user %s: %s", plugin_id, current_user.user_id, reason)
+    logger.warning(
+        "Plugin %s reported by user %s: %s", plugin_id, current_user.user_id, reason
+    )
     audit_logger.log_action(
         actor=current_user.user_id,
         action="marketplace.plugin.report",
@@ -927,11 +959,13 @@ async def report_plugin(
 
 # ==================== Helper Functions ====================
 
+
 def _check_authorization(user: CurrentUser, plugin: Dict[str, Any]) -> bool:
     return plugin.get("owner_id") == user.user_id or user.has_role("admin", "moderator")
 
 
 # ==================== Admin Endpoints ====================
+
 
 @router.post("/admin/plugins/{plugin_id}/approve")
 async def approve_plugin(
@@ -942,7 +976,7 @@ async def approve_plugin(
     """
     Одобрить плагин (требуется роль admin или moderator)
     """
-    
+
     plugin = await repo.get_plugin(plugin_id)
     if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
@@ -976,7 +1010,7 @@ async def reject_plugin(
     """
     Отклонить плагин (требуется роль admin или moderator)
     """
-    
+
     plugin = await repo.get_plugin(plugin_id)
     if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
@@ -1014,7 +1048,7 @@ async def feature_plugin(
     """
     Добавить/убрать из избранных (требуется роль admin или moderator)
     """
-    
+
     plugin = await repo.get_plugin(plugin_id)
     if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
@@ -1047,7 +1081,7 @@ async def verify_plugin(
     """
     Верифицировать плагин (требуется роль admin или moderator)
     """
-    
+
     plugin = await repo.get_plugin(plugin_id)
     if not plugin:
         raise HTTPException(status_code=404, detail="Plugin not found")
@@ -1068,4 +1102,3 @@ async def verify_plugin(
     )
 
     return {"status": "updated", "plugin_id": plugin_id, "verified": verified}
-

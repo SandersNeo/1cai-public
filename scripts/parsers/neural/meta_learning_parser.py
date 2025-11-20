@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -5750396517922317646 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Meta-Learning Parser для BSL

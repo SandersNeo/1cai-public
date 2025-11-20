@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 6889335443723287297 | DATE: 2025-11-19
+
 from __future__ import annotations
 
 import os
@@ -48,4 +50,3 @@ def require_env(name: str) -> str:
     if not value:
         raise IntegrationConfigError(f"Environment variable {name} is required.")
     return value
-

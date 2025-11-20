@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 1760376642513530823 | DATE: 2025-11-19
+
 """
 Scenario Examples (experimental)
 --------------------------------
@@ -153,7 +155,8 @@ def example_dr_rehearsal_scenario(service_name: str) -> ScenarioPlan:
                 "graph_refs": build_refs_for_service(
                     service_name,
                     doc_paths=["docs/runbooks/dr_rehearsal_plan.md"],
-                ) + build_refs_for_feature(
+                )
+                + build_refs_for_feature(
                     f"dr-{service_name}",
                     code_paths=["scripts/runbooks/generate_dr_postmortem.py"],
                 ),
@@ -174,7 +177,10 @@ def example_dr_rehearsal_scenario(service_name: str) -> ScenarioPlan:
                 "service": service_name,
                 "graph_refs": build_refs_for_service(
                     service_name,
-                    doc_paths=["playbooks/dr_vault_example.yaml", "monitoring/AI_SERVICES_MONITORING.md"],
+                    doc_paths=[
+                        "playbooks/dr_vault_example.yaml",
+                        "monitoring/AI_SERVICES_MONITORING.md",
+                    ],
                 ),
             },
         ),
@@ -322,7 +328,9 @@ def example_empty_execution_report(plan: ScenarioPlan) -> ScenarioExecutionRepor
     Нужен как reference того, что пользователь увидит в будущем.
     """
 
-    trust = TrustScore(score=0.5, level="medium", reasons=["Пример-заглушка, без реальных метрик"])
+    trust = TrustScore(
+        score=0.5, level="medium", reasons=["Пример-заглушка, без реальных метрик"]
+    )
 
     return ScenarioExecutionReport(
         scenario_id=plan.id,
@@ -333,5 +341,3 @@ def example_empty_execution_report(plan: ScenarioPlan) -> ScenarioExecutionRepor
         timeline=["Сценарий ещё не был выполнен (пример-заглушка)."],
         artifacts={},
     )
-
-

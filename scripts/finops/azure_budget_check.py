@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -1344418390075258643 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """Check Azure Budgets and send notifications to Slack/Teams."""
 

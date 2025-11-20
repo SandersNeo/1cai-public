@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 8933916783081907909 | DATE: 2025-11-19
+
 """
 Health Check Middleware для Python приложений (FastAPI/Flask/Django)
 Предоставляет эндпоинты для мониторинга состояния сервисов
@@ -63,7 +65,7 @@ class HealthCheckMiddleware:
             'database_url': None,
             'redis_url': None,
             'log_level': 'INFO',
-            **config or {}
+            **(config or {})
         }
         
         self.start_time = time.time()

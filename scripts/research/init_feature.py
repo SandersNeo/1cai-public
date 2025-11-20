@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 619016552111996588 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Initialize spec-driven feature workspace.

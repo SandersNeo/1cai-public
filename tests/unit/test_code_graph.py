@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -5424158410218130697 | DATE: 2025-11-19
+
 """
 Tests for Unified Change Graph (InMemoryCodeGraphBackend).
 """
@@ -75,5 +77,3 @@ async def test_neighbors_and_find_nodes() -> None:
     latency_alerts = await backend.find_nodes(kind=NodeKind.ALERT, label="latency")
     assert len(latency_alerts) == 1
     assert latency_alerts[0].id == "alert:orchestrator-latency-p95-high"
-
-

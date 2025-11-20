@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 2867967284889326908 | DATE: 2025-11-19
+
 """
 Integration-style tests for HybridSearchService with mocked backends.
 """
@@ -108,4 +110,3 @@ async def test_hybrid_search_handles_timeout_and_returns_empty():
     results = await service.search("slow query", timeout=0.01)
 
     assert results == []
-

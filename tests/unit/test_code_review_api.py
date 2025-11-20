@@ -1,12 +1,12 @@
+# [NEXUS IDENTITY] ID: 6336601157625769646 | DATE: 2025-11-19
+
 import pytest
-from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
 from src.api.code_review import (
     analyze_bsl_code,
     auto_fix_code,
     router,
-    CodeContextRequest,
     AutoFixRequest,
 )
 from src.services.openai_code_analyzer import OpenAICodeAnalyzer, set_openai_analyzer
@@ -125,7 +125,7 @@ async def test_auto_fix_code_type_check():
 async def test_auto_fix_code_error_handling():
     request = AutoFixRequest(
         suggestionId="error-handling",
-        code="Сообщить(\"Ошибка\");",
+        code='Сообщить("Ошибка");',
     )
     result = await auto_fix_code(request)
     assert result.success
@@ -142,5 +142,3 @@ async def test_auto_fix_code_magic_number():
     result = await auto_fix_code(request)
     assert result.success
     assert "КОНСТАНТА_123" in result.fixedCode
-
-

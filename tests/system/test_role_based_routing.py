@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -2121923215960773162 | DATE: 2025-11-19
+
 import pytest
 
 from src.ai.role_based_router import RoleBasedRouter, UserRole
@@ -17,7 +19,12 @@ class DummyAgent:
 
     async def generate_code(self, prompt: str, context=None):
         self.calls.append(("developer", prompt))
-        return {"success": True, "suggestion": "pass", "requires_approval": True, "token": "tok"}
+        return {
+            "success": True,
+            "suggestion": "pass",
+            "requires_approval": True,
+            "token": "tok",
+        }
 
 
 @pytest.mark.asyncio
@@ -38,9 +45,10 @@ async def test_router_routes_developer(monkeypatch):
     dummy = DummyAgent()
     monkeypatch.setattr(router, "qwen_client", dummy, raising=False)
 
-    response = await router.route_query("Напиши функцию расчёта налогов", context={"current_file": "module.bsl"})
+    response = await router.route_query(
+        "Напиши функцию расчёта налогов", context={"current_file": "module.bsl"}
+    )
 
     assert dummy.calls and dummy.calls[0][0] == "developer"
     assert response["role"] == UserRole.DEVELOPER.value
     assert response["response"]["token"] == "tok"
-

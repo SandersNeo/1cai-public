@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -2681129301552104118 | DATE: 2025-11-19
+
 """
 Tests for IntegrationSyncWithGraph (integrations_with_graph.py).
 """
@@ -169,4 +171,3 @@ async def test_integration_sync_without_backend() -> None:
     assert "synced" in result
     assert "errors" in result
     assert len(result["errors"]) > 0
-

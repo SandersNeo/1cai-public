@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 6052358327813650281 | DATE: 2025-11-19
+
 import asyncio
 from datetime import datetime, timedelta
 
@@ -31,9 +33,7 @@ def disable_redis(monkeypatch):
     def fake_from_url(*args, **kwargs):
         raise ConnectionError("Redis недоступен в тестовом окружении")
 
-    monkeypatch.setattr(
-        "src.services.caching_service.aioredis.from_url", fake_from_url
-    )
+    monkeypatch.setattr("src.services.caching_service.aioredis.from_url", fake_from_url)
 
 
 @pytest.mark.asyncio
@@ -101,5 +101,3 @@ async def test_cache_result_decorator_caches_async_call():
 
     assert first == second == {"data": 10}
     assert calls == [10]
-
-

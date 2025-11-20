@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -1739134669265347202 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """Запуск полного цикла аудит-проверок проекта."""
 from __future__ import annotations

@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -4931967186796764150 | DATE: 2025-11-19
+
 """
 Unified Change Graph Builder for 1C Code
 -----------------------------------------
@@ -17,7 +19,7 @@ from __future__ import annotations
 import logging
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, Optional, Set
 
 from src.ai.code_graph import (
     CodeGraphBackend,
@@ -64,7 +66,9 @@ class OneCCodeGraphBuilder:
                     self._parser = BSLASTParser(use_language_server=True)
                     logger.info("Using AST parser with language server")
                 except Exception as e:
-                    logger.warning("AST parser unavailable, falling back to simple parser: %s", e)
+                    logger.warning(
+                        "AST parser unavailable, falling back to simple parser: %s", e
+                    )
                     self.use_ast_parser = False
 
             if not self.use_ast_parser:
@@ -135,7 +139,8 @@ class OneCCodeGraphBuilder:
                 props={
                     "module": module_path,
                     "name": func_name,
-                    "exported": func.get("is_export", False) or func.get("exported", False),
+                    "exported": func.get("is_export", False)
+                    or func.get("exported", False),
                     "parameters": func.get("parameters", []),
                     "complexity": func.get("complexity", 0),
                     "start_line": func.get("start_line") or func.get("line_start"),
@@ -171,7 +176,8 @@ class OneCCodeGraphBuilder:
                 props={
                     "module": module_path,
                     "name": proc_name,
-                    "exported": proc.get("is_export", False) or proc.get("exported", False),
+                    "exported": proc.get("is_export", False)
+                    or proc.get("exported", False),
                     "parameters": proc.get("parameters", []),
                     "complexity": proc.get("complexity", 0),
                     "start_line": proc.get("start_line") or proc.get("line_start"),
@@ -219,7 +225,11 @@ class OneCCodeGraphBuilder:
                         source=callable_node.id,
                         target=target_node.id,
                         kind=EdgeKind.BSL_CALLS,
-                        props={"relationship": "calls", "call_type": "internal", "line": callable_data.get("start_line")},
+                        props={
+                            "relationship": "calls",
+                            "call_type": "internal",
+                            "line": callable_data.get("start_line"),
+                        },
                     )
                     await self.backend.upsert_edge(edge)
                     edges_created += 1
@@ -246,7 +256,12 @@ class OneCCodeGraphBuilder:
                         source=callable_node.id,
                         target=external_node_id,
                         kind=EdgeKind.BSL_CALLS,
-                        props={"relationship": "calls", "call_type": "external", "dynamic": True, "line": callable_data.get("start_line")},
+                        props={
+                            "relationship": "calls",
+                            "call_type": "external",
+                            "dynamic": True,
+                            "line": callable_data.get("start_line"),
+                        },
                     )
                     await self.backend.upsert_edge(edge)
                     edges_created += 1
@@ -262,10 +277,10 @@ class OneCCodeGraphBuilder:
                 continue
 
             # Создать узел запроса
-            query_hash = hash(query_text) % (10 ** 8)  # Простой hash для уникальности
+            query_hash = hash(query_text) % (10**8)  # Простой hash для уникальности
             query_node_id = f"bsl_query:{module_path}:{query_hash}"
             query_type = query.get("type", "SELECT")
-            
+
             query_node = Node(
                 id=query_node_id,
                 kind=NodeKind.BSL_QUERY,
@@ -370,7 +385,11 @@ class OneCCodeGraphBuilder:
                 continue
 
             # Пропускаем стандартные функции 1С (можно расширить список)
-            if name.startswith("Строка") or name.startswith("Число") or name.startswith("Дата"):
+            if (
+                name.startswith("Строка")
+                or name.startswith("Число")
+                or name.startswith("Дата")
+            ):
                 continue
 
             calls.add(name)
@@ -453,7 +472,9 @@ class OneCCodeGraphBuilder:
                 total_stats["modules"].append(stats)
 
             except Exception as e:
-                logger.error("Failed to process file %s: %s", bsl_file, e, exc_info=True)
+                logger.error(
+                    "Failed to process file %s: %s", bsl_file, e, exc_info=True
+                )
 
         logger.info(
             "Graph building completed: %d modules, %d nodes, %d edges",
@@ -517,4 +538,3 @@ class OneCCodeGraphBuilder:
             logger.info("Graph exported to: %s", output_path)
 
         return graph_export
-

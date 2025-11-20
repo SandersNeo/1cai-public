@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -6659721938062455741 | DATE: 2025-11-19
+
 """
 Интеграционные тесты для системы AI Assistant 1C.
 
@@ -9,6 +11,4 @@ __version__ = "1.0.0"
 __author__ = "AI Assistant Development Team"
 
 # Экспортируем основные маркеры для удобства использования в других модулях
-pytest_plugins = [
-    "src.tests.integration.conftest"
-]
+pytest_plugins = ["src.tests.integration.conftest"]

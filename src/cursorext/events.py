@@ -1,10 +1,12 @@
+# [NEXUS IDENTITY] ID: -2873649329014550120 | DATE: 2025-11-19
+
 """Модель события для локального логгера."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from typing import Dict, List
 import json
 import uuid
 
@@ -12,9 +14,13 @@ ISO_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 MAX_TEXT_LENGTH = 2048
 
 
-def _validate_length(value: str, field_name: str, max_length: int = MAX_TEXT_LENGTH) -> str:
+def _validate_length(
+    value: str, field_name: str, max_length: int = MAX_TEXT_LENGTH
+) -> str:
     if len(value) > max_length:
-        raise ValueError(f"{field_name} превышает допустимую длину {max_length} символов")
+        raise ValueError(
+            f"{field_name} превышает допустимую длину {max_length} символов"
+        )
     return value
 
 
@@ -85,4 +91,3 @@ class EventRecord:
             links=json.loads(row["links"]),
             created_at=row["created_at"],
         )
-

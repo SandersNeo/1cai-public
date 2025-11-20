@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -5175464512035232049 | DATE: 2025-11-19
+
 """
 BPMN API
 Backend for BPMN diagram management
@@ -6,7 +8,6 @@ Backend for BPMN diagram management
 from typing import Dict, Any, List
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from datetime import datetime
 import asyncpg
 from src.utils.structured_logging import StructuredLogger
 
@@ -34,22 +35,21 @@ class SaveDiagramRequest(BaseModel):
 
 @router.get("/diagrams")
 async def list_diagrams(
-    project_id: str | None = None,
-    db_pool: asyncpg.Pool = Depends(get_db_pool)
+    project_id: str | None = None, db_pool: asyncpg.Pool = Depends(get_db_pool)
 ) -> List[Dict[str, Any]]:
     """
     List all BPMN diagrams
-    
+
     Optionally filter by project
     """
-    
+
     try:
         async with db_pool.acquire() as conn:
             tenant_id = await conn.fetchval("SELECT id FROM tenants LIMIT 1")
-            
+
             if not tenant_id:
                 return []
-            
+
             if project_id:
                 diagrams = await conn.fetch(
                     """
@@ -58,7 +58,8 @@ async def list_diagrams(
                     WHERE tenant_id = $1 AND project_id = $2
                     ORDER BY updated_at DESC
                     """,
-                    tenant_id, project_id
+                    tenant_id,
+                    project_id,
                 )
             else:
                 diagrams = await conn.fetch(
@@ -69,39 +70,35 @@ async def list_diagrams(
                     ORDER BY updated_at DESC
                     LIMIT 50
                     """,
-                    tenant_id
+                    tenant_id,
                 )
-            
+
             return [
                 {
                     "id": str(row["id"]),
                     "name": row["name"],
                     "description": row["description"],
                     "created_at": row["created_at"].isoformat(),
-                    "updated_at": row["updated_at"].isoformat()
+                    "updated_at": row["updated_at"].isoformat(),
                 }
                 for row in diagrams
             ]
-    
+
     except Exception as e:
         logger.error(
             "Error listing diagrams",
-            extra={
-                "error": str(e),
-                "error_type": type(e).__name__
-            },
-            exc_info=True
+            extra={"error": str(e), "error_type": type(e).__name__},
+            exc_info=True,
         )
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/diagrams/{diagram_id}")
 async def get_diagram(
-    diagram_id: str,
-    db_pool: asyncpg.Pool = Depends(get_db_pool)
+    diagram_id: str, db_pool: asyncpg.Pool = Depends(get_db_pool)
 ) -> Dict[str, Any]:
     """Get specific BPMN diagram"""
-    
+
     try:
         async with db_pool.acquire() as conn:
             diagram = await conn.fetchrow(
@@ -110,22 +107,24 @@ async def get_diagram(
                 FROM bpmn_diagrams
                 WHERE id = $1
                 """,
-                diagram_id
+                diagram_id,
             )
-            
+
             if not diagram:
                 raise HTTPException(status_code=404, detail="Diagram not found")
-            
+
             return {
                 "id": str(diagram["id"]),
                 "name": diagram["name"],
                 "description": diagram["description"],
                 "xml": diagram["xml_content"],
-                "project_id": str(diagram["project_id"]) if diagram["project_id"] else None,
+                "project_id": str(diagram["project_id"])
+                if diagram["project_id"]
+                else None,
                 "created_at": diagram["created_at"].isoformat(),
-                "updated_at": diagram["updated_at"].isoformat()
+                "updated_at": diagram["updated_at"].isoformat(),
             }
-    
+
     except HTTPException:
         raise
     except Exception as e:
@@ -134,27 +133,26 @@ async def get_diagram(
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "diagram_id": diagram_id if 'diagram_id' in locals() else None
+                "diagram_id": diagram_id if "diagram_id" in locals() else None,
             },
-            exc_info=True
+            exc_info=True,
         )
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/diagrams")
 async def save_diagram(
-    request: SaveDiagramRequest,
-    db_pool: asyncpg.Pool = Depends(get_db_pool)
+    request: SaveDiagramRequest, db_pool: asyncpg.Pool = Depends(get_db_pool)
 ) -> Dict[str, Any]:
     """Save new or update existing BPMN diagram"""
-    
+
     try:
         async with db_pool.acquire() as conn:
             tenant_id = await conn.fetchval("SELECT id FROM tenants LIMIT 1")
-            
+
             if not tenant_id:
                 raise HTTPException(status_code=400, detail="No tenant found")
-            
+
             # Insert diagram
             diagram_id = await conn.fetchval(
                 """
@@ -167,27 +165,18 @@ async def save_diagram(
                 request.name,
                 request.description,
                 request.xml,
-                request.project_id
+                request.project_id,
             )
-            
-            logger.info(
-                "Saved BPMN diagram",
-                extra={"diagram_id": str(diagram_id)}
-            )
-            
-            return {
-                "id": str(diagram_id),
-                "message": "Diagram saved successfully"
-            }
-    
+
+            logger.info("Saved BPMN diagram", extra={"diagram_id": str(diagram_id)})
+
+            return {"id": str(diagram_id), "message": "Diagram saved successfully"}
+
     except Exception as e:
         logger.error(
             "Error saving diagram",
-            extra={
-                "error": str(e),
-                "error_type": type(e).__name__
-            },
-            exc_info=True
+            extra={"error": str(e), "error_type": type(e).__name__},
+            exc_info=True,
         )
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -196,10 +185,10 @@ async def save_diagram(
 async def update_diagram(
     diagram_id: str,
     request: SaveDiagramRequest,
-    db_pool: asyncpg.Pool = Depends(get_db_pool)
+    db_pool: asyncpg.Pool = Depends(get_db_pool),
 ) -> Dict[str, Any]:
     """Update existing BPMN diagram"""
-    
+
     try:
         async with db_pool.acquire() as conn:
             updated = await conn.execute(
@@ -214,17 +203,14 @@ async def update_diagram(
                 request.name,
                 request.description,
                 request.xml,
-                diagram_id
+                diagram_id,
             )
-            
+
             if updated == "UPDATE 0":
                 raise HTTPException(status_code=404, detail="Diagram not found")
-            
-            return {
-                "id": diagram_id,
-                "message": "Diagram updated successfully"
-            }
-    
+
+            return {"id": diagram_id, "message": "Diagram updated successfully"}
+
     except HTTPException:
         raise
     except Exception as e:
@@ -233,32 +219,30 @@ async def update_diagram(
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "diagram_id": diagram_id if 'diagram_id' in locals() else None
+                "diagram_id": diagram_id if "diagram_id" in locals() else None,
             },
-            exc_info=True
+            exc_info=True,
         )
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.delete("/diagrams/{diagram_id}")
 async def delete_diagram(
-    diagram_id: str,
-    db_pool: asyncpg.Pool = Depends(get_db_pool)
+    diagram_id: str, db_pool: asyncpg.Pool = Depends(get_db_pool)
 ) -> Dict[str, Any]:
     """Delete BPMN diagram"""
-    
+
     try:
         async with db_pool.acquire() as conn:
             deleted = await conn.execute(
-                "DELETE FROM bpmn_diagrams WHERE id = $1",
-                diagram_id
+                "DELETE FROM bpmn_diagrams WHERE id = $1", diagram_id
             )
-            
+
             if deleted == "DELETE 0":
                 raise HTTPException(status_code=404, detail="Diagram not found")
-            
+
             return {"message": "Diagram deleted successfully"}
-    
+
     except HTTPException:
         raise
     except Exception as e:
@@ -267,10 +251,8 @@ async def delete_diagram(
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "diagram_id": diagram_id if 'diagram_id' in locals() else None
+                "diagram_id": diagram_id if "diagram_id" in locals() else None,
             },
-            exc_info=True
+            exc_info=True,
         )
         raise HTTPException(status_code=500, detail=str(e))
-
-

@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 4028071011291707644 | DATE: 2025-11-19
+
 """
 Connection Pool для AI Clients
 -------------------------------
@@ -67,19 +69,19 @@ class ConnectionPool:
                     self._sessions[key] = session
                     logger.debug(
                         "Created new session in pool",
-                        extra={"key": key, "pool_size": len(self._sessions)}
+                        extra={"key": key, "pool_size": len(self._sessions)},
                     )
                 else:
                     # При max_size=0 не сохраняем в пул (каждая сессия новая)
                     logger.debug(
                         "Created new session (pool disabled, max_size=0)",
-                        extra={"key": key}
+                        extra={"key": key},
                     )
                     return session
 
             session = self._sessions[key]
             # Проверяем, закрыта ли сессия
-            if hasattr(session, 'closed') and session.closed:
+            if hasattr(session, "closed") and session.closed:
                 # Пересоздаем закрытую сессию
                 try:
                     await session.close()
@@ -87,10 +89,7 @@ class ConnectionPool:
                     pass
                 session = aiohttp.ClientSession(timeout=self.timeout)
                 self._sessions[key] = session
-                logger.debug(
-                    "Recreated closed session in pool",
-                    extra={"key": key}
-                )
+                logger.debug("Recreated closed session in pool", extra={"key": key})
 
             return session
 
@@ -112,7 +111,7 @@ class ConnectionPool:
             logger.error(
                 "Error in connection pool session",
                 extra={"key": key, "error": str(e)},
-                exc_info=True
+                exc_info=True,
             )
             raise
 
@@ -171,4 +170,3 @@ async def close_global_pool() -> None:
     if _global_pool is not None:
         await _global_pool.close_all()
         _global_pool = None
-

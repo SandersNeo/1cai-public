@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -5405285211544538639 | DATE: 2025-11-19
+
 """Tests for audit logger."""
 
 from pathlib import Path
@@ -10,7 +12,9 @@ def test_audit_logger_writes_json(tmp_path: Path) -> None:
     log_path = tmp_path / "audit.log"
     logger = AuditLogger(log_path=log_path)
 
-    logger.log_action(actor="user-1", action="test.action", target="resource", metadata={"value": 1})
+    logger.log_action(
+        actor="user-1", action="test.action", target="resource", metadata={"value": 1}
+    )
 
     content = log_path.read_text(encoding="utf-8").strip()
     assert content
@@ -19,4 +23,3 @@ def test_audit_logger_writes_json(tmp_path: Path) -> None:
     assert record["action"] == "test.action"
     assert record["target"] == "resource"
     assert record["metadata"]["value"] == 1
-

@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -7449809667488719165 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 orchestrator_latency_smoke.py - лёгкий латентностный smoke-тест для AI Orchestrator.

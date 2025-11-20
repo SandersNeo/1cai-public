@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 6256332134941883513 | DATE: 2025-11-19
+
 #!/usr/bin/env python3
 """
 Подготовка training dataset для Neural BSL Parser

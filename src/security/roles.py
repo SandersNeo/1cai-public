@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -8251860666297395792 | DATE: 2025-11-19
+
 """Helpers for managing user roles & permissions from the database."""
 
 from __future__ import annotations
@@ -34,11 +36,19 @@ async def enrich_user_from_db(user: "CurrentUser") -> "CurrentUser":
         return merged
 
     user.roles = _merge(user.roles, [row["role"] for row in rows_roles])
-    user.permissions = _merge(user.permissions, [row["permission"] for row in rows_permissions])
+    user.permissions = _merge(
+        user.permissions, [row["permission"] for row in rows_permissions]
+    )
     return user
 
 
-async def grant_role(user_id: str, role: str, assigned_by: Optional[str] = None, reason: Optional[str] = None, metadata: Optional[dict] = None) -> None:
+async def grant_role(
+    user_id: str,
+    role: str,
+    assigned_by: Optional[str] = None,
+    reason: Optional[str] = None,
+    metadata: Optional[dict] = None,
+) -> None:
     try:
         from src.database import get_pool
 
@@ -70,7 +80,13 @@ async def grant_role(user_id: str, role: str, assigned_by: Optional[str] = None,
         )
 
 
-async def revoke_role(user_id: str, role: str, revoked_by: Optional[str] = None, reason: Optional[str] = None, metadata: Optional[dict] = None) -> None:
+async def revoke_role(
+    user_id: str,
+    role: str,
+    revoked_by: Optional[str] = None,
+    reason: Optional[str] = None,
+    metadata: Optional[dict] = None,
+) -> None:
     try:
         from src.database import get_pool
 
@@ -98,7 +114,9 @@ async def revoke_role(user_id: str, role: str, revoked_by: Optional[str] = None,
             )
 
 
-async def grant_permission(user_id: str, permission: str, assigned_by: Optional[str] = None) -> None:
+async def grant_permission(
+    user_id: str, permission: str, assigned_by: Optional[str] = None
+) -> None:
     try:
         from src.database import get_pool
 
@@ -142,4 +160,3 @@ __all__ = [
     "grant_permission",
     "revoke_permission",
 ]
-

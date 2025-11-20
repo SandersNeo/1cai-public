@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -7923453034864487305 | DATE: 2025-11-19
+
 from __future__ import annotations
 
 """
@@ -42,7 +44,9 @@ class ProviderConfig:
 class LLMProviderManager:
     """Загрузка конфигураций и предоставление удобного API."""
 
-    def __init__(self, config_path: Path = CONFIG_PATH, state_path: Path = STATE_PATH) -> None:
+    def __init__(
+        self, config_path: Path = CONFIG_PATH, state_path: Path = STATE_PATH
+    ) -> None:
         self.config_path = config_path
         self.state_path = state_path
         self.providers: Dict[str, ProviderConfig] = {}
@@ -76,7 +80,11 @@ class LLMProviderManager:
                 base_url=cfg.get("base_url", ""),
                 enabled=bool(cfg.get("enabled", True)),
                 status=cfg.get("status", "active"),
-                metadata={k: v for k, v in cfg.items() if k not in {"type", "priority", "base_url", "enabled", "status"}},
+                metadata={
+                    k: v
+                    for k, v in cfg.items()
+                    if k not in {"type", "priority", "base_url", "enabled", "status"}
+                },
             )
             self.providers[name] = provider
 
@@ -115,4 +123,3 @@ class LLMProviderManager:
 def load_llm_provider_manager() -> LLMProviderManager:
     """Удобный хэлпер для ленивой загрузки."""
     return LLMProviderManager()
-

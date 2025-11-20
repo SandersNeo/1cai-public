@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: 6520591251723743587 | DATE: 2025-11-19
+
 """
 Tool / Skill Registry (experimental)
 ------------------------------------
@@ -141,10 +143,10 @@ class ToolRegistry:
         """Добавить пример использования инструмента."""
         self._usage_examples.append(example)
 
-    def list_usage_examples(self, tool_id: Optional[str] = None) -> List[ToolUsageExample]:
+    def list_usage_examples(
+        self, tool_id: Optional[str] = None
+    ) -> List[ToolUsageExample]:
         """Вернуть usage-примеры (опционально только для конкретного инструмента)."""
         if tool_id is None:
             return list(self._usage_examples)
         return [e for e in self._usage_examples if e.tool_id == tool_id]
-
-

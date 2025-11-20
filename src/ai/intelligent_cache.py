@@ -1,3 +1,5 @@
+# [NEXUS IDENTITY] ID: -2401944896018084314 | DATE: 2025-11-19
+
 """
 Intelligent Cache Manager for AI Orchestrator
 ---------------------------------------------
@@ -9,7 +11,6 @@ Intelligent Cache Manager for AI Orchestrator
 from __future__ import annotations
 
 import hashlib
-import json
 import logging
 import time
 from collections import OrderedDict
@@ -85,7 +86,9 @@ class IntelligentCache:
             "graph_query": 60,  # 1 минута (граф может меняться)
         }
 
-    def _generate_key(self, query: str, context: Optional[Dict[str, Any]] = None) -> str:
+    def _generate_key(
+        self, query: str, context: Optional[Dict[str, Any]] = None
+    ) -> str:
         """
         Сгенерировать ключ кэша на основе запроса и контекста.
 
@@ -319,9 +322,7 @@ class IntelligentCache:
         """
         start_time = time.time()
         keys_to_remove = [
-            key
-            for key, entry in self._cache.items()
-            if entry.query_type == query_type
+            key for key, entry in self._cache.items() if entry.query_type == query_type
         ]
 
         for key in keys_to_remove:
@@ -339,7 +340,9 @@ class IntelligentCache:
             )
 
             track_intelligent_cache_invalidation(invalidation_type="query_type")
-            track_intelligent_cache_operation("invalidate_by_query_type", duration, "success")
+            track_intelligent_cache_operation(
+                "invalidate_by_query_type", duration, "success"
+            )
             update_intelligent_cache_size(
                 current_size=len(self._cache), max_size=self.max_size
             )
@@ -393,11 +396,7 @@ class IntelligentCache:
             Словарь с метриками
         """
         total_requests = self._metrics["hits"] + self._metrics["misses"]
-        hit_rate = (
-            self._metrics["hits"] / total_requests
-            if total_requests > 0
-            else 0.0
-        )
+        hit_rate = self._metrics["hits"] / total_requests if total_requests > 0 else 0.0
 
         return {
             **self._metrics,
@@ -424,8 +423,7 @@ class IntelligentCache:
 
         now = datetime.utcnow()
         ages = [
-            (now - entry.created_at).total_seconds()
-            for entry in self._cache.values()
+            (now - entry.created_at).total_seconds() for entry in self._cache.values()
         ]
         access_counts = [entry.access_count for entry in self._cache.values()]
 
@@ -437,4 +435,3 @@ class IntelligentCache:
             if access_counts
             else 0,
         }
-
