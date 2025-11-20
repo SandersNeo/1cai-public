@@ -35,6 +35,7 @@ from config import settings
 from ml.experiments.mlflow_manager import MLFlowManager
 from ml.metrics.collector import MetricsCollector
 from ml.training.trainer import ModelTrainer
+
 # isort: on
 
 # Настройка Celery

@@ -27,6 +27,7 @@ from ml.experiments.mlflow_manager import MLFlowManager
 from ml.metrics.collector import MetricsCollector, AssistantRole, MetricType
 from ml.training.trainer import ModelTrainer
 from src.utils.structured_logging import StructuredLogger
+
 # isort: on
 
 # Настройка Celery
@@ -261,7 +262,7 @@ def retrain_all_models():
 
     try:
         models_retrained = 0
-        
+
         # Здесь можно добавить логику автоматического переобучения
         # на основе новых данных или деградации качества
 

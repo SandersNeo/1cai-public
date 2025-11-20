@@ -339,19 +339,20 @@ class CodeToTestGenerator:
             # Подготовка значения для строки (вынесено из f-string из-за ограничений backslash)
             long_string_val = "A" * 1000
             long_string_expr = f'"{long_string_val}"'
-            
+
             param_init_list = []
             for p in func_info.parameters:
-                if p['type'] == 'Число':
+                if p["type"] == "Число":
                     param_init_list.append(f"{p['name']} = 999999999")
-                elif p['type'] == 'Строка':
+                elif p["type"] == "Строка":
                     param_init_list.append(f"{p['name']} = {long_string_expr}")
                 else:
                     param_init_list.append(f"{p['name']} = Неопределено")
-            
-            param_inits = ', '.join(param_init_list)
 
-            tests.append(f"""// Edge case: максимальные значения
+            param_inits = ", ".join(param_init_list)
+
+            tests.append(
+                f"""// Edge case: максимальные значения
 Процедура Тест_{func_info.name}_МаксимальныеЗначения() Экспорт
     
     // Arrange
@@ -365,7 +366,8 @@ class CodeToTestGenerator:
         .ЭтоНеНеопределено();
     
 КонецПроцедуры
-""")
+"""
+            )
 
         return tests
 
@@ -418,6 +420,8 @@ class CodeToTestGenerator:
     def _generate_assert_code(self, return_type: Optional[str], result_var: str) -> str:
         """Генерирует код проверки результата."""
         if not return_type:
-            return f'    ЮТест.ОжидаетЧто({result_var}, "Результат").ЭтоНеНеопределено();'
+            return (
+                f'    ЮТест.ОжидаетЧто({result_var}, "Результат").ЭтоНеНеопределено();'
+            )
 
         return f'    ЮТест.ОжидаетЧто({result_var}, "Результат").ЭтоНеНеопределено();'

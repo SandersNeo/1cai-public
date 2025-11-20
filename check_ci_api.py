@@ -58,6 +58,7 @@ def main():
         # Show all recent runs, not just failures, to see progress
         status_icon = "X" if run["conclusion"] == "failure" else ("v" if run["conclusion"] == "success" else "?")
         print(f"[{status_icon}] Run: {run['name']} (ID: {run['id']})")
+        print(f"    Commit: {run['head_sha'][:7]} - {run['head_commit']['message'].splitlines()[0] if run.get('head_commit') else 'N/A'}")
         print(f"    Status: {run['status']}, Conclusion: {run['conclusion']}")
         print(f"    Branch: {run['head_branch']}")
         print(f"    URL: {run['html_url']}")
