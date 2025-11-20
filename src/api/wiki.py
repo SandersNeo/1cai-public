@@ -1,10 +1,11 @@
-"""
+﻿"""
 Wiki API Endpoints
 Exposes Wiki functionality including Pages, Comments, Search, and Attachments
 """
 
-from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File, Form
-from typing import List, Optional, Dict
+from typing import List, Optional
+
+from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File
 
 from src.services.wiki.service import WikiService
 from src.services.wiki.models import WikiPage, WikiPageCreate, WikiPageUpdate
@@ -20,15 +21,27 @@ router = APIRouter(prefix="/wiki", tags=["Wiki"])
 # --- Dependencies ---
 
 def get_wiki_service():
+    """Dependency for WikiService"""
     return WikiService()
 
 def get_comments_service():
+    """Dependency for WikiCommentsService"""
     return WikiCommentsService()
 
 def get_attachments_service():
+    """Dependency for WikiAttachmentStorage"""
     return WikiAttachmentStorage()
 
 # --- Page Endpoints ---
+
+@router.get("/pages", response_model=List[WikiPage])
+async def list_pages(
+    limit: int = 50,
+    offset: int = 0,
+    service: WikiService = Depends(get_wiki_service)
+):
+    """List wiki pages"""
+    return await service.list_pages(limit, offset)
 
 @router.get("/pages/{slug}", response_model=WikiPage)
 async def get_page(slug: str, version: int = None, service: WikiService = Depends(get_wiki_service)):
@@ -40,7 +53,7 @@ async def get_page(slug: str, version: int = None, service: WikiService = Depend
 
 @router.post("/pages", response_model=WikiPage, status_code=status.HTTP_201_CREATED)
 async def create_page(
-    data: WikiPageCreate, 
+    data: WikiPageCreate,
     blueprint_id: Optional[str] = None,
     service: WikiService = Depends(get_wiki_service),
     user: CurrentUser = Depends(get_current_user)
@@ -50,8 +63,8 @@ async def create_page(
 
 @router.put("/pages/{slug}", response_model=WikiPage)
 async def update_page(
-    slug: str, 
-    data: WikiPageUpdate, 
+    slug: str,
+    data: WikiPageUpdate,
     service: WikiService = Depends(get_wiki_service),
     user: CurrentUser = Depends(get_current_user)
 ):
@@ -60,8 +73,8 @@ async def update_page(
         return await service.update_page(slug, data, author_id=user.user_id)
     except ValueError as e:
         if "Conflict" in str(e):
-            raise HTTPException(status_code=409, detail=str(e))
-        raise HTTPException(status_code=404, detail=str(e))
+            raise HTTPException(status_code=409, detail=str(e)) from e
+        raise HTTPException(status_code=404, detail=str(e)) from e
 
 @router.post("/preview")
 async def preview_content(content: str, service: WikiService = Depends(get_wiki_service)):
@@ -72,8 +85,8 @@ async def preview_content(content: str, service: WikiService = Depends(get_wiki_
 
 @router.get("/search")
 async def search_wiki(
-    q: str, 
-    limit: int = 5, 
+    q: str,
+    limit: int = 5,
     search_service: WikiSearchService = Depends(get_wiki_search_service)
 ):
     """Semantic search for wiki pages"""
@@ -83,7 +96,7 @@ async def search_wiki(
 
 @router.get("/pages/{page_id}/comments", response_model=List[CommentDTO])
 async def get_comments(
-    page_id: str, 
+    page_id: str,
     comments_service: WikiCommentsService = Depends(get_comments_service)
 ):
     """Get comments for a page"""
@@ -91,7 +104,7 @@ async def get_comments(
 
 @router.post("/pages/{page_id}/comments", response_model=CommentDTO)
 async def add_comment(
-    page_id: str, 
+    page_id: str,
     content: str,
     parent_id: Optional[str] = None,
     comments_service: WikiCommentsService = Depends(get_comments_service),
@@ -109,12 +122,13 @@ async def upload_attachment(
     user: CurrentUser = Depends(get_current_user)
 ):
     """Upload an attachment to S3"""
+    _ = user # dependency injection check
     content = await file.read()
     url = await storage.upload_file(content, file.filename, file.content_type)
-    
+
     if not url:
         raise HTTPException(status_code=500, detail="Failed to upload file")
-        
+
     return {"url": url, "filename": file.filename}
 
 # --- AI Features ---
