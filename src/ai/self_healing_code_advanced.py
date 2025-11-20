@@ -88,9 +88,9 @@ class AdvancedSelfHealingCode(SelfHealingCode):
 
         # История для обучения
         self._error_history: List[CodeError] = []
-        self._fix_history: List[
-            Tuple[CodeError, CodeFix, bool]
-        ] = []  # (error, fix, success)
+        self._fix_history: List[Tuple[CodeError, CodeFix, bool]] = (
+            []
+        )  # (error, fix, success)
 
         logger.info("AdvancedSelfHealingCode initialized")
 

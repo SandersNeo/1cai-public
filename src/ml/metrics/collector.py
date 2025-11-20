@@ -121,9 +121,11 @@ class MetricsDatabase:
                 extra={
                     "error": str(e),
                     "error_type": type(e).__name__,
-                    "metric_type": record.metric_type.value
-                    if hasattr(record, "metric_type")
-                    else None,
+                    "metric_type": (
+                        record.metric_type.value
+                        if hasattr(record, "metric_type")
+                        else None
+                    ),
                 },
                 exc_info=True,
             )

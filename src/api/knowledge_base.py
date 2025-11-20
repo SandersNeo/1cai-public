@@ -23,9 +23,9 @@ router = APIRouter()
 class ConfigurationRequest(BaseModel):
     """Запрос информации о конфигурации"""
 
-    configName: Literal[
-        "erp", "ut", "zup", "buh", "holding", "buhbit", "do", "ka"
-    ] = Field(..., description="Название конфигурации")
+    configName: Literal["erp", "ut", "zup", "buh", "holding", "buhbit", "do", "ka"] = (
+        Field(..., description="Название конфигурации")
+    )
 
 
 class ModuleDocumentationRequest(BaseModel):
@@ -182,9 +182,9 @@ async def get_recommendations(request: CodeRecommendationRequest):
                 "error": str(e),
                 "error_type": type(e).__name__,
                 "code_length": len(request.code) if hasattr(request, "code") else 0,
-                "config_name": request.configName
-                if hasattr(request, "configName")
-                else None,
+                "config_name": (
+                    request.configName if hasattr(request, "configName") else None
+                ),
             },
             exc_info=True,
         )
@@ -242,12 +242,12 @@ async def search_patterns(request: PatternSearchRequest):
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "config_name": request.configName
-                if hasattr(request, "configName")
-                else None,
-                "pattern_type": request.patternType
-                if hasattr(request, "patternType")
-                else None,
+                "config_name": (
+                    request.configName if hasattr(request, "configName") else None
+                ),
+                "pattern_type": (
+                    request.patternType if hasattr(request, "patternType") else None
+                ),
             },
             exc_info=True,
         )
@@ -312,12 +312,12 @@ async def add_module_documentation(request: ModuleDocumentationRequest):
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "config_name": request.configName
-                if hasattr(request, "configName")
-                else None,
-                "module_name": request.moduleName
-                if hasattr(request, "moduleName")
-                else None,
+                "config_name": (
+                    request.configName if hasattr(request, "configName") else None
+                ),
+                "module_name": (
+                    request.moduleName if hasattr(request, "moduleName") else None
+                ),
             },
             exc_info=True,
         )
@@ -358,9 +358,9 @@ async def add_best_practice(request: BestPracticeRequest):
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "config_name": request.configName
-                if hasattr(request, "configName")
-                else None,
+                "config_name": (
+                    request.configName if hasattr(request, "configName") else None
+                ),
             },
             exc_info=True,
         )
@@ -391,9 +391,9 @@ async def load_from_directory(directory_path: str):
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "directory_path": directory_path
-                if "directory_path" in locals()
-                else None,
+                "directory_path": (
+                    directory_path if "directory_path" in locals() else None
+                ),
             },
             exc_info=True,
         )

@@ -322,15 +322,17 @@ async def record_metric(
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "metric_type": request.metric_type
-                if hasattr(request, "metric_type")
-                else None,
-                "assistant_role": request.assistant_role
-                if hasattr(request, "assistant_role")
-                else None,
-                "project_id": request.project_id
-                if hasattr(request, "project_id")
-                else None,
+                "metric_type": (
+                    request.metric_type if hasattr(request, "metric_type") else None
+                ),
+                "assistant_role": (
+                    request.assistant_role
+                    if hasattr(request, "assistant_role")
+                    else None
+                ),
+                "project_id": (
+                    request.project_id if hasattr(request, "project_id") else None
+                ),
             },
         )
         raise HTTPException(status_code=400, detail=str(e))
@@ -340,15 +342,17 @@ async def record_metric(
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "metric_type": request.metric_type
-                if hasattr(request, "metric_type")
-                else None,
-                "assistant_role": request.assistant_role
-                if hasattr(request, "assistant_role")
-                else None,
-                "project_id": request.project_id
-                if hasattr(request, "project_id")
-                else None,
+                "metric_type": (
+                    request.metric_type if hasattr(request, "metric_type") else None
+                ),
+                "assistant_role": (
+                    request.assistant_role
+                    if hasattr(request, "assistant_role")
+                    else None
+                ),
+                "project_id": (
+                    request.project_id if hasattr(request, "project_id") else None
+                ),
             },
             exc_info=True,
         )
@@ -386,9 +390,9 @@ async def get_metrics_summary(hours_back: int = 24, services=Depends(get_ml_serv
             "Retrieved metrics summary",
             extra={
                 "hours_back": hours_back,
-                "summary_keys": list(summary.keys())
-                if isinstance(summary, dict)
-                else None,
+                "summary_keys": (
+                    list(summary.keys()) if isinstance(summary, dict) else None
+                ),
             },
         )
 
@@ -430,9 +434,9 @@ async def get_assistant_metrics(
         logger.warning(
             "Invalid assistant_role in get_assistant_metrics",
             extra={
-                "assistant_role_type": type(assistant_role).__name__
-                if assistant_role
-                else None
+                "assistant_role_type": (
+                    type(assistant_role).__name__ if assistant_role else None
+                )
             },
         )
         raise HTTPException(status_code=400, detail="assistant_role cannot be empty")
@@ -584,12 +588,12 @@ async def create_model(request: ModelCreateRequest, services=Depends(get_ml_serv
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "model_name": request.model_name
-                if hasattr(request, "model_name")
-                else None,
-                "model_type": request.model_type
-                if hasattr(request, "model_type")
-                else None,
+                "model_name": (
+                    request.model_name if hasattr(request, "model_name") else None
+                ),
+                "model_type": (
+                    request.model_type if hasattr(request, "model_type") else None
+                ),
             },
             exc_info=True,
         )
@@ -632,12 +636,12 @@ async def train_model(
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "model_name": request.model_name
-                if hasattr(request, "model_name")
-                else None,
-                "training_type": request.training_type
-                if hasattr(request, "training_type")
-                else None,
+                "model_name": (
+                    request.model_name if hasattr(request, "model_name") else None
+                ),
+                "training_type": (
+                    request.training_type if hasattr(request, "training_type") else None
+                ),
             },
             exc_info=True,
         )
@@ -677,9 +681,9 @@ async def predict_model(
         result = {
             "status": "success",
             "model_name": model_name,
-            "predictions": predictions.tolist()
-            if hasattr(predictions, "tolist")
-            else predictions,
+            "predictions": (
+                predictions.tolist() if hasattr(predictions, "tolist") else predictions
+            ),
             "explanation": explanation,
         }
 
@@ -781,9 +785,9 @@ async def create_ab_test(
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "test_name": request.test_name
-                if hasattr(request, "test_name")
-                else None,
+                "test_name": (
+                    request.test_name if hasattr(request, "test_name") else None
+                ),
             },
             exc_info=True,
         )
@@ -812,9 +816,11 @@ async def ab_test_prediction(
         services["ab_test_manager"].log_prediction_result(
             test_id=test_id,
             session_id=request.session_id,
-            predicted_value=float(predictions[0])
-            if hasattr(predictions, "__getitem__")
-            else predictions,
+            predicted_value=(
+                float(predictions[0])
+                if hasattr(predictions, "__getitem__")
+                else predictions
+            ),
         )
 
         return {
@@ -822,9 +828,9 @@ async def ab_test_prediction(
             "test_id": test_id,
             "group": group,
             "model_name": assignment["model_name"],
-            "prediction": predictions.tolist()
-            if hasattr(predictions, "tolist")
-            else predictions,
+            "prediction": (
+                predictions.tolist() if hasattr(predictions, "tolist") else predictions
+            ),
         }
 
     except Exception as e:
@@ -929,9 +935,11 @@ async def enhance_assistant_analysis(
                 return {
                     "status": "success",
                     "enhanced_analysis": {
-                        "ml_predictions": predictions.tolist()
-                        if hasattr(predictions, "tolist")
-                        else predictions,
+                        "ml_predictions": (
+                            predictions.tolist()
+                            if hasattr(predictions, "tolist")
+                            else predictions
+                        ),
                         "model_used": model_name,
                         "confidence": 0.85,  # Можно вычислить из модели
                     },
@@ -948,9 +956,9 @@ async def enhance_assistant_analysis(
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "assistant_role": assistant_role
-                if "assistant_role" in locals()
-                else None,
+                "assistant_role": (
+                    assistant_role if "assistant_role" in locals() else None
+                ),
                 "analysis_type": analysis_type if "analysis_type" in locals() else None,
             },
             exc_info=True,

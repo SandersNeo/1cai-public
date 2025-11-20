@@ -198,9 +198,9 @@ class MarketplaceRepository:
             logger.warning(
                 "Invalid owner_username in create_plugin",
                 extra={
-                    "owner_username_type": type(owner_username).__name__
-                    if owner_username
-                    else None
+                    "owner_username_type": (
+                        type(owner_username).__name__ if owner_username else None
+                    )
                 },
             )
             raise ValueError("owner_username must be a non-empty string")
@@ -216,9 +216,9 @@ class MarketplaceRepository:
             logger.warning(
                 "Invalid download_url in create_plugin",
                 extra={
-                    "download_url_type": type(download_url).__name__
-                    if download_url
-                    else None
+                    "download_url_type": (
+                        type(download_url).__name__ if download_url else None
+                    )
                 },
             )
             raise ValueError("download_url must be a non-empty string")
@@ -1022,9 +1022,11 @@ class MarketplaceRepository:
             "status": "ready",
             "plugin_id": plugin["plugin_id"],
             "download_url": presigned_url or plugin.get("download_url"),
-            "message": "Download link generated"
-            if presigned_url
-            else "Download will be implemented in production",
+            "message": (
+                "Download link generated"
+                if presigned_url
+                else "Download will be implemented in production"
+            ),
             "files": ["manifest.json", "README.md", "plugin.py"],
         }
 

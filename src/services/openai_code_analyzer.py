@@ -340,9 +340,9 @@ class OpenAICodeAnalyzer:
                         "HTTP error при запросе к OpenAI",
                         extra={
                             "status_code": e.response.status_code,
-                            "response_text": e.response.text[:500]
-                            if e.response.text
-                            else None,
+                            "response_text": (
+                                e.response.text[:500] if e.response.text else None
+                            ),
                             "attempt": attempt + 1,
                             "max_retries": max_retries,
                         },

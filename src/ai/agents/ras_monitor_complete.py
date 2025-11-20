@@ -383,9 +383,7 @@ class RASMonitorComplete:
         health_status = (
             "healthy"
             if health_score >= 80
-            else "warning"
-            if health_score >= 60
-            else "critical"
+            else "warning" if health_score >= 60 else "critical"
         )
 
         return {

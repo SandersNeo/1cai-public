@@ -327,9 +327,11 @@ class PerformanceAnalyzer:
                     "category": "bottleneck",
                     "priority": "high",
                     "issue": f"Критическое узкое место: {top_bottleneck['location']}",
-                    "recommendation": top_bottleneck["recommendations"][0]
-                    if top_bottleneck["recommendations"]
-                    else "Оптимизировать",
+                    "recommendation": (
+                        top_bottleneck["recommendations"][0]
+                        if top_bottleneck["recommendations"]
+                        else "Оптимизировать"
+                    ),
                     "estimated_improvement": "30-50% ускорение",
                 }
             )

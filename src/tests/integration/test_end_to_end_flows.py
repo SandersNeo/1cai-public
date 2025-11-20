@@ -5,7 +5,7 @@
 между всеми компонентами системы:
 
 1. UX/UI → API Gateway → AI Assistant → Risk Management → ML System
-2. ML System → Metrics Collection → Analytics Dashboard  
+2. ML System → Metrics Collection → Analytics Dashboard
 3. AI Assistant → ML Prediction → Risk Assessment → Recommendations
 4. Тесты производительности и надежности интеграции
 
@@ -773,11 +773,11 @@ class TestPerformanceAndReliability:
                 "failed_requests": len(failed_requests),
                 "success_rate": success_rate,
                 "avg_response_time": avg_response_time if successful_requests else None,
-                "max_response_time": max(
-                    r["response_time"] for r in successful_requests
-                )
-                if successful_requests
-                else None,
+                "max_response_time": (
+                    max(r["response_time"] for r in successful_requests)
+                    if successful_requests
+                    else None
+                ),
             },
         )
 

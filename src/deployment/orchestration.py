@@ -72,9 +72,9 @@ class Deployment:
             "replicas": self.replicas,
             "health_check_url": self.health_check_url,
             "created_at": self.created_at.isoformat(),
-            "completed_at": self.completed_at.isoformat()
-            if self.completed_at
-            else None,
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "metadata": self.metadata,
         }
 

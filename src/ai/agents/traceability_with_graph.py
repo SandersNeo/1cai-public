@@ -195,9 +195,9 @@ class TraceabilityWithGraph:
                 "full_coverage": full_coverage,
                 "partial_coverage": partial_coverage,
                 "no_coverage": no_coverage,
-                "coverage_percent": int((full_coverage / total_reqs) * 100)
-                if total_reqs > 0
-                else 0,
+                "coverage_percent": (
+                    int((full_coverage / total_reqs) * 100) if total_reqs > 0 else 0
+                ),
             },
             "generated_at": datetime.utcnow().isoformat(),
         }

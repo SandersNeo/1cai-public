@@ -207,9 +207,11 @@ class SLOTracker:
                 "sli": current_sli,
                 "target": target,
                 "error_budget": budget,
-                "violation": current_sli < target
-                if slo_name == "availability"
-                else current_sli > target,
+                "violation": (
+                    current_sli < target
+                    if slo_name == "availability"
+                    else current_sli > target
+                ),
             }
 
         return status
@@ -859,7 +861,9 @@ class PredictiveBatchOptimizer:
         return {
             "history_size": len(self.history),
             "model_trained": self.model_trained,
-            "avg_efficiency": np.mean([h["efficiency"] for h in self.history])
-            if self.history
-            else 0.0,
+            "avg_efficiency": (
+                np.mean([h["efficiency"] for h in self.history])
+                if self.history
+                else 0.0
+            ),
         }

@@ -240,9 +240,9 @@ def system_state_simulator():
             total_components = len(self.component_states)
 
             return {
-                "overall_health": "healthy"
-                if healthy_components == total_components
-                else "degraded",
+                "overall_health": (
+                    "healthy" if healthy_components == total_components else "degraded"
+                ),
                 "component_health": healthy_components / total_components,
                 "active_sessions": len(self.active_sessions),
                 "performance_metrics": self.performance_metrics.copy(),
@@ -458,9 +458,9 @@ def load_test_executor():
                 "total_requests": total_requests,
                 "successful_requests": successful_requests,
                 "error_requests": error_requests,
-                "success_rate": successful_requests / total_requests
-                if total_requests > 0
-                else 0,
+                "success_rate": (
+                    successful_requests / total_requests if total_requests > 0 else 0
+                ),
             }
 
     return LoadTestExecutor()

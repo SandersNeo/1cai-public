@@ -190,9 +190,11 @@ class AISecurityLayer:
                     f"Sensitive data detected in input for {agent_id}",
                     extra={
                         "agent_id": agent_id,
-                        "sensitive_types": sensitive_check.details.get("types", [])
-                        if sensitive_check.details
-                        else [],
+                        "sensitive_types": (
+                            sensitive_check.details.get("types", [])
+                            if sensitive_check.details
+                            else []
+                        ),
                     },
                 )
 

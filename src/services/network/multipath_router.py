@@ -237,12 +237,14 @@ class MultiPathRouter:
         sorted_paths = sorted(
             [p for p in self.paths if p.enabled],
             key=lambda x: (
-                0
-                if self.path_metrics.get(
-                    x.path_id, PathMetrics(x.path_id, PathStatus.UNKNOWN)
-                ).status
-                == PathStatus.HEALTHY
-                else 1,
+                (
+                    0
+                    if self.path_metrics.get(
+                        x.path_id, PathMetrics(x.path_id, PathStatus.UNKNOWN)
+                    ).status
+                    == PathStatus.HEALTHY
+                    else 1
+                ),
                 x.priority,
             ),
         )

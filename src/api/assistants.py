@@ -113,9 +113,9 @@ async def health_check():
     return {
         "status": "healthy",
         "timestamp": datetime.now(),
-        "available_assistants": list(assistant_instances.keys())
-        if assistant_instances
-        else [],
+        "available_assistants": (
+            list(assistant_instances.keys()) if assistant_instances else []
+        ),
         "version": "1.0.0",
     }
 
@@ -335,9 +335,9 @@ async def generate_diagram(
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "diagram_type": request.diagram_type
-                if hasattr(request, "diagram_type")
-                else None,
+                "diagram_type": (
+                    request.diagram_type if hasattr(request, "diagram_type") else None
+                ),
             },
             exc_info=True,
         )

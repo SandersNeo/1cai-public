@@ -35,12 +35,16 @@ async def get_config(_=Depends(verify_dev_environment)) -> Dict[str, Any]:
     """
     return {
         "environment": settings.environment,
-        "database_url": settings.database_url.split("@")[1]
-        if "@" in settings.database_url
-        else "***",  # Hide credentials
-        "redis_url": settings.redis_url.split("@")[1]
-        if "@" in settings.redis_url
-        else settings.redis_url,
+        "database_url": (
+            settings.database_url.split("@")[1]
+            if "@" in settings.database_url
+            else "***"
+        ),  # Hide credentials
+        "redis_url": (
+            settings.redis_url.split("@")[1]
+            if "@" in settings.redis_url
+            else settings.redis_url
+        ),
         "cors_origins": settings.get_cors_origins(),
         "log_level": "INFO",
         "jwt_configured": bool(settings.jwt_secret_key),

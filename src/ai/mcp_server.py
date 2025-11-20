@@ -227,9 +227,9 @@ async def call_tool(request: Request):
             f"MCP tool called: {tool_name}",
             extra={
                 "tool_name": tool_name,
-                "arguments_keys": list(arguments.keys())
-                if isinstance(arguments, dict)
-                else [],
+                "arguments_keys": (
+                    list(arguments.keys()) if isinstance(arguments, dict) else []
+                ),
             },
         )
 
@@ -372,9 +372,9 @@ async def handle_generate_code(args: Dict) -> Dict:
             logger.warning(
                 "Invalid description in handle_generate_code",
                 extra={
-                    "description_type": type(description).__name__
-                    if description
-                    else None
+                    "description_type": (
+                        type(description).__name__ if description else None
+                    )
                 },
             )
             return {"error": "Description is required and must be a non-empty string"}

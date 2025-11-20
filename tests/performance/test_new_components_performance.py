@@ -146,11 +146,11 @@ async def test_performance_impact_analyzer() -> None:
     for i in range(500):
         node = Node(
             id=f"node:{i}",
-            kind=NodeKind.MODULE
-            if i % 3 == 0
-            else NodeKind.TEST
-            if i % 3 == 1
-            else NodeKind.BA_REQUIREMENT,
+            kind=(
+                NodeKind.MODULE
+                if i % 3 == 0
+                else NodeKind.TEST if i % 3 == 1 else NodeKind.BA_REQUIREMENT
+            ),
             display_name=f"Node {i}",
         )
         await backend.upsert_node(node)

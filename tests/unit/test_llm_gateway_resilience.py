@@ -84,8 +84,8 @@ class TestLLMGatewayResilience:
             "primary": "primary",
             "chain": ["secondary"],
         }
-        gateway.manager.get_provider.side_effect = (
-            lambda name: p1 if name == "primary" else p2
+        gateway.manager.get_provider.side_effect = lambda name: (
+            p1 if name == "primary" else p2
         )
 
         # Setup clients
@@ -96,9 +96,9 @@ class TestLLMGatewayResilience:
         mock_client_success.generate.return_value = {"text": "Success", "usage": {}}
 
         gateway.get_client = Mock(
-            side_effect=lambda name: mock_client_fail
-            if name == "primary"
-            else mock_client_success
+            side_effect=lambda name: (
+                mock_client_fail if name == "primary" else mock_client_success
+            )
         )
 
         # Init breakers for new providers

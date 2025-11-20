@@ -90,9 +90,9 @@ def normalize_endpoint(path: str) -> str:
                 "error": str(e),
                 "error_type": type(e).__name__,
                 "path": path if "path" in locals() else None,
-                "path_length": len(path)
-                if "path" in locals() and isinstance(path, str)
-                else None,
+                "path_length": (
+                    len(path) if "path" in locals() and isinstance(path, str) else None
+                ),
             },
             exc_info=True,
         )
@@ -202,9 +202,9 @@ async def metrics_middleware(request: Request, call_next: Callable) -> Response:
 
         # Add metrics to response headers (best practice: inform client about performance)
         response.headers["X-Process-Time"] = f"{duration:.3f}"
-        response.headers[
-            "X-Endpoint"
-        ] = endpoint  # Нормализованный endpoint для debugging
+        response.headers["X-Endpoint"] = (
+            endpoint  # Нормализованный endpoint для debugging
+        )
 
         return response
 

@@ -131,9 +131,9 @@ async def generate_code(
                 "error": str(e),
                 "error_type": type(e).__name__,
                 "user_id": request.user_id if hasattr(request, "user_id") else None,
-                "prompt_length": len(request.prompt)
-                if hasattr(request, "prompt")
-                else 0,
+                "prompt_length": (
+                    len(request.prompt) if hasattr(request, "prompt") else 0
+                ),
             },
             exc_info=True,
         )
@@ -238,9 +238,11 @@ async def approve_suggestion(
         logger.warning(
             "Invalid approved_by_user in approve_suggestion",
             extra={
-                "user_type": type(request.approved_by_user).__name__
-                if request.approved_by_user
-                else None
+                "user_type": (
+                    type(request.approved_by_user).__name__
+                    if request.approved_by_user
+                    else None
+                )
             },
         )
         raise HTTPException(status_code=400, detail="Approved by user cannot be empty")
@@ -366,9 +368,11 @@ async def bulk_approve(
         logger.warning(
             "Invalid approved_by_user in bulk_approve",
             extra={
-                "user_type": type(request.approved_by_user).__name__
-                if request.approved_by_user
-                else None
+                "user_type": (
+                    type(request.approved_by_user).__name__
+                    if request.approved_by_user
+                    else None
+                )
             },
         )
         raise HTTPException(status_code=400, detail="Approved by user cannot be empty")
@@ -521,9 +525,11 @@ async def get_pending_suggestions(
                     {
                         "token": token,
                         "prompt": data.get("prompt", ""),
-                        "created_at": data.get("created_at").isoformat()
-                        if data.get("created_at")
-                        else None,
+                        "created_at": (
+                            data.get("created_at").isoformat()
+                            if data.get("created_at")
+                            else None
+                        ),
                         "safety_score": data.get("safety", {}).get("score", 0.0),
                         "can_auto_apply": data.get("safety", {}).get("score", 0.0)
                         > 0.95,

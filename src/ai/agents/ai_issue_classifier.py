@@ -175,12 +175,16 @@ class AIIssueClassifier:
             "sql_text": issue_data.get("sql", ""),
             "error_text": issue_data.get("error", ""),
             "context": issue_data.get("context", ""),
-            "has_where": "WHERE" in issue_data.get("sql", "").upper()
-            if issue_data.get("sql")
-            else False,
-            "has_join": "JOIN" in issue_data.get("sql", "").upper()
-            if issue_data.get("sql")
-            else False,
+            "has_where": (
+                "WHERE" in issue_data.get("sql", "").upper()
+                if issue_data.get("sql")
+                else False
+            ),
+            "has_join": (
+                "JOIN" in issue_data.get("sql", "").upper()
+                if issue_data.get("sql")
+                else False
+            ),
         }
 
     async def _match_pattern(self, features: Dict) -> Dict[str, Any]:

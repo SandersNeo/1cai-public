@@ -548,9 +548,9 @@ class CostOptimizer:
             "current_cost_month": current_cost,
             "optimized_cost_month": optimized_cost,
             "total_savings_month": total_savings,
-            "savings_percent": int((total_savings / current_cost) * 100)
-            if current_cost > 0
-            else 0,
+            "savings_percent": (
+                int((total_savings / current_cost) * 100) if current_cost > 0 else 0
+            ),
             "optimizations": optimizations,
             "annual_savings": total_savings * 12,
             "timestamp": datetime.now().isoformat(),

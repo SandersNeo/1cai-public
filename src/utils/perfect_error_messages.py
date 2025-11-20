@@ -174,15 +174,19 @@ def get_error_message(
         # Fallback for unknown errors
         return {
             "title": "Error" if language == Language.EN else "Ошибка",
-            "message": "An unexpected error occurred"
-            if language == Language.EN
-            else "Произошла неожиданная ошибка",
-            "action": "Please try again or contact support"
-            if language == Language.EN
-            else "Попробуйте снова или свяжитесь с поддержкой",
-            "code": error_code.value
-            if isinstance(error_code, ErrorCode)
-            else "UNKNOWN",
+            "message": (
+                "An unexpected error occurred"
+                if language == Language.EN
+                else "Произошла неожиданная ошибка"
+            ),
+            "action": (
+                "Please try again or contact support"
+                if language == Language.EN
+                else "Попробуйте снова или свяжитесь с поддержкой"
+            ),
+            "code": (
+                error_code.value if isinstance(error_code, ErrorCode) else "UNKNOWN"
+            ),
         }
 
     error_data = ERROR_MESSAGES[error_code][language].copy()

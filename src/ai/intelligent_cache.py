@@ -431,7 +431,7 @@ class IntelligentCache:
             "size": len(self._cache),
             "oldest_entry_age_seconds": max(ages) if ages else 0,
             "newest_entry_age_seconds": min(ages) if ages else 0,
-            "avg_access_count": sum(access_counts) / len(access_counts)
-            if access_counts
-            else 0,
+            "avg_access_count": (
+                sum(access_counts) / len(access_counts) if access_counts else 0
+            ),
         }

@@ -44,9 +44,9 @@ class SQLOptimizerSecure:
         )
 
         self._pending_queries: Dict[str, Dict[str, Any]] = {}
-        self.trusted_contributors: List[
-            TrustedContributor
-        ] = self._load_trusted_contributors()
+        self.trusted_contributors: List[TrustedContributor] = (
+            self._load_trusted_contributors()
+        )
 
     def optimize_query(
         self, sql: str, context: Optional[Dict[str, Any]] = None

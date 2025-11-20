@@ -233,9 +233,9 @@ class RevolutionaryMetricsCollector:
                 "errors_detected": errors_detected_total.labels(
                     error_type=error_type, severity=severity
                 )._value.get(),
-                "fixes_generated": fixes_generated_total._value.get()
-                if fix_generated
-                else 0,
+                "fixes_generated": (
+                    fixes_generated_total._value.get() if fix_generated else 0
+                ),
                 "fixes_applied": fixes_applied_total._value.get() if fix_applied else 0,
                 "success_rate": success_rate,
             }

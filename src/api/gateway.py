@@ -195,9 +195,9 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
                     extra={
                         "path": request.url.path,
                         "method": request.method,
-                        "key_preview": api_key[:10] + "..."
-                        if len(api_key) > 10
-                        else api_key,
+                        "key_preview": (
+                            api_key[:10] + "..." if len(api_key) > 10 else api_key
+                        ),
                     },
                 )
                 return JSONResponse(
@@ -306,9 +306,9 @@ class ServiceHealthChecker:
             logger.warning(
                 "Invalid service_name in check_service_health",
                 extra={
-                    "service_name_type": type(service_name).__name__
-                    if service_name
-                    else None
+                    "service_name_type": (
+                        type(service_name).__name__ if service_name else None
+                    )
                 },
             )
             return ServiceHealthResponse(
@@ -840,9 +840,13 @@ async def proxy_to_service(request: ServiceRequest):
         return {
             "status_code": response.status_code,
             "headers": dict(response.headers),
-            "content": response.json()
-            if response.headers.get("content-type", "").startswith("application/json")
-            else response.text,
+            "content": (
+                response.json()
+                if response.headers.get("content-type", "").startswith(
+                    "application/json"
+                )
+                else response.text
+            ),
         }
 
     except HTTPException:
@@ -871,9 +875,11 @@ async def proxy_assistants(request: Request, path: str = ""):
         endpoint=f"/api/assistants/{path}",
         method=request.method,
         headers=dict(request.headers),
-        data=await request.json()
-        if request.method.upper() in ["POST", "PUT", "PATCH"]
-        else None,
+        data=(
+            await request.json()
+            if request.method.upper() in ["POST", "PUT", "PATCH"]
+            else None
+        ),
         params=query_params,
     )
 
@@ -896,9 +902,11 @@ async def proxy_ml(request: Request, path: str = ""):
         endpoint=f"/{path}",
         method=request.method,
         headers=dict(request.headers),
-        data=await request.json()
-        if request.method.upper() in ["POST", "PUT", "PATCH"]
-        else None,
+        data=(
+            await request.json()
+            if request.method.upper() in ["POST", "PUT", "PATCH"]
+            else None
+        ),
         params=query_params,
     )
 
@@ -921,9 +929,11 @@ async def proxy_risk(request: Request, path: str = ""):
         endpoint=f"/{path}",
         method=request.method,
         headers=dict(request.headers),
-        data=await request.json()
-        if request.method.upper() in ["POST", "PUT", "PATCH"]
-        else None,
+        data=(
+            await request.json()
+            if request.method.upper() in ["POST", "PUT", "PATCH"]
+            else None
+        ),
         params=query_params,
     )
 
@@ -946,9 +956,11 @@ async def proxy_metrics(request: Request, path: str = ""):
         endpoint=f"/{path}",
         method=request.method,
         headers=dict(request.headers),
-        data=await request.json()
-        if request.method.upper() in ["POST", "PUT", "PATCH"]
-        else None,
+        data=(
+            await request.json()
+            if request.method.upper() in ["POST", "PUT", "PATCH"]
+            else None
+        ),
         params=query_params,
     )
 

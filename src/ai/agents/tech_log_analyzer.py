@@ -530,9 +530,9 @@ class TechLogAnalyzer:
         return {
             "total_locks": len(lock_events),
             "long_locks": len(long_locks),
-            "max_wait_ms": max([e.duration_ms for e in lock_events])
-            if lock_events
-            else 0,
+            "max_wait_ms": (
+                max([e.duration_ms for e in lock_events]) if lock_events else 0
+            ),
             "details": long_locks[:10],
         }
 

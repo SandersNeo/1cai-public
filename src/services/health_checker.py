@@ -105,9 +105,7 @@ class HealthChecker:
         overall = (
             "healthy"
             if not unhealthy
-            else "degraded"
-            if len(unhealthy) < 3
-            else "unhealthy"
+            else "degraded" if len(unhealthy) < 3 else "unhealthy"
         )
 
         return {
@@ -260,9 +258,9 @@ class HealthChecker:
             await es.close()
 
             return {
-                "status": "healthy"
-                if health["status"] in ["green", "yellow"]
-                else "degraded",
+                "status": (
+                    "healthy" if health["status"] in ["green", "yellow"] else "degraded"
+                ),
                 "cluster_status": health["status"],
                 "nodes": health["number_of_nodes"],
             }

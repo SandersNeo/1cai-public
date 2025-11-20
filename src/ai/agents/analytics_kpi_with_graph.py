@@ -358,9 +358,9 @@ GROUP BY feature_id
                     "description": kpi.get("description", ""),
                     "fields": ["timestamp", "value"],
                     "group_by": ["category"] if kpi.get("category") else None,
-                    "recommended_tool": "Grafana"
-                    if kpi.get("category") == "technical"
-                    else "Power BI",
+                    "recommended_tool": (
+                        "Grafana" if kpi.get("category") == "technical" else "Power BI"
+                    ),
                 }
             )
 

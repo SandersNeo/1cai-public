@@ -85,17 +85,17 @@ async def security_headers_middleware(
 
         # Force HTTPS (only in production)
         if request.url.scheme == "https":
-            response.headers[
-                "Strict-Transport-Security"
-            ] = "max-age=31536000; includeSubDomains"
+            response.headers["Strict-Transport-Security"] = (
+                "max-age=31536000; includeSubDomains"
+            )
 
         # Referrer policy
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
 
         # Permissions policy (disable unnecessary features)
-        response.headers[
-            "Permissions-Policy"
-        ] = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+        response.headers["Permissions-Policy"] = (
+            "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+        )
 
         # XSS Protection (legacy, but doesn't hurt)
         response.headers["X-XSS-Protection"] = "1; mode=block"

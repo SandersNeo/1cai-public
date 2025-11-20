@@ -347,9 +347,9 @@ class CopilotService:
             logger.warning(
                 "Invalid function_name in _generate_test_template",
                 extra={
-                    "function_name_type": type(function_name).__name__
-                    if function_name
-                    else None
+                    "function_name_type": (
+                        type(function_name).__name__ if function_name else None
+                    )
                 },
             )
             function_name = "ТестоваяФункция"
@@ -479,9 +479,9 @@ async def get_completions(api_request: Request, request: CompletionRequest):
                 "error": str(e),
                 "error_type": type(e).__name__,
                 "code_length": len(code) if "code" in locals() else 0,
-                "current_line": request.current_line
-                if hasattr(request, "current_line")
-                else None,
+                "current_line": (
+                    request.current_line if hasattr(request, "current_line") else None
+                ),
             },
             exc_info=True,
         )
@@ -571,9 +571,9 @@ async def generate_code(api_request: Request, request: GenerationRequest):
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "prompt_length": len(request.prompt)
-                if hasattr(request, "prompt")
-                else 0,
+                "prompt_length": (
+                    len(request.prompt) if hasattr(request, "prompt") else 0
+                ),
                 "code_type": request.type if hasattr(request, "type") else None,
             },
             exc_info=True,

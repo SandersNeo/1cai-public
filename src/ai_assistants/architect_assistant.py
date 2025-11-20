@@ -369,12 +369,12 @@ class ArchitectAssistant(BaseAIAssistant):
                     "functional_count": len(
                         [r for r in requirements if r.type == "functional"]
                     ),
-                    "average_complexity": sum(
-                        r.estimated_complexity for r in requirements
-                    )
-                    / len(requirements)
-                    if requirements
-                    else 0,
+                    "average_complexity": (
+                        sum(r.estimated_complexity for r in requirements)
+                        / len(requirements)
+                        if requirements
+                        else 0
+                    ),
                     "critical_dependencies": list(
                         set(dep for req in requirements for dep in req.dependencies)
                     ),

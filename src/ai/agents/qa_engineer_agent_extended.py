@@ -414,9 +414,11 @@ class SmartTestGenerator:
             test_code = self._generate_edge_case_test(
                 function_name,
                 edge_case,
-                tests_result.get("unit_tests", [])[0]
-                if tests_result.get("unit_tests")
-                else "",
+                (
+                    tests_result.get("unit_tests", [])[0]
+                    if tests_result.get("unit_tests")
+                    else ""
+                ),
             )
             all_tests.append(test_code)
 

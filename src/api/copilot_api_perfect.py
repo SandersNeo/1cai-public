@@ -87,9 +87,9 @@ class CopilotService:
                     base_model = AutoModelForCausalLM.from_pretrained(
                         base_model_name,
                         device_map="auto",
-                        torch_dtype=torch.float16
-                        if self.device == "cuda"
-                        else torch.float32,
+                        torch_dtype=(
+                            torch.float16 if self.device == "cuda" else torch.float32
+                        ),
                         low_cpu_mem_usage=True,
                     )
 
@@ -714,17 +714,17 @@ async def get_completions(api_request: Request, request: CompletionRequest):
             "Completions generated successfully",
             extra={
                 "suggestions_count": len(suggestions),
-                "model_used": "fine-tuned"
-                if copilot_service.model_loaded
-                else "rule-based",
+                "model_used": (
+                    "fine-tuned" if copilot_service.model_loaded else "rule-based"
+                ),
             },
         )
 
         return {
             "suggestions": suggestions,
-            "model_used": "fine-tuned"
-            if copilot_service.model_loaded
-            else "rule-based",
+            "model_used": (
+                "fine-tuned" if copilot_service.model_loaded else "rule-based"
+            ),
             "count": len(suggestions),
         }
 
@@ -798,18 +798,18 @@ async def generate_code(api_request: Request, request: GenerationRequest):
             extra={
                 "code_type": request.type,
                 "code_length": len(code),
-                "model_used": "fine-tuned"
-                if copilot_service.model_loaded
-                else "template-based",
+                "model_used": (
+                    "fine-tuned" if copilot_service.model_loaded else "template-based"
+                ),
             },
         )
 
         return {
             "code": code,
             "type": request.type,
-            "model_used": "fine-tuned"
-            if copilot_service.model_loaded
-            else "template-based",
+            "model_used": (
+                "fine-tuned" if copilot_service.model_loaded else "template-based"
+            ),
         }
 
     except asyncio.TimeoutError:
@@ -935,18 +935,18 @@ async def generate_tests_for_code(api_request: Request, request: GenerationReque
             extra={
                 "tests_length": len(tests),
                 "framework": "vanessa",
-                "model_used": "fine-tuned"
-                if copilot_service.model_loaded
-                else "template-based",
+                "model_used": (
+                    "fine-tuned" if copilot_service.model_loaded else "template-based"
+                ),
             },
         )
 
         return {
             "tests": tests,
             "framework": "vanessa",
-            "model_used": "fine-tuned"
-            if copilot_service.model_loaded
-            else "template-based",
+            "model_used": (
+                "fine-tuned" if copilot_service.model_loaded else "template-based"
+            ),
         }
 
     except asyncio.TimeoutError:
@@ -985,9 +985,11 @@ async def get_copilot_status():
             "tests": True,
         },
         "model_info": {
-            "type": "LoRA fine-tuned Qwen2.5-Coder"
-            if copilot_service.model_loaded
-            else "Rule-based",
+            "type": (
+                "LoRA fine-tuned Qwen2.5-Coder"
+                if copilot_service.model_loaded
+                else "Rule-based"
+            ),
             "base_model": os.getenv("BASE_MODEL", "Qwen/Qwen2.5-Coder-7B-Instruct"),
             "adapter_path": os.getenv("COPILOT_MODEL_PATH", "./models/1c-copilot-lora"),
         },

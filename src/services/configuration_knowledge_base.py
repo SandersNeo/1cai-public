@@ -185,9 +185,9 @@ class ConfigurationKnowledgeBase:
             logger.warning(
                 "Invalid config_name in add_module_documentation",
                 extra={
-                    "config_name_type": type(config_name).__name__
-                    if config_name
-                    else None
+                    "config_name_type": (
+                        type(config_name).__name__ if config_name else None
+                    )
                 },
             )
             return False
@@ -196,9 +196,9 @@ class ConfigurationKnowledgeBase:
             logger.warning(
                 "Invalid module_name in add_module_documentation",
                 extra={
-                    "module_name_type": type(module_name).__name__
-                    if module_name
-                    else None
+                    "module_name_type": (
+                        type(module_name).__name__ if module_name else None
+                    )
                 },
             )
             return False

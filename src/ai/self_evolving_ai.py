@@ -189,9 +189,9 @@ class SelfEvolvingAI:
                 "improvements_tested": len(tested_improvements),
                 "improvements_applied": len(applied),
                 "performance_before": performance.to_dict(),
-                "performance_after": (await self._analyze_performance()).to_dict()
-                if applied
-                else None,
+                "performance_after": (
+                    (await self._analyze_performance()).to_dict() if applied else None
+                ),
             }
 
         except Exception as e:

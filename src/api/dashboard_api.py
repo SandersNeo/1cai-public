@@ -125,15 +125,17 @@ async def get_executive_dashboard(
             health_score = await calculate_real_health_score(conn)
 
             health = {
-                "status": "healthy"
-                if health_score >= 80
-                else "warning"
-                if health_score >= 60
-                else "critical",
+                "status": (
+                    "healthy"
+                    if health_score >= 80
+                    else "warning" if health_score >= 60 else "critical"
+                ),
                 "score": health_score,
-                "message": "All systems operational"
-                if health_score >= 80
-                else "Minor issues detected",
+                "message": (
+                    "All systems operational"
+                    if health_score >= 80
+                    else "Minor issues detected"
+                ),
             }
 
             # ROI metric (mock calculation)
@@ -673,11 +675,11 @@ async def get_team_lead_dashboard(
                         "workload": row["workload"],
                         "tasks_active": row["tasks_count"],
                         "tasks_completed_week": member_completed,
-                        "status": "overloaded"
-                        if row["workload"] > 90
-                        else "normal"
-                        if row["workload"] > 60
-                        else "available",
+                        "status": (
+                            "overloaded"
+                            if row["workload"] > 90
+                            else "normal" if row["workload"] > 60 else "available"
+                        ),
                     }
                 )
 
@@ -765,11 +767,11 @@ async def get_team_lead_dashboard(
                 "total_debt_hours": blocked_tasks * 8,  # Estimate 8h per blocked task
                 "critical_items": critical_bugs,
                 "blocked_tasks": blocked_tasks,
-                "trend": "improving"
-                if blocked_tasks < 5
-                else "stable"
-                if blocked_tasks < 10
-                else "growing",
+                "trend": (
+                    "improving"
+                    if blocked_tasks < 5
+                    else "stable" if blocked_tasks < 10 else "growing"
+                ),
             }
 
             return {
@@ -923,9 +925,11 @@ async def get_ba_dashboard(
             traceability_matrix = {
                 "requirements": total_requirements,
                 "test_cases": requirements_with_tests,
-                "coverage": int((requirements_with_tests / total_requirements * 100))
-                if total_requirements > 0
-                else 0,
+                "coverage": (
+                    int((requirements_with_tests / total_requirements * 100))
+                    if total_requirements > 0
+                    else 0
+                ),
                 "gaps": total_requirements - requirements_with_tests,
             }
 
@@ -1267,11 +1271,11 @@ async def get_owner_dashboard(
                     "this_month": float(revenue_this_month),
                     "last_month": float(revenue_last_month),
                     "change_percent": revenue_change,
-                    "trend": "up"
-                    if revenue_change > 0
-                    else "down"
-                    if revenue_change < 0
-                    else "stable",
+                    "trend": (
+                        "up"
+                        if revenue_change > 0
+                        else "down" if revenue_change < 0 else "stable"
+                    ),
                 },
                 "customers": {
                     "total": customers_count,

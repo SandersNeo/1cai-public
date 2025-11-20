@@ -31,9 +31,9 @@ class CodeContextRequest(BaseModel):
     """Запрос на анализ кода"""
 
     content: str = Field(..., max_length=100000, description="Исходный код для анализа")
-    language: Literal[
-        "bsl", "typescript", "javascript", "python", "java", "csharp"
-    ] = Field(default="bsl", description="Язык программирования")
+    language: Literal["bsl", "typescript", "javascript", "python", "java", "csharp"] = (
+        Field(default="bsl", description="Язык программирования")
+    )
     fileName: Optional[str] = Field(None, max_length=500, description="Имя файла")
     projectContext: Optional[dict] = Field(None, description="Контекст проекта")
     cursorPosition: Optional[dict] = Field(None, description="Позиция курсора")
@@ -417,9 +417,9 @@ async def analyze_code(
                 "ai_enabled": bool(
                     openai_analyzer and getattr(openai_analyzer, "enabled", False)
                 ),
-                "analyzer_type": type(openai_analyzer).__name__
-                if openai_analyzer
-                else None,
+                "analyzer_type": (
+                    type(openai_analyzer).__name__ if openai_analyzer else None
+                ),
             },
         )
 
@@ -520,9 +520,9 @@ async def analyze_code(
                 "error": str(e),
                 "error_type": type(e).__name__,
                 "code_length": len(code) if "code" in locals() else 0,
-                "language": request_data.language
-                if hasattr(request_data, "language")
-                else None,
+                "language": (
+                    request_data.language if hasattr(request_data, "language") else None
+                ),
             },
             exc_info=True,
         )
@@ -643,9 +643,11 @@ async def _apply_auto_fix(payload: AutoFixRequest) -> AutoFixResponse:
             fixedCode=fixed_code,
             changes=changes,
             success=len(changes) > 0,
-            message=f"Applied {len(changes)} fix(es)"
-            if changes
-            else "No applicable auto-fixes for this suggestion",
+            message=(
+                f"Applied {len(changes)} fix(es)"
+                if changes
+                else "No applicable auto-fixes for this suggestion"
+            ),
         )
 
     except HTTPException:

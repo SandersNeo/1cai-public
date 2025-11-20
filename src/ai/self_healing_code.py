@@ -416,9 +416,11 @@ class SelfHealingCode:
         fixes.sort(
             key=lambda f: (
                 f.confidence,
-                f.test_results.get("unit_tests", {}).get("passed", 0)
-                if f.test_results
-                else 0,
+                (
+                    f.test_results.get("unit_tests", {}).get("passed", 0)
+                    if f.test_results
+                    else 0
+                ),
             ),
             reverse=True,
         )

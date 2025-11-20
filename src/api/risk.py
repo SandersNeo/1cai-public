@@ -101,15 +101,17 @@ async def assess_risks(request: RiskAssessmentRequest):
         risk_factors = {
             "complexity_score": len(request.requirements.split())
             / 100,  # Простая метрика
-            "integration_points": len(request.context.get("integrations", []))
-            if request.context
-            else 0,
-            "data_migration": request.context.get("data_migration", False)
-            if request.context
-            else False,
-            "legacy_systems": len(request.context.get("legacy_systems", []))
-            if request.context
-            else 0,
+            "integration_points": (
+                len(request.context.get("integrations", [])) if request.context else 0
+            ),
+            "data_migration": (
+                request.context.get("data_migration", False)
+                if request.context
+                else False
+            ),
+            "legacy_systems": (
+                len(request.context.get("legacy_systems", [])) if request.context else 0
+            ),
         }
 
         # Расчет общего уровня риска

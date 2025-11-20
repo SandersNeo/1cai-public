@@ -799,9 +799,9 @@ class ArchitectAgentExtended:
                     "modules_involved": len(cycle["path"]),
                 },
                 "recommendation": f"Разорвать цикл через события, интерфейсы или промежуточный модуль",
-                "refactoring_effort": "Medium"
-                if cycle["cycle_length"] <= 3
-                else "High",
+                "refactoring_effort": (
+                    "Medium" if cycle["cycle_length"] <= 3 else "High"
+                ),
                 "estimated_days": cycle["cycle_length"],
             }
             for cycle in cycles

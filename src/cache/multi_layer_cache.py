@@ -211,9 +211,11 @@ class MultiLayerCache:
         # L2: Redis cache (with circuit breaker)
         if self.redis and self.redis_circuit_breaker.can_attempt():
             try:
-                with cache_operations_duration.labels(
-                    operation="get", layer="l2"
-                ).time() if PROMETHEUS_AVAILABLE else nullcontext():
+                with (
+                    cache_operations_duration.labels(operation="get", layer="l2").time()
+                    if PROMETHEUS_AVAILABLE
+                    else nullcontext()
+                ):
                     cached_value = await asyncio.wait_for(
                         self.redis.get(key), timeout=1.0  # 1 second timeout
                     )
@@ -278,9 +280,11 @@ class MultiLayerCache:
         # L2: Redis (with circuit breaker)
         if self.redis and self.redis_circuit_breaker.can_attempt():
             try:
-                with cache_operations_duration.labels(
-                    operation="set", layer="l2"
-                ).time() if PROMETHEUS_AVAILABLE else nullcontext():
+                with (
+                    cache_operations_duration.labels(operation="set", layer="l2").time()
+                    if PROMETHEUS_AVAILABLE
+                    else nullcontext()
+                ):
                     await asyncio.wait_for(
                         self.redis.setex(
                             key, ttl_seconds, json.dumps(value, default=str)

@@ -211,12 +211,16 @@ async def import_from_csv(
                         practice={
                             "title": row.get("title", ""),
                             "description": row.get("description", ""),
-                            "code_examples": [row.get("code_example", "")]
-                            if row.get("code_example")
-                            else [],
-                            "tags": row.get("tags", "").split(",")
-                            if row.get("tags")
-                            else [],
+                            "code_examples": (
+                                [row.get("code_example", "")]
+                                if row.get("code_example")
+                                else []
+                            ),
+                            "tags": (
+                                row.get("tags", "").split(",")
+                                if row.get("tags")
+                                else []
+                            ),
                             "source": "csv_import",
                         },
                     )

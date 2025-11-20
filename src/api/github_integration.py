@@ -299,9 +299,9 @@ class GitHubIntegration:
             logger.warning(
                 "Invalid repo_full_name in _post_review_to_github",
                 extra={
-                    "repo_full_name_type": type(repo_full_name).__name__
-                    if repo_full_name
-                    else None
+                    "repo_full_name_type": (
+                        type(repo_full_name).__name__ if repo_full_name else None
+                    )
                 },
             )
             return

@@ -17,9 +17,11 @@ async def test_analyze_performance_with_slow_query_and_lock():
     # Один медленный SQL и одна долгая блокировка
     events = [
         TechLogEvent(
-            timestamp=analyzer._determine_severity.__self__.__class__.__mro__[0]  # type: ignore[attr-defined]
-            if False
-            else analyzer.__class__.__mro__[0].__mro__[0],  # заглушка, не используется
+            timestamp=(
+                analyzer._determine_severity.__self__.__class__.__mro__[0]  # type: ignore[attr-defined]
+                if False
+                else analyzer.__class__.__mro__[0].__mro__[0]
+            ),  # заглушка, не используется
             duration_ms=6000,
             event_type="DBMSSQL",
             process="rphost",
@@ -30,11 +32,11 @@ async def test_analyze_performance_with_slow_query_and_lock():
             sql="SELECT * FROM sales",
         ),
         TechLogEvent(
-            timestamp=analyzer.__class__.__mro__[0].__mro__[
-                0
-            ]  # заглушка, не используется
-            if False
-            else analyzer.__class__.__mro__[0].__mro__[0],
+            timestamp=(
+                analyzer.__class__.__mro__[0].__mro__[0]  # заглушка, не используется
+                if False
+                else analyzer.__class__.__mro__[0].__mro__[0]
+            ),
             duration_ms=1000,
             event_type="TLOCK",
             process="rphost",

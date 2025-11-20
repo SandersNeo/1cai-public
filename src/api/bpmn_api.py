@@ -118,9 +118,9 @@ async def get_diagram(
                 "name": diagram["name"],
                 "description": diagram["description"],
                 "xml": diagram["xml_content"],
-                "project_id": str(diagram["project_id"])
-                if diagram["project_id"]
-                else None,
+                "project_id": (
+                    str(diagram["project_id"]) if diagram["project_id"] else None
+                ),
                 "created_at": diagram["created_at"].isoformat(),
                 "updated_at": diagram["updated_at"].isoformat(),
             }

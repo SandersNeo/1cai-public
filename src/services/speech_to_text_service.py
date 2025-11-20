@@ -139,9 +139,9 @@ class SpeechToTextService:
             logger.warning(
                 "Invalid audio_file_path in transcribe",
                 extra={
-                    "audio_file_path_type": type(audio_file_path).__name__
-                    if audio_file_path
-                    else None
+                    "audio_file_path_type": (
+                        type(audio_file_path).__name__ if audio_file_path else None
+                    )
                 },
             )
             raise ValueError("audio_file_path must be a non-empty string")
@@ -300,15 +300,19 @@ class SpeechToTextService:
                     else:
                         # JSON, SRT, VTT
                         result = {
-                            "text": response.text
-                            if hasattr(response, "text")
-                            else str(response),
+                            "text": (
+                                response.text
+                                if hasattr(response, "text")
+                                else str(response)
+                            ),
                             "language": language,
                             "provider": "openai_whisper",
                             "model": self.model,
-                            "segments": response.segments
-                            if hasattr(response, "segments")
-                            else None,
+                            "segments": (
+                                response.segments
+                                if hasattr(response, "segments")
+                                else None
+                            ),
                         }
 
                     if attempt > 0:
@@ -493,12 +497,12 @@ class SpeechToTextService:
             logger.warning(
                 "Invalid audio_bytes in transcribe_from_bytes",
                 extra={
-                    "audio_bytes_type": type(audio_bytes).__name__
-                    if audio_bytes
-                    else None,
-                    "audio_bytes_length": len(audio_bytes)
-                    if isinstance(audio_bytes, bytes)
-                    else None,
+                    "audio_bytes_type": (
+                        type(audio_bytes).__name__ if audio_bytes else None
+                    ),
+                    "audio_bytes_length": (
+                        len(audio_bytes) if isinstance(audio_bytes, bytes) else None
+                    ),
                 },
             )
             raise ValueError("audio_bytes must be a non-empty bytes object")
@@ -557,9 +561,9 @@ class SpeechToTextService:
                 f"Error in transcribe_from_bytes: {e}",
                 extra={
                     "filename": filename,
-                    "audio_bytes_length": len(audio_bytes)
-                    if isinstance(audio_bytes, bytes)
-                    else None,
+                    "audio_bytes_length": (
+                        len(audio_bytes) if isinstance(audio_bytes, bytes) else None
+                    ),
                     "error_type": type(e).__name__,
                 },
                 exc_info=True,

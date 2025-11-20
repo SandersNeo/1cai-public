@@ -687,9 +687,11 @@ class KimiClient:
 
             result = await self.generate(
                 prompt=last_user_msg,
-                system_prompt=messages[0].get("content", "")
-                if messages and messages[0].get("role") == "system"
-                else None,
+                system_prompt=(
+                    messages[0].get("content", "")
+                    if messages and messages[0].get("role") == "system"
+                    else None
+                ),
                 tools=tools,
                 tool_choice="auto",
             )

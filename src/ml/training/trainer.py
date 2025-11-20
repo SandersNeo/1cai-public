@@ -125,9 +125,11 @@ class DataPreprocessor:
                         self.encoders[col].classes_, "unknown"
                     )
                     X[col] = X[col].map(
-                        lambda x: self.encoders[col].transform([x])[0]
-                        if x != "unknown"
-                        else unknown_class
+                        lambda x: (
+                            self.encoders[col].transform([x])[0]
+                            if x != "unknown"
+                            else unknown_class
+                        )
                     )
 
         # Нормализация числовых признаков

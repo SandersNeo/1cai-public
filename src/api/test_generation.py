@@ -727,9 +727,11 @@ async def generate_tests(request: Request, request_data: TestGenerationRequest):
             "totalFunctions": total_functions,
             "averageCoverage": round(avg_coverage, 2),
             "language": request_data.language,
-            "framework": tests[0].get("framework")
-            if tests and isinstance(tests[0], dict)
-            else None,
+            "framework": (
+                tests[0].get("framework")
+                if tests and isinstance(tests[0], dict)
+                else None
+            ),
         }
 
         generation_id = f"gen-{datetime.now().timestamp()}"
@@ -761,12 +763,12 @@ async def generate_tests(request: Request, request_data: TestGenerationRequest):
             extra={
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "language": request_data.language
-                if hasattr(request_data, "language")
-                else None,
-                "code_length": len(request_data.code)
-                if hasattr(request_data, "code")
-                else 0,
+                "language": (
+                    request_data.language if hasattr(request_data, "language") else None
+                ),
+                "code_length": (
+                    len(request_data.code) if hasattr(request_data, "code") else 0
+                ),
             },
             exc_info=True,
         )

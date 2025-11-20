@@ -207,34 +207,42 @@ class NetworkResilienceLayer:
         status = {
             "dns_manager": {
                 "enabled": self.dns_manager is not None,
-                "stats": self.dns_manager.get_resolver_stats()
-                if self.dns_manager
-                else {},
+                "stats": (
+                    self.dns_manager.get_resolver_stats() if self.dns_manager else {}
+                ),
             },
             "tcp_optimizer": {
                 "enabled": self.tcp_optimizer is not None,
-                "config": self.tcp_optimizer.get_current_config()
-                if self.tcp_optimizer
-                else {},
+                "config": (
+                    self.tcp_optimizer.get_current_config()
+                    if self.tcp_optimizer
+                    else {}
+                ),
             },
             "multipath_router": {
                 "enabled": self.multipath_router is not None,
-                "healthy_paths": len(self.multipath_router.get_healthy_paths())
-                if self.multipath_router
-                else 0,
-                "metrics": self.multipath_router.get_path_metrics()
-                if self.multipath_router
-                else {},
+                "healthy_paths": (
+                    len(self.multipath_router.get_healthy_paths())
+                    if self.multipath_router
+                    else 0
+                ),
+                "metrics": (
+                    self.multipath_router.get_path_metrics()
+                    if self.multipath_router
+                    else {}
+                ),
             },
             "traffic_shaper": {"enabled": self.traffic_shaper is not None},
             "vpn_manager": {
                 "enabled": self.vpn_manager is not None,
-                "healthy_tunnels": len(self.vpn_manager.get_healthy_tunnels())
-                if self.vpn_manager
-                else 0,
-                "metrics": self.vpn_manager.get_tunnel_metrics()
-                if self.vpn_manager
-                else {},
+                "healthy_tunnels": (
+                    len(self.vpn_manager.get_healthy_tunnels())
+                    if self.vpn_manager
+                    else 0
+                ),
+                "metrics": (
+                    self.vpn_manager.get_tunnel_metrics() if self.vpn_manager else {}
+                ),
             },
             "protocol_obfuscator": {"enabled": self.protocol_obfuscator is not None},
         }
