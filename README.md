@@ -1,4 +1,4 @@
-# 🤖 1C AI Stack — Enterprise AI Ecosystem for 1C:Enterprise Development
+# 🤖 1C AI Stack — Платформа для AI-ассистированной разработки 1C
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
@@ -6,7 +6,31 @@
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
 [![Nested Learning](https://img.shields.io/badge/Nested_Learning-Integrated-success.svg)](docs/nested_learning/)
 
-**1C AI Stack** — это комплексная AI-экосистема для автоматизации разработки, тестирования и сопровождения проектов на платформе 1С:Предприятие, объединяющая Backend платформу (Python), Desktop клиент (C#/.NET), и интеграции с no-code платформами и TOGAF моделированием.
+🎯 **Платформа для AI-ассистированной разработки на 1C:Предприятие с 160 формализованными спецификациями**, покрывающими все аспекты платформы.
+
+Платформа, которая собирает **DevOps-, AI- и эксплуатационные практики** вокруг 1C:Enterprise в одну управляемую систему: разбор конфигураций, MCP-инструменты, CI/CD, безопасность и наблюдаемость. Внутри — рабочие сервисы, make-таргеты и документация, которые мы используем каждый день для реальных 1С-ландшафтов.
+
+**🏆 Уникальность: 95-100%** — единственная платформа в экосистеме 1C с таким уровнем формализации.
+
+**Кому полезно:** DevOps-командам 1С, архитекторам платформы и ML/аналитикам, которым нужно быстрее внедрять изменения в продуктивные 1С-ландшафты.
+
+---
+
+## 🏆 Стандарты платформы
+
+1C AI Stack предоставляет формализованные стандарты для AI-ассистированной разработки на 1C:Предприятие:
+
+- ✅ **160 формализованных спецификаций** покрывают все аспекты платформы
+- ✅ **Открытые стандарты** с JSON Schema для валидации
+- ✅ **100% уникальность** для BSL-specific компонентов
+- ✅ **Производственная готовность** — все стандарты проверены в реальных проектах
+
+📚 **Полная информация:**
+- [`docs/DE_FACTO_STANDARD.md`](docs/DE_FACTO_STANDARD.md) — раздел про стандарты платформы
+- [`docs/architecture/STANDARDS_INDEX.md`](docs/architecture/STANDARDS_INDEX.md) — каталог всех 160 стандартов
+- [`docs/standards/index.md`](docs/standards/index.md) — Standards Hub (центральная точка входа)
+
+---
 
 ## 🌟 Ключевые особенности
 
@@ -52,7 +76,7 @@ graph TB
         Redis[(Redis<br/>Cache)]
     end
 
-    subgraph Extensions["🔌 Extensions (Planned)"]
+    subgraph Extensions["🔌 Extensions (Research)"]
         NocoBase[NocoBase<br/>No-Code Platform<br/>AI Employees]
         Archi[Archi<br/>TOGAF Modeling<br/>ArchiMate 3.1]
     end
@@ -81,6 +105,118 @@ graph TB
     class gRPC,MCP integrationStyle
     class Orchestrator,ScenarioHub,ChangeGraph,Wiki,API backendStyle
     class Postgres,Neo4j,Qdrant,Redis dataStyle
+    class NocoBase,Archi extensionStyle
+```
+
+**С чего начать:**
+- [`Makefile`](Makefile) — сценарии запуска инфраструктуры, MCP и тестов
+- [`docs/architecture/uml/`](docs/architecture/uml) — PNG-диаграммы, обновляемые скриптами (`make render-uml`, [`scripts/docs/render_uml.py`](scripts/docs/render_uml.py))
+- [`docs/research/constitution.md`](docs/research/constitution.md) — правила проверки и стандарты разработки
+- [`docs/architecture/01-high-level-design.md`](docs/architecture/01-high-level-design.md) — архитектура со схемами
+
+---
+
+## 🚀 Quick Start / Быстрый старт
+
+### Prerequisites
+
+- Python 3.11+ ([`docs/setup/python_311.md`](docs/setup/python_311.md))
+- Docker & Docker Compose
+- .NET 9 SDK (для Desktop Client)
+- Node.js 18+ (для Frontend)
+
+### Минимальный стенд
+
+```bash
+# 1. Проверить окружение
+make check-runtime      # использует scripts/setup/check_runtime.py
+
+# 2. Запустить инфраструктуру
+make docker-up          # PostgreSQL, Neo4j, Qdrant, Redis
+
+# 3. Первичная миграция
+make migrate
+
+# 4. Запустить сервисы
+make servers            # Graph API + MCP server
+
+# 5. Открыть MCP endpoint
+open http://localhost:6001/mcp
+```
+
+**Для Windows:** аналоги в [`scripts/windows/`](scripts/windows/) и упрощённый сценарий в [`docs/01-getting-started/windows_quickstart.md`](docs/01-getting-started/windows_quickstart.md).
+
+После запуска доступен живой MCP endpoint, логи сервисов и тестовые данные — можно сразу проверять сценарии.
+
+### Desktop Client (Everywhere)
+
+```bash
+# 1. Navigate to desktop client
+cd external/everywhere
+
+# 2. Restore dependencies
+dotnet restore
+
+# 3. Build
+dotnet build
+
+# 4. Run
+dotnet run --project src/Everywhere/Everywhere.csproj
+
+# 5. Configure gRPC endpoint
+# Settings → Backend URL: http://localhost:50051
+```
+
+### Full Stack (Docker Compose)
+
+```bash
+# Start all services
+docker-compose up -d
+
+# Services:
+# - Backend API: http://localhost:8000
+# - Frontend: http://localhost:3000
+# - gRPC Server: localhost:50051
+# - PostgreSQL: localhost:5432
+# - Neo4j: http://localhost:7474
+# - Qdrant: http://localhost:6333
+```
+
+---
+
+## 📋 Сценарии использования
+
+### 1. GitOps и DevOps Platform
+
+```bash
+make gitops-apply
+```
+
+- **Автоматизация развёртывания** — [`docs/ops/devops_platform.md`](docs/ops/devops_platform.md)
+- **GitOps workflow** — [`docs/ops/gitops.md`](docs/ops/gitops.md)
+- **Service Mesh** — [`docs/ops/service_mesh.md`](docs/ops/service_mesh.md)
+- **Helm charts** — [`infrastructure/helm/`](infrastructure/helm/)
+
+### 2. Разбор конфигураций 1С
+
+- **EDT Parser** — [`docs/06-features/EDT_PARSER_GUIDE.md`](docs/06-features/EDT_PARSER_GUIDE.md)
+- **Автогенерация документации** — [`scripts/analysis/generate_documentation.py`](scripts/analysis/generate_documentation.py)
+- **Архитектурные диаграммы** — [`docs/architecture/README.md`](docs/architecture/README.md)
+
+### 3. ML и аналитика кода
+
+- **ML Dataset Generator** — [`docs/06-features/ML_DATASET_GENERATOR_GUIDE.md`](docs/06-features/ML_DATASET_GENERATOR_GUIDE.md)
+- **Тестирование** — [`docs/06-features/TESTING_GUIDE.md`](docs/06-features/TESTING_GUIDE.md)
+- **Скрипты анализа** — [`scripts/analysis/`](scripts/analysis/)
+
+### 4. Эксплуатация и SRE
+
+- **DR Rehearsal** — [`docs/runbooks/dr_rehearsal_plan.md`](docs/runbooks/dr_rehearsal_plan.md)
+- **On-call rotations** — [`docs/process/oncall_rotations.md`](docs/process/oncall_rotations.md)
+- **SLO мониторинг** — [`docs/observability/SLO.md`](docs/observability/SLO.md)
+
+---
+
 ## 🎯 Core Components
 
 ### 1. Backend Platform (Python/FastAPI)
@@ -88,14 +224,12 @@ graph TB
 **Clean Architecture** — 32 модуля отрефакторены в модульную структуру:
 
 ```
-
 src/modules/<module_name>/
-├── domain/models.py # Pydantic models
+├── domain/models.py      # Pydantic models
 ├── services/<service>.py # Business logic
-├── api/routes.py # FastAPI routes
-└── README.md # Documentation
-
-````
+├── api/routes.py         # FastAPI routes
+└── README.md             # Documentation
+```
 
 **Ключевые модули:**
 
@@ -329,7 +463,7 @@ service AIService {
   rpc AnalyzeDependencies(DependencyRequest) returns (DependencyResponse);
   rpc GetScenarioRecommendations(ScenarioRequest) returns (ScenarioResponse);
 }
-````
+```
 
 ### 4. Extensions (Research & Integration)
 
@@ -393,72 +527,6 @@ service AIService {
 
 ---
 
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Python 3.11+
-- Docker & Docker Compose
-- .NET 9 SDK (для Desktop Client)
-- Node.js 18+ (для Frontend)
-
-### Backend Platform
-
-```bash
-# 1. Clone repository
-git clone https://github.com/DmitrL-dev/1cai.git
-cd 1cai
-
-# 2. Start infrastructure
-make docker-up      # PostgreSQL, Neo4j, Qdrant, Redis
-
-# 3. Run migrations
-make migrate
-
-# 4. Start servers
-make servers        # FastAPI + MCP server
-
-# 5. Access
-open http://localhost:6001      # API
-open http://localhost:6001/mcp  # MCP endpoint
-```
-
-### Desktop Client (Everywhere)
-
-```bash
-# 1. Navigate to desktop client
-cd external/everywhere
-
-# 2. Restore dependencies
-dotnet restore
-
-# 3. Build
-dotnet build
-
-# 4. Run
-dotnet run --project src/Everywhere/Everywhere.csproj
-
-# 5. Configure gRPC endpoint
-# Settings → Backend URL: http://localhost:50051
-```
-
-### Full Stack (Docker Compose)
-
-```bash
-# Start all services
-docker-compose up -d
-
-# Services:
-# - Backend API: http://localhost:8000
-# - Frontend: http://localhost:3000
-# - gRPC Server: localhost:50051
-# - PostgreSQL: localhost:5432
-# - Neo4j: http://localhost:7474
-# - Qdrant: http://localhost:6333
-```
-
----
-
 ## 📚 Documentation
 
 ### Architecture & Design
@@ -467,6 +535,7 @@ docker-compose up -d
 - [Clean Architecture Implementation](docs/02-architecture/ARCHITECTURE_OVERVIEW.md)
 - [C4 Diagrams](docs/architecture/uml/c4/)
 - [ADR (Architecture Decision Records)](docs/architecture/adr/)
+- [UML Diagrams](docs/architecture/uml/) — PNG-диаграммы, обновляемые скриптами
 
 ### Integration Guides
 
@@ -483,6 +552,9 @@ docker-compose up -d
 - [Unified Change Graph](docs/06-features/1C_CODE_GRAPH_BUILDER_GUIDE.md)
 - [Enterprise Wiki](docs/06-features/ENTERPRISE_WIKI_GUIDE.md)
 - [Network Resilience](docs/06-features/NETWORK_RESILIENCE_IMPLEMENTATION.md)
+- [EDT Parser](docs/06-features/EDT_PARSER_GUIDE.md)
+- [ML Dataset Generator](docs/06-features/ML_DATASET_GENERATOR_GUIDE.md)
+- [Testing Guide](docs/06-features/TESTING_GUIDE.md)
 
 ### Nested Learning
 
@@ -499,6 +571,16 @@ docker-compose up -d
 - [Development Setup](docs/01-getting-started/windows_quickstart.md)
 - [Testing Guide](docs/06-features/TESTING_GUIDE.md)
 - [Performance Benchmarks](docs/05-development/PERFORMANCE_BENCHMARKS.md)
+- [Constitution](docs/research/constitution.md) — правила проверки и стандарты разработки
+
+### Operations & SRE
+
+- [DevOps Platform](docs/ops/devops_platform.md)
+- [GitOps](docs/ops/gitops.md)
+- [Service Mesh](docs/ops/service_mesh.md)
+- [DR Rehearsal Plan](docs/runbooks/dr_rehearsal_plan.md)
+- [On-call Rotations](docs/process/oncall_rotations.md)
+- [SLO Monitoring](docs/observability/SLO.md)
 
 ---
 
@@ -617,10 +699,23 @@ docker-compose up -d
 
 ---
 
+## 🤝 Contributing
+
+Мы приветствуем вклад в развитие платформы! См. [CONTRIBUTING.md](CONTRIBUTING.md) для деталей.
+
+---
+
+## 📄 License
+
+MIT License. См. [LICENSE](LICENSE) для деталей.
+
+---
+
 **Полная документация:** [`docs/README.md`](docs/README.md)  
 **Архитектура:** [`docs/architecture/01-high-level-design.md`](docs/architecture/01-high-level-design.md)  
-**Интеграции:** [`analysis/EVERYWHERE_INTEGRATION_ANALYSIS.md`](analysis/EVERYWHERE_INTEGRATION_ANALYSIS.md)
+**Интеграции:** [`analysis/EVERYWHERE_INTEGRATION_ANALYSIS.md`](analysis/EVERYWHERE_INTEGRATION_ANALYSIS.md)  
+**Стандарты:** [`docs/DE_FACTO_STANDARD.md`](docs/DE_FACTO_STANDARD.md)
 
 **Status:** ✅ Production Ready (with Nested Learning)  
 **Version:** 7.0.0  
-**Last Updated:** 2025-11-25
+**Last Updated:** 2025-11-26
