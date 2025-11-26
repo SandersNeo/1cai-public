@@ -46,6 +46,74 @@
 
 ---
 
+## 💻 Технологический стек
+
+### Backend (Python 3.11+)
+
+**Core Framework:**
+- FastAPI 0.115.6 — async веб-фреймворк
+- Uvicorn 0.24.0 — ASGI сервер
+- Pydantic 2.9.2 — валидация данных
+
+**Databases:**
+- PostgreSQL 15 — основная БД (metadata, users, wiki)
+- SQLAlchemy 2.0.23 + Alembic 1.13.1 — ORM и миграции
+- Neo4j 5.15 — граф зависимостей (BSL-specific)
+- Redis 7 — кэш, очереди, rate limiting
+- Qdrant 1.7.4 — векторный поиск
+
+**AI/ML:**
+- OpenAI 1.54.3, Transformers ≥4.36.0, PyTorch ≥2.1.0
+- Sentence-Transformers 3.2.1, LangChain ≥0.1.0
+- Kimi (Moonshot AI), Qwen, GigaChat, YandexGPT, Ollama
+
+**Communication:**
+- gRPC ≥1.60.0 — Desktop ↔ Backend
+- NATS 2.10 — event-driven architecture
+- Socket.IO — real-time WebSocket
+
+**Monitoring:**
+- Prometheus + Grafana — метрики и визуализация
+- OpenTelemetry — distributed tracing
+
+### Frontend (React + TypeScript)
+
+- React 18.2.0, TypeScript 5.3.3, Vite 7.2.4
+- Radix UI, TailwindCSS 3.3.6
+- Zustand 4.4.7, TanStack Query 5.12.0
+- React Hook Form 7.48.2, Zod 3.22.4
+- Recharts 2.10.3 — графики и диаграммы
+
+### Desktop Client (.NET 9)
+
+- .NET 9, Avalonia UI, C# 12
+- gRPC Client, MCP Integration
+- Cross-platform: Windows ✅ | macOS 🚧 | Linux 🚧
+
+### Infrastructure (Docker)
+
+- PostgreSQL 15-alpine, Redis 7-alpine
+- Neo4j 5.15-community (APOC + GDS)
+- Qdrant 1.7.4, NATS 2.10-alpine
+- MinIO (S3-compatible), Nginx Alpine
+
+### System Requirements
+
+**Minimum (MVP):**
+- RAM: 4 GB | CPU: 2 cores | Disk: 10 GB
+- Services: PostgreSQL + Redis
+
+**Recommended (Full Stack):**
+- RAM: 16 GB | CPU: 4+ cores | Disk: 50 GB SSD
+- GPU: NVIDIA (для Ollama)
+- Services: PostgreSQL + Redis + Neo4j + Qdrant + NATS
+
+**Production:**
+- RAM: 32+ GB | CPU: 8+ cores | Disk: 100+ GB NVMe SSD
+- GPU: NVIDIA RTX 3090+ (для локальных LLM)
+
+---
+
 ## 🏗️ Архитектура экосистемы
 
 ### High-Level System Architecture
