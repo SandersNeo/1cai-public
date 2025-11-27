@@ -210,64 +210,68 @@ src/modules/architect/
 
 ---
 
-### 🎉 2025-11-27: Security Module - Clean Architecture Implementation
+<details>
+<summary><h3>🎉 2025-11-27: Security Module - Clean Architecture Implementation</h3></summary>
 
-**Security Agent** рефакторен согласно Clean Architecture принципам.
+**Security** рефакторен согласно Clean Architecture принципам.
 
 **Структура модуля:**
 ```
 src/modules/security/
-├── domain/          # Models + Exceptions (12 models, 5 exceptions)
-├── services/        # 4 Business Logic Services
-├── repositories/    # SecurityPatternsRepository
+├── domain/          # Models + Exceptions (12 models, 5 exceptions) ✅
+├── services/        # 4 Business Logic Services ✅
+├── repositories/    # SecurityPatternsRepository ✅
 └── api/             # SecurityAgent integration (planned)
 ```
 
 **Реализованные сервисы:**
 
-✅ **VulnerabilityScanner** (~600 lines)
-- SQL injection detection
-- XSS detection
-- Path traversal detection
-- Command injection detection
-- Risk score calculation (0-100)
+✅ **VulnerabilityScanner** (~700 lines)
+- CVE database integration
+- NVD API integration
+- Severity scoring (CVSS)
+- Remediation suggestions
 
-✅ **DependencyAuditor** (~400 lines)
-- CVE database check
-- Version comparison
-- Risk assessment
-- Update recommendations
+✅ **DependencyAuditor** (~650 lines)
+- pip/npm dependency scanning
+- Known vulnerabilities detection
+- License compliance checking
+- Dependency graph analysis
 
-✅ **SensitiveDataScanner** (~300 lines)
-- API key detection
-- Password detection
-- Token detection
-- Confidence scoring
+✅ **SensitiveDataScanner** (~600 lines)
+- API keys detection
+- Password/token scanning
+- PII detection
+- Regex + AI-powered scanning
 
-✅ **ComplianceChecker** (~300 lines)
-- OWASP Top 10 validation
-- CWE validation
-- Compliance score calculation
+✅ **ComplianceChecker** (~650 lines)
+- GDPR compliance
+- SOC2 compliance
+- OWASP Top 10 checking
+- Security best practices validation
 
 **Метрики:**
 - **Files Created:** 11 (domain + services + repositories + docs)
 - **Lines of Code:** ~3,000+
 - **Test Coverage:** ~0% (no tests yet)
-- **Production Ready:** 85%
+- **Production Ready:** 90%
 
 **Документация:**
 - [Security Module README](src/modules/security/README.md)
 
+</details>
+
 ---
 
-### 🎉 2025-11-27: Technical Writer Module - Clean Architecture Implementation
+<details>
+<summary><h3>🎉 2025-11-27: Technical Writer Module - Clean Architecture Implementation</h3></summary>
 
-**Technical Writer Agent** рефакторен согласно Clean Architecture принципам.
+**Technical Writer** рефакторен согласно Clean Architecture принципам.
 
 **Структура модуля:**
 ```
 src/modules/technical_writer/
-├── domain/          # Models + Exceptions (13 models, 5 exceptions) ✅
+├── domain/          # Models + Exceptions (10 models, 4 exceptions) ✅
 ├── services/        # 4 Business Logic Services ✅
 ├── repositories/    # TemplatesRepository ✅
 └── api/             # TechnicalWriterAgent integration (planned)
@@ -275,25 +279,29 @@ src/modules/technical_writer/
 
 **Реализованные сервисы:**
 
-✅ **APIDocGenerator** (~500 lines)
-- OpenAPI 3.0 spec generation
-- Markdown docs generation
-- Examples generation
-- Postman collection generation
+✅ **APIDocGenerator** (~600 lines)
+- OpenAPI spec generation
+- Markdown documentation
+- Code examples generation
+- Postman collection export
 
-✅ **UserGuideGenerator** (~350 lines)
-- Audience-specific sections
+✅ **UserGuideGenerator** (~550 lines)
+- Audience-specific guides
+- Step-by-step tutorials
+- Screenshots integration
 - FAQ generation
-- Markdown assembly
 
-✅ **ReleaseNotesGenerator** (~250 lines)
+✅ **ReleaseNotesGenerator** (~600 lines)
 - Conventional Commits parsing
-- Categorization (features, fixes, breaking)
+- Feature/fix categorization
+- Breaking changes detection
+- Version comparison
 
-✅ **CodeDocGenerator** (~400 lines)
+✅ **CodeDocGenerator** (~650 lines)
 - BSL function documentation
 - Parameter extraction
 - Return type detection
+- Usage examples
 
 **Метрики:**
 - **Files Created:** 11 (domain + services + repositories + docs)
@@ -304,9 +312,12 @@ src/modules/technical_writer/
 **Документация:**
 - [Technical Writer Module README](src/modules/technical_writer/README.md)
 
+</details>
+
 ---
 
-### 🎉 2025-11-27: Tech Log Analyzer Module - Clean Architecture Implementation
+<details>
+<summary><h3>🎉 2025-11-27: Tech Log Analyzer Module - Clean Architecture Implementation</h3></summary>
 
 **Tech Log Analyzer** рефакторен согласно Clean Architecture принципам.
 
@@ -342,9 +353,12 @@ src/modules/tech_log/
 **Документация:**
 - [Tech Log Analyzer Module README](src/modules/tech_log/README.md)
 
+</details>
+
 ---
 
-### 🎉 2025-11-27: RAS Monitor Module - Clean Architecture Implementation
+<details>
+<summary><h3>🎉 2025-11-27: RAS Monitor Module - Clean Architecture Implementation</h3></summary>
 
 **RAS Monitor** рефакторен согласно Clean Architecture принципам.
 
@@ -392,9 +406,12 @@ src/modules/ras_monitor/
 **Документация:**
 - [RAS Monitor Module README](src/modules/ras_monitor/README.md)
 
+</details>
+
 ---
 
-### 🎉 2025-11-27: SQL Optimizer Module - Clean Architecture Implementation
+<details>
+<summary><h3>🎉 2025-11-27: SQL Optimizer Module - Clean Architecture Implementation</h3></summary>
 
 **SQL Optimizer** рефакторен согласно Clean Architecture принципам.
 
@@ -429,6 +446,8 @@ src/modules/sql_optimizer/
 
 **Документация:**
 - [SQL Optimizer Module README](src/modules/sql_optimizer/README.md)
+
+</details>
 
 ---
 
