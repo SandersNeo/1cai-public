@@ -1,1 +1,0 @@
-"""Revolutionary domain package"""

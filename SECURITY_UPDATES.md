@@ -101,4 +101,4 @@ curl http://localhost:8000/health
 
 ## 🔍 Full Audit
 
-See [technology_audit.md](technology_audit.md) for complete analysis.
+See technology_audit.md for complete analysis.

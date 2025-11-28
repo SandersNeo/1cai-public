@@ -678,7 +678,7 @@ A: Да, см. раздел [Кастомизация](#кастомизация
 ## Дополнительные ресурсы
 
 - [API Documentation](../api/DASHBOARD_API.md)
-- [Architecture Overview](../../02-architecture/ARCHITECTURE_OVERVIEW.md)
+- [Architecture Overview](../02-architecture/ARCHITECTURE_OVERVIEW.md)
 - [Analytics Module Guide](./ANALYTICS_GUIDE.md)
 - [Metrics Module Guide](./METRICS_GUIDE.md)
 

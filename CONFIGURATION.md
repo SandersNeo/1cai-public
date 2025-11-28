@@ -512,3 +512,33 @@ kubectl create secret generic 1c-ai-secrets \
 **Обновлено:** 6 ноября 2025  
 **Следующее обновление:** По мере добавления новых опций
 
+
+
+## Environment Variables
+
+TODO: Добавить содержание раздела.
+
+
+## Database Configuration
+
+TODO: Добавить содержание раздела.
+
+
+## Telegram Bot Configuration
+
+TODO: Добавить содержание раздела.
+
+
+## Ai Services Configuration
+
+TODO: Добавить содержание раздела.
+
+
+## Security Configuration
+
+TODO: Добавить содержание раздела.
+
+
+## Performance Tuning
+
+TODO: Добавить содержание раздела.
