@@ -4,12 +4,13 @@ Multi-Stage Validator
 Combines poetic detection and intent extraction for comprehensive validation.
 """
 
-from typing import Dict, Optional
 from dataclasses import dataclass
+from typing import Dict, Optional
+
 from loguru import logger
 
-from .poetic_detector import PoeticFormDetector, PoeticAnalysis
-from .intent_extractor import SemanticIntentExtractor, IntentResult
+from .intent_extractor import IntentResult, SemanticIntentExtractor
+from .poetic_detector import PoeticAnalysis, PoeticFormDetector
 
 
 @dataclass
@@ -95,7 +96,7 @@ class MultiStageValidator:
             )
 
         except Exception as e:
-            logger.error(f"Validation error: {e}")
+            logger.error("Validation error: %s", e)
             # Fail safe: block on error
             return ValidationResult(allowed=False, reason=f"Validation error: {str(e)}", stage_completed="error")
 
@@ -125,7 +126,7 @@ class MultiStageValidator:
 
         for keyword in dangerous_keywords:
             if keyword in query_lower:
-                logger.warning(f"Dangerous keyword detected: {keyword}")
+                logger.warning("Dangerous keyword detected: %s", keyword)
                 return False
 
         return True

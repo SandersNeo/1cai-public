@@ -52,12 +52,14 @@ class PluginSubmitRequest(BaseModel):
 
     # Compatibility
     min_version: str = Field(default="1.0.0")
-    supported_platforms: List[str] = Field(default_factory=lambda: ["telegram", "mcp", "edt"])
+    supported_platforms: List[str] = Field(
+        default_factory=lambda: ["telegram", "mcp", "edt"])
 
     # Resources
     icon_url: Optional[str] = None
     screenshot_urls: List[str] = Field(default_factory=list)
-    artifact_path: Optional[str] = Field(default=None, description="S3 object key with plugin bundle")
+    artifact_path: Optional[str] = Field(
+        default=None, description="S3 object key with plugin bundle")
 
     # Documentation
     readme: Optional[str] = None
@@ -76,7 +78,8 @@ class PluginUpdateRequest(BaseModel):
     icon_url: Optional[str] = None
     screenshot_urls: Optional[List[str]] = None
     readme: Optional[str] = None
-    artifact_path: Optional[str] = Field(None, description="S3 object key with plugin bundle")
+    artifact_path: Optional[str] = Field(
+        None, description="S3 object key with plugin bundle")
 
 
 class PluginSearchRequest(BaseModel):

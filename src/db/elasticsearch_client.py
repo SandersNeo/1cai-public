@@ -65,7 +65,6 @@ class ElasticsearchClient:
             max_retries: Maximum retry attempts
             retry_delay: Base delay for exponential backoff (seconds)
         """
-        last_exception = None
 
         for attempt in range(max_retries):
             try:
@@ -95,7 +94,6 @@ class ElasticsearchClient:
                 return True
 
             except asyncio.TimeoutError as e:
-                last_exception = e
                 if attempt < max_retries - 1:
                     wait_time = retry_delay * (2**attempt)
                     logger.warning(
@@ -119,7 +117,6 @@ class ElasticsearchClient:
                         exc_info=True,
                     )
             except Exception as e:
-                last_exception = e
                 if attempt < max_retries - 1:
                     wait_time = retry_delay * (2**attempt)
                     logger.warning(

@@ -5,13 +5,13 @@ gRPC Server для 1C AI Stack
 """
 
 import asyncio
-import grpc
-from concurrent import futures
 import logging
+from concurrent import futures
 
 # Импорт сгенерированных классов
 import ai_service_pb2
 import ai_service_pb2_grpc
+import grpc
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -130,9 +130,12 @@ async def serve():
     server = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=10))
 
     # Регистрация сервисов
-    ai_service_pb2_grpc.add_AIOrchestratorServicer_to_server(AIOrchestratorServicer(), server)
-    ai_service_pb2_grpc.add_CodeGraphServiceServicer_to_server(CodeGraphServiceServicer(), server)
-    ai_service_pb2_grpc.add_ScenarioServiceServicer_to_server(ScenarioServiceServicer(), server)
+    ai_service_pb2_grpc.add_AIOrchestratorServicer_to_server(
+        AIOrchestratorServicer(), server)
+    ai_service_pb2_grpc.add_CodeGraphServiceServicer_to_server(
+        CodeGraphServiceServicer(), server)
+    ai_service_pb2_grpc.add_ScenarioServiceServicer_to_server(
+        ScenarioServiceServicer(), server)
 
     # Запуск на порту 50051
     server.add_insecure_port("[::]:50051")

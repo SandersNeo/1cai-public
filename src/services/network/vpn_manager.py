@@ -153,7 +153,7 @@ class VPNManager:
             return True
 
         except subprocess.CalledProcessError as e:
-            logger.error(f"Failed to start WireGuard tunnel {tunnel.name}: {e}")
+            logger.error("Failed to start WireGuard tunnel {tunnel.name}: %s", e)
             metrics = self.tunnel_metrics.get(tunnel.name)
             if metrics:
                 metrics.status = TunnelStatus.DOWN
@@ -190,7 +190,7 @@ class VPNManager:
                 return True
 
             except Exception as e:
-                logger.error(f"Failed to stop WireGuard tunnel {tunnel.name}: {e}")
+                logger.error("Failed to stop WireGuard tunnel {tunnel.name}: %s", e)
                 return False
 
         return False
@@ -281,7 +281,7 @@ class VPNManager:
                 ).set(metrics.throughput_bytes_per_sec)
 
         except Exception as e:
-            logger.debug(f"Tunnel {tunnel.name} health check failed: {e}")
+            logger.debug("Tunnel {tunnel.name} health check failed: %s", e)
             metrics.status = TunnelStatus.DOWN
             metrics.last_check = datetime.utcnow()
 

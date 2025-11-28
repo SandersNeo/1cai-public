@@ -64,7 +64,8 @@ async def generate_code(
         if not user_id:
             raise HTTPException(status_code=400, detail="User ID cannot be empty")
 
-        result = service.generate_code(prompt=prompt, user_id=user_id, context=request.context)
+        result = service.generate_code(
+            prompt=prompt, user_id=user_id, context=request.context)
 
         if result.get("blocked"):
             raise HTTPException(
@@ -95,7 +96,8 @@ async def generate_code(
             },
             exc_info=True,
         )
-        raise HTTPException(status_code=500, detail="An error occurred while generating code")
+        raise HTTPException(
+            status_code=500, detail="An error occurred while generating code")
 
 
 @router.get("/preview/{token}")
@@ -126,7 +128,8 @@ async def get_preview(token: str, service: CodeApprovalService = Depends(get_app
         raise
     except Exception as e:
         logger.error(f"Error in get_preview: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="An error occurred while retrieving preview")
+        raise HTTPException(
+            status_code=500, detail="An error occurred while retrieving preview")
 
 
 @router.post("/approve")
@@ -157,7 +160,8 @@ async def approve_suggestion(
         )
 
         if result.get("blocked"):
-            raise HTTPException(status_code=403, detail=result.get("error", "Application blocked"))
+            raise HTTPException(status_code=403, detail=result.get(
+                "error", "Application blocked"))
 
         logger.info(
             "Suggestion approved successfully",
@@ -179,7 +183,8 @@ async def approve_suggestion(
         raise
     except Exception as e:
         logger.error(f"Error in approve_suggestion: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="An error occurred while approving suggestion")
+        raise HTTPException(
+            status_code=500, detail="An error occurred while approving suggestion")
 
 
 @router.post("/approve-all")
@@ -224,7 +229,8 @@ async def bulk_approve(
         raise HTTPException(status_code=504, detail="Bulk operation timed out")
     except Exception as e:
         logger.error(f"Error in bulk_approve: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="An error occurred while processing bulk approval")
+        raise HTTPException(
+            status_code=500, detail="An error occurred while processing bulk approval")
 
 
 @router.delete("/reject/{token}")
@@ -244,7 +250,8 @@ async def reject_suggestion(token: str, service: CodeApprovalService = Depends(g
         raise
     except Exception as e:
         logger.error(f"Error in reject_suggestion: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="An error occurred while rejecting suggestion")
+        raise HTTPException(
+            status_code=500, detail="An error occurred while rejecting suggestion")
 
 
 @router.get("/pending")

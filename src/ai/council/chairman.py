@@ -4,8 +4,9 @@ Chairman Module
 Implements Stage 3 of council process: synthesis of final response.
 """
 
-from typing import List, Dict, Optional
 from dataclasses import dataclass
+from typing import Dict, List, Optional
+
 from loguru import logger
 
 
@@ -53,7 +54,8 @@ class Chairman:
 
         try:
             # Create synthesis prompt
-            synthesis_prompt = self._create_synthesis_prompt(query=query, responses=responses, reviews=reviews)
+            synthesis_prompt = self._create_synthesis_prompt(
+                query=query, responses=responses, reviews=reviews)
 
             # Get chairman provider
             provider = self.orchestrator._get_provider(self.chairman_model)
@@ -68,7 +70,7 @@ class Chairman:
             )
 
         except Exception as e:
-            logger.error(f"Error in chairman synthesis: {e}")
+            logger.error("Error in chairman synthesis: %s", e)
             # Fallback: return best-ranked response
             return self._fallback_synthesis(responses, reviews)
 
@@ -85,10 +87,12 @@ class Chairman:
             Synthesis prompt
         """
         # Format responses
-        responses_text = "\n\n".join([f"Response from {r['model']}:\n{r['response']}" for r in responses])
+        responses_text = "\n\n".join(
+            [f"Response from {r['model']}:\n{r['response']}" for r in responses])
 
         # Format reviews summary
-        reviews_text = "\n".join([f"{r.reviewer_model} rankings: {r.rankings}" for r in reviews])
+        reviews_text = "\n".join(
+            [f"{r.reviewer_model} rankings: {r.rankings}" for r in reviews])
 
         prompt = f"""You are the Chairman of an LLM Council. Multiple AI models have provided responses to a query, and each has reviewed the others' work.
 

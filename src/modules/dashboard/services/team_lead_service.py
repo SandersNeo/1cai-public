@@ -2,7 +2,7 @@
 Team Lead Dashboard Service
 Business logic for team performance and code quality metrics
 """
-from typing import Dict, Any
+from typing import Any, Dict
 
 import asyncpg
 
@@ -60,7 +60,8 @@ class TeamLeadService:
             )
 
             velocity = (
-                int((tasks_completed_this_week / total_tasks_this_week) * 100) if total_tasks_this_week > 0 else 0
+                int((tasks_completed_this_week / total_tasks_this_week)
+                    * 100) if total_tasks_this_week > 0 else 0
             )
 
             # Calculate code quality
@@ -91,7 +92,8 @@ class TeamLeadService:
                 or 1
             )
 
-            code_quality = int((approved_reviews / total_reviews) * 100) if total_reviews > 0 else 85
+            code_quality = int((approved_reviews / total_reviews)
+                               * 100) if total_reviews > 0 else 85
 
             # Calculate bug rate
             bug_tasks = (
@@ -121,7 +123,8 @@ class TeamLeadService:
                 or 1
             )
 
-            bug_rate = round((bug_tasks / total_tasks_month) * 100, 1) if total_tasks_month > 0 else 0
+            bug_rate = round((bug_tasks / total_tasks_month) * 100,
+                             1) if total_tasks_month > 0 else 0
 
             # Deployment frequency
             deployments = (
@@ -217,7 +220,8 @@ class TeamLeadService:
                     or 85
                 )
 
-                code_quality_trends.append({"week": f"Week -{week_offset}", "quality": int(week_quality)})
+                code_quality_trends.append(
+                    {"week": f"Week -{week_offset}", "quality": int(week_quality)})
 
             # Velocity chart (last 6 weeks)
             velocity_chart = []
@@ -237,7 +241,8 @@ class TeamLeadService:
                     or 0
                 )
 
-                velocity_chart.append({"week": f"Week -{week_offset}", "completed": week_completed})
+                velocity_chart.append(
+                    {"week": f"Week -{week_offset}", "completed": week_completed})
 
             # Technical debt
             blocked_tasks = (

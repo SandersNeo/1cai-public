@@ -4,20 +4,22 @@ VLM Server для анализа скриншотов 1С
 Использует LLaVA-1.6 через Ollama для анализа UI и извлечения контекста.
 """
 
-from fastapi import FastAPI, File, UploadFile, HTTPException
+import base64
+import io
+import logging
+import time
+from typing import Any, Dict
+
+import httpx
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from PIL import Image
-import io
-import base64
-import httpx
-import logging
-from typing import Dict, Any
-import time
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="VLM Server", description="Vision-Language Model сервер для анализа скриншотов 1С", version="1.0.0")
+app = FastAPI(title="VLM Server",
+              description="Vision-Language Model сервер для анализа скриншотов 1С", version="1.0.0")
 
 # Конфигурация
 OLLAMA_URL = "http://localhost:11434"
@@ -37,7 +39,7 @@ class VLMService:
             response = await self.client.get(f"{OLLAMA_URL}/api/tags")
             return response.status_code == 200
         except Exception as e:
-            logger.error(f"Ollama health check failed: {e}")
+            logger.error("Ollama health check failed: %s", e)
             return False
 
     async def analyze_image(self, image_bytes: bytes) -> Dict[str, Any]:
@@ -98,7 +100,7 @@ class VLMService:
                 },
             }
 
-            logger.info(f"Sending request to Ollama (model: {MODEL})")
+            logger.info("Sending request to Ollama (model: %s)", MODEL)
             response = await self.client.post(f"{OLLAMA_URL}/api/generate", json=payload)
             response.raise_for_status()
 
@@ -115,7 +117,7 @@ class VLMService:
             }
 
         except Exception as e:
-            logger.error(f"Image analysis failed: {e}")
+            logger.error("Image analysis failed: %s", e)
             raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -154,14 +156,16 @@ async def analyze_screenshot(file: UploadFile = File(...)):
     """
     # Валидация типа файла
     if not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail=f"Invalid file type: {file.content_type}. Expected image/*")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid file type: {file.content_type}. Expected image/*")
 
     # Чтение файла
     image_bytes = await file.read()
 
     # Валидация размера (макс 10 MB)
     if len(image_bytes) > 10 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="Image too large. Maximum size is 10 MB")
+        raise HTTPException(
+            status_code=400, detail="Image too large. Maximum size is 10 MB")
 
     logger.info(f"Analyzing image: {file.filename}, size: {len(image_bytes)} bytes")
 
@@ -193,4 +197,5 @@ async def shutdown_event():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("vlm_service:app", host="0.0.0.0", port=8000, reload=True, log_level="info")
+    uvicorn.run("vlm_service:app", host="0.0.0.0",
+                port=8000, reload=True, log_level="info")

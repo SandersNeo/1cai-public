@@ -70,7 +70,7 @@ class MLFlowManager:
 
                 # Проверяем существование эксперимента
                 try:
-                    experiment = self.client.get_experiment_by_name(experiment_name)
+                    self.client.get_experiment_by_name(experiment_name)
                 except MlflowException:
                     # Создаем новый эксперимент
                     experiment_id = self.client.create_experiment(

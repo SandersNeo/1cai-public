@@ -4,12 +4,13 @@ Council API Routes
 API endpoints for LLM Council functionality.
 """
 
+from typing import Any, Dict, List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
 
-from src.api.auth import get_current_user
 from src.ai.orchestrator import orchestrator
+from src.api.auth import get_current_user
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -21,8 +22,10 @@ class CouncilQueryRequest(BaseModel):
     """Request for council query"""
 
     query: str = Field(..., description="User query")
-    context: Optional[Dict[str, Any]] = Field(default=None, description="Optional context")
-    council_config: Optional[Dict[str, Any]] = Field(default=None, description="Optional council configuration")
+    context: Optional[Dict[str, Any]] = Field(
+        default=None, description="Optional context")
+    council_config: Optional[Dict[str, Any]] = Field(
+        default=None, description="Optional council configuration")
 
 
 class CouncilQueryResponse(BaseModel):
@@ -72,10 +75,10 @@ async def query_with_council(request: CouncilQueryRequest, current_user: Dict = 
         return result
 
     except ValueError as e:
-        logger.error(f"Council query validation error: {e}")
+        logger.error("Council query validation error: %s", e)
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Council query error: {e}")
+        logger.error("Council query error: %s", e)
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -87,11 +90,11 @@ async def get_council_config(current_user: Dict = Depends(get_current_user)):
     Returns default council settings.
     """
     from src.ai.council.config import (
-        COUNCIL_MODELS,
         CHAIRMAN_MODEL,
         COUNCIL_ENABLED,
-        MIN_COUNCIL_SIZE,
+        COUNCIL_MODELS,
         MAX_COUNCIL_SIZE,
+        MIN_COUNCIL_SIZE,
     )
 
     return {

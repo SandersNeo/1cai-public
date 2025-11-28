@@ -37,7 +37,8 @@ class ModelService:
                     logger.info("Using device", extra={"device": self.device})
 
                     # Load base model
-                    base_model_name = os.getenv("BASE_MODEL", "Qwen/Qwen2.5-Coder-7B-Instruct")
+                    base_model_name = os.getenv(
+                        "BASE_MODEL", "Qwen/Qwen2.5-Coder-7B-Instruct")
 
                     logger.info(
                         "Loading base model",
@@ -46,7 +47,8 @@ class ModelService:
                     base_model = AutoModelForCausalLM.from_pretrained(
                         base_model_name,
                         device_map="auto",
-                        torch_dtype=(torch.float16 if self.device == "cuda" else torch.float32),
+                        torch_dtype=(torch.float16 if self.device ==
+                                     "cuda" else torch.float32),
                         low_cpu_mem_usage=True,
                     )
 

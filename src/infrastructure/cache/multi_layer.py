@@ -178,7 +178,8 @@ class MultiLayerCache:
     ):
         self.redis = redis_client
         self.memory_cache = LRUCache(max_size=memory_cache_size)  # L1: In-memory LRU
-        self.redis_circuit_breaker = CircuitBreaker(failure_threshold=redis_circuit_breaker_threshold)
+        self.redis_circuit_breaker = CircuitBreaker(
+            failure_threshold=redis_circuit_breaker_threshold)
 
         # Stats
         self.hits = {"l1": 0, "l2": 0, "l3": 0}
@@ -196,7 +197,7 @@ class MultiLayerCache:
         - Circuit breaker for Redis
         - Prometheus metrics
         """
-        start_time = datetime.now()
+        datetime.now()
 
         # L1: Memory cache (LRU)
         value = self.memory_cache.get(key)
@@ -215,7 +216,8 @@ class MultiLayerCache:
                     if PROMETHEUS_AVAILABLE
                     else nullcontext()
                 ):
-                    cached_value = await asyncio.wait_for(self.redis.get(key), timeout=1.0)  # 1 second timeout
+                    # 1 second timeout
+                    cached_value = await asyncio.wait_for(self.redis.get(key), timeout=1.0)
 
                 if cached_value:
                     self.hits["l2"] += 1
@@ -232,7 +234,8 @@ class MultiLayerCache:
                         self.memory_cache.set(key, value)
                         return value
                     except json.JSONDecodeError:
-                        logger.error("Failed to decode cached value", extra={"key": key})
+                        logger.error("Failed to decode cached value",
+                                     extra={"key": key})
                         return None
 
             except asyncio.TimeoutError:
@@ -279,7 +282,8 @@ class MultiLayerCache:
                     else nullcontext()
                 ):
                     await asyncio.wait_for(
-                        self.redis.setex(key, ttl_seconds, json.dumps(value, default=str)),
+                        self.redis.setex(key, ttl_seconds,
+                                         json.dumps(value, default=str)),
                         timeout=1.0,
                     )
 
@@ -351,7 +355,8 @@ class MultiLayerCache:
             # Remove tag set
             await self.redis.delete(f"tag:{tag}")
 
-            logger.info("Invalidated keys with tag", extra={"tag": tag, "keys_count": len(keys)})
+            logger.info("Invalidated keys with tag", extra={
+                        "tag": tag, "keys_count": len(keys)})
 
     def get_stats(self) -> Dict:
         """

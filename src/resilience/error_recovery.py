@@ -160,7 +160,7 @@ class CircuitBreaker:
 
         except Exception as e:
             self.state.record_failure()
-            logger.error(f"Circuit breaker recorded failure: {e}")
+            logger.error("Circuit breaker recorded failure: %s", e)
 
             # Попытка fallback
             if fallback:
@@ -171,7 +171,7 @@ class CircuitBreaker:
                     else:
                         return fallback(*args, **kwargs)
                 except Exception as fallback_error:
-                    logger.error(f"Fallback also failed: {fallback_error}")
+                    logger.error("Fallback also failed: %s", fallback_error)
 
             raise
 
@@ -228,7 +228,7 @@ class RetryManager:
                     )
                     await asyncio.sleep(delay)
                 else:
-                    logger.error(f"Max retries exceeded: {e}")
+                    logger.error("Max retries exceeded: %s", e)
 
         raise last_exception
 

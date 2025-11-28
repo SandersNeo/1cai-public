@@ -31,7 +31,8 @@ class CodeSuggestion(BaseModel):
     suggestion: Optional[str] = None
     code: Optional[str] = None
     position: dict
-    category: Literal["performance", "security", "best-practice", "style", "bug", "optimization"]
+    category: Literal["performance", "security",
+        "best-practice", "style", "bug", "optimization"]
     autoFixable: bool
     confidence: float = Field(..., ge=0, le=1)
 

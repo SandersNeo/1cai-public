@@ -8,19 +8,15 @@ AI ассистент для тестировщиков с LLM интеграц�
 import logging
 from typing import Any, Dict, List, Optional
 
-from src.ai.agents.base_agent import BaseAgent, AgentCapability
+from src.ai.agents.base_agent import AgentCapability, BaseAgent
 from src.ai.llm import TaskType
+from src.modules.qa.domain.models import (
+    CoverageReport,
+    TestGenerationResult,
+)
 
 # Import new services
-from src.modules.qa.services import (
-    SmartTestGenerator,
-    TestCoverageAnalyzer,
-)
-from src.modules.qa.domain.models import (
-    TestGenerationResult,
-    CoverageReport,
-    TestFramework,
-)
+from src.modules.qa.services import SmartTestGenerator, TestCoverageAnalyzer
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +57,7 @@ class QAEngineerAgentEnhanced(BaseAgent):
         # Change Graph integration
         self.change_graph = None
         self._init_change_graph()
-    
+
     def _init_change_graph(self):
         """Initialize Change Graph client"""
         try:
@@ -71,7 +67,7 @@ class QAEngineerAgentEnhanced(BaseAgent):
         except ImportError:
             self.logger.warning("Change Graph client not available")
         except Exception as e:
-            self.logger.error(f"Failed to initialize Change Graph: {e}")
+            self.logger.error("Failed to initialize Change Graph: %s", e)
 
     # === NEW METHODS: Clean Architecture Services ===
 
@@ -140,29 +136,29 @@ class QAEngineerAgentEnhanced(BaseAgent):
                     task_type=TaskType.BDD_GENERATION,
                     prompt=f"""
                     Сгенерируй Vanessa BDD тесты для модуля 1С:
-                    
+
                     Модуль: {module_name}
                     Функции: {', '.join(functions)}
-                    
+
                     Требования:
                     1. Используй Gherkin синтаксис на русском
                     2. Добавь positive и negative сценарии
                     3. Проверь граничные случаи
                     4. Добавь проверки ошибок
                     5. Используй Vanessa Automation синтаксис
-                    
+
                     Формат: .feature файл
                     """,
                     context={"framework": "Vanessa", "language": "ru"}
                 )
-                
+
                 return feature_file["response"]
             except Exception as e:
-                self.logger.error(f"LLM test generation failed: {e}")
-        
+                self.logger.error("LLM test generation failed: %s", e)
+
         # Template-based generation (fallback)
         return self._generate_template_tests(module_name, functions)
-    
+
     def _generate_template_tests(
         self,
         module_name: str,
@@ -200,11 +196,11 @@ class QAEngineerAgentEnhanced(BaseAgent):
     ) -> Dict[str, Any]:
         """
         Запуск тестов в CI/CD pipeline
-        
+
         Args:
             pipeline: Название pipeline
             test_suite: Набор тестов
-            
+
         Returns:
             Результат запуска
         """
@@ -213,7 +209,7 @@ class QAEngineerAgentEnhanced(BaseAgent):
                 "status": "ci_not_configured",
                 "recommendation": "Configure CI/CD integration"
             }
-        
+
         # TODO: Integrate with GitLab CI / GitHub Actions
         return {
             "pipeline_id": "pending",
@@ -226,17 +222,17 @@ class QAEngineerAgentEnhanced(BaseAgent):
     ) -> List[str]:
         """
         Smart test selection via Change Graph
-        
+
         Args:
             changed_files: Список измененных файлов
-            
+
         Returns:
             Список тестов для запуска
         """
         if not self.change_graph:
             self.logger.warning("Change Graph not available")
             return []
-        
+
         # TODO: Integrate with Neo4j Change Graph
         return []
 
@@ -247,37 +243,37 @@ class QAEngineerAgentEnhanced(BaseAgent):
     ) -> Dict[str, Any]:
         """
         Self-healing для падающих тестов
-        
+
         Args:
             test_name: Название теста
             failure_reason: Причина падения
-            
+
         Returns:
             Результат исправления
         """
         if not self.llm_selector:
             return {"status": "llm_not_available"}
-        
+
         try:
             fix = await self.llm_selector.generate(
                 task_type=TaskType.CODE_FIX,
                 prompt=f"""
                 Исправь падающий Vanessa BDD тест:
-                
+
                 Тест: {test_name}
                 Ошибка: {failure_reason}
-                
+
                 Предложи исправление теста.
                 """,
                 context={"framework": "Vanessa"}
             )
-            
+
             return {
                 "fixed_test": fix["response"],
                 "status": "fixed"
             }
         except Exception as e:
-            self.logger.error(f"Test healing failed: {e}")
+            self.logger.error("Test healing failed: %s", e)
             return {"status": "failed", "error": str(e)}
 
 

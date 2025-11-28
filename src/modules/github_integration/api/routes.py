@@ -68,7 +68,8 @@ async def github_webhook(
                 raise HTTPException(status_code=401, detail="Invalid signature format")
 
             if not github_client.verify_webhook_signature(payload, x_hub_signature_256):
-                logger.warning("Invalid webhook signature", extra={"event_type": x_github_event})
+                logger.warning("Invalid webhook signature", extra={
+                               "event_type": x_github_event})
                 raise HTTPException(status_code=401, detail="Invalid signature")
 
         # Parse JSON with timeout
@@ -92,7 +93,8 @@ async def github_webhook(
 
         # Limit event type length
         if len(x_github_event) > 100:
-            logger.warning("Event type too long", extra={"event_type_length": len(x_github_event)})
+            logger.warning("Event type too long", extra={
+                           "event_type_length": len(x_github_event)})
             x_github_event = x_github_event[:100]
 
         # Handle pull_request events
@@ -101,7 +103,7 @@ async def github_webhook(
             try:
                 pr_event = await webhook_handler.handle_pull_request_event(event_data)
             except ValueError as e:
-                logger.error(f"Invalid PR event: {e}")
+                logger.error("Invalid PR event: %s", e)
                 return {"status": "error", "reason": str(e)}
 
             # Check if event should be processed
@@ -113,7 +115,8 @@ async def github_webhook(
 
             # Process PR review with timeout
             result = await asyncio.wait_for(
-                review_service.review_pull_request(pr_event.repository_full_name, pr_event.number),
+                review_service.review_pull_request(
+                    pr_event.repository_full_name, pr_event.number),
                 timeout=60.0,  # 60 seconds for PR processing
             )
             return result
@@ -169,7 +172,8 @@ async def manual_review(code: str, filename: str = "code.bsl") -> Dict[str, Any]
         raise HTTPException(status_code=413, detail="Code too large")
 
     if not isinstance(filename, str) or not filename.strip():
-        logger.warning("Invalid filename", extra={"filename_type": type(filename).__name__})
+        logger.warning("Invalid filename", extra={
+                       "filename_type": type(filename).__name__})
         filename = "code.bsl"
 
     # Sanitize filename (prevent path traversal)
@@ -208,4 +212,5 @@ async def manual_review(code: str, filename: str = "code.bsl") -> Dict[str, Any]
             },
             exc_info=True,
         )
-        raise HTTPException(status_code=500, detail="An error occurred during code review")
+        raise HTTPException(
+            status_code=500, detail="An error occurred during code review")

@@ -5,7 +5,7 @@ Integrates LLM Council with test generation.
 """
 
 from typing import Dict, Optional
-from loguru import logger
+
 
 from src.ai.orchestrator import orchestrator
 
@@ -42,7 +42,8 @@ class CouncilTestGenerationService:
 
         # Use council for test generation
         result = await self.orchestrator.process_query_with_council(
-            query=query, context=context, council_config={"models": ["kimi", "qwen", "gigachat"], "chairman": "kimi"}
+            query=query, context=context, council_config={
+                "models": ["kimi", "qwen", "gigachat"], "chairman": "kimi"}
         )
 
         # Parse test results

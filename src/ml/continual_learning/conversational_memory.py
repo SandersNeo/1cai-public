@@ -8,6 +8,7 @@ Implements 5-level continuum memory for conversations.
 import hashlib
 import time
 from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
 
 from src.ml.continual_learning.cms import ContinuumMemorySystem
@@ -47,13 +48,11 @@ class ConversationMemoryLevel(MemoryLevel):
         # Extract message content
         if isinstance(data, dict):
             content = data.get("content", str(data))
-            role = data.get("role", "unknown")
+            data.get("role", "unknown")
         elif isinstance(data, str):
             content = data
-            role = "unknown"
         else:
             content = str(data)
-            role = "unknown"
 
         # Extract features based on level type
         if self.level_type == "immediate":
@@ -76,7 +75,8 @@ class ConversationMemoryLevel(MemoryLevel):
 
         # Hash to embedding
         feature_hash = hashlib.sha256(features.encode()).digest()
-        embedding = np.array([float(b) / 255.0 for b in feature_hash[:128]], dtype="float32")
+        embedding = np.array(
+            [float(b) / 255.0 for b in feature_hash[:128]], dtype="float32")
 
         return embedding
 
@@ -216,7 +216,8 @@ class ConversationalMemory(ContinuumMemorySystem):
 
         logger.debug(
             "Stored message",
-            extra={"role": role, "session_id": self.current_session_id, "message_count": self.message_count},
+            extra={"role": role, "session_id": self.current_session_id,
+                "message_count": self.message_count},
         )
 
     def retrieve_context(
@@ -272,7 +273,8 @@ class ConversationalMemory(ContinuumMemorySystem):
         for level_name, messages in results.items():
             for key, similarity, data in messages:
                 if isinstance(data, dict):
-                    all_messages.append({"similarity": similarity, "level": level_name, **data})
+                    all_messages.append(
+                        {"similarity": similarity, "level": level_name, **data})
 
         # Sort by similarity
         all_messages.sort(key=lambda x: x["similarity"], reverse=True)
@@ -296,9 +298,11 @@ class ConversationalMemory(ContinuumMemorySystem):
 
             # Track preferences
             if rating >= 4:  # Positive feedback
-                self._update_preferences(user_message, assistant_response, positive=True)
+                self._update_preferences(
+                    user_message, assistant_response, positive=True)
             elif rating <= 2:  # Negative feedback
-                self._update_preferences(user_message, assistant_response, positive=False)
+                self._update_preferences(
+                    user_message, assistant_response, positive=False)
 
         # Store interaction
         interaction_id = self._generate_message_id("interaction", user_message)
@@ -358,7 +362,7 @@ class ConversationalMemory(ContinuumMemorySystem):
         self.current_session_id = session_id
         self.message_count = 0
 
-        logger.info(f"Started conversation session: {session_id}")
+        logger.info("Started conversation session: %s", session_id)
 
     def end_session(self):
         """End current session"""
@@ -382,7 +386,8 @@ class ConversationalMemory(ContinuumMemorySystem):
             "message_count": self.message_count,
             "total_messages": len(session_messages),
             "duration": time.time()
-            - min((m.get("timestamp", time.time()) for m in session_messages), default=time.time())
+            - min((m.get("timestamp", time.time())
+                  for m in session_messages), default=time.time())
             if session_messages
             else 0,
         }

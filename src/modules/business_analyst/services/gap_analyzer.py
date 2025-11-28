@@ -6,14 +6,14 @@ Gap Analyzer Service
 
 from typing import Any, Dict, List
 
+from src.modules.business_analyst.domain.exceptions import GapAnalysisError
 from src.modules.business_analyst.domain.models import (
-    Gap,
-    Impact,
     Effort,
+    Gap,
     GapAnalysisResult,
+    Impact,
     RoadmapItem,
 )
-from src.modules.business_analyst.domain.exceptions import GapAnalysisError
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -32,7 +32,6 @@ class GapAnalyzer:
 
     def __init__(self):
         """Initialize gap analyzer"""
-        pass
 
     async def perform_gap_analysis(
         self,
@@ -99,7 +98,7 @@ class GapAnalyzer:
             )
 
         except Exception as e:
-            logger.error(f"Failed to perform gap analysis: {e}")
+            logger.error("Failed to perform gap analysis: %s", e)
             raise GapAnalysisError(
                 f"Failed to perform gap analysis: {e}",
                 details={}

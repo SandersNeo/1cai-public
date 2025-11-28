@@ -6,6 +6,7 @@ Multi-level memory for code completion with different temporal scales.
 
 import hashlib
 from typing import Any, Dict, Optional
+
 import numpy as np
 
 from src.ml.continual_learning.cms import ContinuumMemorySystem
@@ -65,7 +66,8 @@ class CodePatternLevel(MemoryLevel):
 
         # Hash to embedding
         pattern_hash = hashlib.sha256(pattern.encode()).digest()
-        embedding = np.array([float(b) / 255.0 for b in pattern_hash[:64]], dtype="float32")
+        embedding = np.array(
+            [float(b) / 255.0 for b in pattern_hash[:64]], dtype="float32")
 
         return embedding
 
@@ -196,7 +198,8 @@ class CodeMemory(ContinuumMemorySystem):
         # Retrieve from all levels
         levels_to_search = ["char", "token", "function", "project"]
 
-        suggestions = self.retrieve_similar({"code": prefix, **context}, levels=levels_to_search, k=k)
+        suggestions = self.retrieve_similar(
+            {"code": prefix, **context}, levels=levels_to_search, k=k)
 
         return suggestions
 

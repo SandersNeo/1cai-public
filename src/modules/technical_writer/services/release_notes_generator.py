@@ -6,10 +6,8 @@ Release Notes Generator Service
 
 from typing import Dict, List
 
+from src.modules.technical_writer.domain.exceptions import ReleaseNotesGenerationError
 from src.modules.technical_writer.domain.models import ReleaseNotes
-from src.modules.technical_writer.domain.exceptions import (
-    ReleaseNotesGenerationError
-)
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -79,7 +77,7 @@ class ReleaseNotesGenerator:
             )
 
         except Exception as e:
-            logger.error(f"Failed to generate release notes: {e}")
+            logger.error("Failed to generate release notes: %s", e)
             raise ReleaseNotesGenerationError(
                 f"Failed to generate release notes: {e}",
                 details={"version": version}

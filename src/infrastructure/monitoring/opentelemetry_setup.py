@@ -105,7 +105,8 @@ def setup_opentelemetry(
         if enable_console_exporter or os.getenv("OTEL_CONSOLE_EXPORTER", "false").lower() == "true":
             console_exporter = ConsoleSpanExporter()
             tracer_provider.add_span_processor(BatchSpanProcessor(console_exporter))
-            logger.info("✅ Console exporter enabled", extra={"service_name": service_name})
+            logger.info("✅ Console exporter enabled", extra={
+                        "service_name": service_name})
 
         trace.set_tracer_provider(tracer_provider)
 

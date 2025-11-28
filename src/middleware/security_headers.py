@@ -60,11 +60,13 @@ async def security_headers_middleware(
         csp_policy = os.getenv(
             "CSP_POLICY",
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; "  # Allow Swagger UI scripts
+            # Allow Swagger UI scripts
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; "
             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " # Allow Swagger UI styles
             "img-src 'self' data: https:; "
             "font-src 'self' data:; "
-            "connect-src 'self' https://api.openai.com https://api.deepseek.com ws: wss:; " # Allow WebSocket (for local dev and Kasperski)
+            # Allow WebSocket (for local dev and Kasperski)
+            "connect-src 'self' https://api.openai.com https://api.deepseek.com ws: wss:; "
             "frame-ancestors 'none'; "
             "base-uri 'self'; "
             "form-action 'self';",

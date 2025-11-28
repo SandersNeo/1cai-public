@@ -3,7 +3,7 @@ Developer Dashboard Service
 Business logic for developer-specific metrics
 """
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Any, Dict
 
 from src.infrastructure.logging.structured_logging import StructuredLogger
 

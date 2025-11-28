@@ -72,7 +72,8 @@ async def get_configurations(
 @router.get("/graph/objects/{config_name}")
 async def get_objects(
     config_name: str,
-    object_type: Optional[str] = Query(None, max_length=100, description="Filter by object type"),
+    object_type: Optional[str] = Query(
+        None, max_length=100, description="Filter by object type"),
     service: GraphService = Depends(get_graph_service),
 ):
     """Get objects of a configuration."""
@@ -83,7 +84,8 @@ async def get_objects(
         objects = await service.get_objects(config_name, object_type)
         return {"objects": objects}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to retrieve objects: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to retrieve objects: {str(e)}")
 
 
 @router.post("/graph/dependencies")

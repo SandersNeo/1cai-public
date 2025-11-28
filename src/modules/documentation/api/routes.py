@@ -42,7 +42,8 @@ async def generate_documentation(request: Request, doc_request: DocumentationReq
     except TimeoutError as e:
         raise HTTPException(status_code=408, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail="An error occurred while generating documentation")
+        raise HTTPException(
+            status_code=500, detail="An error occurred while generating documentation")
 
 
 @router.get("/health", summary="Проверка состояния сервиса")

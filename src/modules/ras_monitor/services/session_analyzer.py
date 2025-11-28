@@ -6,14 +6,8 @@ Session Analyzer Service
 
 from typing import List
 
-from src.modules.ras_monitor.domain.models import (
-    Session,
-    SessionAnalysis,
-    SessionState,
-)
-from src.modules.ras_monitor.domain.exceptions import (
-    SessionAnalysisError
-)
+from src.modules.ras_monitor.domain.exceptions import SessionAnalysisError
+from src.modules.ras_monitor.domain.models import Session, SessionAnalysis, SessionState
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -37,7 +31,6 @@ class SessionAnalyzer:
 
     def __init__(self):
         """Initialize analyzer"""
-        pass
 
     async def analyze_sessions(
         self,
@@ -81,7 +74,7 @@ class SessionAnalyzer:
             )
 
         except Exception as e:
-            logger.error(f"Failed to analyze sessions: {e}")
+            logger.error("Failed to analyze sessions: %s", e)
             raise SessionAnalysisError(
                 f"Failed to analyze sessions: {e}",
                 details={}

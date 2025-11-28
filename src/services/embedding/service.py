@@ -2,9 +2,9 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Dict, List, Optional, Union
 
+from src.config import USE_NESTED_LEARNING
 from src.utils.circuit_breaker import CircuitState
 from src.utils.structured_logging import StructuredLogger
-from src.config import USE_NESTED_LEARNING
 
 from .cache_manager import CacheManager
 from .model_manager import ModelManager
@@ -37,7 +37,8 @@ class EmbeddingService:
                 self._nested = NestedEmbeddingService(self)
                 logger.info("Nested Learning enabled for EmbeddingService")
             except Exception as e:
-                logger.warning(f"Failed to initialize Nested Learning: {e}", exc_info=True)
+                logger.warning(
+                    f"Failed to initialize Nested Learning: {e}", exc_info=True)
 
     def encode(
         self,
@@ -51,7 +52,7 @@ class EmbeddingService:
             try:
                 return self._nested.encode(text, context={}).tolist()
             except Exception as e:
-                logger.warning(f"Nested encoding failed, falling back to standard: {e}")
+                logger.warning("Nested encoding failed, falling back to standard: %s", e)
 
         if not text:
             return [] if isinstance(text, list) else []
@@ -70,12 +71,14 @@ class EmbeddingService:
             # So we pass a lambda that uses a lightweight check or the model directly
             def get_query_embedding(t):
                 # Use CPU model for quick check if available
-                model = self.model_manager.get_model("cpu") or self.model_manager.get_model("gpu")
+                model = self.model_manager.get_model(
+                    "cpu") or self.model_manager.get_model("gpu")
                 if model:
                     return model.encode([t], show_progress_bar=False)[0].tolist()
                 return None
 
-            semantic_cached = self.cache_manager.get_from_semantic_cache(text, get_query_embedding)
+            semantic_cached = self.cache_manager.get_from_semantic_cache(
+                text, get_query_embedding)
             if semantic_cached:
                 self.resource_manager.update_stats("cache", cache_hit=True)
                 return semantic_cached
@@ -94,7 +97,8 @@ class EmbeddingService:
             self.cache_manager.set(cache_key, result)
             if isinstance(text, str):
                 # Normalize for semantic cache
-                emb = result[0] if isinstance(result, list) and isinstance(result[0], list) else result
+                emb = result[0] if isinstance(result, list) and isinstance(
+                    result[0], list) else result
                 self.cache_manager.save_to_semantic_cache(text, emb)
 
         return result
@@ -115,7 +119,8 @@ class EmbeddingService:
             if cb.state == CircuitState.OPEN:
                 # Fallback to other device
                 other_device = "cpu" if device == "gpu" else "gpu"
-                logger.warning(f"Circuit breaker OPEN for {device}, falling back to {other_device}")
+                logger.warning(
+                    f"Circuit breaker OPEN for {device}, falling back to {other_device}")
                 return self._encode_single(text, batch_size, show_progress, other_device)
 
             start = time.time()
@@ -130,7 +135,8 @@ class EmbeddingService:
             # Update stats
             count = len(text) if isinstance(text, list) else 1
             self.resource_manager.update_performance(device, duration, count)
-            self.resource_manager.update_stats(device, tokens=len(str(text)))  # Approx tokens
+            self.resource_manager.update_stats(
+                device, tokens=len(str(text)))  # Approx tokens
 
             if isinstance(text, str):
                 return embeddings.tolist()
@@ -138,7 +144,7 @@ class EmbeddingService:
 
         except Exception as e:
             cb.record_failure()
-            logger.error(f"Encoding error on {device}: {e}")
+            logger.error("Encoding error on %s: {e}", device)
             return []
 
     def _encode_hybrid(self, text: List[str], batch_size: int, show_progress: bool) -> List[List[float]]:
@@ -168,7 +174,7 @@ class EmbeddingService:
                     res = future.result()
                     results[start_idx : start_idx + len(res)] = res
                 except Exception as e:
-                    logger.error(f"Hybrid encoding error on {device}: {e}")
+                    logger.error("Hybrid encoding error on %s: {e}", device)
 
         return results
 
@@ -178,7 +184,8 @@ class EmbeddingService:
     def encode_code(self, code: str) -> List[float]:
         # Simple preprocessing
         clean_code = "\n".join(
-            [line.strip() for line in code.split("\n") if line.strip() and not line.startswith("//")]
+            [line.strip() for line in code.split("\n")
+                        if line.strip() and not line.startswith("//")]
         )
         return self.encode(clean_code[:5000])
 

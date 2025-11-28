@@ -152,7 +152,8 @@ class DocumentationGenerator:
                             re.IGNORECASE,
                         )
                         if return_match:
-                            current_function["return_value"] = return_match.group(1).strip()
+                            current_function["return_value"] = return_match.group(
+                                1).strip()
 
                     functions.append(current_function)
                     current_function = None
@@ -386,7 +387,8 @@ class DocumentationGenerator:
             for match in re.finditer(pattern, code):
                 func_name = match.group(1)
                 params_str = match.group(2) if len(match.groups()) > 1 else ""
-                return_type = match.group(3).strip() if len(match.groups()) > 2 and match.group(3) else "any"
+                return_type = match.group(3).strip() if len(
+                    match.groups()) > 2 and match.group(3) else "any"
 
                 # Извлечение JSDoc комментариев
                 jsdoc = self._extract_jsdoc(code, match.start())
@@ -557,7 +559,6 @@ class DocumentationGenerator:
         Использует AST для парсинга
         """
         import ast
-        import inspect
 
         doc = {
             "title": f"Python Documentation - {function_name or 'Code'}",
@@ -587,7 +588,7 @@ class DocumentationGenerator:
                 doc["content"] = self._format_plain_python(doc)
 
         except SyntaxError as e:
-            logger.error(f"Failed to parse Python code: {e}")
+            logger.error("Failed to parse Python code: %s", e)
             doc["content"] = f"Error parsing Python code: {e}"
 
         return doc
@@ -610,7 +611,8 @@ class DocumentationGenerator:
 
             # Тип аннотация
             if arg.annotation:
-                param_type = ast.unparse(arg.annotation) if hasattr(ast, "unparse") else "Any"
+                param_type = ast.unparse(arg.annotation) if hasattr(
+                    ast, "unparse") else "Any"
 
             params.append(
                 {
@@ -623,7 +625,8 @@ class DocumentationGenerator:
         # Return type
         return_type = "Any"
         if node.returns:
-            return_type = ast.unparse(node.returns) if hasattr(ast, "unparse") else "Any"
+            return_type = ast.unparse(node.returns) if hasattr(
+                ast, "unparse") else "Any"
 
         # Сигнатура
         args_str = ", ".join([f"{p['name']}: {p['type']}" for p in params])
@@ -691,7 +694,8 @@ class DocumentationGenerator:
                     lines.append("| Name | Type | Description |\n")
                     lines.append("|------|------|-------------|\n")
                     for param in section["parameters"]:
-                        lines.append(f"| `{param['name']}` | `{param['type']}` | {param.get('description', '')} |\n")
+                        lines.append(
+                            f"| `{param['name']}` | `{param['type']}` | {param.get('description', '')} |\n")
                     lines.append("\n")
 
                 if section.get("return_type"):

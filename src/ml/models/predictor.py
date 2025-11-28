@@ -447,7 +447,7 @@ class TensorFlowPredictor(MLPredictor):
 
         # Компиляция модели
         optimizer = self.model_params.get("optimizer", "adam")
-        learning_rate = self.model_params.get("learning_rate", 0.001)
+        self.model_params.get("learning_rate", 0.001)
 
         model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 

@@ -189,7 +189,7 @@ class DNSManager:
             cache_key = f"{domain}:{record_type}"
             cached = self.cache.get(cache_key)
             if cached and not cached.is_expired():
-                logger.debug(f"DNS cache hit for {domain}")
+                logger.debug("DNS cache hit for %s", domain)
                 return cached.ip_addresses
 
         # Сортируем резолверы по приоритету
@@ -232,7 +232,7 @@ class DNSManager:
 
             except Exception as e:
                 last_error = e
-                logger.warning(f"DNS resolver {resolver.name} failed: {e}")
+                logger.warning("DNS resolver {resolver.name} failed: %s", e)
 
                 # Обновляем статистику
                 self._update_stats(resolver.name, success=False)
@@ -250,7 +250,7 @@ class DNSManager:
 
         # Все резолверы недоступны
         duration = (time.time() - start_time) * 1000
-        logger.error(f"All DNS resolvers failed for {domain}, last error: {last_error}")
+        logger.error("All DNS resolvers failed for %s, last error: {last_error}", domain)
 
         raise DNSResolutionError(f"Failed to resolve {domain}: {last_error}")
 

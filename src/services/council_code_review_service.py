@@ -4,9 +4,8 @@ Council Service for Code Review
 Integrates LLM Council with code review process.
 """
 
-import asyncio
 from typing import Dict, List, Optional
-from loguru import logger
+
 
 from src.ai.orchestrator import orchestrator
 
@@ -43,7 +42,8 @@ class CouncilCodeReviewService:
 
         # Use council for review
         result = await self.orchestrator.process_query_with_council(
-            query=query, context=context, council_config={"models": ["kimi", "qwen", "gigachat"], "chairman": "kimi"}
+            query=query, context=context, council_config={
+                "models": ["kimi", "qwen", "gigachat"], "chairman": "kimi"}
         )
 
         # Parse review results

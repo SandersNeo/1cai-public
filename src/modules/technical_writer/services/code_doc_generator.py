@@ -7,13 +7,8 @@ Code Documentation Generator Service
 import re
 from typing import List
 
-from src.modules.technical_writer.domain.models import (
-    FunctionDocumentation,
-    Parameter,
-)
-from src.modules.technical_writer.domain.exceptions import (
-    CodeDocGenerationError
-)
+from src.modules.technical_writer.domain.exceptions import CodeDocGenerationError
+from src.modules.technical_writer.domain.models import FunctionDocumentation, Parameter
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -59,7 +54,7 @@ class CodeDocGenerator:
                 )
 
         except Exception as e:
-            logger.error(f"Failed to document function: {e}")
+            logger.error("Failed to document function: %s", e)
             raise CodeDocGenerationError(
                 f"Failed to document function: {e}",
                 details={"language": language}

@@ -3,8 +3,8 @@
 """
 
 import asyncio
+
 import httpx
-from pathlib import Path
 
 
 async def test_health():
@@ -47,8 +47,9 @@ async def test_analyze_mock():
     print("\n3️⃣ Тест Анализа Изображения (Mock)...")
 
     # Создаем простое тестовое изображение
-    from PIL import Image, ImageDraw, ImageFont
     import io
+
+    from PIL import Image, ImageDraw
 
     # Создаем изображение с текстом "1С:Предприятие"
     img = Image.new("RGB", (800, 600), color="white")

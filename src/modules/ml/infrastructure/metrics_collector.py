@@ -83,7 +83,8 @@ class MetricsDatabase:
 
     def __init__(self):
         self.engine = create_engine(settings.DATABASE_URL)
-        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+        self.SessionLocal = sessionmaker(
+            autocommit=False, autoflush=False, bind=self.engine)
         Base.metadata.create_all(bind=self.engine)
 
     def save_metric(self, record: MetricRecord) -> str:
@@ -184,7 +185,8 @@ class MetricsCollector:
         """Запись точности анализа требований"""
 
         # Расчет точности анализа
-        accuracy = self._calculate_requirements_accuracy(predicted_requirements, actual_requirements)
+        accuracy = self._calculate_requirements_accuracy(
+            predicted_requirements, actual_requirements)
 
         record = MetricRecord(
             metric_type=MetricType.REQUIREMENT_ANALYSIS_ACCURACY,
@@ -196,7 +198,8 @@ class MetricsCollector:
         )
 
         metric_id = self.db.save_metric(record)
-        self.logger.info(f"Сохранена точность анализа требований для {assistant_role.value}: {accuracy:.3f}")
+        self.logger.info(
+            f"Сохранена точность анализа требований для {assistant_role.value}: {accuracy:.3f}")
         return metric_id
 
     async def record_diagram_quality_score(
@@ -223,7 +226,8 @@ class MetricsCollector:
         )
 
         metric_id = self.db.save_metric(record)
-        self.logger.info(f"Сохранено качество диаграммы для {assistant_role.value}: {quality_score:.3f}")
+        self.logger.info(
+            f"Сохранено качество диаграммы для {assistant_role.value}: {quality_score:.3f}")
         return metric_id
 
     async def record_risk_assessment_precision(
@@ -248,7 +252,8 @@ class MetricsCollector:
         )
 
         metric_id = self.db.save_metric(record)
-        self.logger.info(f"Сохранена точность оценки рисков для {assistant_role.value}: {precision:.3f}")
+        self.logger.info(
+            f"Сохранена точность оценки рисков для {assistant_role.value}: {precision:.3f}")
         return metric_id
 
     async def record_response_time(
@@ -270,7 +275,8 @@ class MetricsCollector:
         )
 
         metric_id = self.db.save_metric(record)
-        self.logger.info(f"Сохранено время ответа для {assistant_role.value}: {response_time:.3f}с")
+        self.logger.info(
+            f"Сохранено время ответа для {assistant_role.value}: {response_time:.3f}с")
         return metric_id
 
     async def record_user_satisfaction(
@@ -294,7 +300,8 @@ class MetricsCollector:
         )
 
         metric_id = self.db.save_metric(record)
-        self.logger.info(f"Сохранена удовлетворенность для {assistant_role.value}: {satisfaction_score:.3f}")
+        self.logger.info(
+            f"Сохранена удовлетворенность для {assistant_role.value}: {satisfaction_score:.3f}")
         return metric_id
 
     def _calculate_requirements_accuracy(self, predicted: List[Dict], actual: List[Dict]) -> float:
@@ -327,7 +334,8 @@ class MetricsCollector:
 
         # Проверка наличия базовых элементов Mermaid
         mermaid_keywords = ["graph", "flowchart", "sequenceDiagram", "classDiagram"]
-        keyword_score = sum(1 for keyword in mermaid_keywords if keyword in diagram.lower())
+        keyword_score = sum(
+            1 for keyword in mermaid_keywords if keyword in diagram.lower())
         quality_factors.append(keyword_score / len(mermaid_keywords))
 
         # Проверка наличия узлов и связей
@@ -347,13 +355,16 @@ class MetricsCollector:
             return 0.0
 
         # Извлекаем описания рисков
-        predicted_descriptions = {risk.get("description", "").lower().strip() for risk in predicted_risks}
-        actual_descriptions = {risk.get("description", "").lower().strip() for risk in actual_risks}
+        predicted_descriptions = {
+            risk.get("description", "").lower().strip() for risk in predicted_risks}
+        actual_descriptions = {
+            risk.get("description", "").lower().strip() for risk in actual_risks}
 
         # Пересечение и точность
         intersection = predicted_descriptions & actual_descriptions
 
-        precision = len(intersection) / len(predicted_descriptions) if predicted_descriptions else 0.0
+        precision = len(intersection) / \
+                        len(predicted_descriptions) if predicted_descriptions else 0.0
 
         return min(precision, 1.0)
 

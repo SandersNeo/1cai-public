@@ -3,9 +3,10 @@
 """
 
 import asyncio
-import grpc
+
 import ai_service_pb2
 import ai_service_pb2_grpc
+import grpc
 
 
 async def test_process_query():
@@ -35,7 +36,8 @@ async def test_stream_query():
     async with grpc.aio.insecure_channel("localhost:50051") as channel:
         stub = ai_service_pb2_grpc.AIOrchestratorStub(channel)
 
-        request = ai_service_pb2.QueryRequest(query="Объясни архитектуру 1С", user_id="test_user")
+        request = ai_service_pb2.QueryRequest(
+            query="Объясни архитектуру 1С", user_id="test_user")
 
         try:
             print("✅ StreamQuery успешно:")
@@ -54,7 +56,8 @@ async def test_search_code():
     async with grpc.aio.insecure_channel("localhost:50051") as channel:
         stub = ai_service_pb2_grpc.CodeGraphServiceStub(channel)
 
-        request = ai_service_pb2.CodeSearchRequest(query="ПолучитьЗначение", language="bsl", max_results=10)
+        request = ai_service_pb2.CodeSearchRequest(
+            query="ПолучитьЗначение", language="bsl", max_results=10)
 
         try:
             response = await stub.SearchCode(request)
@@ -74,7 +77,8 @@ async def test_get_recommendations():
     async with grpc.aio.insecure_channel("localhost:50051") as channel:
         stub = ai_service_pb2_grpc.ScenarioServiceStub(channel)
 
-        request = ai_service_pb2.ScenarioRequest(current_context="Разработка документа", user_role="Developer")
+        request = ai_service_pb2.ScenarioRequest(
+            current_context="Разработка документа", user_role="Developer")
 
         try:
             response = await stub.GetRecommendations(request)

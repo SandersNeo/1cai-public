@@ -140,7 +140,7 @@ class PredictiveCodeGenerator:
         Returns:
             Список трендов
         """
-        logger.info(f"Analyzing trends for last {lookback_days} days...")
+        logger.info("Analyzing trends for last %s days...", lookback_days)
 
         cutoff_date = datetime.utcnow() - timedelta(days=lookback_days)
         recent_requirements = [
@@ -212,7 +212,7 @@ class PredictiveCodeGenerator:
         Returns:
             Список предсказанных требований
         """
-        logger.info(f"Predicting requirements for next {horizon_days} days...")
+        logger.info("Predicting requirements for next %s days...", horizon_days)
 
         # Анализ трендов
         trends = await self.analyze_trends()

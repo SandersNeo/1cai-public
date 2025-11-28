@@ -32,7 +32,8 @@ class DocumentationService:
             timeout = 60.0
 
         if timeout > 300:  # Max 5 minutes
-            logger.warning("Timeout too large in generate_documentation", extra={"timeout": timeout})
+            logger.warning("Timeout too large in generate_documentation",
+                           extra={"timeout": timeout})
             timeout = 300.0
 
         # Validate inputs
@@ -46,7 +47,8 @@ class DocumentationService:
                 "Code too long in generate_documentation",
                 extra={"code_length": len(code), "max_length": max_code_length},
             )
-            raise ValueError(f"Code too long. Maximum length: {max_code_length} characters")
+            raise ValueError(
+                f"Code too long. Maximum length: {max_code_length} characters")
 
         supported_languages = ["bsl", "typescript", "javascript", "python"]
         if language not in supported_languages:
@@ -57,7 +59,8 @@ class DocumentationService:
                     "supported": supported_languages,
                 },
             )
-            raise ValueError(f"Unsupported language: {language}. Supported: {', '.join(supported_languages)}")
+            raise ValueError(
+                f"Unsupported language: {language}. Supported: {', '.join(supported_languages)}")
 
         # Sanitize function name
         if function_name:
@@ -92,7 +95,8 @@ class DocumentationService:
                     "timeout": timeout,
                 },
             )
-            raise TimeoutError(f"Documentation generation timed out after {timeout} seconds")
+            raise TimeoutError(
+                f"Documentation generation timed out after {timeout} seconds")
 
         generation_id = f"doc-{datetime.now().timestamp()}"
 

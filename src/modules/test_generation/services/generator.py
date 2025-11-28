@@ -7,9 +7,7 @@ from src.infrastructure.logging.structured_logging import StructuredLogger
 from src.modules.test_generation.services.generators.bsl_generator import (
     BSLTestGenerator,
 )
-from src.modules.test_generation.services.generators.js_generator import (
-    JSTestGenerator,
-)
+from src.modules.test_generation.services.generators.js_generator import JSTestGenerator
 from src.modules.test_generation.services.generators.python_generator import (
     PythonTestGenerator,
 )

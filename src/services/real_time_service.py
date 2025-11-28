@@ -163,7 +163,8 @@ class RealTimeManager:
                 self.connection_metadata[websocket]["messages_sent"] += 1
 
         except asyncio.TimeoutError:
-            logger.warning(f"Send message timeout after {timeout}s", extra={"timeout": timeout})
+            logger.warning(f"Send message timeout after {timeout}s", extra={
+                           "timeout": timeout})
             await self.disconnect(websocket)
         except Exception as e:
             logger.error(
@@ -296,13 +297,13 @@ async def start_dashboard_updater():
     Background task that periodically updates dashboards
     Broadcasts to all connected clients
     """
+    from src.database import get_pool
+    from src.modules.dashboard.services.ba_service import BAService
+    from src.modules.dashboard.services.developer_service import DeveloperService
     from src.modules.dashboard.services.executive_service import ExecutiveService
     from src.modules.dashboard.services.owner_service import OwnerService
     from src.modules.dashboard.services.pm_service import PMService
-    from src.modules.dashboard.services.developer_service import DeveloperService
     from src.modules.dashboard.services.team_lead_service import TeamLeadService
-    from src.modules.dashboard.services.ba_service import BAService
-    from src.database import get_pool
 
     # Initialize services
     owner_service = OwnerService()

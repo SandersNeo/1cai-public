@@ -206,7 +206,7 @@ class DistributedAgentNetwork:
         if agent_id in self._agents:
             del self._agents[agent_id]
 
-        logger.info(f"Agent unregistered: {agent_id}")
+        logger.info("Agent unregistered: %s", agent_id)
 
     async def discover_peers(
         self, agent_id: str, role: Optional[AgentRole] = None

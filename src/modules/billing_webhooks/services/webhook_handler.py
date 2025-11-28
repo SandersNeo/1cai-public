@@ -36,7 +36,8 @@ class BillingWebhookHandler:
 
         try:
             if self.stripe:
-                self.stripe.Webhook.construct_event(payload, signature, self.webhook_secret)
+                self.stripe.Webhook.construct_event(
+                    payload, signature, self.webhook_secret)
                 return True
         except Exception:
             return False

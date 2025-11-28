@@ -26,7 +26,8 @@ class RiskDatabase:
     def update_status(self, risk_id: str, status: str) -> bool:
         if risk_id in self._risks:
             self._risks[risk_id].status = status
-            logger.info("Risk status updated", extra={"risk_id": risk_id, "status": status})
+            logger.info("Risk status updated", extra={
+                        "risk_id": risk_id, "status": status})
             return True
         return False
 

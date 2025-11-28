@@ -7,7 +7,7 @@ Pydantic модели для SQL Optimizer модуля.
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class QueryComplexity(str, Enum):

@@ -8,8 +8,8 @@ Inspired by Nested Learning paradigm.
 """
 
 import time
-from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
-import numpy as np
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+
 
 if TYPE_CHECKING:
     from src.modules.copilot.services.copilot_service import CopilotService
@@ -90,7 +90,8 @@ class NestedCopilotService:
         self.stats["total_completions"] += 1
 
         # 1. Get suggestions from all levels
-        level_suggestions = self.code_memory.get_suggestions(code, context=context, k=max_suggestions)
+        level_suggestions = self.code_memory.get_suggestions(
+            code, context=context, k=max_suggestions)
 
         # 2. Merge and score suggestions
         merged = self._merge_suggestions(level_suggestions, code, context)
@@ -98,7 +99,8 @@ class NestedCopilotService:
         # 3. Fallback to base copilot if needed
         if len(merged) < max_suggestions:
             try:
-                base_completions = self.base.get_completions(code, max_completions=max_suggestions - len(merged))
+                base_completions = self.base.get_completions(
+                    code, max_completions=max_suggestions - len(merged))
 
                 # Add base completions with lower confidence
                 for comp in base_completions:
@@ -111,7 +113,7 @@ class NestedCopilotService:
                         }
                     )
             except Exception as e:
-                logger.warning(f"Base copilot failed: {e}")
+                logger.warning("Base copilot failed: %s", e)
 
         # 4. Sort by confidence
         merged.sort(key=lambda x: x["confidence"], reverse=True)
@@ -127,7 +129,8 @@ class NestedCopilotService:
 
         logger.debug(
             "Generated nested completions",
-            extra={"num_suggestions": len(merged[:max_suggestions]), "levels_used": list(level_suggestions.keys())},
+            extra={"num_suggestions": len(merged[:max_suggestions]), "levels_used": list(
+                level_suggestions.keys())},
         )
 
         return merged[:max_suggestions]
@@ -223,7 +226,7 @@ class NestedCopilotService:
             selected_index: Index of selected suggestion (if accepted)
         """
         if completion_id not in self.completion_history:
-            logger.warning(f"Unknown completion_id: {completion_id}")
+            logger.warning("Unknown completion_id: %s", completion_id)
             return
 
         history = self.completion_history[completion_id]

@@ -36,7 +36,8 @@ class DevOpsService:
                     break
 
             if not compose_file:
-                raise FileNotFoundError("docker-compose.yml not found. Please specify compose_file parameter.")
+                raise FileNotFoundError(
+                    "docker-compose.yml not found. Please specify compose_file parameter.")
 
         if not Path(compose_file).exists():
             raise FileNotFoundError(f"File not found: {compose_file}")

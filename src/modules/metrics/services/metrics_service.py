@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Optional
 
 from src.infrastructure.logging.structured_logging import StructuredLogger
 from src.modules.metrics.domain.models import (
-    AggregatedMetrics,
     MetricCollectionRequest,
     MetricRecord,
 )
@@ -133,7 +132,8 @@ class MetricsService:
         events_count = len(recent_metrics)
 
         # Calculate error rate (if error metrics exist)
-        errors = [m for m in recent_metrics if "error" in m.metric_type.lower() or "fail" in m.metric_type.lower()]
+        errors = [m for m in recent_metrics if "error" in m.metric_type.lower()
+                                                                              or "fail" in m.metric_type.lower()]
         error_rate = (len(errors) / events_count * 100) if events_count > 0 else 0
 
         return {
@@ -189,7 +189,8 @@ class MetricsService:
         """Clear old metrics"""
         cutoff = datetime.now() - timedelta(days=days_back)
         initial_count = len(self.metrics_storage)
-        self.metrics_storage = [m for m in self.metrics_storage if m.timestamp >= cutoff]
+        self.metrics_storage = [
+            m for m in self.metrics_storage if m.timestamp >= cutoff]
         cleared_count = initial_count - len(self.metrics_storage)
 
         # Also clear performance metrics cache
@@ -205,5 +206,6 @@ class MetricsService:
         return {
             "total_records": len(self.metrics_storage),
             "services_tracked": len(self.performance_metrics),
-            "memory_usage_approx": f"{len(self.metrics_storage) * 100 / 1024 / 1024:.2f} MB",  # Rough estimate
+            # Rough estimate
+            "memory_usage_approx": f"{len(self.metrics_storage) * 100 / 1024 / 1024:.2f} MB",
         }

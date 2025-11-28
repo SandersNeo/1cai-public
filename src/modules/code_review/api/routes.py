@@ -200,7 +200,8 @@ async def analyze_code(request: Request, request_data: CodeContextRequest, respo
             },
             exc_info=True,
         )
-        raise HTTPException(status_code=500, detail="An error occurred while analyzing code")
+        raise HTTPException(
+            status_code=500, detail="An error occurred while analyzing code")
 
 
 @router.post(

@@ -16,7 +16,8 @@ if os.getenv("IGNORE_PY_VERSION_CHECK") != "1" and sys.version_info[:2] != (
     3,
     11,
 ):  # pragma: no cover
-    raise RuntimeError(f"Python 3.11.x is required to run 1C AI Stack (detected {sys.version.split()[0]}).")
+    raise RuntimeError(
+        f"Python 3.11.x is required to run 1C AI Stack (detected {sys.version.split()[0]}).")
 
 import redis.asyncio as aioredis
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -29,8 +30,43 @@ from prometheus_fastapi_instrumentator import Instrumentator
 
 from src.api.admin_audit import router as admin_audit_router
 from src.api.admin_roles import router as admin_roles_router
-from src.modules.auth.api.routes import router as auth_router
+
+# NEW: Council Router
+from src.api.council_api import router as council_router
+
+# Infrastructure Routers
+from src.api.monitoring import router as monitoring_router
+from src.api.orchestrator_api import router as orchestrator_router
+
+# Database
+from src.infrastructure.db.connection import close_pool, create_pool
+from src.infrastructure.logging.structured_logging import (
+    StructuredLogger,
+    set_request_context,
+)
+from src.infrastructure.monitoring.opentelemetry_setup import (
+    instrument_asyncpg,
+    instrument_fastapi_app,
+    instrument_httpx,
+    instrument_redis,
+    setup_opentelemetry,
+)
+from src.infrastructure.repositories.marketplace import MarketplaceRepository
+from src.middleware.jwt_user_context import JWTUserContextMiddleware
+from src.middleware.metrics_middleware import MetricsMiddleware
+
+# Middleware
+from src.middleware.security_headers import SecurityHeadersMiddleware
+from src.middleware.user_rate_limit import UserRateLimitMiddleware
+from src.modules.admin_dashboard.api.routes import router as admin_dashboard_router
+
+# NEW: Analytics Router
+from src.modules.analytics.api.routes import router as analytics_router
+from src.modules.assistants.api.routes import router as assistants_router
+from src.modules.auth.api.dependencies import get_auth_service
 from src.modules.auth.api.oauth_routes import router as oauth_router
+from src.modules.auth.api.routes import router as auth_router
+from src.modules.ba_sessions.api.routes import router as ba_sessions_router
 
 # Module Routers (Direct Imports)
 from src.modules.bpmn_api.api.routes import router as bpmn_router
@@ -39,58 +75,32 @@ from src.modules.code_review.api.routes import router as code_review_router
 from src.modules.copilot.api.routes import router as copilot_router
 from src.modules.dashboard.api.routes import router as dashboard_router
 from src.modules.devops_api.api.routes import router as devops_router
+
+# NEW: Previously Unused Modules - Now Integrated
+from src.modules.gateway.api.routes import router as gateway_router
+from src.modules.github_integration.api.routes import router as github_router
+from src.modules.graph_api.api.routes import router as graph_router
+from src.modules.knowledge_base.api.routes import router as knowledge_base_router
+
+# Marketplace & Analytics
+from src.modules.marketplace.api.routes import router as marketplace_router
+from src.modules.metrics.api.routes import router as metrics_router
+from src.modules.risk.api.routes import router as risk_router
+from src.modules.tenant_management.api.routes import router as tenant_router
 from src.modules.test_generation.api.routes import router as test_generation_router
 from src.modules.websocket.api.routes import router as websocket_router
 from src.modules.wiki.api.routes import router as wiki_router
-
-# Infrastructure Routers
-from src.api.monitoring import router as monitoring_router
-from src.api.orchestrator_api import router as orchestrator_router
+from src.services.health_checker import get_health_checker
+from src.utils.error_handling import register_error_handlers
 
 # REMOVED: security_monitoring module doesn't exist
 # from src.api.security_monitoring import router as security_monitoring_router
 
-# Marketplace & Analytics
-from src.modules.marketplace.api.routes import router as marketplace_router
 
-# NEW: Analytics Router
-from src.modules.analytics.api.routes import router as analytics_router
 
-# NEW: Council Router
-from src.api.council_api import router as council_router
 
-# NEW: Previously Unused Modules - Now Integrated
-from src.modules.gateway.api.routes import router as gateway_router
-from src.modules.graph_api.api.routes import router as graph_router
-from src.modules.github_integration.api.routes import router as github_router
-from src.modules.knowledge_base.api.routes import router as knowledge_base_router
-from src.modules.metrics.api.routes import router as metrics_router
-from src.modules.risk.api.routes import router as risk_router
-from src.modules.tenant_management.api.routes import router as tenant_router
-from src.modules.ba_sessions.api.routes import router as ba_sessions_router
-from src.modules.admin_dashboard.api.routes import router as admin_dashboard_router
-from src.modules.assistants.api.routes import router as assistants_router
 
-# Database
-from src.infrastructure.db.connection import close_pool, create_pool
-from src.infrastructure.repositories.marketplace import MarketplaceRepository
-from src.middleware.jwt_user_context import JWTUserContextMiddleware
-from src.middleware.metrics_middleware import MetricsMiddleware
 
-# Middleware
-from src.middleware.security_headers import SecurityHeadersMiddleware
-from src.middleware.user_rate_limit import UserRateLimitMiddleware
-from src.infrastructure.monitoring.opentelemetry_setup import (
-    instrument_asyncpg,
-    instrument_fastapi_app,
-    instrument_httpx,
-    instrument_redis,
-    setup_opentelemetry,
-)
-from src.modules.auth.api.dependencies import get_auth_service
-from src.services.health_checker import get_health_checker
-from src.utils.error_handling import register_error_handlers
-from src.infrastructure.logging.structured_logging import StructuredLogger, set_request_context
 
 # Use structured logging
 structured_logger = StructuredLogger(__name__)
@@ -102,7 +112,7 @@ try:
 
     MCP_AVAILABLE = True
 except (ImportError, Exception) as e:
-    logger.warning(f"MCP server not available: {e}")
+    logger.warning("MCP server not available: %s", e)
     mcp_app = None
     MCP_AVAILABLE = False
 
@@ -134,7 +144,8 @@ async def lifespan(app: FastAPI):
                     service_name="1c-ai-stack",
                     service_version="2.2.0",
                     otlp_endpoint=otlp_endpoint,
-                    enable_console_exporter=os.getenv("OTEL_CONSOLE_EXPORTER", "false").lower() == "true",
+                    enable_console_exporter=os.getenv(
+                        "OTEL_CONSOLE_EXPORTER", "false").lower() == "true",
                 )
                 instrument_fastapi_app(app)
                 instrument_asyncpg()
@@ -142,7 +153,7 @@ async def lifespan(app: FastAPI):
                 instrument_redis()
                 logger.info("OpenTelemetry instrumentation enabled")
             except Exception as e:
-                logger.warning(f"OpenTelemetry setup failed: {e}")
+                logger.warning("OpenTelemetry setup failed: %s", e)
 
         # Database pool with error handling - make it completely non-blocking
         pool = None
@@ -155,7 +166,8 @@ async def lifespan(app: FastAPI):
             else:
                 logger.warning("Database pool creation returned None")
         except asyncio.TimeoutError:
-            logger.warning("Database connection timeout after 5s, continuing without DB")
+            logger.warning(
+                "Database connection timeout after 5s, continuing without DB")
             pool = None
         except Exception as e:
             logger.warning(
@@ -183,7 +195,8 @@ async def lifespan(app: FastAPI):
                 app.state.redis = redis_client
                 logger.info("Redis client connected")
             except Exception as ping_err:
-                logger.warning(f"Redis ping failed: {ping_err}, continuing without Redis")
+                logger.warning(
+                    f"Redis ping failed: {ping_err}, continuing without Redis")
                 try:
                     await redis_client.close()
                 except Exception:
@@ -201,7 +214,8 @@ async def lifespan(app: FastAPI):
         # Marketplace repository with error handling
         if pool:
             try:
-                bucket = os.getenv("AWS_S3_BUCKET") or os.getenv("MINIO_DEFAULT_BUCKET", "")
+                bucket = os.getenv("AWS_S3_BUCKET") or os.getenv(
+                    "MINIO_DEFAULT_BUCKET", "")
                 storage_config = {
                     "bucket": bucket,
                     "region": os.getenv("AWS_S3_REGION", ""),
@@ -234,7 +248,8 @@ async def lifespan(app: FastAPI):
         # Scheduler with error handling
         if marketplace_repo:
             try:
-                cache_refresh_minutes = int(os.getenv("MARKETPLACE_CACHE_REFRESH_MINUTES", "15"))
+                cache_refresh_minutes = int(
+                    os.getenv("MARKETPLACE_CACHE_REFRESH_MINUTES", "15"))
                 scheduler = AsyncIOScheduler()
                 scheduler.add_job(
                     marketplace_repo.refresh_cached_views,
@@ -243,7 +258,8 @@ async def lifespan(app: FastAPI):
                 )
                 scheduler.start()
                 app.state.scheduler = scheduler
-                logger.info(f"Marketplace cache refresh scheduler started (every {cache_refresh_minutes} min)")
+                logger.info(
+                    f"Marketplace cache refresh scheduler started (every {cache_refresh_minutes} min)")
             except Exception as e:
                 logger.error(
                     "Failed to start scheduler",
@@ -257,11 +273,12 @@ async def lifespan(app: FastAPI):
         if redis_client:
             try:
                 user_rate_limit = int(os.getenv("USER_RATE_LIMIT_PER_MINUTE", "60"))
-                user_rate_window = int(os.getenv("USER_RATE_LIMIT_WINDOW_SECONDS", "60"))
+                user_rate_window = int(
+                    os.getenv("USER_RATE_LIMIT_WINDOW_SECONDS", "60"))
                 try:
                     auth_service = get_auth_service()
                 except Exception as auth_err:
-                    logger.warning(f"Failed to get auth service: {auth_err}")
+                    logger.warning("Failed to get auth service: %s", auth_err)
                     auth_service = None
 
                 if auth_service:
@@ -274,7 +291,8 @@ async def lifespan(app: FastAPI):
                     )
                     logger.info("User rate limit middleware added")
                 else:
-                    logger.warning("Skipping user rate limit middleware (no auth service)")
+                    logger.warning(
+                        "Skipping user rate limit middleware (no auth service)")
             except Exception as e:
                 logger.warning(
                     "Failed to add user rate limit middleware",
@@ -303,14 +321,14 @@ async def lifespan(app: FastAPI):
             try:
                 scheduler.shutdown(wait=False)
             except Exception as e:
-                logger.warning(f"Error shutting down scheduler: {e}")
+                logger.warning("Error shutting down scheduler: %s", e)
 
         # Refresh marketplace cache
         if marketplace_repo:
             try:
                 await marketplace_repo.refresh_cached_views()
             except Exception as e:
-                logger.warning(f"Error refreshing marketplace cache: {e}")
+                logger.warning("Error refreshing marketplace cache: %s", e)
 
         # Close Redis
         if redis_client:
@@ -320,14 +338,14 @@ async def lifespan(app: FastAPI):
                 if hasattr(redis_client, "wait_closed"):
                     await redis_client.wait_closed()
             except Exception as e:
-                logger.warning(f"Error closing Redis: {e}")
+                logger.warning("Error closing Redis: %s", e)
 
         # Close database pool
         if pool:
             try:
                 await close_pool()
             except Exception as e:
-                logger.warning(f"Error closing database pool: {e}")
+                logger.warning("Error closing database pool: %s", e)
 
         logger.info("Resources released")
 
@@ -356,28 +374,32 @@ app = FastAPI(
 api_v1_router = APIRouter(
     prefix="/api/v1",
     tags=["API v1"],
-    default_response_class=JSONResponse,  # Changed to JSONResponse to handle list/dict returns correctly
+    # Changed to JSONResponse to handle list/dict returns correctly
+    default_response_class=JSONResponse,
 )
 
 # Metrics instrumentation (Prometheus) - with error handling
 try:
     Instrumentator().instrument(app).expose(app, include_in_schema=False)
 except Exception as e:
-    logger.warning(f"Failed to instrument Prometheus metrics: {e}")
+    logger.warning("Failed to instrument Prometheus metrics: %s", e)
 
 # Register error handlers (best practice: centralized error handling) - with error handling
 try:
     register_error_handlers(app)
 except Exception as e:
-    logger.warning(f"Failed to register error handlers: {e}")
+    logger.warning("Failed to register error handlers: %s", e)
 
 # CORS (Best Practice: Use environment variables, not hardcoded origins)
-cors_origins_env = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173")
-cors_origins = [origin.strip() for origin in cors_origins_env.split(",") if origin.strip()]
+cors_origins_env = os.getenv(
+    "CORS_ORIGINS", "http://localhost:3000,http://localhost:5173")
+cors_origins = [origin.strip()
+                             for origin in cors_origins_env.split(",") if origin.strip()]
 
 # Security: In production, never use ["*"] for origins
 if os.getenv("ENVIRONMENT") == "development" and "*" in cors_origins_env:
-    logger.warning("CORS allows all origins in development mode. Restrict in production!")
+    logger.warning(
+        "CORS allows all origins in development mode. Restrict in production!")
 
 app.add_middleware(
     CORSMiddleware,
@@ -403,10 +425,11 @@ try:
     auth_service = get_auth_service()
     app.add_middleware(JWTUserContextMiddleware, auth_service=auth_service)
 except Exception as e:
-    logger.warning(f"Failed to add JWT middleware: {e}")
+    logger.warning("Failed to add JWT middleware: %s", e)
 
 
-LEGACY_API_REDIRECT_ENABLED = os.getenv("ENABLE_LEGACY_API_REDIRECT", "true").lower() in {"1", "true", "yes"}
+LEGACY_API_REDIRECT_ENABLED = os.getenv(
+    "ENABLE_LEGACY_API_REDIRECT", "true").lower() in {"1", "true", "yes"}
 LEGACY_API_PREFIX = "/api/"
 VERSIONED_API_PREFIX = "/api/v1"
 
@@ -564,9 +587,9 @@ try:
     routers.append(("revolutionary", revolutionary_router))
     logger.info("Revolutionary Components router loaded successfully")
 except ImportError as e:
-    logger.warning(f"Revolutionary Components not available: {e}")
+    logger.warning("Revolutionary Components not available: %s", e)
 except Exception as e:
-    logger.error(f"Failed to load Revolutionary Components: {e}")
+    logger.error("Failed to load Revolutionary Components: %s", e)
 
 # Try to import and add archi_api
 try:
@@ -575,15 +598,15 @@ try:
     routers.append(("archi", archi_router))
     logger.info("Archi API router loaded successfully")
 except ImportError as e:
-    logger.warning(f"Archi API not available: {e}")
+    logger.warning("Archi API not available: %s", e)
 except Exception as e:
-    logger.error(f"Failed to load Archi API: {e}")
+    logger.error("Failed to load Archi API: %s", e)
 
 for name, router in routers:
     try:
         api_v1_router.include_router(router)
     except Exception as e:
-        logger.warning(f"Failed to register {name} router in v1: {e}")
+        logger.warning("Failed to register %s router in v1: {e}", name)
 
 # CRITICAL: Mount api_v1_router to app (was missing!)
 app.include_router(api_v1_router)
@@ -592,7 +615,7 @@ logger.info(f"Registered {len(routers)} routers under /api/v1")
 # API v2 Router
 try:
     from src.api.v2.router import router as api_v2_router_impl
-    
+
     api_v2_router = APIRouter(
         prefix="/api/v2",
         tags=["API v2"],
@@ -602,9 +625,9 @@ try:
     app.include_router(api_v2_router)
     logger.info("API v2 router registered successfully")
 except ImportError as e:
-    logger.warning(f"API v2 not available: {e}")
+    logger.warning("API v2 not available: %s", e)
 except Exception as e:
-    logger.error(f"Failed to load API v2: {e}")
+    logger.error("Failed to load API v2: %s", e)
 
 # Mount MCP server (для Cursor/VSCode) - only if available
 if MCP_AVAILABLE and mcp_app:
@@ -612,7 +635,7 @@ if MCP_AVAILABLE and mcp_app:
         app.mount("/mcp", mcp_app)
         logger.info("MCP server mounted at /mcp")
     except Exception as e:
-        logger.warning(f"Failed to mount MCP server: {e}")
+        logger.warning("Failed to mount MCP server: %s", e)
 
 # Mount Wiki Static UI (Only in Dev/Demo mode)
 try:
@@ -623,9 +646,9 @@ try:
             StaticFiles(directory=wiki_static_path, html=True),
             name="wiki-ui",
         )
-        logger.info(f"Wiki UI mounted at /wiki-ui (from {wiki_static_path})")
+        logger.info("Wiki UI mounted at /wiki-ui (from %s)", wiki_static_path)
 except Exception as e:
-    logger.warning(f"Failed to mount Wiki UI: {e}")
+    logger.warning("Failed to mount Wiki UI: %s", e)
 
 
 # Root

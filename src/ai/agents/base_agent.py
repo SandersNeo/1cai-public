@@ -5,17 +5,17 @@ Base Agent Abstract Class
 Обеспечивает единый интерфейс, мониторинг, и интеграцию с Revolutionary Components.
 """
 
+import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
 from datetime import datetime
 from enum import Enum
-import logging
+from typing import Any, Dict, List, Optional
 
-from prometheus_client import Counter, Histogram, Gauge
+from prometheus_client import Counter, Gauge, Histogram
 
 # Import Adaptive LLM Selector
 try:
-    from src.ai.llm import AdaptiveLLMSelector, TaskType
+    from src.ai.llm import AdaptiveLLMSelector
     LLM_AVAILABLE = True
 except ImportError:
     LLM_AVAILABLE = False
@@ -67,7 +67,7 @@ agent_active_tasks = Gauge(
 class BaseAgent(ABC):
     """
     Базовый класс для всех AI агентов.
-    
+
     Обеспечивает:
     - Единый интерфейс для всех агентов
     - Мониторинг через Prometheus
@@ -75,11 +75,11 @@ class BaseAgent(ABC):
     - Audit logging
     - Error handling
     """
-    
+
     def __init__(self, agent_name: str, capabilities: List[AgentCapability]):
         """
         Initialize base agent.
-        
+
         Args:
             agent_name: Unique agent identifier
             capabilities: List of agent capabilities
@@ -88,37 +88,36 @@ class BaseAgent(ABC):
         self.capabilities = capabilities
         self.status = AgentStatus.IDLE
         self.logger = logging.getLogger(f"agent.{agent_name}")
-        
+
         # LLM Integration
         self.llm_selector = AdaptiveLLMSelector() if LLM_AVAILABLE else None
-        
+
         # Revolutionary Components integration
         self.use_self_evolving = False
         self.use_self_healing = False
         self.use_predictive_generation = False
-        
+
         # Statistics
         self.requests_processed = 0
         self.errors_count = 0
         self.last_request_time: Optional[datetime] = None
-    
+
     @abstractmethod
     async def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Main processing method - must be implemented by each agent.
-        
+
         Args:
             input_data: Input data for processing
-            
+
         Returns:
             Processing result
         """
-        pass
-    
+
     def get_capabilities(self) -> List[AgentCapability]:
         """Get agent capabilities"""
         return self.capabilities
-    
+
     def get_status(self) -> Dict[str, Any]:
         """Get agent status and statistics"""
         return {
@@ -134,7 +133,7 @@ class BaseAgent(ABC):
                 "predictive_generation": self.use_predictive_generation,
             }
         }
-    
+
     async def execute(
         self,
         input_data: Dict[str, Any],
@@ -143,24 +142,24 @@ class BaseAgent(ABC):
     ) -> Dict[str, Any]:
         """
         Execute agent with monitoring and error handling.
-        
+
         Args:
             input_data: Input data
             capability: Capability being used
             context: Optional execution context
-            
+
         Returns:
             Execution result
         """
         context = context or {}
-        
+
         # Update status
         self.status = AgentStatus.PROCESSING
         self.last_request_time = datetime.utcnow()
-        
+
         # Increment active tasks
         agent_active_tasks.labels(agent_name=self.agent_name).inc()
-        
+
         try:
             # Start timer
             with agent_processing_duration.labels(
@@ -169,17 +168,17 @@ class BaseAgent(ABC):
             ).time():
                 # Process
                 result = await self.process(input_data)
-            
+
             # Update metrics
             agent_requests_total.labels(
                 agent_name=self.agent_name,
                 capability=capability.value,
                 status="success"
             ).inc()
-            
+
             self.requests_processed += 1
             self.status = AgentStatus.COMPLETED
-            
+
             return {
                 "success": True,
                 "result": result,
@@ -187,7 +186,7 @@ class BaseAgent(ABC):
                 "capability": capability.value,
                 "timestamp": datetime.utcnow().isoformat()
             }
-            
+
         except Exception as e:
             # Update error metrics
             agent_requests_total.labels(
@@ -195,10 +194,10 @@ class BaseAgent(ABC):
                 capability=capability.value,
                 status="error"
             ).inc()
-            
+
             self.errors_count += 1
             self.status = AgentStatus.FAILED
-            
+
             self.logger.error(
                 f"Agent {self.agent_name} failed: {e}",
                 exc_info=True,
@@ -207,7 +206,7 @@ class BaseAgent(ABC):
                     "input_data": str(input_data)[:200]
                 }
             )
-            
+
             return {
                 "success": False,
                 "error": str(e),
@@ -215,11 +214,11 @@ class BaseAgent(ABC):
                 "capability": capability.value,
                 "timestamp": datetime.utcnow().isoformat()
             }
-        
+
         finally:
             # Decrement active tasks
             agent_active_tasks.labels(agent_name=self.agent_name).dec()
-    
+
     def enable_revolutionary_components(
         self,
         self_evolving: bool = False,
@@ -228,7 +227,7 @@ class BaseAgent(ABC):
     ) -> None:
         """
         Enable Revolutionary Components integration.
-        
+
         Args:
             self_evolving: Enable Self-Evolving AI
             self_healing: Enable Self-Healing Code
@@ -237,7 +236,7 @@ class BaseAgent(ABC):
         self.use_self_evolving = self_evolving
         self.use_self_healing = self_healing
         self.use_predictive_generation = predictive_generation
-        
+
         self.logger.info(
             f"Revolutionary Components enabled for {self.agent_name}",
             extra={
@@ -246,7 +245,7 @@ class BaseAgent(ABC):
                 "predictive_generation": predictive_generation
             }
         )
-    
+
     def _log_audit(
         self,
         action: str,
@@ -255,7 +254,7 @@ class BaseAgent(ABC):
     ) -> None:
         """
         Log audit event.
-        
+
         Args:
             action: Action performed
             details: Action details

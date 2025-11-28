@@ -4,7 +4,7 @@ Log Patterns Repository
 Repository для хранения patterns и thresholds для анализа логов.
 """
 
-from typing import Dict, Any
+from typing import Any, Dict
 
 
 class LogPatternsRepository:

@@ -13,7 +13,8 @@ class SemanticSearchRequest(BaseModel):
         max_length=MAX_SEMANTIC_QUERY_LENGTH,
         description="Search query",
     )
-    configuration: Optional[str] = Field(None, max_length=200, description="Configuration filter")
+    configuration: Optional[str] = Field(
+        None, max_length=200, description="Configuration filter")
     limit: int = Field(10, ge=1, le=100, description="Maximum results")
 
     @field_validator("query")
@@ -23,7 +24,8 @@ class SemanticSearchRequest(BaseModel):
         v = re.sub(r'[<>"\'"]', "", v)
         sanitized = v.strip()
         if len(sanitized) > MAX_SEMANTIC_QUERY_LENGTH:
-            raise ValueError(f"Query too long. Maximum length: {MAX_SEMANTIC_QUERY_LENGTH} characters")
+            raise ValueError(
+                f"Query too long. Maximum length: {MAX_SEMANTIC_QUERY_LENGTH} characters")
         return sanitized
 
     @field_validator("configuration")
@@ -38,7 +40,8 @@ class SemanticSearchRequest(BaseModel):
 
 class GraphQueryRequest(BaseModel):
     query: str = Field(..., min_length=1, max_length=5000, description="Cypher query")
-    parameters: Dict[str, Any] = Field(default_factory=dict, description="Query parameters")
+    parameters: Dict[str, Any] = Field(
+        default_factory=dict, description="Query parameters")
 
     @field_validator("query")
     @classmethod
@@ -63,8 +66,10 @@ class GraphQueryRequest(BaseModel):
 
 
 class FunctionDependenciesRequest(BaseModel):
-    module_name: str = Field(..., min_length=1, max_length=200, description="Module name")
-    function_name: str = Field(..., min_length=1, max_length=200, description="Function name")
+    module_name: str = Field(..., min_length=1, max_length=200,
+                             description="Module name")
+    function_name: str = Field(..., min_length=1, max_length=200,
+                               description="Function name")
 
     @field_validator("module_name", "function_name")
     @classmethod

@@ -2,7 +2,6 @@
 Code Fixer Service
 """
 import re
-from typing import Any, Dict
 
 from fastapi import HTTPException
 

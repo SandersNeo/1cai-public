@@ -21,7 +21,7 @@ logger = StructuredLogger(__name__).logger
 class DockerAnalyzer:
     """
     Сервис анализа Docker инфраструктуры
-    
+
     Features:
     - Анализ docker-compose.yml на best practices
     - Проверка runtime статуса контейнеров
@@ -30,7 +30,6 @@ class DockerAnalyzer:
 
     def __init__(self):
         """Инициализация Docker Analyzer"""
-        pass
 
     async def analyze_compose_file(self, file_path: str) -> Dict[str, Any]:
         """
@@ -42,7 +41,7 @@ class DockerAnalyzer:
         Returns:
             Детальный анализ с рекомендациями
         """
-        logger.info(f"Analyzing docker-compose file: {file_path}")
+        logger.info("Analyzing docker-compose file: %s", file_path)
 
         try:
             # Read and parse compose file
@@ -83,7 +82,7 @@ class DockerAnalyzer:
             return analysis
 
         except yaml.YAMLError as e:
-            logger.error(f"Failed to parse YAML: {e}")
+            logger.error("Failed to parse YAML: %s", e)
             raise DockerAnalysisError(
                 f"Invalid YAML format: {e}",
                 details={"file_path": file_path}
@@ -197,7 +196,7 @@ class DockerAnalyzer:
             }
 
         except Exception as e:
-            logger.error(f"Infrastructure analysis failed: {e}")
+            logger.error("Infrastructure analysis failed: %s", e)
             raise DockerAnalysisError(
                 f"Failed to analyze infrastructure: {e}",
                 details={"compose_file": compose_file_path}
@@ -292,7 +291,8 @@ class DockerAnalyzer:
 
         # General best practices
         if analysis.get("version") == "unknown":
-            recommendations.append("Specify compose file version (e.g., version: '3.8')")
+            recommendations.append(
+                "Specify compose file version (e.g., version: '3.8')")
 
         return recommendations
 

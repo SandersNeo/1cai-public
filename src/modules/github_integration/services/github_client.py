@@ -52,7 +52,8 @@ class GitHubClient:
             logger.warning("Webhook secret not configured - skipping verification")
             return True  # Allow in development
 
-        mac = hmac.new(self.webhook_secret.encode(), msg=payload, digestmod=hashlib.sha256)
+        mac = hmac.new(self.webhook_secret.encode(),
+                       msg=payload, digestmod=hashlib.sha256)
         expected_signature = "sha256=" + mac.hexdigest()
 
         return hmac.compare_digest(expected_signature, signature)
@@ -236,7 +237,8 @@ class GitHubClient:
         if len(comment) > max_comment_length:
             logger.warning(
                 "Comment too long, truncating",
-                extra={"comment_length": len(comment), "max_length": max_comment_length},
+                extra={"comment_length": len(
+                    comment), "max_length": max_comment_length},
             )
             comment = comment[:max_comment_length]
 
@@ -281,7 +283,6 @@ class GitHubClient:
             Response JSON data or None on failure
         """
         base_delay = 1.0
-        last_exception = None
 
         for attempt in range(max_retries):
             try:
@@ -292,7 +293,8 @@ class GitHubClient:
                     if attempt > 0:
                         logger.info(
                             f"Request succeeded on attempt {attempt + 1}",
-                            extra={"url": url, "method": method, "attempt": attempt + 1},
+                            extra={"url": url, "method": method,
+                                "attempt": attempt + 1},
                         )
 
                     # Return JSON for successful requests
@@ -305,7 +307,6 @@ class GitHubClient:
                     return True
 
             except httpx.HTTPStatusError as exc:
-                last_exception = exc
                 is_retryable = exc.response.status_code >= 500
 
                 if attempt == max_retries - 1 or not is_retryable:
@@ -335,7 +336,6 @@ class GitHubClient:
                 await asyncio.sleep(delay)
 
             except httpx.RequestError as exc:
-                last_exception = exc
                 if attempt == max_retries - 1:
                     logger.error(
                         f"Request error: {exc}",

@@ -11,8 +11,10 @@ class ChatRequest(BaseModel):
     """Request for chat with assistant"""
 
     query: str = Field(..., max_length=5000, description="User message")
-    context: Optional[Dict[str, Any]] = Field(default=None, description="Additional context")
-    conversation_id: Optional[str] = Field(default=None, max_length=100, description="Conversation ID")
+    context: Optional[Dict[str, Any]] = Field(
+        default=None, description="Additional context")
+    conversation_id: Optional[str] = Field(
+        default=None, max_length=100, description="Conversation ID")
 
 
 class ChatResponse(BaseModel):
@@ -30,27 +32,35 @@ class ChatResponse(BaseModel):
 class AnalyzeRequirementsRequest(BaseModel):
     """Request for requirements analysis"""
 
-    requirements_text: str = Field(..., max_length=10000, description="Requirements text")
-    context: Optional[Dict[str, Any]] = Field(default=None, description="Project context")
+    requirements_text: str = Field(..., max_length=10000,
+                                   description="Requirements text")
+    context: Optional[Dict[str, Any]] = Field(
+        default=None, description="Project context")
 
 
 class GenerateDiagramRequest(BaseModel):
     """Request for diagram generation"""
 
-    architecture_proposal: Dict[str, Any] = Field(..., description="Architecture proposal")
-    diagram_type: str = Field(default="flowchart", max_length=50, description="Diagram type")
-    diagram_requirements: Optional[Dict[str, Any]] = Field(default=None, description="Diagram requirements")
+    architecture_proposal: Dict[str,
+        Any] = Field(..., description="Architecture proposal")
+    diagram_type: str = Field(default="flowchart", max_length=50,
+                              description="Diagram type")
+    diagram_requirements: Optional[Dict[str, Any]] = Field(
+        default=None, description="Diagram requirements")
 
 
 class ComprehensiveAnalysisRequest(BaseModel):
     """Request for comprehensive analysis"""
 
-    requirements_text: str = Field(..., max_length=10000, description="Requirements text")
-    context: Optional[Dict[str, Any]] = Field(default=None, description="Project context")
+    requirements_text: str = Field(..., max_length=10000,
+                                   description="Requirements text")
+    context: Optional[Dict[str, Any]] = Field(
+        default=None, description="Project context")
 
 
 class RiskAssessmentRequest(BaseModel):
     """Request for risk assessment"""
 
     architecture: Dict[str, Any] = Field(..., description="Architecture solution")
-    project_context: Optional[Dict[str, Any]] = Field(default=None, description="Project context")
+    project_context: Optional[Dict[str, Any]] = Field(
+        default=None, description="Project context")

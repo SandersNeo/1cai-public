@@ -136,14 +136,15 @@ class HealthChecker:
                             "message": "Connected via ServiceContainer PostgreSQLSaver",
                         }
                     else:
-                        logger.debug("ServiceContainer PostgreSQLSaver exists but not connected, trying to connect...")
+                        logger.debug(
+                            "ServiceContainer PostgreSQLSaver exists but not connected, trying to connect...")
                         if pg_saver.connect() and pg_saver.is_connected():
                             return {
                                 "status": "healthy",
                                 "message": "Connected via ServiceContainer PostgreSQLSaver (reconnected)",
                             }
             except Exception as e:
-                logger.debug(f"ServiceContainer PostgreSQLSaver check failed: {e}")
+                logger.debug("ServiceContainer PostgreSQLSaver check failed: %s", e)
 
             # Try to create and connect new PostgreSQLSaver
             try:
@@ -156,14 +157,17 @@ class HealthChecker:
                             "message": "Connected via new PostgreSQLSaver",
                         }
                     else:
-                        logger.debug("PostgreSQLSaver.connect() returned True but is_connected() returns False")
+                        logger.debug(
+                            "PostgreSQLSaver.connect() returned True but is_connected() returns False")
                 else:
                     logger.debug("PostgreSQLSaver.connect() returned False")
             except ValueError as e:
                 # Password not provided - this is expected, continue to direct connection
-                logger.debug(f"PostgreSQLSaver initialization failed (likely missing password): {e}")
+                logger.debug(
+                    f"PostgreSQLSaver initialization failed (likely missing password): {e}")
             except Exception as e:
-                logger.debug(f"PostgreSQLSaver check failed, using direct connection: {e}")
+                logger.debug(
+                    f"PostgreSQLSaver check failed, using direct connection: {e}")
 
             # Fallback to direct connection
             db_url = os.getenv("DATABASE_URL")
@@ -174,9 +178,10 @@ class HealthChecker:
                 database = os.getenv("POSTGRES_DB", "knowledge_base")
                 user = os.getenv("POSTGRES_USER", "admin")
                 password = os.getenv("POSTGRES_PASSWORD")
-                
+
                 if not password:
-                    logger.warning("PostgreSQL password not provided in environment variables")
+                    logger.warning(
+                        "PostgreSQL password not provided in environment variables")
                     return {
                         "status": "unhealthy",
                         "error": "PostgreSQL password not provided",
@@ -188,7 +193,7 @@ class HealthChecker:
                 database = parsed.path.lstrip("/") or "knowledge_base"
                 user = parsed.username or "admin"
                 password = parsed.password or os.getenv("POSTGRES_PASSWORD")
-                
+
                 if not password:
                     logger.warning("PostgreSQL password not provided in DATABASE_URL")
                     return {
@@ -225,13 +230,15 @@ class HealthChecker:
         except asyncpg.exceptions.InvalidPasswordError as e:
             logger.error(
                 "PostgreSQL authentication failed",
-                extra={"error": str(e), "host": host, "database": database, "user": user},
+                extra={"error": str(e), "host": host,
+                                    "database": database, "user": user},
             )
             return {"status": "unhealthy", "error": "Authentication failed - check password"}
         except asyncpg.exceptions.ConnectionDoesNotExistError as e:
             logger.error(
                 "PostgreSQL connection error",
-                extra={"error": str(e), "host": host, "port": port, "database": database},
+                extra={"error": str(e), "host": host, "port": port,
+                                    "database": database},
             )
             return {"status": "unhealthy", "error": f"Connection failed: {str(e)}"}
         except Exception as e:
@@ -292,7 +299,7 @@ class HealthChecker:
 
             async with driver.session() as session:
                 result = await session.run("RETURN 1 as num")
-                record = await result.single()
+                await result.single()
 
                 # Get node count
                 count_result = await session.run("MATCH (n) RETURN count(n) as count")

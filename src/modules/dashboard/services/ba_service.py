@@ -3,7 +3,7 @@ BA Dashboard Service
 Business logic for business analyst requirements and traceability
 """
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Any, Dict
 
 import asyncpg
 

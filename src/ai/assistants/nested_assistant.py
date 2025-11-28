@@ -5,8 +5,8 @@ AI assistant with multi-scale conversational memory.
 Integrates ConversationalMemory for long-term context retention.
 """
 
-from typing import Any, Dict, List, Optional
 import time
+from typing import Any, Dict, List, Optional
 
 from src.ml.continual_learning.conversational_memory import ConversationalMemory
 from src.utils.structured_logging import StructuredLogger
@@ -56,9 +56,10 @@ class NestedAssistant:
         self.response_history: Dict[str, Dict] = {}
 
         # Statistics
-        self.stats = {"total_messages": 0, "total_sessions": 0, "total_feedback": 0, "avg_rating": 0.0}
+        self.stats = {"total_messages": 0, "total_sessions": 0,
+            "total_feedback": 0, "avg_rating": 0.0}
 
-        logger.info(f"Created NestedAssistant: {name} ({role})")
+        logger.info("Created NestedAssistant: %s ({role})", name)
 
     def start_session(self, session_id: str):
         """
@@ -70,7 +71,7 @@ class NestedAssistant:
         self.memory.start_session(session_id)
         self.stats["total_sessions"] += 1
 
-        logger.info(f"Started session {session_id} for {self.name}")
+        logger.info("Started session %s for {self.name}", session_id)
 
     def end_session(self):
         """End current session"""
@@ -97,10 +98,12 @@ class NestedAssistant:
         self.memory.store_message("user", user_message, context)
 
         # Retrieve relevant context from memory
-        relevant_context = self.memory.get_relevant_history(user_message, max_messages=10)
+        relevant_context = self.memory.get_relevant_history(
+            user_message, max_messages=10)
 
         # Build enhanced prompt with context
-        enhanced_prompt = self._build_enhanced_prompt(user_message, relevant_context, context)
+        enhanced_prompt = self._build_enhanced_prompt(
+            user_message, relevant_context, context)
 
         # Generate response (using base assistant if available)
         if self.base:
@@ -123,7 +126,8 @@ class NestedAssistant:
             "timestamp": time.time(),
         }
 
-        logger.debug("Processed message", extra={"assistant": self.name, "context_messages": len(relevant_context)})
+        logger.debug("Processed message", extra={
+                     "assistant": self.name, "context_messages": len(relevant_context)})
 
         return {
             "response": response_text,
@@ -142,7 +146,7 @@ class NestedAssistant:
             comments: Optional comments
         """
         if response_id not in self.response_history:
-            logger.warning(f"Unknown response_id: {response_id}")
+            logger.warning("Unknown response_id: %s", response_id)
             return
 
         self.stats["total_feedback"] += 1
@@ -162,7 +166,8 @@ class NestedAssistant:
 
         logger.info(
             "Received feedback",
-            extra={"assistant": self.name, "rating": rating, "avg_rating": self.stats["avg_rating"]},
+            extra={"assistant": self.name, "rating": rating,
+                "avg_rating": self.stats["avg_rating"]},
         )
 
     def _build_enhanced_prompt(self, user_message: str, relevant_context: List[Dict], context: Dict) -> str:

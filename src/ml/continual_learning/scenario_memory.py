@@ -6,10 +6,11 @@ Implements 4-level continuum memory for workflow optimization.
 """
 
 import hashlib
+import json
 import time
 from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
-import json
 
 from src.ml.continual_learning.cms import ContinuumMemorySystem
 from src.ml.continual_learning.memory_level import MemoryLevel, MemoryLevelConfig
@@ -75,7 +76,8 @@ class ScenarioMemoryLevel(MemoryLevel):
 
         # Hash to embedding
         feature_hash = hashlib.sha256(features.encode()).digest()
-        embedding = np.array([float(b) / 255.0 for b in feature_hash[:128]], dtype="float32")
+        embedding = np.array(
+            [float(b) / 255.0 for b in feature_hash[:128]], dtype="float32")
 
         return embedding
 
@@ -204,7 +206,8 @@ class ScenarioMemory(ContinuumMemorySystem):
         # Advance step
         self.step()
 
-        logger.info("Tracked execution", extra={"scenario_id": scenario_id, "success": success, "duration": duration})
+        logger.info("Tracked execution", extra={
+                    "scenario_id": scenario_id, "success": success, "duration": duration})
 
     def analyze_success_patterns(self, scenario_id: str) -> Dict[str, Any]:
         """
@@ -217,7 +220,8 @@ class ScenarioMemory(ContinuumMemorySystem):
             Dict with success patterns and recommendations
         """
         # Get all executions for this scenario
-        scenario_executions = [e for e in self.execution_history if e["scenario_id"] == scenario_id]
+        scenario_executions = [
+            e for e in self.execution_history if e["scenario_id"] == scenario_id]
 
         if not scenario_executions:
             return {
@@ -235,7 +239,8 @@ class ScenarioMemory(ContinuumMemorySystem):
         success_rate = success_count / total_executions
 
         # Average duration for successful executions
-        avg_duration = sum(e["duration"] for e in successful) / len(successful) if successful else 0.0
+        avg_duration = sum(e["duration"] for e in successful) / \
+                           len(successful) if successful else 0.0
 
         # Find most common successful parameters
         recommended = self._find_common_parameters(successful)
@@ -284,7 +289,8 @@ class ScenarioMemory(ContinuumMemorySystem):
 
         elif success_rate < 0.7:
             # Medium success rate - suggest improvements
-            merged = self._merge_parameters(current_parameters, analysis["recommended_parameters"])
+            merged = self._merge_parameters(
+                current_parameters, analysis["recommended_parameters"])
             return {
                 "action": "modify",
                 "suggested_parameters": merged,

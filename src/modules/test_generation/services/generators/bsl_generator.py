@@ -3,7 +3,7 @@ BSL Test Generator
 """
 import asyncio
 from datetime import datetime
-from typing import Any, List, Dict
+from typing import Any, Dict, List
 
 from src.ai.agents.code_review.bsl_parser import BSLParser
 from src.infrastructure.logging.structured_logging import StructuredLogger

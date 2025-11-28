@@ -1,10 +1,8 @@
-import json
-import logging
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from src.modules.analytics.domain.models import AnalyticsReport, MetricType
 from src.infrastructure.logging.structured_logging import StructuredLogger
+from src.modules.analytics.domain.models import AnalyticsReport, MetricType
 
 logger = StructuredLogger(__name__).logger
 
@@ -39,7 +37,7 @@ class AnalyticsService:
         }
 
         self._metrics_data[component].append(metric_entry)
-        logger.debug(f"Metric collected: {component}.{metric_type.value} = {value}")
+        logger.debug("Metric collected: %s.{metric_type.value} = {value}", component)
 
     def analyze_performance(self, component: str, period_days: int = 7) -> Dict[str, Any]:
         """Analyze performance metrics for a component."""
@@ -93,18 +91,22 @@ class AnalyticsService:
 
         # Collect metrics
         metrics = self._metrics_data.get(component, [])
-        recent = [m for m in metrics if datetime.fromisoformat(m["timestamp"]) >= cutoff]
+        recent = [m for m in metrics if datetime.fromisoformat(
+            m["timestamp"]) >= cutoff]
 
         # Calculate improvements
-        performance_improvement = self._calculate_improvement(recent, MetricType.PERFORMANCE)
+        performance_improvement = self._calculate_improvement(
+            recent, MetricType.PERFORMANCE)
         quality_improvement = self._calculate_improvement(recent, MetricType.QUALITY)
 
         # Estimate costs (Simplified)
-        cost_savings = self._estimate_cost_savings(performance_improvement, quality_improvement)
+        cost_savings = self._estimate_cost_savings(
+            performance_improvement, quality_improvement)
 
         # ROI = (Benefits - Costs) / Costs * 100%
         estimated_costs = period_days * 100  # Mock cost
-        roi = (cost_savings - estimated_costs) / estimated_costs * 100 if estimated_costs > 0 else 0
+        roi = (cost_savings - estimated_costs) / \
+               estimated_costs * 100 if estimated_costs > 0 else 0
 
         return {
             "component": component,
@@ -175,7 +177,8 @@ class AnalyticsService:
 
             # Generate Insights
             if perf_analysis.get("trend") == "improving":
-                insights.append(f"{component}: Performance is improving ({perf_analysis.get('trend', 'unknown')})")
+                insights.append(
+                    f"{component}: Performance is improving ({perf_analysis.get('trend', 'unknown')})")
 
             if roi_analysis.get("roi_percent", 0) > 0:
                 recommendations.append(

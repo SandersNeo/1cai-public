@@ -8,9 +8,11 @@ Based on prediction error and context.
 """
 
 from typing import Any, Dict, Optional
+
 import numpy as np
 
 from src.utils.structured_logging import StructuredLogger
+
 from .types import SurpriseScore
 
 logger = StructuredLogger(__name__).logger
@@ -39,7 +41,7 @@ class SurpriseCalculator:
             method: Calculation method ("mse", "cosine", "kl")
         """
         self.method = method
-        logger.info(f"Created SurpriseCalculator with method={method}")
+        logger.info("Created SurpriseCalculator with method=%s", method)
 
     def compute(self, actual: Any, predicted: Any, context: Optional[Dict] = None) -> SurpriseScore:
         """
@@ -82,7 +84,7 @@ class SurpriseCalculator:
             return float(surprise)
 
         except Exception as e:
-            logger.warning(f"Error computing MSE surprise: {e}")
+            logger.warning("Error computing MSE surprise: %s", e)
             return 0.5  # Default medium surprise
 
     def _compute_cosine(self, actual: Any, predicted: Any) -> SurpriseScore:
@@ -107,7 +109,7 @@ class SurpriseCalculator:
             return float(np.clip(surprise, 0.0, 1.0))
 
         except Exception as e:
-            logger.warning(f"Error computing cosine surprise: {e}")
+            logger.warning("Error computing cosine surprise: %s", e)
             return 0.5
 
     def _compute_kl(self, actual: Any, predicted: Any) -> SurpriseScore:
@@ -135,7 +137,7 @@ class SurpriseCalculator:
             return float(np.clip(surprise, 0.0, 1.0))
 
         except Exception as e:
-            logger.warning(f"Error computing KL surprise: {e}")
+            logger.warning("Error computing KL surprise: %s", e)
             return 0.5
 
     def compute_embedding_surprise(self, actual_emb: np.ndarray, predicted_emb: np.ndarray) -> SurpriseScore:

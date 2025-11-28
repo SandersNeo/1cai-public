@@ -70,7 +70,7 @@ class MLFlowManager:
 
                 # Проверяем существование эксперимента
                 try:
-                    experiment = self.client.get_experiment_by_name(experiment_name)
+                    self.client.get_experiment_by_name(experiment_name)
                 except MlflowException:
                     # Создаем новый эксперимент
                     experiment_id = self.client.create_experiment(
@@ -80,7 +80,8 @@ class MLFlowManager:
                             "created_at": datetime.utcnow().isoformat(),
                         },
                     )
-                    logger.info("Создан эксперимент", extra={"experiment_name": experiment_name})
+                    logger.info("Создан эксперимент", extra={
+                                "experiment_name": experiment_name})
 
             except Exception as e:
                 logger.error(
@@ -144,7 +145,8 @@ class MLFlowManager:
                 filtered_params[key] = json.dumps(value)
 
         mlflow.log_params(filtered_params)
-        logger.debug("Записаны параметры", extra={"params_keys": list(filtered_params.keys())})
+        logger.debug("Записаны параметры", extra={
+                     "params_keys": list(filtered_params.keys())})
 
     def log_metrics(self, metrics: Dict[str, float], step: Optional[int] = None):
         """Логирование метрик"""
@@ -342,14 +344,15 @@ class MLFlowManager:
         for model_name in model_names:
             try:
                 # Получаем последние версии моделей
-                model_versions = self.client.search_model_versions(f"name='{model_name}'")
+                model_versions = self.client.search_model_versions(
+                    f"name='{model_name}'")
 
                 if model_versions:
                     latest_version = model_versions[0]
                     model_uri = f"models:/{model_name}/{latest_version.version}"
 
                     # Загружаем метаданные модели
-                    model_info = self.client.get_model_version(model_name, latest_version.version)
+                    self.client.get_model_version(model_name, latest_version.version)
 
                     comparison_results[model_name] = {
                         "version": latest_version.version,
@@ -447,7 +450,8 @@ class MLFlowManager:
             experiment_name = f"feature_store_{name}"
 
             # Запускаем эксперимент
-            run_id = self.start_experiment(experiment_name, f"features_{datetime.now().strftime('%Y%m%d')}")
+            self.start_experiment(
+                experiment_name, f"features_{datetime.now().strftime('%Y%m%d')}")
 
             # Логируем статистики фич
             feature_stats = {}

@@ -12,10 +12,12 @@ Based on:
 import time
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
+
 import numpy as np
 
 from src.utils.structured_logging import StructuredLogger
-from .types import MemoryKey, MemoryEntry, SurpriseScore, LevelStats
+
+from .types import LevelStats, MemoryEntry, MemoryKey, SurpriseScore
 
 logger = StructuredLogger(__name__).logger
 
@@ -36,7 +38,8 @@ class MemoryLevelConfig:
         if self.update_freq < 1:
             raise ValueError(f"update_freq must be >= 1, got {self.update_freq}")
         if not 0.0 <= self.learning_rate <= 1.0:
-            raise ValueError(f"learning_rate must be in [0, 1], got {self.learning_rate}")
+            raise ValueError(
+                f"learning_rate must be in [0, 1], got {self.learning_rate}")
         if not 0.0 <= self.threshold <= 1.0:
             raise ValueError(f"threshold must be in [0, 1], got {self.threshold}")
         if self.capacity < 1:
@@ -80,7 +83,8 @@ class MemoryLevel:
         self.metadata: Dict[MemoryKey, MemoryEntry] = {}
 
         # Statistics
-        self.stats = LevelStats(name=config.name, update_freq=config.update_freq, frozen=config.frozen)
+        self.stats = LevelStats(
+            name=config.name, update_freq=config.update_freq, frozen=config.frozen)
 
         logger.info(
             f"Created memory level: {config.name}",
@@ -173,7 +177,8 @@ class MemoryLevel:
 
         logger.debug(
             f"Updated level {self.config.name}",
-            extra={"key": key, "surprise": surprise, "step": self.step_count, "memory_size": len(self.memory)},
+            extra={"key": key, "surprise": surprise,
+                "step": self.step_count, "memory_size": len(self.memory)},
         )
 
     def get(self, key: MemoryKey) -> Optional[np.ndarray]:
@@ -227,7 +232,8 @@ class MemoryLevel:
         del self.memory[oldest_key]
         del self.metadata[oldest_key]
 
-        logger.debug(f"Evicted oldest entry from {self.config.name}", extra={"key": oldest_key})
+        logger.debug(f"Evicted oldest entry from {self.config.name}", extra={
+                     "key": oldest_key})
 
     def clear(self):
         """Clear all memory"""

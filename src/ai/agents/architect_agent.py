@@ -46,7 +46,8 @@ class ArchitectAgent:
         """
 
         if self._delegate and hasattr(self._delegate, "analyze_system"):
-            return await self._delegate.analyze_system(description)  # type: ignore[no-any-return]
+            # type: ignore[no-any-return]
+            return await self._delegate.analyze_system(description)
 
         cleaned = " ".join(
             line.strip() for line in description.splitlines() if line.strip()

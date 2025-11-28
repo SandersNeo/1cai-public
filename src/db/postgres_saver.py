@@ -15,7 +15,7 @@ from typing import Any, Dict, Optional
 
 try:
     import psycopg2
-    from psycopg2 import pool, OperationalError
+    from psycopg2 import OperationalError
     from psycopg2.extras import Json
 except ImportError:
     raise ImportError("psycopg2 not installed. Run: pip install psycopg2-binary")
@@ -41,7 +41,7 @@ class PostgreSQLSaver:
         maxconn: int = 10,
     ):
         """Initialize PostgreSQL connection pool
-        
+
         Supports both DATABASE_URL and individual parameters.
         Priority: DATABASE_URL > individual parameters > environment variables > defaults
         """
@@ -58,7 +58,7 @@ class PostgreSQLSaver:
                 user = user or parsed.username or "admin"
                 password = password or parsed.password or os.getenv("POSTGRES_PASSWORD")
             except Exception as e:
-                logger.warning(f"Failed to parse DATABASE_URL: {e}, using defaults")
+                logger.warning("Failed to parse DATABASE_URL: %s, using defaults", e)
 
         # Fallback to individual env variables or defaults
         if not host:
@@ -83,7 +83,8 @@ class PostgreSQLSaver:
             user = "admin"
 
         if not password:
-            raise ValueError("PostgreSQL password not provided (set POSTGRES_PASSWORD or DATABASE_URL)")
+            raise ValueError(
+                "PostgreSQL password not provided (set POSTGRES_PASSWORD or DATABASE_URL)")
 
         self.conn_params = {
             "host": host,
@@ -119,10 +120,10 @@ class PostgreSQLSaver:
                 if attempt < max_retries - 1:
                     time.sleep(retry_delay * (2**attempt))
                 else:
-                    logger.error(f"Failed to connect to PostgreSQL pool: {e}")
+                    logger.error("Failed to connect to PostgreSQL pool: %s", e)
                     return False
             except Exception as e:
-                logger.error(f"Unexpected error connecting to PostgreSQL: {e}")
+                logger.error("Unexpected error connecting to PostgreSQL: %s", e)
                 return False
         return False
 
@@ -147,7 +148,7 @@ class PostgreSQLSaver:
             finally:
                 self._pool.putconn(conn)
         except Exception as e:
-            logger.debug(f"PostgreSQL health check failed: {e}")
+            logger.debug("PostgreSQL health check failed: %s", e)
             return False
 
     @contextmanager

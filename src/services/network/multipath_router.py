@@ -218,7 +218,7 @@ class MultiPathRouter:
                     path_id=path.path_id, path_type=path.path_type
                 ).set(0.0)
 
-            logger.debug(f"Path {path.path_id} health check failed: {e}")
+            logger.debug("Path {path.path_id} health check failed: %s", e)
 
     async def send_request(
         self, request_func: Callable[..., Awaitable[Any]], *args, **kwargs
@@ -270,7 +270,7 @@ class MultiPathRouter:
 
             except Exception as e:
                 last_error = e
-                logger.warning(f"Path {path.path_id} failed: {e}")
+                logger.warning("Path {path.path_id} failed: %s", e)
 
                 # Обновляем метрики
                 metrics.failure_count += 1

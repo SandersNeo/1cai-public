@@ -9,7 +9,8 @@ Based on:
 - Nested Learning paradigm
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
+
 import numpy as np
 
 from src.utils.structured_logging import StructuredLogger
@@ -42,7 +43,7 @@ class SelfReferencialOptimizer:
         self.learning_rate = learning_rate
         self.optimization_history: List[Dict] = []
 
-        logger.info(f"Created SelfReferencialOptimizer with lr={learning_rate}")
+        logger.info("Created SelfReferencialOptimizer with lr=%s", learning_rate)
 
     def optimize_criteria(
         self, base_criteria: Dict[str, Any], success_patterns: List[Dict[str, Any]]
@@ -82,7 +83,8 @@ class SelfReferencialOptimizer:
             current_latency = base_criteria.get("max_latency_ms", 1000)
             optimal_latency = analysis["latency_threshold"]
 
-            new_latency = current_latency + self.learning_rate * (optimal_latency - current_latency)
+            new_latency = current_latency + self.learning_rate * \
+                (optimal_latency - current_latency)
             modified["max_latency_ms"] = int(new_latency)
 
         # Add quality weight if patterns show quality matters
@@ -91,7 +93,8 @@ class SelfReferencialOptimizer:
 
         # Record optimization
         self.optimization_history.append(
-            {"base": base_criteria, "modified": modified, "analysis": analysis, "num_patterns": len(success_patterns)}
+            {"base": base_criteria, "modified": modified,
+                "analysis": analysis, "num_patterns": len(success_patterns)}
         )
 
         logger.info(

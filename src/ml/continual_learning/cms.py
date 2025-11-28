@@ -10,12 +10,14 @@ Based on Google Research NeurIPS 2025 paper:
 
 import time
 from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
 
 from src.utils.structured_logging import StructuredLogger
+
 from .memory_level import MemoryLevel, MemoryLevelConfig
+from .types import CMSStats, MemoryKey, SurpriseScore
 from .vector_index import VectorIndex
-from .types import MemoryKey, SurpriseScore, CMSStats, LevelStats
 
 logger = StructuredLogger(__name__).logger
 
@@ -53,7 +55,8 @@ class ContinuumMemorySystem:
 
         # Create levels
         for name, update_freq, lr in levels:
-            config = MemoryLevelConfig(name=name, update_freq=update_freq, learning_rate=lr)
+            config = MemoryLevelConfig(
+                name=name, update_freq=update_freq, learning_rate=lr)
             self.levels[name] = self._create_level(config)
 
         # Vector index for similarity search
@@ -105,12 +108,14 @@ class ContinuumMemorySystem:
 
         # Store in level
         level.memory[key] = embedding
-        level.metadata[key] = {"data": data, "step": self.global_step, "timestamp": time.time()}
+        level.metadata[key] = {"data": data,
+            "step": self.global_step, "timestamp": time.time()}
 
         # Add to vector index
         self.index.add(key, embedding, metadata={"level": level_name})
 
-        logger.debug(f"Stored in level {level_name}", extra={"key": key, "level": level_name})
+        logger.debug(f"Stored in level {level_name}", extra={
+                     "key": key, "level": level_name})
 
     def retrieve(self, query: Any, level_name: str, k: int = 5) -> List[Tuple[MemoryKey, float, Any]]:
         """
@@ -132,7 +137,8 @@ class ContinuumMemorySystem:
         query_emb = level.encode(query, {})
 
         # Search in index
-        results = self.index.search(query_emb, k=k, filter_fn=lambda meta: meta.get("level") == level_name)
+        results = self.index.search(
+            query_emb, k=k, filter_fn=lambda meta: meta.get("level") == level_name)
 
         # Return with data
         output = []

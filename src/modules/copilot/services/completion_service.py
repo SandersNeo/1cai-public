@@ -39,7 +39,8 @@ class CompletionService:
             prompt = f"{code}\n{current_line}"
 
             # Tokenize
-            inputs = tokenizer(prompt, return_tensors="pt", max_length=2048, truncation=True).to(device)
+            inputs = tokenizer(prompt, return_tensors="pt",
+                               max_length=2048, truncation=True).to(device)
 
             # Generate multiple completions with different temperatures
             temperatures = [0.2, 0.5, 0.8][:max_suggestions]
@@ -65,7 +66,8 @@ class CompletionService:
                         {
                             "text": new_part,
                             "description": f"AI suggestion (temp={temp})",
-                            "score": 1.0 - (temp * 0.2),  # Higher temp = lower confidence
+                            # Higher temp = lower confidence
+                            "score": 1.0 - (temp * 0.2),
                         }
                     )
 
@@ -176,7 +178,8 @@ class CompletionService:
 
         # Pattern 7: Новый
         if "новый" in line_lower:
-            suggestions.append({"text": " Массив", "description": "Новый массив", "score": 0.87})
+            suggestions.append(
+                {"text": " Массив", "description": "Новый массив", "score": 0.87})
             suggestions.append(
                 {
                     "text": " Структура",

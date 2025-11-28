@@ -774,7 +774,7 @@ class ArchitectAssistant(BaseAIAssistant):
 
         risk_level = risks.get("overall_assessment", {}).get("risk_level", "medium")
         component_count = len(architecture.get("components", []))
-        requirement_count = len(requirements.get("requirements", []))
+        len(requirements.get("requirements", []))
 
         if risk_level == "low" and component_count <= 10:
             return "Рекомендуется немедленное начало разработки. Архитектурное решение зрелое и риски минимальны."

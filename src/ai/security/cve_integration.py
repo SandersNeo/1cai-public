@@ -4,48 +4,48 @@ CVE Database Integration for Security Agent
 Provides integration with CVE databases for vulnerability checking.
 """
 
-from typing import Dict, List, Optional, Any
 import logging
 from datetime import datetime
-import aiohttp
+from typing import Any, Dict, List, Optional
+
 
 
 class CVEIntegration:
     """
     Integration with CVE (Common Vulnerabilities and Exposures) databases.
-    
+
     Supports:
     - NVD (National Vulnerability Database)
     - CVE.org
     - GitHub Security Advisories
     """
-    
+
     def __init__(self):
         self.logger = logging.getLogger("cve_integration")
         self.nvd_api_url = "https://services.nvd.nist.gov/rest/json/cves/2.0"
         self.cache = {}  # Simple in-memory cache
-    
+
     async def check_dependencies(
         self,
         dependencies: List[Dict[str, str]]
     ) -> List[Dict[str, Any]]:
         """
         Check dependencies against CVE database.
-        
+
         Args:
             dependencies: List of {"name": str, "version": str}
-            
+
         Returns:
             List of vulnerabilities found
         """
         vulnerabilities = []
-        
+
         for dep in dependencies:
             cves = await self.search_cve(
                 product=dep["name"],
                 version=dep.get("version")
             )
-            
+
             if cves:
                 vulnerabilities.append({
                     "dependency": dep,
@@ -53,9 +53,9 @@ class CVEIntegration:
                     "severity": self._get_max_severity(cves),
                     "count": len(cves)
                 })
-        
+
         return vulnerabilities
-    
+
     async def search_cve(
         self,
         product: str,
@@ -63,11 +63,11 @@ class CVEIntegration:
     ) -> List[Dict[str, Any]]:
         """
         Search CVE database for product vulnerabilities.
-        
+
         Args:
             product: Product name
             version: Optional version
-            
+
         Returns:
             List of CVEs
         """
@@ -75,21 +75,21 @@ class CVEIntegration:
         cache_key = f"{product}:{version or 'all'}"
         if cache_key in self.cache:
             return self.cache[cache_key]
-        
+
         try:
             # TODO: Real API call to NVD
             # For now, return mock data
             cves = await self._mock_cve_search(product, version)
-            
+
             # Cache results
             self.cache[cache_key] = cves
-            
+
             return cves
-            
+
         except Exception as e:
-            self.logger.error(f"CVE search failed: {e}")
+            self.logger.error("CVE search failed: %s", e)
             return []
-    
+
     async def _mock_cve_search(
         self,
         product: str,
@@ -126,32 +126,32 @@ class CVEIntegration:
                 }
             ]
         }
-        
+
         product_lower = product.lower()
         if product_lower in vulnerable_packages:
             return vulnerable_packages[product_lower]
-        
+
         return []
-    
+
     def _get_max_severity(self, cves: List[Dict]) -> str:
         """Get maximum severity from CVE list"""
         severity_order = ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
-        
+
         max_severity = "LOW"
         for cve in cves:
             severity = cve.get("severity", "LOW")
             if severity_order.index(severity) > severity_order.index(max_severity):
                 max_severity = severity
-        
+
         return max_severity
-    
+
     async def get_cve_details(self, cve_id: str) -> Optional[Dict[str, Any]]:
         """
         Get detailed information about specific CVE.
-        
+
         Args:
             cve_id: CVE identifier (e.g., CVE-2023-12345)
-            
+
         Returns:
             CVE details or None
         """
@@ -168,23 +168,23 @@ class CVEIntegration:
                 "cwe_ids": []
             }
         except Exception as e:
-            self.logger.error(f"Failed to get CVE details: {e}")
+            self.logger.error("Failed to get CVE details: %s", e)
             return None
 
 
 class SASTIntegration:
     """
     Integration with SAST (Static Application Security Testing) tools.
-    
+
     Supports:
     - SonarQube
     - Semgrep
     - Bandit (Python)
     """
-    
+
     def __init__(self):
         self.logger = logging.getLogger("sast_integration")
-    
+
     async def scan_code(
         self,
         code: str,
@@ -192,11 +192,11 @@ class SASTIntegration:
     ) -> Dict[str, Any]:
         """
         Run SAST scan on code.
-        
+
         Args:
             code: Code to scan
             language: Programming language
-            
+
         Returns:
             Scan results
         """

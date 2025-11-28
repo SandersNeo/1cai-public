@@ -5,19 +5,20 @@ Embedding service with Continuum Memory System for continual learning.
 
 Implements 4-level memory:
 - L0 (token): Fast updates, token-level patterns
-- L1 (function): Medium updates, function-level patterns  
+- L1 (function): Medium updates, function-level patterns
 - L2 (config): Slow updates, configuration-level knowledge
 - L3 (platform): Static, core 1C platform knowledge
 """
 
 import hashlib
 from typing import Any, Dict, List, Optional, Union
+
 import numpy as np
 
-from src.services.embedding.service import EmbeddingService
 from src.ml.continual_learning.cms import ContinuumMemorySystem
 from src.ml.continual_learning.memory_level import MemoryLevel, MemoryLevelConfig
 from src.ml.continual_learning.surprise_calculator import SurpriseCalculator
+from src.services.embedding.service import EmbeddingService
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -172,7 +173,8 @@ class NestedEmbeddingService:
 
         logger.debug(
             "Encoded with nested CMS",
-            extra={"code_length": len(code), "weights": weights, "embedding_shape": embedding.shape},
+            extra={"code_length": len(code), "weights": weights,
+                                      "embedding_shape": embedding.shape},
         )
 
         return embedding
@@ -228,7 +230,8 @@ class NestedEmbeddingService:
 
         logger.debug(
             "Updated CMS with surprise",
-            extra={"surprise": surprise, "surprise_level": surprise_level, "key": key[:16] + "..."},
+            extra={"surprise": surprise, "surprise_level": surprise_level,
+                "key": key[:16] + "..."},
         )
 
     def _compute_weights(self, context: Dict) -> Dict[str, float]:

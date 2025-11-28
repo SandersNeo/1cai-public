@@ -108,5 +108,6 @@ class IntegrationService:
                 use_graph=use_graph,
             )
         except Exception as e:
-            logger.error(f"Error syncing traceability to Confluence: {e}", exc_info=True)
+            logger.error(
+                f"Error syncing traceability to Confluence: {e}", exc_info=True)
             raise

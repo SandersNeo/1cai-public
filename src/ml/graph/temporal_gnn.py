@@ -9,11 +9,12 @@ Based on:
 - Nested Learning paradigm
 """
 
+from typing import Dict, Optional, Tuple
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Dict, Optional, Tuple
-import numpy as np
 
 from src.utils.structured_logging import StructuredLogger
 
@@ -21,7 +22,7 @@ logger = StructuredLogger(__name__).logger
 
 # Check for torch_geometric
 try:
-    from torch_geometric.nn import GCNConv, GATConv
+    from torch_geometric.nn import GATConv
 
     TORCH_GEOMETRIC_AVAILABLE = True
 except ImportError:
@@ -173,7 +174,8 @@ class TemporalGNN(nn.Module):
         else:
             # Fallback: simple linear layers
             self.conv_layers = nn.ModuleList(
-                [nn.Linear(node_features if i == 0 else hidden_dim, hidden_dim) for i in range(num_layers)]
+                [nn.Linear(node_features if i == 0 else hidden_dim, hidden_dim)
+                           for i in range(num_layers)]
             )
 
         # Temporal components
@@ -305,7 +307,7 @@ class GraphEvolutionTracker:
         self.max_history = max_history
         self.history = []
 
-        logger.info(f"Created GraphEvolutionTracker with max_history={max_history}")
+        logger.info("Created GraphEvolutionTracker with max_history=%s", max_history)
 
     def record_change(self, node_id: str, change_type: str, timestamp: float, metadata: Optional[Dict] = None):
         """
@@ -317,7 +319,8 @@ class GraphEvolutionTracker:
             timestamp: Change timestamp
             metadata: Optional metadata
         """
-        change = {"node_id": node_id, "change_type": change_type, "timestamp": timestamp, "metadata": metadata or {}}
+        change = {"node_id": node_id, "change_type": change_type,
+            "timestamp": timestamp, "metadata": metadata or {}}
 
         self.history.append(change)
 

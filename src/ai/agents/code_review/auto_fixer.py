@@ -80,7 +80,7 @@ class AutoFixer:
 
         fixed_code = code
 
-        operation = issue.get("operation", "")
+        issue.get("operation", "")
         function_name = issue.get("function", "")
 
         # Find function body

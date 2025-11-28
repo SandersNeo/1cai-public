@@ -5,14 +5,15 @@ Service layer for temporal graph operations with code evolution tracking.
 """
 
 import time
-from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
-import torch
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+
 import numpy as np
+import torch
 
 if TYPE_CHECKING:
     from src.modules.graph_api.services.graph_service import GraphService
 
-from src.ml.graph.temporal_gnn import TemporalGNN, GraphEvolutionTracker
+from src.ml.graph.temporal_gnn import GraphEvolutionTracker, TemporalGNN
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -48,7 +49,8 @@ class TemporalGraphService:
         self.base = base_service
 
         # Temporal GNN model
-        self.tgnn = TemporalGNN(node_features=128, hidden_dim=256, num_layers=3, num_heads=4)
+        self.tgnn = TemporalGNN(node_features=128, hidden_dim=256,
+                                num_layers=3, num_heads=4)
 
         # Evolution tracker
         self.evolution_tracker = GraphEvolutionTracker(max_history=1000)
@@ -93,7 +95,7 @@ class TemporalGraphService:
             graph_data = await self._get_graph_data(node_id)
 
             if graph_data is None:
-                logger.warning(f"No graph data for node: {node_id}")
+                logger.warning("No graph data for node: %s", node_id)
                 return self._empty_impact_result(node_id, change_type)
 
             # Predict with TGNN
@@ -109,10 +111,12 @@ class TemporalGraphService:
             impact_scores = predictions["impact"].squeeze().numpy()
 
             # Find target node index
-            target_idx = graph_data["node_ids"].index(node_id) if node_id in graph_data["node_ids"] else 0
+            graph_data["node_ids"].index(
+                node_id) if node_id in graph_data["node_ids"] else 0
 
             # Find affected nodes
-            affected_nodes = self._find_affected_nodes(graph_data["node_ids"], impact_scores, threshold=0.5)
+            affected_nodes = self._find_affected_nodes(
+                graph_data["node_ids"], impact_scores, threshold=0.5)
 
             # Compute overall impact
             avg_impact = float(impact_scores.mean())
@@ -143,7 +147,8 @@ class TemporalGraphService:
             }
 
         except Exception as e:
-            logger.error(f"Impact prediction failed: {e}", exc_info=True, extra={"node_id": node_id})
+            logger.error(f"Impact prediction failed: {e}", exc_info=True, extra={
+                         "node_id": node_id})
             return self._empty_impact_result(node_id, change_type)
 
     async def track_evolution(self, node_id: str, change: Dict[str, Any], timestamp: Optional[float] = None):
@@ -191,7 +196,8 @@ class TemporalGraphService:
         if since:
             history = self.evolution_tracker.get_changes_since(since, node_id)
         else:
-            history = [c for c in self.evolution_tracker.history if node_id is None or c["node_id"] == node_id]
+            history = [
+                c for c in self.evolution_tracker.history if node_id is None or c["node_id"] == node_id]
 
         return history[:limit]
 
@@ -241,7 +247,6 @@ class TemporalGraphService:
 
             # Extract nodes and edges
             nodes = []
-            edges = []
             node_ids = []
 
             # Process result
@@ -288,7 +293,8 @@ class TemporalGraphService:
             return graph_data
 
         except Exception as e:
-            logger.error(f"Failed to get graph data: {e}", exc_info=True, extra={"node_id": node_id})
+            logger.error(f"Failed to get graph data: {e}", exc_info=True, extra={
+                         "node_id": node_id})
             return None
 
     def _find_affected_nodes(self, node_ids: List[str], impact_scores: np.ndarray, threshold: float = 0.5) -> List[str]:
@@ -329,7 +335,8 @@ class TemporalGraphService:
             "evolution_tracker": tracker_stats,
             "cache_size": len(self.node_cache),
             "cache_hit_rate": (
-                self.stats["cache_hits"] / (self.stats["cache_hits"] + self.stats["cache_misses"])
+                self.stats["cache_hits"] / \
+                    (self.stats["cache_hits"] + self.stats["cache_misses"])
                 if (self.stats["cache_hits"] + self.stats["cache_misses"]) > 0
                 else 0.0
             ),

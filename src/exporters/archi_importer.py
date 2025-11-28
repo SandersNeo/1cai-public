@@ -4,9 +4,9 @@ ArchiMate Importer - Import ArchiMate models into Unified Change Graph
 Imports ArchiMate XML files with transaction support and rollback.
 """
 
-import xml.etree.ElementTree as ET
-from typing import Dict, Any, Optional, TYPE_CHECKING
 import logging
+import xml.etree.ElementTree as ET
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 if TYPE_CHECKING:
     from src.modules.graph_api.services.graph_service import GraphService
@@ -54,7 +54,7 @@ class ArchiImporter:
         Returns:
             Statistics about import
         """
-        logger.info(f"Importing ArchiMate from: {file_path}")
+        logger.info("Importing ArchiMate from: %s", file_path)
 
         # Parse XML
         tree = ET.parse(file_path)
@@ -87,7 +87,8 @@ class ArchiImporter:
 
                     # Commit transaction
                     await tx.commit()
-                    logger.info(f"Import successful: {nodes_created} nodes, " f"{relationships_created} relationships")
+                    logger.info(
+                        f"Import successful: {nodes_created} nodes, " f"{relationships_created} relationships")
 
                 except Exception as e:
                     # Rollback on error

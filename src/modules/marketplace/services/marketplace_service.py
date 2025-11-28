@@ -7,7 +7,6 @@ from fastapi import UploadFile
 
 from src.db.marketplace_repository import MarketplaceRepository
 from src.modules.marketplace.domain.models import (
-    PluginCategory,
     PluginStatus,
     PluginVisibility,
 )
@@ -17,7 +16,8 @@ from src.utils.structured_logging import StructuredLogger
 logger = StructuredLogger(__name__).logger
 audit_logger = get_audit_logger()
 
-MAX_ARTIFACT_SIZE_BYTES = int(os.getenv("MARKETPLACE_MAX_ARTIFACT_SIZE_MB", "25")) * 1024 * 1024
+MAX_ARTIFACT_SIZE_BYTES = int(
+    os.getenv("MARKETPLACE_MAX_ARTIFACT_SIZE_MB", "25")) * 1024 * 1024
 
 
 class MarketplaceService:
@@ -277,7 +277,8 @@ class MarketplaceService:
             reason=reason,
             details=details,
         )
-        logger.warning("Plugin %s reported by user %s: %s", plugin_id, user.user_id, reason)
+        logger.warning("Plugin %s reported by user %s: %s",
+                       plugin_id, user.user_id, reason)
         audit_logger.log_action(
             actor=user.user_id,
             action="marketplace.plugin.report",

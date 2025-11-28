@@ -4,8 +4,9 @@ Semantic Intent Extractor
 Extracts true intent from poetic/obfuscated input.
 """
 
-from typing import Dict, Optional
 from dataclasses import dataclass
+from typing import Dict, Optional
+
 from loguru import logger
 
 
@@ -61,7 +62,8 @@ class SemanticIntentExtractor:
             if not is_safe:
                 logger.warning(
                     f"Unsafe intent detected in poetic text",
-                    extra={"original_length": len(text), "prose_length": len(prose_version)},
+                    extra={"original_length": len(
+                        text), "prose_length": len(prose_version)},
                 )
 
             return IntentResult(
@@ -74,7 +76,7 @@ class SemanticIntentExtractor:
             )
 
         except Exception as e:
-            logger.error(f"Error extracting intent: {e}")
+            logger.error("Error extracting intent: %s", e)
             # Fail safe: block on error
             return IntentResult(
                 original_text=text,
@@ -99,7 +101,7 @@ class SemanticIntentExtractor:
             # Fallback: return original text
             return text
 
-        prompt = f"""Translate the following poetic or metaphorical text into clear, direct prose. 
+        prompt = f"""Translate the following poetic or metaphorical text into clear, direct prose.
 Extract the literal meaning and intent, removing any figurative language or obfuscation.
 
 Poetic text:
@@ -120,7 +122,7 @@ Direct prose translation:"""
             return prose.strip()
 
         except Exception as e:
-            logger.error(f"Error translating to prose: {e}")
+            logger.error("Error translating to prose: %s", e)
             return text
 
     async def _check_safety(self, text: str) -> bool:
@@ -164,7 +166,7 @@ Direct prose translation:"""
         # Check for harmful keywords
         for keyword in harmful_keywords:
             if keyword in text_lower:
-                logger.warning(f"Harmful keyword detected: {keyword}")
+                logger.warning("Harmful keyword detected: %s", keyword)
                 return False
 
         # Check for suspicious patterns
@@ -181,7 +183,7 @@ Direct prose translation:"""
 
         for pattern in suspicious_patterns:
             if re.search(pattern, text_lower):
-                logger.warning(f"Suspicious pattern detected: {pattern}")
+                logger.warning("Suspicious pattern detected: %s", pattern)
                 return False
 
         return True

@@ -41,8 +41,8 @@ try:
 except ImportError:
     TORCH_AVAILABLE = False
 
-from src.modules.ml.infrastructure.mlflow_manager import MLFlowManager
 from src.infrastructure.logging.structured_logging import StructuredLogger
+from src.modules.ml.infrastructure.mlflow_manager import MLFlowManager
 
 logger = StructuredLogger(__name__).logger
 
@@ -193,7 +193,8 @@ class MLPredictor(ABC):
                 }
             )
 
-        logger.info("Оценка модели", extra={"model_name": self.model_name, "metrics": metrics})
+        logger.info("Оценка модели", extra={
+                    "model_name": self.model_name, "metrics": metrics})
 
         return metrics
 
@@ -210,7 +211,8 @@ class MLPredictor(ABC):
             return dict(zip(self.features, self.model.feature_importances_))
         elif hasattr(self.model, "coef_"):
             importance = (
-                np.abs(self.model.coef_[0]) if len(self.model.coef_.shape) == 1 else np.abs(self.model.coef_[0])
+                np.abs(self.model.coef_[0]) if len(
+                    self.model.coef_.shape) == 1 else np.abs(self.model.coef_[0])
             )
             return dict(zip(self.features, importance))
 
@@ -238,7 +240,8 @@ class MLPredictor(ABC):
         }
 
         if importance:
-            sorted_features = sorted(importance.items(), key=lambda x: x[1], reverse=True)
+            sorted_features = sorted(
+                importance.items(), key=lambda x: x[1], reverse=True)
             explanation["contributing_features"] = sorted_features[:5]  # Топ-5 фич
 
         return explanation
@@ -334,7 +337,8 @@ class SklearnPredictor(MLPredictor):
 
             predictions = self.model.predict(X_processed)
 
-            logger.debug("Выполнено предсказание", extra={"samples_count": len(X_processed)})
+            logger.debug("Выполнено предсказание", extra={
+                         "samples_count": len(X_processed)})
 
             return predictions
 
@@ -361,7 +365,8 @@ class SklearnPredictor(MLPredictor):
 
             probabilities = self.model.predict_proba(X_processed)
 
-            logger.debug("Вычислены вероятности", extra={"samples_count": len(X_processed)})
+            logger.debug("Вычислены вероятности", extra={
+                         "samples_count": len(X_processed)})
 
             return probabilities
 
@@ -394,7 +399,8 @@ class TensorFlowPredictor(MLPredictor):
         if not TENSORFLOW_AVAILABLE:
             raise ImportError("TensorFlow не установлен")
 
-        logger.info("Инициализирован TensorFlowPredictor", extra={"model_name": model_name})
+        logger.info("Инициализирован TensorFlowPredictor",
+                    extra={"model_name": model_name})
 
     def _build_model(self, input_shape: int) -> "tf.keras.Model":
         """Построение модели TensorFlow"""
@@ -425,7 +431,7 @@ class TensorFlowPredictor(MLPredictor):
 
         # Компиляция модели
         optimizer = self.model_params.get("optimizer", "adam")
-        learning_rate = self.model_params.get("learning_rate", 0.001)
+        self.model_params.get("learning_rate", 0.001)
 
         model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
@@ -443,7 +449,8 @@ class TensorFlowPredictor(MLPredictor):
             if isinstance(X, pd.DataFrame):
                 X_processed = X[self.features].fillna(0).values.astype(np.float32)
             else:
-                X_processed = pd.DataFrame(X, columns=self.features).fillna(0).values.astype(np.float32)
+                X_processed = pd.DataFrame(X, columns=self.features).fillna(
+                    0).values.astype(np.float32)
 
             y_processed = None
             if y is not None:
@@ -506,7 +513,8 @@ class TensorFlowPredictor(MLPredictor):
             if isinstance(X, pd.DataFrame):
                 X_processed = X[self.features].fillna(0).values.astype(np.float32)
             else:
-                X_processed = pd.DataFrame(X, columns=self.features).fillna(0).values.astype(np.float32)
+                X_processed = pd.DataFrame(X, columns=self.features).fillna(
+                    0).values.astype(np.float32)
 
             predictions = self.model.predict(X_processed)
 
@@ -514,7 +522,8 @@ class TensorFlowPredictor(MLPredictor):
             if self.prediction_type == PredictionType.CLASSIFICATION:
                 predictions = np.argmax(predictions, axis=1)
 
-            logger.debug("Выполнено предсказание", extra={"samples_count": len(X_processed)})
+            logger.debug("Выполнено предсказание", extra={
+                         "samples_count": len(X_processed)})
 
             return predictions
 
@@ -537,11 +546,13 @@ class TensorFlowPredictor(MLPredictor):
             if isinstance(X, pd.DataFrame):
                 X_processed = X[self.features].fillna(0).values.astype(np.float32)
             else:
-                X_processed = pd.DataFrame(X, columns=self.features).fillna(0).values.astype(np.float32)
+                X_processed = pd.DataFrame(X, columns=self.features).fillna(
+                    0).values.astype(np.float32)
 
             probabilities = self.model.predict(X_processed)
 
-            logger.debug("Вычислены вероятности", extra={"samples_count": len(X_processed)})
+            logger.debug("Вычислены вероятности", extra={
+                         "samples_count": len(X_processed)})
 
             return probabilities
 
@@ -698,7 +709,8 @@ class ModelEnsemble:
                 ensemble_metrics["ensemble_accuracy"] = accuracy_score(y, ensemble_pred)
             else:
                 ensemble_metrics["ensemble_r2"] = r2_score(y, ensemble_pred)
-                ensemble_metrics["ensemble_rmse"] = np.sqrt(mean_squared_error(y, ensemble_pred))
+                ensemble_metrics["ensemble_rmse"] = np.sqrt(
+                    mean_squared_error(y, ensemble_pred))
 
         except Exception as e:
             logger.error(

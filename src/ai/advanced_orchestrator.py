@@ -67,7 +67,7 @@ class AdvancedAIOrchestrator(AIOrchestrator):
 
             return LLMProviderAbstraction()
         except Exception as e:
-            logger.warning(f"Failed to initialize LLM provider: {e}")
+            logger.warning("Failed to initialize LLM provider: %s", e)
             # Fallback на базовый провайдер
             return None
 
@@ -161,7 +161,7 @@ class AdvancedAIOrchestrator(AIOrchestrator):
                     result = await super().process_query(query, context)
                     return result
             except Exception as healing_error:
-                logger.error(f"Self-healing failed: {healing_error}")
+                logger.error("Self-healing failed: %s", healing_error)
 
             # Fallback на базовую обработку ошибок
             return await super().process_query(query, context)

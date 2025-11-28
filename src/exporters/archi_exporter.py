@@ -4,10 +4,9 @@ ArchiMate Exporter - Export Unified Change Graph to ArchiMate format
 Exports Neo4j graph to ArchiMate 3.1 XML format with parameterized queries.
 """
 
-import xml.etree.ElementTree as ET
-from typing import Dict, Any, List, TYPE_CHECKING
 import uuid
-from datetime import datetime
+import xml.etree.ElementTree as ET
+from typing import TYPE_CHECKING, Any, Dict, List
 
 from src.utils.structured_logging import StructuredLogger
 
@@ -125,7 +124,8 @@ class ArchiExporter:
         ET.indent(tree, space="  ")
         tree.write(output_path, encoding="utf-8", xml_declaration=True)
 
-        logger.info(f"Export complete: {len(nodes)} elements, " f"{len(rels)} relationships")
+        logger.info(
+            f"Export complete: {len(nodes)} elements, " f"{len(rels)} relationships")
         return output_path
 
     async def _fetch_nodes(self, filters: Dict[str, Any] = None, limit: int = 1000) -> List[Dict]:
@@ -133,7 +133,7 @@ class ArchiExporter:
         query = """
         MATCH (n)
         WHERE n.type IS NOT NULL
-        RETURN 
+        RETURN
             id(n) as id,
             labels(n) as labels,
             n.name as name,
@@ -150,7 +150,7 @@ class ArchiExporter:
         """Fetch relationships from graph with parameterized query"""
         query = """
         MATCH (a)-[r]->(b)
-        RETURN 
+        RETURN
             id(r) as id,
             id(a) as source_id,
             id(b) as target_id,

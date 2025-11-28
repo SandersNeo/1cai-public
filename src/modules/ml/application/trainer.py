@@ -26,10 +26,13 @@ from sklearn.feature_selection import SelectKBest, f_classif, f_regression
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
-from src.modules.ml.infrastructure.mlflow_manager import MLFlowManager
-from src.modules.ml.infrastructure.metrics_collector import AssistantRole, MetricsCollector
-from src.modules.ml.domain.predictor import ModelEnsemble, PredictionType, create_model
 from src.infrastructure.logging.structured_logging import StructuredLogger
+from src.modules.ml.domain.predictor import ModelEnsemble, PredictionType, create_model
+from src.modules.ml.infrastructure.metrics_collector import (
+    AssistantRole,
+    MetricsCollector,
+)
+from src.modules.ml.infrastructure.mlflow_manager import MLFlowManager
 
 logger = StructuredLogger(__name__).logger
 
@@ -115,12 +118,15 @@ class DataPreprocessor:
                     X[col] = self.encoders[col].fit_transform(X[col])
                 else:
                     # Обработка новых категорий
-                    X[col] = X[col].map(lambda x: x if x in self.encoders[col].classes_ else "unknown")
+                    X[col] = X[col].map(
+                        lambda x: x if x in self.encoders[col].classes_ else "unknown")
                     # Добавляем новую категорию
                     unknown_class = len(self.encoders[col].classes_)
-                    self.encoders[col].classes_ = np.append(self.encoders[col].classes_, "unknown")
+                    self.encoders[col].classes_ = np.append(
+                        self.encoders[col].classes_, "unknown")
                     X[col] = X[col].map(
-                        lambda x: (self.encoders[col].transform([x])[0] if x != "unknown" else unknown_class)
+                        lambda x: (self.encoders[col].transform([x])[
+                                   0] if x != "unknown" else unknown_class)
                     )
 
         # Нормализация числовых признаков
@@ -135,12 +141,15 @@ class DataPreprocessor:
         k_best = preprocessing_config.get("k_best_features")
         if k_best and y is not None:
             if self._get_prediction_type(y) == PredictionType.CLASSIFICATION:
-                selector = SelectKBest(score_func=f_classif, k=min(k_best, len(features)))
+                selector = SelectKBest(score_func=f_classif,
+                                       k=min(k_best, len(features)))
             else:
-                selector = SelectKBest(score_func=f_regression, k=min(k_best, len(features)))
+                selector = SelectKBest(score_func=f_regression,
+                                       k=min(k_best, len(features)))
 
             X_selected = selector.fit_transform(X, y)
-            selected_features = [features[i] for i in selector.get_support(indices=True)]
+            selected_features = [features[i]
+                for i in selector.get_support(indices=True)]
             X = pd.DataFrame(X_selected, columns=selected_features, index=X.index)
             self.feature_selectors["k_best"] = selector
 
@@ -267,7 +276,8 @@ class ModelTrainer:
 
         try:
             # Предобработка данных
-            X, y = self.preprocessor.prepare_features(training_data, features, target, preprocessing_config)
+            X, y = self.preprocessor.prepare_features(
+                training_data, features, target, preprocessing_config)
 
             # Определение типа задачи
             prediction_type = self.preprocessor._get_prediction_type(y)
@@ -278,7 +288,8 @@ class ModelTrainer:
                     X, y, test_size=test_size, stratify=y, random_state=42
                 )
             else:
-                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=42)
+                X_train, X_test, y_train, y_test = train_test_split(
+                    X, y, test_size=test_size, random_state=42)
 
             # Создание модели
             model = create_model(
@@ -341,7 +352,8 @@ class ModelTrainer:
             # Сохранение метрик
             self.metrics_collector.record_user_satisfaction(
                 assistant_role=AssistantRole.ARCHITECT,  # По умолчанию
-                satisfaction_score=test_metrics.get("accuracy", test_metrics.get("r2_score", 0)),
+                satisfaction_score=test_metrics.get(
+                    "accuracy", test_metrics.get("r2_score", 0)),
                 project_id="model_training",
                 context={
                     "model_name": model_name,
@@ -389,7 +401,8 @@ class ModelTrainer:
         try:
             # Предобработка данных
             X, y = self.preprocessor.prepare_features(training_data, features, target)
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=0.2, random_state=42)
 
             def objective(trial):
                 """Целевая функция для оптимизации"""
@@ -406,7 +419,8 @@ class ModelTrainer:
                             param_name, param_config["low"], param_config["high"]
                         )
                     elif param_config["type"] == "choice":
-                        current_params[param_name] = trial.suggest_categorical(param_name, param_config["choices"])
+                        current_params[param_name] = trial.suggest_categorical(
+                            param_name, param_config["choices"])
 
                 # Создание и обучение модели
                 model = create_model(
@@ -474,7 +488,8 @@ class ModelTrainer:
                         }
                     )
 
-                    self.mlflow_manager.log_model(model=final_model, model_name=model_name, model_type=model_type)
+                    self.mlflow_manager.log_model(
+                        model=final_model, model_name=model_name, model_type=model_type)
 
             logger.info(
                 "Гиперпараметры оптимизированы",

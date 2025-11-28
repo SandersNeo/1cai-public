@@ -53,13 +53,15 @@ class ModelProfile:
 
     provider_id: str  # Идентификатор провайдера (kimi, qwen, gigachat, etc.)
     model_name: str  # Название модели
-    capabilities: Set[QueryType] = field(default_factory=set)  # Поддерживаемые типы запросов
+    capabilities: Set[QueryType] = field(
+        default_factory=set)  # Поддерживаемые типы запросов
     risk_level: RiskLevel = RiskLevel.MEDIUM  # Уровень риска
     cost_per_1k_tokens: float = 0.0  # Стоимость за 1K токенов (USD)
     avg_latency_ms: int = 1000  # Средняя latency в миллисекундах
     max_tokens: int = 4096  # Максимальное количество токенов
     supports_streaming: bool = False  # Поддержка streaming
-    compliance: List[str] = field(default_factory=list)  # Соответствие требованиям (152-ФЗ, GDPR, etc.)
+    # Соответствие требованиям (152-ФЗ, GDPR, etc.)
+    compliance: List[str] = field(default_factory=list)
     description: str = ""  # Описание модели
 
     def to_dict(self) -> Dict[str, Any]:
@@ -118,7 +120,8 @@ class LLMProviderAbstraction:
                 self._nested = NestedProviderSelector(self)
                 logger.info("Adaptive provider selection enabled")
             except Exception as e:
-                logger.warning(f"Failed to initialize adaptive selection: {e}", exc_info=True)
+                logger.warning(
+                    f"Failed to initialize adaptive selection: {e}", exc_info=True)
 
     def _load_default_profiles(self) -> None:
         """Загрузить профили по умолчанию."""

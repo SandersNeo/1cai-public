@@ -40,15 +40,16 @@ class PipelineConfig(BaseModel):
     build_time: Optional[int] = Field(None, description="Время сборки в секундах")
     test_time: Optional[int] = Field(None, description="Время тестирования в секундах")
     deploy_time: Optional[int] = Field(None, description="Время деплоя в секундах")
-    success_rate: Optional[float] = Field(None, ge=0.0, le=1.0, description="Процент успешных запусков")
-    
+    success_rate: Optional[float] = Field(
+        None, ge=0.0, le=1.0, description="Процент успешных запусков")
+
     @field_validator('total_duration', 'build_time', 'test_time', 'deploy_time')
     @classmethod
     def validate_positive(cls, v):
         if v is not None and v < 0:
             raise ValueError("Duration must be positive")
         return v
-    
+
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
@@ -64,15 +65,16 @@ class PipelineConfig(BaseModel):
 
 class PipelineOptimization(BaseModel):
     """Рекомендация по оптимизации pipeline"""
-    
+
     optimization: str = Field(..., description="Название оптимизации")
     stage: PipelineStage = Field(..., description="Стадия pipeline")
     description: str = Field(..., description="Описание оптимизации")
     implementation: str = Field(..., description="Как реализовать")
-    expected_speedup_percent: int = Field(..., ge=0, le=100, description="Ожидаемое ускорение в %")
+    expected_speedup_percent: int = Field(..., ge=0,
+                                          le=100, description="Ожидаемое ускорение в %")
     effort: OptimizationEffort = Field(..., description="Уровень усилий")
     priority: int = Field(..., ge=0, le=10, description="Приоритет (0-10)")
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -107,7 +109,7 @@ class LogCategory(str, Enum):
 
 class LogError(BaseModel):
     """Ошибка в логах"""
-    
+
     line: str = Field(..., description="Строка лога с ошибкой")
     category: LogCategory = Field(..., description="Категория ошибки")
     severity: LogSeverity = Field(..., description="Уровень серьезности")
@@ -116,7 +118,7 @@ class LogError(BaseModel):
 
 class LogAnomaly(BaseModel):
     """Аномалия в логах"""
-    
+
     type: str = Field(..., description="Тип аномалии")
     timestamp: str = Field(..., description="Время обнаружения")
     severity: LogSeverity = Field(..., description="Уровень серьезности")
@@ -126,14 +128,18 @@ class LogAnomaly(BaseModel):
 
 class LogAnalysisResult(BaseModel):
     """Результат анализа логов"""
-    
+
     summary: Dict[str, Any] = Field(..., description="Сводка анализа")
-    errors_by_category: Dict[str, int] = Field(default_factory=dict, description="Ошибки по категориям")
-    anomalies: List[LogAnomaly] = Field(default_factory=list, description="Обнаруженные аномалии")
-    patterns: List[Dict[str, Any]] = Field(default_factory=list, description="Паттерны в логах")
+    errors_by_category: Dict[str, int] = Field(
+        default_factory=dict, description="Ошибки по категориям")
+    anomalies: List[LogAnomaly] = Field(
+        default_factory=list, description="Обнаруженные аномалии")
+    patterns: List[Dict[str, Any]] = Field(
+        default_factory=list, description="Паттерны в логах")
     recommendations: List[str] = Field(default_factory=list, description="Рекомендации")
-    timestamp: str = Field(default_factory=lambda: datetime.now().isoformat(), description="Время анализа")
-    
+    timestamp: str = Field(default_factory=lambda: datetime.now(
+    ).isoformat(), description="Время анализа")
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -156,7 +162,7 @@ class LogAnalysisResult(BaseModel):
 
 class CostOptimization(BaseModel):
     """Рекомендация по оптимизации затрат"""
-    
+
     resource: str = Field(..., description="Ресурс для оптимизации")
     current: str = Field(..., description="Текущее состояние")
     recommended: str = Field(..., description="Рекомендуемое состояние")
@@ -171,15 +177,19 @@ class CostOptimization(BaseModel):
 
 class CostOptimizationResult(BaseModel):
     """Результат оптимизации затрат"""
-    
-    current_cost_month: float = Field(..., ge=0, description="Текущая стоимость в месяц")
-    optimized_cost_month: float = Field(..., ge=0, description="Оптимизированная стоимость")
+
+    current_cost_month: float = Field(..., ge=0,
+                                      description="Текущая стоимость в месяц")
+    optimized_cost_month: float = Field(..., ge=0,
+                                        description="Оптимизированная стоимость")
     total_savings_month: float = Field(..., ge=0, description="Общая экономия в месяц")
     savings_percent: int = Field(..., ge=0, le=100, description="Процент экономии")
-    optimizations: List[CostOptimization] = Field(default_factory=list, description="Список оптимизаций")
+    optimizations: List[CostOptimization] = Field(
+        default_factory=list, description="Список оптимизаций")
     annual_savings: float = Field(..., ge=0, description="Годовая экономия")
-    timestamp: str = Field(default_factory=lambda: datetime.now().isoformat(), description="Время анализа")
-    
+    timestamp: str = Field(default_factory=lambda: datetime.now(
+    ).isoformat(), description="Время анализа")
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -195,13 +205,13 @@ class CostOptimizationResult(BaseModel):
 
 class InfrastructureConfig(BaseModel):
     """Конфигурация инфраструктуры"""
-    
+
     provider: str = Field(..., description="Cloud provider (aws/azure/gcp)")
     instance_type: str = Field(..., description="Тип инстанса")
     instance_count: int = Field(default=1, ge=1, description="Количество инстансов")
     pricing_model: str = Field(default="on_demand", description="Модель оплаты")
     region: Optional[str] = Field(None, description="Регион")
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -216,12 +226,14 @@ class InfrastructureConfig(BaseModel):
 
 class UsageMetrics(BaseModel):
     """Метрики использования ресурсов"""
-    
+
     cpu_avg: float = Field(..., ge=0, le=100, description="Средняя загрузка CPU в %")
-    memory_avg: float = Field(..., ge=0, le=100, description="Средняя загрузка памяти в %")
+    memory_avg: float = Field(..., ge=0, le=100,
+                              description="Средняя загрузка памяти в %")
     storage_iops: Optional[int] = Field(None, ge=0, description="IOPS хранилища")
-    network_throughput: Optional[float] = Field(None, ge=0, description="Пропускная способность сети")
-    
+    network_throughput: Optional[float] = Field(
+        None, ge=0, description="Пропускная способность сети")
+
     class Config:
         json_schema_extra = {
             "example": {

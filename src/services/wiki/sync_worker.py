@@ -163,7 +163,7 @@ class CodeSyncService:
             await self._upsert_page(slug, module_name, md_content, namespace_id)
 
         except Exception as e:
-            logger.error(f"Failed to process {file_path}: {e}")
+            logger.error("Failed to process %s: {e}", file_path)
 
     def _generate_dependency_graph(self, module_name: str, imports: List[str]) -> str:
         """Generates a Mermaid graph TD showing imports"""

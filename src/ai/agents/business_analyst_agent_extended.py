@@ -1155,7 +1155,7 @@ class BusinessAnalystAgentExtended:
                 from src.ai.code_graph import InMemoryCodeGraphBackend
 
                 backend = InMemoryCodeGraphBackend()
-                integration_sync = IntegrationSyncWithGraph(backend)
+                IntegrationSyncWithGraph(backend)
 
                 # Попытка найти связанные артефакты в графе
                 # (упрощённо: ищем по ключевым словам в заголовке/теле)

@@ -149,7 +149,7 @@ class SecurityManager:
 
         self._tokens[token] = access_token
 
-        logger.info(f"Token generated for user: {user_id}")
+        logger.info("Token generated for user: %s", user_id)
 
         return access_token
 

@@ -6,13 +6,13 @@ Dependency Auditor Service
 
 from typing import Dict, List
 
-from src.modules.security.domain.models import (
-    DependencyVulnerability,
-    DependencyAuditResult,
-    Severity,
-    RiskLevel,
-)
 from src.modules.security.domain.exceptions import DependencyAuditError
+from src.modules.security.domain.models import (
+    DependencyAuditResult,
+    DependencyVulnerability,
+    RiskLevel,
+    Severity,
+)
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -36,9 +36,7 @@ class DependencyAuditor:
                                 (опционально, для dependency injection)
         """
         if patterns_repository is None:
-            from src.modules.security.repositories import (
-                SecurityPatternsRepository
-            )
+            from src.modules.security.repositories import SecurityPatternsRepository
             patterns_repository = SecurityPatternsRepository()
 
         self.patterns_repository = patterns_repository
@@ -100,7 +98,7 @@ class DependencyAuditor:
             )
 
         except Exception as e:
-            logger.error(f"Failed to audit dependencies: {e}")
+            logger.error("Failed to audit dependencies: %s", e)
             raise DependencyAuditError(
                 f"Failed to audit dependencies: {e}",
                 details={"count": len(dependencies)}

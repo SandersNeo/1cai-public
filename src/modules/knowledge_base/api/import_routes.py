@@ -14,8 +14,8 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 from starlette.responses import StreamingResponse
 
-from src.services.configuration_knowledge_base import get_knowledge_base
 from src.infrastructure.logging.structured_logging import StructuredLogger
+from src.services.configuration_knowledge_base import get_knowledge_base
 
 router = APIRouter(prefix="/api/knowledge-base", tags=["Knowledge Base Import"])
 
@@ -29,7 +29,8 @@ class ImportRequest(BaseModel):
 
     config_name: str = Field(..., description="Название конфигурации")
     source: str = Field(default="manual", description="Источник данных")
-    overwrite: bool = Field(default=False, description="Перезаписать существующие данные")
+    overwrite: bool = Field(
+        default=False, description="Перезаписать существующие данные")
 
 
 class ModuleImport(BaseModel):
@@ -105,9 +106,11 @@ async def import_from_csv(config_name: str, file: UploadFile = File(...), type: 
         count = 0
         for row in reader:
             if type == "modules":
-                kb.add_module_documentation(config_name=config_name, module_name=row.get("name", ""), documentation=row)
+                kb.add_module_documentation(
+                    config_name=config_name, module_name=row.get("name", ""), documentation=row)
             elif type == "best_practices":
-                kb.add_best_practice(config_name=config_name, category=row.get("category", "general"), practice=row)
+                kb.add_best_practice(config_name=config_name, category=row.get(
+                    "category", "general"), practice=row)
             count += 1
 
         return {"success": True, "imported": count}
@@ -145,7 +148,8 @@ async def download_json_template():
     """Скачать шаблон JSON для импорта"""
     template = {
         "modules": [
-            {"name": "ОбщийМодуль_Пример", "description": "Описание модуля", "code": "// Код модуля", "functions": []}
+            {"name": "ОбщийМодуль_Пример", "description": "Описание модуля",
+                "code": "// Код модуля", "functions": []}
         ],
         "best_practices": [
             {

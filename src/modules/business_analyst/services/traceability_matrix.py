@@ -6,13 +6,13 @@ Traceability Matrix Service
 
 from typing import Any, Dict, List
 
-from src.modules.business_analyst.domain.models import (
-    Requirement,
-    TraceabilityMatrix,
-    TraceabilityItem,
-    CoverageSummary,
-)
 from src.modules.business_analyst.domain.exceptions import TraceabilityError
+from src.modules.business_analyst.domain.models import (
+    CoverageSummary,
+    Requirement,
+    TraceabilityItem,
+    TraceabilityMatrix,
+)
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -30,7 +30,6 @@ class TraceabilityMatrixGenerator:
 
     def __init__(self):
         """Initialize traceability matrix generator"""
-        pass
 
     async def generate_matrix(
         self,
@@ -96,7 +95,7 @@ class TraceabilityMatrixGenerator:
             )
 
         except Exception as e:
-            logger.error(f"Failed to generate traceability matrix: {e}")
+            logger.error("Failed to generate traceability matrix: %s", e)
             raise TraceabilityError(
                 f"Failed to generate traceability matrix: {e}",
                 details={"requirements_count": len(requirements)}

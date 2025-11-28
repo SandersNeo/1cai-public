@@ -96,7 +96,7 @@ class TrafficShaper:
                 )
 
         except Exception as e:
-            logger.warning(f"Traffic shaping failed: {e}")
+            logger.warning("Traffic shaping failed: %s", e)
             if traffic_shaping_operations_total:
                 traffic_shaping_operations_total.labels(
                     operation_type="send", status="error"

@@ -6,11 +6,8 @@ Test Coverage Analyzer Service
 
 from typing import Any, Dict, Optional
 
-from src.modules.qa.domain.models import (
-    CoverageReport,
-    CoverageGrade,
-)
 from src.modules.qa.domain.exceptions import CoverageAnalysisError
+from src.modules.qa.domain.models import CoverageGrade, CoverageReport
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -30,7 +27,6 @@ class TestCoverageAnalyzer:
 
     def __init__(self):
         """Initialize coverage analyzer"""
-        pass
 
     async def analyze_coverage(
         self,
@@ -80,7 +76,7 @@ class TestCoverageAnalyzer:
             )
 
         except Exception as e:
-            logger.error(f"Failed to analyze coverage: {e}")
+            logger.error("Failed to analyze coverage: %s", e)
             raise CoverageAnalysisError(
                 f"Failed to analyze coverage: {e}",
                 details={"config_name": config_name}

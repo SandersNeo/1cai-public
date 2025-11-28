@@ -2,19 +2,15 @@
 Gateway API Routes
 """
 from datetime import datetime
-from typing import Any, Dict
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Request
 
 from src.infrastructure.logging.structured_logging import StructuredLogger
-from src.modules.gateway.domain.config import SERVICES_CONFIG
 from src.modules.gateway.domain.models import (
     GatewayHealthResponse,
-    GatewayMetrics,
     ServiceRequest,
 )
 from src.modules.gateway.services.health_checker import ServiceHealthChecker
-from src.modules.gateway.services.middleware.auth import AuthenticationMiddleware
 from src.modules.gateway.services.proxy_service import ProxyService
 
 logger = StructuredLogger(__name__).logger

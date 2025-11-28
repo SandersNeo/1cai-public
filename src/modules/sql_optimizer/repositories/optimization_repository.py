@@ -4,7 +4,7 @@ Optimization Repository
 Repository для хранения optimization patterns и best practices.
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 
 class OptimizationRepository:

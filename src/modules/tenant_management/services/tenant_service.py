@@ -126,7 +126,8 @@ class TenantManagementService:
 
     async def _initialize_tenant_resources(self, tenant_id: uuid.UUID):
         """Initialize tenant resources."""
-        logger.info("Initializing resources for tenant", extra={"tenant_id": str(tenant_id)})
+        logger.info("Initializing resources for tenant",
+                    extra={"tenant_id": str(tenant_id)})
 
     async def _create_stripe_subscription(self, tenant_id: uuid.UUID, registration: TenantRegistrationRequest) -> Dict:
         """Create Stripe customer and subscription."""

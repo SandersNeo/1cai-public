@@ -240,31 +240,31 @@ class DeploymentOrchestrator:
     async def _deploy_version(self, name: str, version: str, environment: str) -> None:
         """
         Развертывание версии через Kubernetes или Docker
-        
+
         Args:
             name: Имя приложения
             version: Версия
             environment: Окружение (blue/green/canary/current)
         """
         logger.info(f"Deploying {name}:{version} to {environment}")
-        
+
         try:
             # Попытка Kubernetes deployment
             if await self._try_kubernetes_deploy(name, version, environment):
                 return
-            
+
             # Fallback на Docker
             await self._docker_deploy(name, version, environment)
-            
+
         except Exception as e:
             logger.error(f"Deployment failed: {e}", exc_info=True)
             raise
-    
+
     async def _try_kubernetes_deploy(self, name: str, version: str, environment: str) -> bool:
         """Попытка Kubernetes deployment"""
         try:
             import subprocess
-            
+
             # kubectl set image deployment/{name} {name}={name}:{version}
             cmd = [
                 "kubectl", "set", "image",
@@ -272,38 +272,38 @@ class DeploymentOrchestrator:
                 f"{name}={name}:{version}",
                 "--record"
             ]
-            
+
             if self.kubeconfig:
                 cmd.extend(["--kubeconfig", str(self.kubeconfig)])
-            
+
             result = subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
                 timeout=30
             )
-            
+
             if result.returncode == 0:
                 logger.info(f"Kubernetes deployment successful: {name}:{version}")
                 return True
             else:
                 logger.warning(f"Kubernetes deployment failed: {result.stderr}")
                 return False
-                
+
         except FileNotFoundError:
             logger.debug("kubectl not found, skipping Kubernetes deployment")
             return False
         except Exception as e:
             logger.warning(f"Kubernetes deployment error: {e}")
             return False
-    
+
     async def _docker_deploy(self, name: str, version: str, environment: str) -> None:
         """Развертывание через Docker"""
         try:
             import docker
-            
+
             client = docker.from_env()
-            
+
             # Остановка старого контейнера
             container_name = f"{name}-{environment}"
             try:
@@ -312,7 +312,7 @@ class DeploymentOrchestrator:
                 old_container.remove()
             except:
                 pass  # Контейнер не существует
-            
+
             # Запуск нового контейнера
             client.containers.run(
                 f"{name}:{version}",
@@ -321,9 +321,9 @@ class DeploymentOrchestrator:
                 restart_policy={"Name": "unless-stopped"},
                 labels={"environment": environment, "version": version}
             )
-            
+
             logger.info(f"Docker deployment successful: {name}:{version}")
-            
+
         except Exception as e:
             logger.error(f"Docker deployment failed: {e}", exc_info=True)
             # Fallback на mock
@@ -350,25 +350,26 @@ class DeploymentOrchestrator:
     async def _health_check(self, url: str) -> bool:
         """
         HTTP Health check
-        
+
         Args:
             url: URL для проверки
-            
+
         Returns:
             True если здорово, False иначе
         """
         try:
             import aiohttp
-            
+
             async with aiohttp.ClientSession() as session:
                 async with session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as response:
                     if response.status == 200:
                         logger.info(f"Health check passed: {url}")
                         return True
                     else:
-                        logger.warning(f"Health check failed: {url}, status={response.status}")
+                        logger.warning(
+                            f"Health check failed: {url}, status={response.status}")
                         return False
-                        
+
         except Exception as e:
             logger.error(f"Health check error: {url}, {e}")
             return False
@@ -376,62 +377,63 @@ class DeploymentOrchestrator:
     async def _check_canary_metrics(self, name: str) -> bool:
         """
         Проверка метрик canary deployment
-        
+
         Проверяет:
         - Error rate < 1%
         - Response time < 500ms (p95)
         - Success rate > 99%
-        
+
         Args:
             name: Имя приложения
-            
+
         Returns:
             True если метрики в норме
         """
         try:
             # Запрос метрик из Prometheus/Grafana
             metrics = await self._get_metrics(name, "canary")
-            
+
             error_rate = metrics.get("error_rate", 0)
             response_time_p95 = metrics.get("response_time_p95", 0)
             success_rate = metrics.get("success_rate", 100)
-            
+
             # Проверка порогов
             if error_rate > 1.0:
                 logger.warning(f"Canary error rate too high: {error_rate}%")
                 return False
-            
+
             if response_time_p95 > 500:
                 logger.warning(f"Canary response time too high: {response_time_p95}ms")
                 return False
-            
+
             if success_rate < 99.0:
                 logger.warning(f"Canary success rate too low: {success_rate}%")
                 return False
-            
-            logger.info(f"Canary metrics OK: error_rate={error_rate}%, p95={response_time_p95}ms, success={success_rate}%")
+
+            logger.info(
+                f"Canary metrics OK: error_rate={error_rate}%, p95={response_time_p95}ms, success={success_rate}%")
             return True
-            
+
         except Exception as e:
             logger.error(f"Failed to check canary metrics: {e}")
             return False
-    
+
     async def _get_metrics(self, name: str, environment: str) -> Dict[str, float]:
         """Получение метрик из Prometheus"""
         try:
             import aiohttp
-            
+
             # Prometheus query API
             prometheus_url = "http://localhost:9090/api/v1/query"
-            
+
             queries = {
                 "error_rate": f'rate(http_requests_total{{app="{name}",env="{environment}",status=~"5.."}}'[5m]) * 100',
                 "response_time_p95": f'histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{{app="{name}",env="{environment}"}}[5m])) * 1000',
                 "success_rate": f'rate(http_requests_total{{app="{name}",env="{environment}",status=~"2.."}}[5m]) * 100',
             }
-            
+
             metrics = {}
-            
+
             async with aiohttp.ClientSession() as session:
                 for metric_name, query in queries.items():
                     async with session.get(prometheus_url, params={"query": query}) as response:
@@ -440,7 +442,7 @@ class DeploymentOrchestrator:
                             result = data.get("data", {}).get("result", [])
                             if result:
                                 metrics[metric_name] = float(result[0]["value"][1])
-            
+
             # Fallback на mock если Prometheus недоступен
             if not metrics:
                 metrics = {
@@ -448,9 +450,9 @@ class DeploymentOrchestrator:
                     "response_time_p95": 150.0,
                     "success_rate": 99.9,
                 }
-            
+
             return metrics
-            
+
         except Exception as e:
             logger.warning(f"Failed to get metrics from Prometheus: {e}")
             # Mock metrics

@@ -6,9 +6,9 @@ Pydantic модели для RAS Monitor модуля (мониторинг кл
 
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import List
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SessionState(str, Enum):

@@ -48,7 +48,7 @@ class UnifiedDataLayerIntegration:
                 )
                 logger.info("PostgreSQL client registered")
         except Exception as e:
-            logger.error(f"Failed to register PostgreSQL client: {e}")
+            logger.error("Failed to register PostgreSQL client: %s", e)
 
     def register_neo4j_client(self, client):
         """Регистрация Neo4j клиента"""
@@ -62,7 +62,7 @@ class UnifiedDataLayerIntegration:
                 )
                 logger.info("Neo4j client registered")
         except Exception as e:
-            logger.error(f"Failed to register Neo4j client: {e}")
+            logger.error("Failed to register Neo4j client: %s", e)
 
     def register_qdrant_client(self, client):
         """Регистрация Qdrant клиента"""
@@ -76,7 +76,7 @@ class UnifiedDataLayerIntegration:
                 )
                 logger.info("Qdrant client registered")
         except Exception as e:
-            logger.error(f"Failed to register Qdrant client: {e}")
+            logger.error("Failed to register Qdrant client: %s", e)
 
     def register_elasticsearch_client(self, client):
         """Регистрация Elasticsearch клиента"""
@@ -88,7 +88,7 @@ class UnifiedDataLayerIntegration:
             )
             logger.info("Elasticsearch client registered")
         except Exception as e:
-            logger.error(f"Failed to register Elasticsearch client: {e}")
+            logger.error("Failed to register Elasticsearch client: %s", e)
 
     def _postgres_adapter(self, client):
         """Адаптер для PostgreSQL"""

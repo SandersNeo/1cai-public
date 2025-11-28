@@ -11,9 +11,13 @@ import hashlib
 import time
 from typing import Any, Dict, List, Optional, Tuple
 
-from src.ai.llm_provider_abstraction import LLMProviderAbstraction, ModelProfile, QueryType
+from src.ai.llm_provider_abstraction import (
+    LLMProviderAbstraction,
+    ModelProfile,
+    QueryType,
+)
 from src.ml.continual_learning.cms import ContinuumMemorySystem
-from src.ml.continual_learning.memory_level import MemoryLevel, MemoryLevelConfig
+from src.ml.continual_learning.memory_level import MemoryLevel
 from src.ml.continual_learning.meta_optimizer import SelfReferencialOptimizer
 from src.utils.structured_logging import StructuredLogger
 
@@ -137,15 +141,18 @@ class NestedProviderSelector:
         self.stats["total_selections"] += 1
 
         # 1. Retrieve similar queries from continuum memory
-        similar_queries = self.query_memory.retrieve_similar(query, levels=["immediate", "session", "daily"], k=10)
+        similar_queries = self.query_memory.retrieve_similar(
+            query, levels=["immediate", "session", "daily"], k=10)
 
         # 2. Analyze success patterns
         success_patterns = self._extract_success_patterns(similar_queries)
 
         # 3. Self-modify selection criteria based on patterns
-        base_criteria = {"max_cost": max_cost or 0.01, "max_latency_ms": max_latency_ms or 1000}
+        base_criteria = {"max_cost": max_cost or 0.01,
+            "max_latency_ms": max_latency_ms or 1000}
 
-        modified_criteria = self.meta_optimizer.optimize_criteria(base_criteria, success_patterns)
+        modified_criteria = self.meta_optimizer.optimize_criteria(
+            base_criteria, success_patterns)
 
         # 4. Select provider with modified criteria
         provider = self.base.select_provider(
@@ -202,20 +209,24 @@ class NestedProviderSelector:
         surprise = self._compute_feedback_surprise(success, metrics)
 
         # Update appropriate levels based on surprise
-        feedback_data = {"success": success, "metrics": metrics, "surprise": surprise, "timestamp": time.time()}
+        feedback_data = {"success": success, "metrics": metrics,
+            "surprise": surprise, "timestamp": time.time()}
 
         if surprise > 0.7:  # High surprise
             # Update multiple levels
-            self.query_memory.update_level("immediate", query_id, feedback_data, surprise)
+            self.query_memory.update_level(
+                "immediate", query_id, feedback_data, surprise)
             self.query_memory.update_level("session", query_id, feedback_data, surprise)
             self.query_memory.update_level("daily", query_id, feedback_data, surprise)
 
         elif surprise > 0.4:  # Medium surprise
-            self.query_memory.update_level("immediate", query_id, feedback_data, surprise)
+            self.query_memory.update_level(
+                "immediate", query_id, feedback_data, surprise)
             self.query_memory.update_level("session", query_id, feedback_data, surprise)
 
         else:  # Low surprise
-            self.query_memory.update_level("immediate", query_id, feedback_data, surprise)
+            self.query_memory.update_level(
+                "immediate", query_id, feedback_data, surprise)
 
         # Track cost savings
         if success and "cost" in metrics:
@@ -275,7 +286,8 @@ class NestedProviderSelector:
         """
         # Base surprise on success rate
         success_rate = (
-            self.stats["success_count"] / self.stats["total_feedback"] if self.stats["total_feedback"] > 0 else 0.5
+            self.stats["success_count"] / \
+                self.stats["total_feedback"] if self.stats["total_feedback"] > 0 else 0.5
         )
 
         # High surprise if result differs from expected
@@ -311,7 +323,8 @@ class NestedProviderSelector:
         return {
             **self.stats,
             "success_rate": (
-                self.stats["success_count"] / self.stats["total_feedback"] if self.stats["total_feedback"] > 0 else 0.0
+                self.stats["success_count"] / \
+                    self.stats["total_feedback"] if self.stats["total_feedback"] > 0 else 0.0
             ),
             "cms": cms_stats.to_dict(),
             "optimizer": self.meta_optimizer.get_stats(),
@@ -324,6 +337,7 @@ class NestedProviderSelector:
             "query_memory_levels": len(self.query_memory.levels),
             "total_selections": self.stats["total_selections"],
             "success_rate": (
-                self.stats["success_count"] / self.stats["total_feedback"] if self.stats["total_feedback"] > 0 else 0.0
+                self.stats["success_count"] / \
+                    self.stats["total_feedback"] if self.stats["total_feedback"] > 0 else 0.0
             ),
         }

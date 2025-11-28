@@ -6,9 +6,9 @@ Pydantic модели для QA Engineer модуля согласно Clean Arc
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class TestType(str, Enum):

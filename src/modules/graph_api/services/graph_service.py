@@ -1,12 +1,12 @@
 import re
 from typing import Any, Dict, List, Optional
 
+from src.config import USE_TEMPORAL_GNN
 from src.db.neo4j_client import Neo4jClient
 from src.db.qdrant_client import QdrantClient
 from src.services.embedding_service import EmbeddingService
-from src.utils.structured_logging import StructuredLogger
 from src.utils.retry_utils import retry_on_transient_error
-from src.config import USE_TEMPORAL_GNN
+from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 
@@ -27,7 +27,9 @@ class GraphService:
         self._temporal = None
         if USE_TEMPORAL_GNN:
             try:
-                from src.modules.graph_api.services.temporal_graph_service import TemporalGraphService
+                from src.modules.graph_api.services.temporal_graph_service import (
+                    TemporalGraphService,
+                )
 
                 self._temporal = TemporalGraphService(self)
                 logger.info("Temporal GNN enabled for GraphService")

@@ -5,18 +5,15 @@ Requirements Extractor Service
 """
 
 import re
-from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
+from src.modules.business_analyst.domain.exceptions import RequirementExtractionError
 from src.modules.business_analyst.domain.models import (
-    Requirement,
-    RequirementType,
     Priority,
-    UserStory,
+    Requirement,
     RequirementExtractionResult,
-)
-from src.modules.business_analyst.domain.exceptions import (
-    RequirementExtractionError,
+    RequirementType,
+    UserStory,
 )
 from src.utils.structured_logging import StructuredLogger
 
@@ -42,9 +39,7 @@ class RequirementsExtractor:
                                     (опционально, для dependency injection)
         """
         if requirements_repository is None:
-            from src.modules.business_analyst.repositories import (
-                RequirementsRepository
-            )
+            from src.modules.business_analyst.repositories import RequirementsRepository
             requirements_repository = RequirementsRepository()
 
         self.requirements_repository = requirements_repository
@@ -142,7 +137,7 @@ class RequirementsExtractor:
             )
 
         except Exception as e:
-            logger.error(f"Failed to extract requirements: {e}")
+            logger.error("Failed to extract requirements: %s", e)
             raise RequirementExtractionError(
                 f"Failed to extract requirements: {e}",
                 details={"document_type": document_type}

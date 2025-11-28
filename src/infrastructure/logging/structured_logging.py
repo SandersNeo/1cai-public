@@ -136,7 +136,8 @@ class StructuredLogger:
             "msecs",
             "relativeCreated",
         }
-        log_data = {k: v for k, v in log_data.items() if v is not None and k not in reserved_keys}
+        log_data = {k: v for k, v in log_data.items(
+        ) if v is not None and k not in reserved_keys}
 
         log_func = getattr(self.logger, level.lower())
         log_func(message, extra=log_data)

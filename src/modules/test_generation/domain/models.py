@@ -14,12 +14,14 @@ class TestGenerationRequest(BaseModel):
     language: Literal["bsl", "typescript", "python", "javascript"] = Field(
         default="bsl", description="Programming language"
     )
-    functionName: Optional[str] = Field(None, max_length=200, description="Specific function name to test")
+    functionName: Optional[str] = Field(
+        None, max_length=200, description="Specific function name to test")
     testType: Literal["unit", "integration", "e2e", "all"] = Field(
         default="unit", description="Type of tests to generate"
     )
     includeEdgeCases: bool = Field(default=True, description="Include edge cases")
-    framework: Optional[str] = Field(None, max_length=100, description="Testing framework")
+    framework: Optional[str] = Field(
+        None, max_length=100, description="Testing framework")
 
 
 class TestCase(BaseModel):

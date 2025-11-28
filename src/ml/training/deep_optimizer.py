@@ -5,11 +5,11 @@ Advanced optimizer with Nested Learning principles.
 Implements L2-regression loss and nested momentum.
 """
 
+import time
+from typing import Any, Dict
+
 import torch
 import torch.nn as nn
-from typing import Dict, List, Optional, Callable, Any
-import numpy as np
-import time
 
 from src.utils.structured_logging import StructuredLogger
 
@@ -67,7 +67,8 @@ class DeepOptimizer:
         self.max_retries = max_retries
 
         # Optimizer
-        self.optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+        self.optimizer = torch.optim.Adam(
+            model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
         # Nested momentum buffers
         if momentum_type == "nested":
@@ -92,7 +93,8 @@ class DeepOptimizer:
             "convergence_steps": 0,
         }
 
-        logger.info(f"Created DeepOptimizer with {loss_fn} loss and {momentum_type} momentum")
+        logger.info(
+            f"Created DeepOptimizer with {loss_fn} loss and {momentum_type} momentum")
 
     def l2_regression_loss(self, predictions: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
         """
@@ -124,7 +126,8 @@ class DeepOptimizer:
         """
         for attempt in range(self.max_retries):
             try:
-                result = self._step_internal(batch_data, batch_labels, return_predictions)
+                result = self._step_internal(
+                    batch_data, batch_labels, return_predictions)
 
                 if return_predictions:
                     loss, predictions = result
@@ -212,7 +215,8 @@ class DeepOptimizer:
                     if len(self.momentum_buffers["medium"]) < len(list(self.model.parameters())):
                         self.momentum_buffers["medium"].append(param.grad.clone())
                     else:
-                        idx = len(self.momentum_buffers["medium"]) % len(list(self.model.parameters()))
+                        idx = len(self.momentum_buffers["medium"]) % len(
+                            list(self.model.parameters()))
                         self.momentum_buffers["medium"][idx] = param.grad.clone()
 
         # Slow momentum (every 100 steps)
@@ -245,7 +249,7 @@ class DeepOptimizer:
             path,
         )
 
-        logger.info(f"Saved checkpoint to {path}")
+        logger.info("Saved checkpoint to %s", path)
 
     def load_checkpoint(self, path: str):
         """Load optimizer checkpoint"""
@@ -259,7 +263,7 @@ class DeepOptimizer:
         if self.momentum_type == "nested":
             self.step_count = checkpoint.get("step_count", 0)
 
-        logger.info(f"Loaded checkpoint from {path}")
+        logger.info("Loaded checkpoint from %s", path)
 
     def health_check(self) -> Dict[str, Any]:
         """Health check"""

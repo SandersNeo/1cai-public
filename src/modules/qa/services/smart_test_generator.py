@@ -5,15 +5,15 @@ Smart Test Generator Service
 """
 
 import re
-from typing import Any, Dict, List
+from typing import List
 
+from src.modules.qa.domain.exceptions import TestGenerationError
 from src.modules.qa.domain.models import (
     TestCase,
-    TestType,
-    TestParameter,
     TestGenerationResult,
+    TestParameter,
+    TestType,
 )
-from src.modules.qa.domain.exceptions import TestGenerationError
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -176,10 +176,10 @@ class SmartTestGenerator:
         test_code = f"""Процедура Тест_{function_name}_НормальныйСценарий() Экспорт
     // Arrange
     {self._generate_arrange_code(params)}
-    
+
     // Act
     Результат = {function_name}({self._generate_param_values(params)});
-    
+
     // Assert
     ЮТест.ОжидаетЧто(Результат).ЭтоНеНеопределено();
 КонецПроцедуры"""
@@ -208,7 +208,7 @@ class SmartTestGenerator:
         if params:
             test_code = f"""Процедура Тест_{function_name}_НекорректныйТип() Экспорт
     // Тест на обработку некорректного типа параметра
-    
+
     Попытка
         Результат = {function_name}(Неопределено);
         ВызватьИсключение("Ожидалась ошибка");

@@ -27,7 +27,8 @@ class WebSocketService:
 
         # Sanitize user_id
         if not re.match(r"^[a-zA-Z0-9_.-]+$", user_id):
-            logger.warning(f"Invalid characters in user_id: {user_id}", extra={"user_id": user_id})
+            logger.warning(f"Invalid characters in user_id: {user_id}", extra={
+                           "user_id": user_id})
             await websocket.close(code=1008, reason="Invalid user_id format")
             return
 

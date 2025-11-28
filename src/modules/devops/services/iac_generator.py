@@ -16,7 +16,7 @@ logger = StructuredLogger(__name__).logger
 class IaCGenerator:
     """
     Сервис генерации Infrastructure as Code
-    
+
     Features:
     - Генерация Terraform конфигураций (AWS, Azure, GCP)
     - Генерация Ansible playbooks
@@ -57,7 +57,7 @@ class IaCGenerator:
                 "outputs.tf": outputs_tf,
             }
         except Exception as e:
-            logger.error(f"Terraform generation failed: {e}")
+            logger.error("Terraform generation failed: %s", e)
             raise IaCGenerationError(
                 f"Failed to generate Terraform: {e}",
                 details={"provider": provider}
@@ -95,7 +95,7 @@ class IaCGenerator:
                 "inventory.ini": inventory,
             }
         except Exception as e:
-            logger.error(f"Ansible generation failed: {e}")
+            logger.error("Ansible generation failed: %s", e)
             raise IaCGenerationError(
                 f"Failed to generate Ansible: {e}",
                 details={"tasks": tasks}
@@ -137,7 +137,7 @@ class IaCGenerator:
                 "ingress.yaml": ingress,
             }
         except Exception as e:
-            logger.error(f"Kubernetes generation failed: {e}")
+            logger.error("Kubernetes generation failed: %s", e)
             raise IaCGenerationError(
                 f"Failed to generate Kubernetes: {e}",
                 details={"app_name": app_name}
@@ -334,10 +334,10 @@ output "db_endpoint" {
 - name: Configure servers
   hosts: all
   become: yes
-  
+
   vars:
     environment: {env}
-  
+
   tasks:
 """
 
@@ -349,7 +349,7 @@ output "db_endpoint" {
         state: present
         update_cache: yes
       when: ansible_os_family == "Debian"
-    
+
     - name: Start Nginx
       service:
         name: nginx
@@ -365,7 +365,7 @@ output "db_endpoint" {
         name: postgresql
         state: present
       when: ansible_os_family == "Debian"
-    
+
     - name: Start PostgreSQL
       service:
         name: postgresql

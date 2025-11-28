@@ -4,16 +4,14 @@ Cluster Monitor Service
 Сервис для мониторинга кластера 1С.
 """
 
-from typing import List, Optional
+from typing import List
 
+from src.modules.ras_monitor.domain.exceptions import ClusterConnectionError
 from src.modules.ras_monitor.domain.models import (
     ClusterInfo,
     ClusterMetrics,
     Session,
     SessionState,
-)
-from src.modules.ras_monitor.domain.exceptions import (
-    ClusterConnectionError
 )
 from src.utils.structured_logging import StructuredLogger
 
@@ -38,9 +36,7 @@ class ClusterMonitor:
                                  (опционально, для dependency injection)
         """
         if monitoring_repository is None:
-            from src.modules.ras_monitor.repositories import (
-                MonitoringRepository
-            )
+            from src.modules.ras_monitor.repositories import MonitoringRepository
             monitoring_repository = MonitoringRepository()
 
         self.monitoring_repository = monitoring_repository
@@ -78,7 +74,7 @@ class ClusterMonitor:
             return cluster_info
 
         except Exception as e:
-            logger.error(f"Failed to get cluster info: {e}")
+            logger.error("Failed to get cluster info: %s", e)
             raise ClusterConnectionError(
                 f"Failed to connect to cluster at {host}:{port}",
                 details={"host": host, "port": port}
@@ -142,7 +138,7 @@ class ClusterMonitor:
             )
 
         except Exception as e:
-            logger.error(f"Failed to collect metrics: {e}")
+            logger.error("Failed to collect metrics: %s", e)
             raise
 
     async def check_health(

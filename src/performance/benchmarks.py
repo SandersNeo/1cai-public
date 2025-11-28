@@ -106,7 +106,7 @@ class BenchmarkRunner:
                 times.append(iter_time)
             except Exception as e:
                 errors += 1
-                logger.error(f"Error in benchmark iteration {i}: {e}")
+                logger.error("Error in benchmark iteration %s: {e}", i)
 
         total_time = time.time() - start_time
 
@@ -156,7 +156,7 @@ class BenchmarkRunner:
                 times.append(iter_time)
             except Exception as e:
                 errors += 1
-                logger.error(f"Error in evolution {i}: {e}")
+                logger.error("Error in evolution %s: {e}", i)
 
         total_time = time.time() - start_time
 
@@ -211,7 +211,7 @@ class BenchmarkRunner:
                 times.append(iter_time)
             except Exception as e:
                 errors += 1
-                logger.error(f"Error in healing {i}: {e}")
+                logger.error("Error in healing %s: {e}", i)
 
         total_time = time.time() - start_time
 

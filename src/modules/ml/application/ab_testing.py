@@ -35,10 +35,10 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from src.modules.ml.infrastructure.mlflow_manager import MLFlowManager
-from src.modules.ml.infrastructure.metrics_collector import MetricsCollector
-from src.modules.ml.domain.predictor import MLPredictor
 from src.infrastructure.logging.structured_logging import StructuredLogger
+from src.modules.ml.domain.predictor import MLPredictor
+from src.modules.ml.infrastructure.metrics_collector import MetricsCollector
+from src.modules.ml.infrastructure.mlflow_manager import MLFlowManager
 
 logger = StructuredLogger(__name__).logger
 Base = declarative_base()
@@ -166,7 +166,8 @@ class ABTestingDatabase:
 
     def __init__(self, database_url: str):
         self.engine = create_engine(database_url)
-        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+        self.SessionLocal = sessionmaker(
+            autocommit=False, autoflush=False, bind=self.engine)
         Base.metadata.create_all(bind=self.engine)
 
     def create_ab_test(self, config: ABTestConfig) -> str:
@@ -199,7 +200,8 @@ class ABTestingDatabase:
         """Получение статуса теста"""
         session = self.SessionLocal()
         try:
-            test = session.query(ABTestRecord).filter(ABTestRecord.id == test_id).first()
+            test = session.query(ABTestRecord).filter(
+                ABTestRecord.id == test_id).first()
 
             if test:
                 return asdict(test)
@@ -211,7 +213,8 @@ class ABTestingDatabase:
         """Обновление метрик теста"""
         session = self.SessionLocal()
         try:
-            test = session.query(ABTestRecord).filter(ABTestRecord.id == test_id).first()
+            test = session.query(ABTestRecord).filter(
+                ABTestRecord.id == test_id).first()
 
             if test:
                 test.sample_size_control = result.sample_size_control
@@ -306,7 +309,8 @@ class ABTestManager:
         # Сохранение в активных тестах
         self.active_tests[test_id] = config
 
-        logger.info("Создан A/B тест", extra={"test_name": config.test_name, "test_id": test_id})
+        logger.info("Создан A/B тест",
+                    extra={"test_name": config.test_name, "test_id": test_id})
 
         return test_id
 
@@ -401,18 +405,21 @@ class ABTestManager:
         # Доверительный интервал
         diff_mean = treatment_metric - control_metric
         pooled_std = math.sqrt(
-            (np.var(control_data) / len(control_data)) + (np.var(treatment_data) / len(treatment_data))
+            (np.var(control_data) / len(control_data)) + \
+             (np.var(treatment_data) / len(treatment_data))
         )
 
         # 95% доверительный интервал
         confidence_level = 0.95
-        t_critical = stats.t.ppf((1 + confidence_level) / 2, df=len(control_data) + len(treatment_data) - 2)
+        t_critical = stats.t.ppf((1 + confidence_level) / 2,
+                                 df=len(control_data) + len(treatment_data) - 2)
 
         margin_error = t_critical * pooled_std
         confidence_interval = (diff_mean - margin_error, diff_mean + margin_error)
 
         # Мощность теста
-        power = self._calculate_power(len(control_data), len(treatment_data), diff_mean, pooled_std)
+        power = self._calculate_power(len(control_data), len(
+            treatment_data), diff_mean, pooled_std)
 
         # Статистическая значимость
         is_significant = p_value < 0.05
@@ -539,7 +546,8 @@ class ABTestManager:
         # Обновление статуса теста
         session = self.db.SessionLocal()
         try:
-            test = session.query(ABTestRecord).filter(ABTestRecord.id == test_id).first()
+            test = session.query(ABTestRecord).filter(
+                ABTestRecord.id == test_id).first()
 
             if test:
                 test.status = ABTestStatus.COMPLETED.value

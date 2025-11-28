@@ -6,13 +6,13 @@ ADR Generator Service
 
 from typing import Dict, List
 
+from src.modules.architect.domain.exceptions import ADRGenerationError
 from src.modules.architect.domain.models import (
     ADR,
     ADRStatus,
     Alternative,
     Consequences,
 )
-from src.modules.architect.domain.exceptions import ADRGenerationError
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -97,7 +97,7 @@ class ADRGenerator:
             )
 
         except Exception as e:
-            logger.error(f"Failed to generate ADR: {e}")
+            logger.error("Failed to generate ADR: %s", e)
             raise ADRGenerationError(
                 f"Failed to generate ADR: {e}",
                 details={"title": title}
@@ -115,7 +115,7 @@ class ADRGenerator:
         """
         markdown = f"""# {adr.id}: {adr.title}
 
-**Статус:** {adr.status.value}  
+**Статус:** {adr.status.value}
 **Дата:** {adr.created_at}
 
 ## Контекст

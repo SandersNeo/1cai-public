@@ -7,9 +7,8 @@ Supports:
 """
 
 import logging
-from typing import Any, Dict, List, Optional
 from enum import Enum
-
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -23,10 +22,10 @@ class CIPlatform(Enum):
 class CICDClient:
     """
     CI/CD integration client
-    
+
     Supports GitLab CI and GitHub Actions
     """
-    
+
     def __init__(
         self,
         platform: CIPlatform,
@@ -35,7 +34,7 @@ class CICDClient:
     ):
         """
         Initialize CI/CD client
-        
+
         Args:
             platform: CI/CD platform
             api_token: API token
@@ -45,10 +44,10 @@ class CICDClient:
         self.api_token = api_token
         self.base_url = base_url or self._get_default_url(platform)
         self.logger = logging.getLogger("cicd_client")
-        
+
         self.client = None
         self._init_client()
-    
+
     def _get_default_url(self, platform: CIPlatform) -> str:
         """Get default API URL for platform"""
         if platform == CIPlatform.GITLAB:
@@ -56,12 +55,12 @@ class CICDClient:
         elif platform == CIPlatform.GITHUB:
             return "https://api.github.com"
         return ""
-    
+
     def _init_client(self):
         """Initialize platform-specific client"""
         # TODO: Initialize real API clients
         self.logger.info(f"{self.platform.value} client initialized")
-    
+
     async def trigger_pipeline(
         self,
         project_id: str,
@@ -70,12 +69,12 @@ class CICDClient:
     ) -> Dict[str, Any]:
         """
         Trigger CI/CD pipeline
-        
+
         Args:
             project_id: Project/repository ID
             ref: Git ref (branch/tag)
             variables: Pipeline variables
-            
+
         Returns:
             Pipeline information
         """
@@ -83,13 +82,13 @@ class CICDClient:
         self.logger.info(
             f"Triggering pipeline for {project_id} on {ref}"
         )
-        
+
         return {
             "pipeline_id": "pending",
             "status": "pending_implementation",
             "web_url": f"{self.base_url}/pipelines/pending"
         }
-    
+
     async def get_pipeline_status(
         self,
         project_id: str,
@@ -97,11 +96,11 @@ class CICDClient:
     ) -> Dict[str, Any]:
         """
         Get pipeline status
-        
+
         Args:
             project_id: Project ID
             pipeline_id: Pipeline ID
-            
+
         Returns:
             Pipeline status
         """
@@ -111,7 +110,7 @@ class CICDClient:
             "status": "pending",
             "stages": []
         }
-    
+
     async def get_test_results(
         self,
         project_id: str,
@@ -119,11 +118,11 @@ class CICDClient:
     ) -> Dict[str, Any]:
         """
         Get test results from pipeline
-        
+
         Args:
             project_id: Project ID
             pipeline_id: Pipeline ID
-            
+
         Returns:
             Test results
         """
@@ -143,12 +142,12 @@ def get_cicd_client(
 ) -> CICDClient:
     """
     Create CI/CD client
-    
+
     Args:
         platform: "gitlab" or "github"
         api_token: API token
         base_url: Optional base URL
-        
+
     Returns:
         CICDClient instance
     """

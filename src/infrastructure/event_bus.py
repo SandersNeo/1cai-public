@@ -135,7 +135,7 @@ class EventBus:
         self._event_queue: asyncio.Queue = asyncio.Queue()
         self._worker_tasks: List[asyncio.Task] = []
 
-        logger.info(f"EventBus initialized with backend: {backend}")
+        logger.info("EventBus initialized with backend: %s", backend)
 
     async def start(self, num_workers: int = 4) -> None:
         """Запуск Event Bus"""
@@ -150,7 +150,7 @@ class EventBus:
             task = asyncio.create_task(self._worker(f"worker-{i}"))
             self._worker_tasks.append(task)
 
-        logger.info(f"EventBus started with {num_workers} workers")
+        logger.info("EventBus started with %s workers", num_workers)
 
     async def stop(self) -> None:
         """Остановка Event Bus"""
@@ -203,7 +203,7 @@ class EventBus:
 
     async def _worker(self, worker_id: str) -> None:
         """Worker для обработки событий"""
-        logger.info(f"Event worker {worker_id} started")
+        logger.info("Event worker %s started", worker_id)
 
         while self._running:
             try:
@@ -222,7 +222,7 @@ class EventBus:
                     exc_info=True,
                 )
 
-        logger.info(f"Event worker {worker_id} stopped")
+        logger.info("Event worker %s stopped", worker_id)
 
     async def _process_event(self, event: Event) -> None:
         """Обработка события"""

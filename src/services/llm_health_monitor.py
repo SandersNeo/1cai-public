@@ -227,7 +227,7 @@ class LLMHealthMonitor:
             else:
                 health.status = ProviderHealthStatus.DEGRADED
 
-            logger.warning(f"Health check failed for {provider.name}: {e}")
+            logger.warning("Health check failed for {provider.name}: %s", e)
 
     async def _perform_health_check(self, provider: ProviderConfig) -> bool:
         """
@@ -276,7 +276,7 @@ class LLMHealthMonitor:
                         return False
 
         except Exception as e:
-            logger.debug(f"Health check error for {provider.name}: {e}")
+            logger.debug("Health check error for {provider.name}: %s", e)
             return False
 
     def get_provider_health(self, provider_name: str) -> Optional[ProviderHealth]:

@@ -1,7 +1,6 @@
-import asyncio
 import os
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from src.infrastructure.logging.structured_logging import StructuredLogger
 
@@ -31,7 +30,7 @@ class CopilotService:
         except ImportError:
             logger.warning("Could not import GBNFGenerator")
         except Exception as e:
-            logger.error(f"Error initializing GBNFGenerator: {e}")
+            logger.error("Error initializing GBNFGenerator: %s", e)
 
         # 2. Attempt to load fine-tuned model
         self._load_model()
@@ -39,7 +38,8 @@ class CopilotService:
     def _load_model(self):
         """Load ML model if available"""
         try:
-            model_path = os.getenv("COPILOT_MODEL_PATH", os.getenv("BSL_MODEL_PATH", "./models/1c-copilot-lora"))
+            model_path = os.getenv("COPILOT_MODEL_PATH", os.getenv(
+                "BSL_MODEL_PATH", "./models/1c-copilot-lora"))
 
             if os.path.exists(model_path):
                 logger.info("Loading Copilot model", extra={"model_path": model_path})
@@ -54,13 +54,16 @@ class CopilotService:
                     logger.info("Using device", extra={"device": self.device})
 
                     # Load base model
-                    base_model_name = os.getenv("BASE_MODEL", "Qwen/Qwen2.5-Coder-7B-Instruct")
+                    base_model_name = os.getenv(
+                        "BASE_MODEL", "Qwen/Qwen2.5-Coder-7B-Instruct")
 
-                    logger.info("Loading base model", extra={"base_model_name": base_model_name})
+                    logger.info("Loading base model", extra={
+                                "base_model_name": base_model_name})
                     base_model = AutoModelForCausalLM.from_pretrained(
                         base_model_name,
                         device_map="auto",
-                        torch_dtype=(torch.float16 if self.device == "cuda" else torch.float32),
+                        torch_dtype=(torch.float16 if self.device ==
+                                     "cuda" else torch.float32),
                         low_cpu_mem_usage=True,
                     )
 
@@ -129,7 +132,8 @@ class CopilotService:
             prompt = f"{code}\n{current_line}"
 
             # Tokenize
-            inputs = self.tokenizer(prompt, return_tensors="pt", max_length=2048, truncation=True).to(self.device)
+            inputs = self.tokenizer(prompt, return_tensors="pt",
+                                    max_length=2048, truncation=True).to(self.device)
 
             # Generate multiple completions with different temperatures
             temperatures = [0.2, 0.5, 0.8][:max_suggestions]
@@ -155,7 +159,8 @@ class CopilotService:
                         {
                             "text": new_part,
                             "description": f"AI suggestion (temp={temp})",
-                            "score": 1.0 - (temp * 0.2),  # Higher temp = lower confidence
+                            # Higher temp = lower confidence
+                            "score": 1.0 - (temp * 0.2),
                         }
                     )
 
@@ -266,8 +271,10 @@ class CopilotService:
 
         # Pattern 7: Новый
         if "новый" in line_lower:
-            suggestions.append({"text": " Массив", "description": "Новый массив", "score": 0.87})
-            suggestions.append({"text": " Структура", "description": "Новая структура", "score": 0.86})
+            suggestions.append(
+                {"text": " Массив", "description": "Новый массив", "score": 0.87})
+            suggestions.append(
+                {"text": " Структура", "description": "Новая структура", "score": 0.86})
 
         # Pattern 8: СоздатьОбъект
         if "создатьобъект" in line_lower.replace(" ", ""):
@@ -336,7 +343,8 @@ class CopilotService:
                 full_prompt = f"// Generate BSL code:\n// {prompt}\n\n"
 
             # Tokenize
-            inputs = self.tokenizer(full_prompt, return_tensors="pt", max_length=1024, truncation=True).to(self.device)
+            inputs = self.tokenizer(full_prompt, return_tensors="pt",
+                                    max_length=1024, truncation=True).to(self.device)
 
             # Generate
             with torch.no_grad():
@@ -391,10 +399,12 @@ class CopilotService:
 
         # Extract function name from prompt
         words = [w for w in re.findall(r"\w+", prompt) if len(w) > 2]
-        func_name = "".join(w.capitalize() for w in words[:3]) if words else "НоваяФункция"
+        func_name = "".join(w.capitalize()
+                            for w in words[:3]) if words else "НоваяФункция"
 
         # Detect if needs parameters
-        needs_params = any(word in prompt.lower() for word in ["параметр", "значение", "данные", "объект"])
+        needs_params = any(word in prompt.lower()
+                           for word in ["параметр", "значение", "данные", "объект"])
 
         params = "Параметр1, Параметр2" if needs_params else ""
 
@@ -432,7 +442,8 @@ class CopilotService:
         """Generate procedure template"""
 
         words = [w for w in re.findall(r"\w+", prompt) if len(w) > 2]
-        proc_name = "".join(w.capitalize() for w in words[:3]) if words else "НоваяПроцедура"
+        proc_name = "".join(w.capitalize()
+                            for w in words[:3]) if words else "НоваяПроцедура"
 
         return f"""//
 // {prompt}
@@ -444,7 +455,7 @@ class CopilotService:
 
     Попытка
         // Реализация процедуры
-        
+
     Исключение
         ЗаписьЖурналаРегистрации("Ошибка в {proc_name}",
             УровеньЖурналаРегистрации.Ошибка,,,

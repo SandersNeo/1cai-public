@@ -10,8 +10,8 @@ from typing import Literal, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from src.services.configuration_knowledge_base import get_knowledge_base
 from src.infrastructure.logging.structured_logging import StructuredLogger
+from src.services.configuration_knowledge_base import get_knowledge_base
 
 logger = StructuredLogger(__name__).logger
 router = APIRouter()
@@ -55,8 +55,10 @@ class PatternSearchRequest(BaseModel):
 class CodeRecommendationRequest(BaseModel):
     """Запрос рекомендаций на основе кода"""
 
-    code: str = Field(..., description="Код для анализа", max_length=100000)  # Limit length
-    configName: Optional[str] = Field(None, description="Название конфигурации (опционально)", max_length=50)
+    code: str = Field(..., description="Код для анализа",
+                      max_length=100000)  # Limit length
+    configName: Optional[str] = Field(
+        None, description="Название конфигурации (опционально)", max_length=50)
 
 
 # ==================== API ENDPOINTS ====================
@@ -106,7 +108,8 @@ async def get_configuration_info(config_name: str):
     # Input validation and sanitization (best practice)
     sanitized_name = config_name.strip().lower()[:50]  # Limit length and normalize
     if not sanitized_name:
-        raise HTTPException(status_code=400, detail="Configuration name cannot be empty")
+        raise HTTPException(
+            status_code=400, detail="Configuration name cannot be empty")
 
     # Prevent path traversal and dangerous characters
     if ".." in sanitized_name or "/" in sanitized_name or "\\" in sanitized_name:
@@ -116,7 +119,8 @@ async def get_configuration_info(config_name: str):
     info = kb.get_configuration_info(sanitized_name)
 
     if not info:
-        raise HTTPException(status_code=404, detail=f"Конфигурация {sanitized_name} не найдена")
+        raise HTTPException(
+            status_code=404, detail=f"Конфигурация {sanitized_name} не найдена")
 
     return info
 
@@ -156,7 +160,8 @@ async def get_recommendations(request: CodeRecommendationRequest):
             config_name = request.configName.strip().lower()[:50]
             # Prevent path traversal
             if ".." in config_name or "/" in config_name or "\\" in config_name:
-                raise HTTPException(status_code=400, detail="Invalid configuration name")
+                raise HTTPException(
+                    status_code=400, detail="Invalid configuration name")
 
         kb = get_knowledge_base()
         recommendations = kb.get_recommendations(code=code, config_name=config_name)
@@ -176,7 +181,8 @@ async def get_recommendations(request: CodeRecommendationRequest):
             },
             exc_info=True,
         )
-        raise HTTPException(status_code=500, detail="An error occurred while getting recommendations")
+        raise HTTPException(
+            status_code=500, detail="An error occurred while getting recommendations")
 
 
 @router.post(
@@ -201,7 +207,8 @@ async def search_patterns(request: PatternSearchRequest):
             config_name = request.configName.strip().lower()[:50]
             # Prevent path traversal
             if ".." in config_name or "/" in config_name or "\\" in config_name:
-                raise HTTPException(status_code=400, detail="Invalid configuration name")
+                raise HTTPException(
+                    status_code=400, detail="Invalid configuration name")
 
         pattern_type = None
         if request.patternType:
@@ -212,7 +219,8 @@ async def search_patterns(request: PatternSearchRequest):
             query = request.query.strip()[:500]  # Limit length
 
         kb = get_knowledge_base()
-        patterns = kb.search_patterns(config_name=config_name, pattern_type=pattern_type, query=query)
+        patterns = kb.search_patterns(
+            config_name=config_name, pattern_type=pattern_type, query=query)
 
         return {"patterns": patterns, "total": len(patterns)}
 
@@ -229,7 +237,8 @@ async def search_patterns(request: PatternSearchRequest):
             },
             exc_info=True,
         )
-        raise HTTPException(status_code=500, detail="An error occurred while searching patterns")
+        raise HTTPException(
+            status_code=500, detail="An error occurred while searching patterns")
 
 
 @router.post(
@@ -251,7 +260,8 @@ async def add_module_documentation(request: ModuleDocumentationRequest):
         # Input validation and sanitization (best practice)
         config_name = request.configName.strip().lower()[:50]
         if not config_name:
-            raise HTTPException(status_code=400, detail="Configuration name cannot be empty")
+            raise HTTPException(
+                status_code=400, detail="Configuration name cannot be empty")
 
         # Prevent path traversal
         if ".." in config_name or "/" in config_name or "\\" in config_name:
@@ -269,7 +279,8 @@ async def add_module_documentation(request: ModuleDocumentationRequest):
         )
 
         if not success:
-            raise HTTPException(status_code=400, detail="Не удалось добавить документацию модуля")
+            raise HTTPException(
+                status_code=400, detail="Не удалось добавить документацию модуля")
 
         return {
             "success": True,
@@ -312,7 +323,8 @@ async def add_best_practice(request: BestPracticeRequest):
         )
 
         if not success:
-            raise HTTPException(status_code=400, detail="Не удалось добавить best practice")
+            raise HTTPException(
+                status_code=400, detail="Не удалось добавить best practice")
 
         return {"success": True, "message": "Best practice добавлена"}
 

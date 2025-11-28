@@ -43,7 +43,7 @@ class CacheManager:
                 self._redis_client.ping()
                 logger.info("Redis cache (L2) enabled for embeddings")
             except Exception as e:
-                logger.warning(f"Redis connection failed, L2 cache disabled: {e}")
+                logger.warning("Redis connection failed, L2 cache disabled: %s", e)
                 self._redis_enabled = False
                 self._redis_client = None
 
@@ -114,7 +114,7 @@ class CacheManager:
                         self._result_cache.move_to_end(cache_key)
                     return value
             except Exception as e:
-                logger.debug(f"Redis cache error: {e}")
+                logger.debug("Redis cache error: %s", e)
 
         return None
 
@@ -150,7 +150,7 @@ class CacheManager:
                 serialized = json.dumps(cache_value)
                 self._redis_client.setex(redis_key, self._cache_ttl_seconds, serialized)
             except Exception as e:
-                logger.debug(f"Error saving to Redis cache: {e}")
+                logger.debug("Error saving to Redis cache: %s", e)
 
     def get_from_semantic_cache(
         self, text: str, query_embedding_func
@@ -177,7 +177,7 @@ class CacheManager:
                     logger.debug(f"Semantic cache ANN hit: {similarity:.3f}")
                     return best_embedding
             except Exception as e:
-                logger.warning(f"Error in semantic cache ANN lookup: {e}")
+                logger.warning("Error in semantic cache ANN lookup: %s", e)
 
         # Linear lookup
         if not self._semantic_cache:
@@ -202,7 +202,7 @@ class CacheManager:
                 return best_embedding
 
         except Exception as e:
-            logger.warning(f"Error in semantic cache lookup: {e}")
+            logger.warning("Error in semantic cache lookup: %s", e)
 
         return None
 
@@ -234,7 +234,7 @@ class CacheManager:
                 self._semantic_cache_ann.add(embedding, text)
 
         except Exception as e:
-            logger.warning(f"Error saving to semantic cache: {e}")
+            logger.warning("Error saving to semantic cache: %s", e)
 
     def _cosine_similarity(self, vec1: List[float], vec2: List[float]) -> float:
         try:

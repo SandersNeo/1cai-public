@@ -4,7 +4,7 @@ Business logic for executive-level KPIs and metrics
 """
 import random
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Any, Dict
 
 import asyncpg
 

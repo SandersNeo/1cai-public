@@ -18,8 +18,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from src.utils.structured_logging import StructuredLogger
 from src.parsers.onec_xml_parser import OneCXMLParser
+from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 
@@ -187,14 +187,16 @@ class ConfigurationKnowledgeBase:
         if not config_name or not isinstance(config_name, str):
             logger.warning(
                 "Invalid config_name in add_module_documentation",
-                extra={"config_name_type": (type(config_name).__name__ if config_name else None)},
+                extra={"config_name_type": (
+                    type(config_name).__name__ if config_name else None)},
             )
             return False
 
         if not module_name or not isinstance(module_name, str):
             logger.warning(
                 "Invalid module_name in add_module_documentation",
-                extra={"module_name_type": (type(module_name).__name__ if module_name else None)},
+                extra={"module_name_type": (
+                    type(module_name).__name__ if module_name else None)},
             )
             return False
 
@@ -353,7 +355,8 @@ class ConfigurationKnowledgeBase:
         if pattern_type:
             pattern_type = re.sub(r"[^a-zA-Z0-9_.-]", "", pattern_type)
 
-        configs_to_search = [config_name.lower()] if config_name else self.SUPPORTED_CONFIGURATIONS
+        configs_to_search = [
+            config_name.lower()] if config_name else self.SUPPORTED_CONFIGURATIONS
 
         for config_key in configs_to_search:
             if config_key not in self._cache:
@@ -395,7 +398,8 @@ class ConfigurationKnowledgeBase:
         """
         recommendations = []
 
-        configs_to_search = [config_name.lower()] if config_name else self.SUPPORTED_CONFIGURATIONS
+        configs_to_search = [
+            config_name.lower()] if config_name else self.SUPPORTED_CONFIGURATIONS
 
         for config_key in configs_to_search:
             if config_key not in self._cache:
@@ -487,7 +491,8 @@ class ConfigurationKnowledgeBase:
         dir_path = Path(directory_path)
 
         if not dir_path.exists() or not dir_path.is_dir():
-            logger.error("Директория не найдена", extra={"directory_path": directory_path})
+            logger.error("Директория не найдена", extra={
+                         "directory_path": directory_path})
             return 0
 
         loaded_count = 0
@@ -522,7 +527,8 @@ class ConfigurationKnowledgeBase:
                         config_name = self._detect_config_from_path(xml_file)
                         if config_name:
                             self._add_module_to_config(config_name, parsed_data)
-                            logger.info(f"Loaded module: {parsed_data['name']}", extra={"config": config_name})
+                            logger.info(f"Loaded module: {parsed_data['name']}", extra={
+                                        "config": config_name})
 
                 else:
                     # Попытка парсинга как объект метаданных
@@ -559,7 +565,8 @@ class ConfigurationKnowledgeBase:
                 if config_name in self.SUPPORTED_CONFIGURATIONS:
                     self._cache[config_name] = data
                     loaded_count += 1
-                    logger.info("Загружена конфигурация", extra={"config_name": config_name})
+                    logger.info("Загружена конфигурация", extra={
+                                "config_name": config_name})
 
             except Exception as e:
                 logger.error(
@@ -673,7 +680,8 @@ class ConfigurationKnowledgeBase:
             config["modules"] = []
 
         # Проверяем, не существует ли уже такой модуль
-        existing_module = next((m for m in config["modules"] if m.get("name") == module_data["name"]), None)
+        existing_module = next(
+            (m for m in config["modules"] if m.get("name") == module_data["name"]), None)
 
         if existing_module:
             # Обновляем существующий

@@ -4,15 +4,14 @@ Compliance Checker Service
 Сервис для проверки compliance с security frameworks.
 """
 
-from typing import List
 
+from src.modules.security.domain.exceptions import ComplianceCheckError
 from src.modules.security.domain.models import (
+    ComplianceFramework,
     ComplianceIssue,
     ComplianceReport,
-    ComplianceFramework,
     Severity,
 )
-from src.modules.security.domain.exceptions import ComplianceCheckError
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -36,9 +35,7 @@ class ComplianceChecker:
                                 (опционально, для dependency injection)
         """
         if patterns_repository is None:
-            from src.modules.security.repositories import (
-                SecurityPatternsRepository
-            )
+            from src.modules.security.repositories import SecurityPatternsRepository
             patterns_repository = SecurityPatternsRepository()
 
         self.patterns_repository = patterns_repository
@@ -102,7 +99,7 @@ class ComplianceChecker:
             )
 
         except Exception as e:
-            logger.error(f"Failed to check compliance: {e}")
+            logger.error("Failed to check compliance: %s", e)
             raise ComplianceCheckError(
                 f"Failed to check compliance: {e}",
                 details={"framework": framework.value}

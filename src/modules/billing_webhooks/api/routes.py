@@ -2,9 +2,7 @@ import os
 
 from fastapi import APIRouter, Header, HTTPException, Request
 
-from src.modules.billing_webhooks.services.webhook_handler import (
-    BillingWebhookHandler,
-)
+from src.modules.billing_webhooks.services.webhook_handler import BillingWebhookHandler
 
 router = APIRouter(tags=["Billing Webhooks"])
 
@@ -25,7 +23,8 @@ async def stripe_webhook(request: Request, stripe_signature: str = Header(None, 
     try:
         import stripe
 
-        event = stripe.Webhook.construct_event(payload, stripe_signature, os.getenv("STRIPE_WEBHOOK_SECRET", ""))
+        event = stripe.Webhook.construct_event(
+            payload, stripe_signature, os.getenv("STRIPE_WEBHOOK_SECRET", ""))
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid payload")
     except Exception:

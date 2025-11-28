@@ -6,14 +6,12 @@ User Guide Generator Service
 
 from typing import List
 
+from src.modules.technical_writer.domain.exceptions import UserGuideGenerationError
 from src.modules.technical_writer.domain.models import (
-    UserGuide,
-    GuideSection,
-    FAQItem,
     Audience,
-)
-from src.modules.technical_writer.domain.exceptions import (
-    UserGuideGenerationError
+    FAQItem,
+    GuideSection,
+    UserGuide,
 )
 from src.utils.structured_logging import StructuredLogger
 
@@ -37,9 +35,7 @@ class UserGuideGenerator:
                                 (опционально, для dependency injection)
         """
         if templates_repository is None:
-            from src.modules.technical_writer.repositories import (
-                TemplatesRepository
-            )
+            from src.modules.technical_writer.repositories import TemplatesRepository
             templates_repository = TemplatesRepository()
 
         self.templates_repository = templates_repository
@@ -88,7 +84,7 @@ class UserGuideGenerator:
             )
 
         except Exception as e:
-            logger.error(f"Failed to generate user guide: {e}")
+            logger.error("Failed to generate user guide: %s", e)
             raise UserGuideGenerationError(
                 f"Failed to generate user guide: {e}",
                 details={"feature": feature}

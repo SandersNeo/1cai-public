@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field
 
@@ -16,7 +16,8 @@ class InfrastructureAnalysisResponse(BaseModel):
 class EvolutionRequest(BaseModel):
     """AI evolution request"""
 
-    force: bool = Field(default=False, description="Force evolution even if system is healthy")
+    force: bool = Field(
+        default=False, description="Force evolution even if system is healthy")
 
 
 class EvolutionResponse(BaseModel):

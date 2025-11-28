@@ -36,7 +36,8 @@ async def enrich_user_from_db(user: "CurrentUser") -> "CurrentUser":
         return merged
 
     user.roles = _merge(user.roles, [row["role"] for row in rows_roles])
-    user.permissions = _merge(user.permissions, [row["permission"] for row in rows_permissions])
+    user.permissions = _merge(
+        user.permissions, [row["permission"] for row in rows_permissions])
     return user
 
 

@@ -28,7 +28,8 @@ class TraceabilityService:
             agent = BusinessAnalystAgentExtended()
 
             # Format requirements for compatibility
-            requirements = [{"id": req_id, "title": req_id} for req_id in requirement_ids]
+            requirements = [{"id": req_id, "title": req_id}
+                for req_id in requirement_ids]
             test_cases = []  # Found via graph
 
             return await agent.build_traceability_and_risks(

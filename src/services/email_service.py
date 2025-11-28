@@ -12,6 +12,7 @@ Email Service for Alerting and Notifications
 - Graceful degradation если email не настроен
 """
 
+import logging
 import os
 import re
 import smtplib
@@ -19,7 +20,6 @@ import time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Dict, List, Optional
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,8 @@ class EmailService:
 
         # Rate limiting
         self.last_alert_time: Dict[str, float] = {}
-        self.min_alert_interval = int(os.getenv("EMAIL_RATE_LIMIT_SECONDS", "3600"))  # 1 hour default
+        self.min_alert_interval = int(
+            os.getenv("EMAIL_RATE_LIMIT_SECONDS", "3600"))  # 1 hour default
 
         # Validate configuration
         if not all([self.smtp_user, self.smtp_password]):
@@ -131,7 +132,8 @@ class EmailService:
             return True
 
         except smtplib.SMTPAuthenticationError as e:
-            logger.error(f"SMTP authentication failed: {e}. Check SMTP_USER and SMTP_PASSWORD.")
+            logger.error(
+                f"SMTP authentication failed: {e}. Check SMTP_USER and SMTP_PASSWORD.")
             return False
         except smtplib.SMTPException as e:
             logger.error(f"SMTP error: {e}", exc_info=True)
@@ -155,7 +157,8 @@ class EmailService:
         # Check rate limit
         alert_key = "drift_alert"
         if not self._check_rate_limit(alert_key):
-            logger.info(f"Drift alert skipped due to rate limiting " f"(min interval: {self.min_alert_interval}s)")
+            logger.info(
+                f"Drift alert skipped due to rate limiting " f"(min interval: {self.min_alert_interval}s)")
             return False
 
         subject = f"🚨 Model Drift Alert - {len(drift_models)} models affected"
@@ -191,7 +194,7 @@ class EmailService:
             if re.match(email_regex, email):
                 valid_emails.append(email)
             else:
-                logger.warning(f"Invalid email address: {email}")
+                logger.warning("Invalid email address: %s", email)
 
         return valid_emails
 
@@ -221,12 +224,12 @@ class EmailService:
                 <div style="background-color: #d32f2f; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
                     <h2 style="margin: 0; font-size: 24px;">🚨 Model Drift Detected</h2>
                 </div>
-                
+
                 <div style="padding: 20px;">
                     <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
                         The following models have exceeded the drift threshold (15%):
                     </p>
-                    
+
                     <table style="border-collapse: collapse; width: 100%; margin: 20px 0;">
                         <thead>
                             <tr style="background-color: #f5f5f5;">
@@ -238,7 +241,7 @@ class EmailService:
                             {models_html}
                         </tbody>
                     </table>
-                    
+
                     <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
                         <p style="margin: 0 0 10px 0; font-weight: 600; color: #856404;">⚠️ Action Required:</p>
                         <ul style="margin: 0; padding-left: 20px; color: #856404;">
@@ -248,7 +251,7 @@ class EmailService:
                             <li>Investigate potential data quality issues</li>
                         </ul>
                     </div>
-                    
+
                     <p style="color: #666; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
                         This is an automated alert from <strong>1C AI Stack ML Pipeline</strong><br>
                         Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S UTC', time.gmtime())}
@@ -261,7 +264,8 @@ class EmailService:
 
     def _generate_drift_alert_text(self, drift_models: List[Dict]) -> str:
         """Generate plain text for drift alert"""
-        models_text = "\n".join([f"  - {m['model']}: {m['drift_score']*100:.1f}%" for m in drift_models])
+        models_text = "\n".join(
+            [f"  - {m['model']}: {m['drift_score']*100:.1f}%" for m in drift_models])
 
         return f"""
 MODEL DRIFT ALERT

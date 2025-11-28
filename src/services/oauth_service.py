@@ -37,7 +37,8 @@ class OAuthService:
         # Ключ шифрования токенов
         encryption_key = os.getenv("OAUTH_ENCRYPTION_KEY")
         if not encryption_key:
-            raise ValueError("OAUTH_ENCRYPTION_KEY не установлен в переменных окружения")
+            raise ValueError(
+                "OAUTH_ENCRYPTION_KEY не установлен в переменных окружения")
 
         self.fernet = Fernet(encryption_key.encode())
 
@@ -123,7 +124,7 @@ class OAuthService:
 
         url = f"{config['auth_url']}?{urlencode(params)}"
 
-        logger.info(f"Generated OAuth URL for {provider}, user_id={user_id}")
+        logger.info("Generated OAuth URL for %s, user_id={user_id}", provider)
         return url
 
     async def exchange_code_for_token(self, provider: str, code: str, state: str, db: asyncpg.Connection) -> Dict:
@@ -171,13 +172,14 @@ class OAuthService:
                 response.raise_for_status()
                 token_data = response.json()
             except httpx.HTTPError as e:
-                logger.error(f"Failed to exchange code for token: {e}")
+                logger.error("Failed to exchange code for token: %s", e)
                 raise
 
         # Сохранить токены в БД
         await self._store_tokens(db, provider, user_id, token_data)
 
-        logger.info(f"Successfully exchanged code for token, provider={provider}, user_id={user_id}")
+        logger.info(
+            f"Successfully exchanged code for token, provider={provider}, user_id={user_id}")
 
         return {
             "provider": provider,
@@ -228,13 +230,14 @@ class OAuthService:
                 response.raise_for_status()
                 token_data = response.json()
             except httpx.HTTPError as e:
-                logger.error(f"Failed to refresh token: {e}")
+                logger.error("Failed to refresh token: %s", e)
                 raise
 
         # Сохранить новые токены
         await self._store_tokens(db, provider, user_id, token_data)
 
-        logger.info(f"Successfully refreshed token, provider={provider}, user_id={user_id}")
+        logger.info(
+            f"Successfully refreshed token, provider={provider}, user_id={user_id}")
 
         return token_data
 
@@ -261,7 +264,8 @@ class OAuthService:
         expires_at = token_data["expires_at"]
         if datetime.utcnow() >= expires_at - timedelta(minutes=5):
             # Токен истёк или скоро истечёт, обновить
-            logger.info(f"Token expired, refreshing for provider={provider}, user_id={user_id}")
+            logger.info(
+                f"Token expired, refreshing for provider={provider}, user_id={user_id}")
             await self.refresh_token(provider, user_id, db)
             token_data = await self._get_token_data(db, provider, user_id)
 
@@ -279,7 +283,7 @@ class OAuthService:
             db: Database connection
         """
         await self._delete_tokens(db, provider, user_id)
-        logger.info(f"Disconnected OAuth provider={provider}, user_id={user_id}")
+        logger.info("Disconnected OAuth provider=%s, user_id={user_id}", provider)
 
     # Приватные методы
 

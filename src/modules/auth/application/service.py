@@ -13,9 +13,9 @@ from typing import Dict, List, Optional
 import jwt
 from fastapi import HTTPException, status
 
+from src.infrastructure.logging.structured_logging import StructuredLogger
 from src.modules.auth.domain.models import CurrentUser, UserCredentials
 from src.modules.auth.infrastructure.config import AuthSettings
-from src.infrastructure.logging.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 
@@ -50,7 +50,8 @@ class AuthService:
         self._service_tokens: Dict[str, CurrentUser] = self._load_service_tokens()
 
         if self.settings.jwt_secret == "CHANGE_ME":
-            logger.warning("JWT_SECRET uses default value. Set a secure secret for production!")
+            logger.warning(
+                "JWT_SECRET uses default value. Set a secure secret for production!")
 
     def _load_users(self) -> Dict[str, UserCredentials]:
         raw_users: List[dict]
@@ -62,7 +63,8 @@ class AuthService:
                 raw_users = DEFAULT_DEMO_USERS
         else:
             if os.getenv("AUTH_DEMO_USERS") is None:
-                logger.info("Using default demo users. Configure AUTH_DEMO_USERS for production.")
+                logger.info(
+                    "Using default demo users. Configure AUTH_DEMO_USERS for production.")
             raw_users = DEFAULT_DEMO_USERS
 
         users: Dict[str, UserCredentials] = {}
@@ -146,12 +148,14 @@ class AuthService:
             "full_name": user.full_name,
             "email": user.email,
             "iat": int(now.timestamp()),  # Issued at (Unix timestamp)
-            "exp": int((now + expires_delta).timestamp()),  # Expiration (Unix timestamp)
+            # Expiration (Unix timestamp)
+            "exp": int((now + expires_delta).timestamp()),
             "type": "access",  # Token type for clarity
         }
 
         # Best practice: Use secure secret and algorithm
-        token = jwt.encode(payload, self.settings.jwt_secret, algorithm=self.settings.jwt_algorithm)
+        token = jwt.encode(payload, self.settings.jwt_secret,
+                           algorithm=self.settings.jwt_algorithm)
         return token
 
     def create_refresh_token(self, user: UserCredentials) -> str:
@@ -170,7 +174,8 @@ class AuthService:
         }
 
         # Use same secret but different type
-        token = jwt.encode(payload, self.settings.jwt_secret, algorithm=self.settings.jwt_algorithm)
+        token = jwt.encode(payload, self.settings.jwt_secret,
+                           algorithm=self.settings.jwt_algorithm)
         return token
 
     def decode_token(self, token: str, token_type: str = "access") -> CurrentUser:

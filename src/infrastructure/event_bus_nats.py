@@ -63,7 +63,7 @@ class NATSEventBus(EventBus):
         self._js = None
         self._subscriptions: List[Any] = []
 
-        logger.info(f"NATSEventBus initialized: {nats_url}")
+        logger.info("NATSEventBus initialized: %s", nats_url)
 
     async def start(self, num_workers: int = 4) -> None:
         """Запуск NATS Event Bus"""
@@ -79,7 +79,7 @@ class NATSEventBus(EventBus):
                     name=self.stream_name, subjects=[f"{self.stream_name}.>"]
                 )
             except Exception as e:
-                logger.warning(f"Stream may already exist: {e}")
+                logger.warning("Stream may already exist: %s", e)
 
         # Запуск базового Event Bus
         await super().start(num_workers)
@@ -148,7 +148,7 @@ class NATSEventBus(EventBus):
 
         self._subscriptions.append(sub)
 
-        logger.info(f"Subscribed to NATS subject: {subject}")
+        logger.info("Subscribed to NATS subject: %s", subject)
 
 
 class KafkaEventBus(EventBus):
@@ -163,4 +163,4 @@ class KafkaEventBus(EventBus):
         super().__init__(backend="kafka")
         self.kafka_brokers = kafka_brokers
         self.topic = topic
-        logger.info(f"KafkaEventBus initialized: {kafka_brokers}")
+        logger.info("KafkaEventBus initialized: %s", kafka_brokers)

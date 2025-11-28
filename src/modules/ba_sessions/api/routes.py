@@ -29,7 +29,6 @@ from src.modules.ba_sessions.services.analytics_service import AnalyticsService
 from src.modules.ba_sessions.services.documentation_service import DocumentationService
 from src.modules.ba_sessions.services.integration_service import IntegrationService
 from src.modules.ba_sessions.services.modeling_service import ModelingService
-
 from src.modules.ba_sessions.services.session_service import SessionService
 from src.modules.ba_sessions.services.traceability_service import TraceabilityService
 from src.security.auth import get_auth_service
@@ -67,7 +66,7 @@ async def ba_session_ws(
             if principal.roles:
                 role = principal.roles[0]
         except Exception as exc:
-            logger.warning(f"Failed to decode token for BA session: {exc}")
+            logger.warning("Failed to decode token for BA session: %s", exc)
     if not user_id:
         user_id = "anonymous"
     try:
@@ -107,7 +106,7 @@ async def ba_session_ws(
     except WebSocketDisconnect:
         pass
     except Exception as exc:
-        logger.error(f"BA session websocket error: {exc}")
+        logger.error("BA session websocket error: %s", exc)
     finally:
         await session_service.leave_session(session_id, user_id)
         await session_service.broadcast(
@@ -147,7 +146,8 @@ async def build_traceability_matrix(request: TraceabilityRequest) -> Dict[str, A
             request.use_graph,
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to build traceability matrix: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to build traceability matrix: {str(e)}")
 
 
 @router.post("/traceability/risk-register")
@@ -159,7 +159,8 @@ async def build_risk_register(
     try:
         return await traceability_service.build_risk_register(requirement_ids, include_incidents)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to build risk register: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to build risk register: {str(e)}")
 
 
 @router.post("/traceability/full-report")
@@ -191,7 +192,8 @@ async def generate_kpis(request: KPIGenerationRequest) -> Dict[str, Any]:
             request.use_graph,
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate KPIs: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate KPIs: {str(e)}")
 
 
 # === Process & Journey Modelling ===
@@ -208,7 +210,8 @@ async def generate_process_model(request: ProcessModelRequest) -> Dict[str, Any]
             request.use_graph,
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate process model: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate process model: {str(e)}")
 
 
 @router.post("/process/journey-map")
@@ -222,7 +225,8 @@ async def generate_journey_map(request: JourneyMapRequest) -> Dict[str, Any]:
             request.use_graph,
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate journey map: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate journey map: {str(e)}")
 
 
 @router.post("/process/validate")
@@ -233,7 +237,8 @@ async def validate_process(
     try:
         return await modeling_service.validate_process_model(process_model)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to validate process: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to validate process: {str(e)}")
 
 
 # === Integrations ===
@@ -250,7 +255,8 @@ async def sync_requirements_to_jira(request: SyncRequirementsRequest) -> Dict[st
             request.use_graph,
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to sync requirements to Jira: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to sync requirements to Jira: {str(e)}")
 
 
 @router.post("/integrations/sync-bpmn-confluence")
@@ -264,7 +270,8 @@ async def sync_bpmn_to_confluence(request: SyncBPMNRequest) -> Dict[str, Any]:
             request.use_graph,
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to sync BPMN to Confluence: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to sync BPMN to Confluence: {str(e)}")
 
 
 @router.post("/integrations/sync-kpi-confluence")
@@ -278,7 +285,8 @@ async def sync_kpi_to_confluence(
     try:
         return await integration_service.sync_kpi_to_confluence(kpi_report, space_key, parent_page_id, use_graph)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to sync KPI to Confluence: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to sync KPI to Confluence: {str(e)}")
 
 
 @router.post("/integrations/sync-traceability-confluence")
@@ -314,7 +322,8 @@ async def generate_enablement_plan(request: EnablementPlanRequest) -> Dict[str, 
             request.use_graph,
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate enablement plan: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate enablement plan: {str(e)}")
 
 
 @router.post("/enablement/guide")
@@ -328,7 +337,8 @@ async def generate_guide(request: GuideRequest) -> Dict[str, Any]:
             request.use_graph,
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate guide: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate guide: {str(e)}")
 
 
 @router.post("/enablement/presentation")
@@ -342,17 +352,20 @@ async def generate_presentation(request: PresentationRequest) -> Dict[str, Any]:
             request.use_graph,
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate presentation: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate presentation: {str(e)}")
 
 
 @router.post("/enablement/onboarding-checklist")
 async def generate_onboarding_checklist(
     role: str = Body(default="BA", description="Role"),
-    include_practical_tasks: bool = Body(default=True, description="Include practical tasks"),
+    include_practical_tasks: bool = Body(
+        default=True, description="Include practical tasks"),
     use_graph: bool = Body(default=True, description="Use Unified Change Graph"),
 ) -> Dict[str, Any]:
     """Generate onboarding checklist."""
     try:
         return await documentation_service.generate_onboarding_checklist(role, include_practical_tasks, use_graph)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate onboarding checklist: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate onboarding checklist: {str(e)}")

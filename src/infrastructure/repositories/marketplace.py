@@ -179,7 +179,8 @@ class MarketplaceRepository:
         if not plugin_id or not isinstance(plugin_id, str):
             logger.warning(
                 "Invalid plugin_id in create_plugin",
-                extra={"plugin_id_type": type(plugin_id).__name__ if plugin_id else None},
+                extra={"plugin_id_type": type(
+                    plugin_id).__name__ if plugin_id else None},
             )
             raise ValueError("plugin_id must be a non-empty string")
 
@@ -193,7 +194,8 @@ class MarketplaceRepository:
         if not owner_username or not isinstance(owner_username, str):
             logger.warning(
                 "Invalid owner_username in create_plugin",
-                extra={"owner_username_type": (type(owner_username).__name__ if owner_username else None)},
+                extra={"owner_username_type": (
+                    type(owner_username).__name__ if owner_username else None)},
             )
             raise ValueError("owner_username must be a non-empty string")
 
@@ -207,7 +209,8 @@ class MarketplaceRepository:
         if not download_url or not isinstance(download_url, str):
             logger.warning(
                 "Invalid download_url in create_plugin",
-                extra={"download_url_type": (type(download_url).__name__ if download_url else None)},
+                extra={"download_url_type": (
+                    type(download_url).__name__ if download_url else None)},
             )
             raise ValueError("download_url must be a non-empty string")
 
@@ -342,7 +345,8 @@ class MarketplaceRepository:
         if not plugin_id or not isinstance(plugin_id, str):
             logger.warning(
                 "Invalid plugin_id in store_artifact",
-                extra={"plugin_id_type": type(plugin_id).__name__ if plugin_id else None},
+                extra={"plugin_id_type": type(
+                    plugin_id).__name__ if plugin_id else None},
             )
             raise ValueError("plugin_id must be a non-empty string")
 
@@ -372,7 +376,8 @@ class MarketplaceRepository:
                     "max_size": max_file_size,
                 },
             )
-            raise ValueError(f"Artifact file too large: {len(data)} bytes. Maximum: {max_file_size} bytes")
+            raise ValueError(
+                f"Artifact file too large: {len(data)} bytes. Maximum: {max_file_size} bytes")
 
         # Sanitize filename (prevent path traversal)
         filename = os.path.basename(filename)  # Remove any path components
@@ -384,7 +389,8 @@ class MarketplaceRepository:
             raise ValueError("Invalid filename")
 
         if not self._s3_available:
-            raise RuntimeError("Object storage is not configured for marketplace artifacts")
+            raise RuntimeError(
+                "Object storage is not configured for marketplace artifacts")
 
         await self._ensure_bucket()
 
@@ -480,7 +486,8 @@ class MarketplaceRepository:
         if not plugin_id or not isinstance(plugin_id, str):
             logger.warning(
                 "Invalid plugin_id in get_plugin",
-                extra={"plugin_id_type": type(plugin_id).__name__ if plugin_id else None},
+                extra={"plugin_id_type": type(
+                    plugin_id).__name__ if plugin_id else None},
             )
             return None
 
@@ -523,7 +530,8 @@ class MarketplaceRepository:
         if len(set_parts) == 1:
             return await self.get_plugin(plugin_id)
 
-        query = "UPDATE marketplace_plugins SET " + ", ".join(set_parts) + " WHERE plugin_id = $1 RETURNING *"
+        query = "UPDATE marketplace_plugins SET " + \
+            ", ".join(set_parts) + " WHERE plugin_id = $1 RETURNING *"
 
         async with self.pool.acquire() as conn:
             record = await conn.fetchrow(query, *values)
@@ -859,7 +867,8 @@ class MarketplaceRepository:
             stats = {
                 "plugin_id": plugin_id,
                 "downloads_total": plugin["downloads"],
-                "downloads_last_30_days": plugin["downloads"],  # TODO: Calculate actual last 30 days
+                # TODO: Calculate actual last 30 days
+                "downloads_last_30_days": plugin["downloads"],
                 "installs_active": plugin["installs_active"],
                 "rating_average": float(plugin["avg_rating"] or plugin.get("rating") or 0),
                 "rating_distribution": rating_distribution,
@@ -1093,8 +1102,10 @@ class MarketplaceRepository:
         if not self._s3_available:
             return None
         if self._s3_client is None:
-            access_key = self.storage_config.get("access_key") or os.getenv("AWS_ACCESS_KEY_ID")
-            secret_key = self.storage_config.get("secret_key") or os.getenv("AWS_SECRET_ACCESS_KEY")
+            access_key = self.storage_config.get(
+                "access_key") or os.getenv("AWS_ACCESS_KEY_ID")
+            secret_key = self.storage_config.get(
+                "secret_key") or os.getenv("AWS_SECRET_ACCESS_KEY")
             session = boto3.session.Session(
                 aws_access_key_id=access_key,
                 aws_secret_access_key=secret_key,
@@ -1123,11 +1134,13 @@ class MarketplaceRepository:
                 if error_code not in {"404", "NoSuchBucket", "NotFound"}:
                     raise
             if not self.storage_config.get("create_bucket", True):
-                raise RuntimeError(f"S3 bucket '{bucket}' does not exist and auto-creation is disabled")
+                raise RuntimeError(
+                    f"S3 bucket '{bucket}' does not exist and auto-creation is disabled")
             create_kwargs: Dict[str, Any] = {"Bucket": bucket}
             region = self.storage_config.get("region")
             if region and region not in {"", "us-east-1"}:
-                create_kwargs["CreateBucketConfiguration"] = {"LocationConstraint": region}
+                create_kwargs["CreateBucketConfiguration"] = {
+                    "LocationConstraint": region}
             client.create_bucket(**create_kwargs)
 
         loop = asyncio.get_running_loop()

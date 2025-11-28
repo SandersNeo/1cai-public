@@ -392,7 +392,7 @@ WHERE t1.условие
 
         match = re.search(or_pattern, query)
         if match:
-            column = match.group(1)
+            match.group(1)
             # Собираем все значения
             optimized = query  # TODO: Real conversion
             return optimized

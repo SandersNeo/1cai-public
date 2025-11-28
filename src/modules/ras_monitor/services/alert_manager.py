@@ -8,9 +8,9 @@ from datetime import datetime
 from typing import List
 
 from src.modules.ras_monitor.domain.models import (
+    AlertSeverity,
     ResourceAlert,
     ResourceType,
-    AlertSeverity,
     ResourceUsage,
 )
 from src.utils.structured_logging import StructuredLogger
@@ -35,9 +35,7 @@ class AlertManager:
             monitoring_repository: Repository для thresholds
         """
         if monitoring_repository is None:
-            from src.modules.ras_monitor.repositories import (
-                MonitoringRepository
-            )
+            from src.modules.ras_monitor.repositories import MonitoringRepository
             monitoring_repository = MonitoringRepository()
 
         self.monitoring_repository = monitoring_repository

@@ -7,15 +7,13 @@ API Documentation Generator Service
 import re
 from typing import Dict, List
 
+from src.modules.technical_writer.domain.exceptions import APIDocGenerationError
 from src.modules.technical_writer.domain.models import (
     APIDocumentation,
     APIEndpoint,
-    APIParameter,
     APIExample,
+    APIParameter,
     HTTPMethod,
-)
-from src.modules.technical_writer.domain.exceptions import (
-    APIDocGenerationError
 )
 from src.utils.structured_logging import StructuredLogger
 
@@ -40,9 +38,7 @@ class APIDocGenerator:
                                 (опционально, для dependency injection)
         """
         if templates_repository is None:
-            from src.modules.technical_writer.repositories import (
-                TemplatesRepository
-            )
+            from src.modules.technical_writer.repositories import TemplatesRepository
             templates_repository = TemplatesRepository()
 
         self.templates_repository = templates_repository
@@ -94,7 +90,7 @@ class APIDocGenerator:
             )
 
         except Exception as e:
-            logger.error(f"Failed to generate API docs: {e}")
+            logger.error("Failed to generate API docs: %s", e)
             raise APIDocGenerationError(
                 f"Failed to generate API docs: {e}",
                 details={"module_type": module_type}

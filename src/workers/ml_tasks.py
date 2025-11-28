@@ -593,7 +593,7 @@ def process_metrics_batch(self, metrics_data: List[Dict[str, Any]]):
 
         for metric_data in metrics_data:
             try:
-                metric_type = MetricType(metric_data["metric_type"].lower())
+                MetricType(metric_data["metric_type"].lower())
                 assistant_role = AssistantRole(metric_data["assistant_role"].lower())
 
                 # Запись метрики

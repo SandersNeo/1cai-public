@@ -4,8 +4,9 @@ GBNF Generator для BSL (1С:Enterprise)
 Генерирует GBNF грамматику из правил BSL для использования с llama.cpp.
 """
 
-from bsl_grammar_rules import KEYWORDS, OPERATORS, GRAMMAR_RULES
 from typing import List
+
+from bsl_grammar_rules import GRAMMAR_RULES, KEYWORDS, OPERATORS
 
 
 class GBNFGenerator:

@@ -353,7 +353,7 @@ class AdvancedCodeDNAEngine(CodeDNAEngine):
 
         # Эволюция на каждом острове
         for generation in range(generations):
-            logger.info(f"Island evolution generation {generation + 1}/{generations}")
+            logger.info("Island evolution generation {generation + 1}/%s", generations)
 
             # Параллельная эволюция на островах
             for island in self._islands:

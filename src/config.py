@@ -39,7 +39,8 @@ class Settings(BaseSettings):
     )
 
     # OpenAI API
-    openai_api_key: str = Field(default="", description="API ключ OpenAI", validation_alias="OPENAI_API_KEY")
+    openai_api_key: str = Field(
+        default="", description="API ключ OpenAI", validation_alias="OPENAI_API_KEY")
 
     # Kimi-K2-Thinking (Moonshot AI) - API или локальный режим
     kimi_mode: str = Field(
@@ -79,8 +80,10 @@ class Settings(BaseSettings):
     )
 
     # Supabase
-    supabase_url: str = Field(default="", description="URL Supabase проекта", validation_alias="SUPABASE_URL")
-    supabase_key: str = Field(default="", description="API ключ Supabase", validation_alias="SUPABASE_KEY")
+    supabase_url: str = Field(
+        default="", description="URL Supabase проекта", validation_alias="SUPABASE_URL")
+    supabase_key: str = Field(
+        default="", description="API ключ Supabase", validation_alias="SUPABASE_KEY")
 
     @field_validator("openai_api_key")
     @classmethod
@@ -244,16 +247,19 @@ class Settings(BaseSettings):
     )
 
     # JWT настройки
-    jwt_secret_key: Optional[str] = Field(default=None, description="Секретный ключ для JWT")
+    jwt_secret_key: Optional[str] = Field(
+        default=None, description="Секретный ключ для JWT")
     jwt_algorithm: str = Field(default="HS256", description="Алгоритм подписи JWT")
-    jwt_access_token_expire_minutes: int = Field(default=30, description="Время жизни access token в минутах")
+    jwt_access_token_expire_minutes: int = Field(
+        default=30, description="Время жизни access token в минутах")
 
     # Путь к логам
     log_dir: str = Field(default="./logs", description="Директория для логов")
     log_file: str = Field(default="app.log", description="Имя файла лога")
 
     # Режим разработки (для development можно разрешить небезопасные настройки)
-    environment: str = Field(default="production", description="Режим работы: development/production")
+    environment: str = Field(default="production",
+                             description="Режим работы: development/production")
 
     # Внешние MCP-инструменты
     mcp_bsl_context_base_url: Optional[str] = Field(
@@ -294,7 +300,8 @@ class Settings(BaseSettings):
         default=False, description="Enable multi-level code completion", validation_alias="USE_NESTED_COMPLETION"
     )
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=False, extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", case_sensitive=False, extra="ignore")
 
     def get_cors_origins(self) -> List[str]:
         """Получить список разрешенных доменов для CORS"""

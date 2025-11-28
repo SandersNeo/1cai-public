@@ -90,7 +90,8 @@ class DataLoader:
     async def _batch_load(self, keys: List[str]) -> List[Any]:
         """Batch загрузка"""
         # Разбиение на батчи
-        batches = [keys[i : i + self.max_batch_size] for i in range(0, len(keys), self.max_batch_size)]
+        batches = [keys[i : i + self.max_batch_size]
+            for i in range(0, len(keys), self.max_batch_size)]
 
         all_results = []
         for batch in batches:
@@ -176,7 +177,6 @@ class UnifiedDataLayer:
             return QueryResult(data=[], total=0)
 
         try:
-            import psycopg2
             from psycopg2.extras import RealDictCursor
 
             table = query.get("table")
@@ -221,7 +221,7 @@ class UnifiedDataLayer:
 
                 data = cursor.fetchall()
 
-                logger.debug(f"PostgreSQL SELECT: {len(data)} rows from {table}")
+                logger.debug("PostgreSQL SELECT: {len(data)} rows from %s", table)
 
                 return QueryResult(
                     data=[dict(row) for row in data],
@@ -246,7 +246,7 @@ class UnifiedDataLayer:
                 result = cursor.fetchone()
                 self.postgres.commit()
 
-                logger.debug(f"PostgreSQL INSERT: 1 row into {table}")
+                logger.debug("PostgreSQL INSERT: 1 row into %s", table)
 
                 return QueryResult(data=[dict(result)] if result else [], total=1)
 
@@ -275,7 +275,7 @@ class UnifiedDataLayer:
                 results = cursor.fetchall()
                 self.postgres.commit()
 
-                logger.debug(f"PostgreSQL UPDATE: {len(results)} rows in {table}")
+                logger.debug("PostgreSQL UPDATE: {len(results)} rows in %s", table)
 
                 return QueryResult(data=[dict(row) for row in results], total=len(results))
 
@@ -297,7 +297,7 @@ class UnifiedDataLayer:
                 results = cursor.fetchall()
                 self.postgres.commit()
 
-                logger.debug(f"PostgreSQL DELETE: {len(results)} rows from {table}")
+                logger.debug("PostgreSQL DELETE: {len(results)} rows from %s", table)
 
                 return QueryResult(data=[dict(row) for row in results], total=len(results))
 
@@ -370,7 +370,7 @@ class UnifiedDataLayer:
             return QueryResult(data=[], total=0)
 
         try:
-            from qdrant_client.models import Filter, PointStruct
+            from qdrant_client.models import Filter
 
             collection = query.get("collection")
             if not collection:
@@ -392,7 +392,8 @@ class UnifiedDataLayer:
                     query_filter=Filter(**filter_dict) if filter_dict else None,
                 )
 
-                data = [{"id": hit.id, "score": hit.score, "payload": hit.payload} for hit in search_result]
+                data = [{"id": hit.id, "score": hit.score, "payload": hit.payload}
+                    for hit in search_result]
 
                 logger.debug(f"Qdrant search: {len(data)} results")
 
@@ -448,17 +449,20 @@ class UnifiedDataLayer:
 
                 if body:
                     # Complex search with query DSL
-                    result = self.elasticsearch.search(index=index, body=body, size=size, from_=from_offset)
+                    result = self.elasticsearch.search(
+                        index=index, body=body, size=size, from_=from_offset)
                 elif q:
                     # Simple query string search
-                    result = self.elasticsearch.search(index=index, q=q, size=size, from_=from_offset)
+                    result = self.elasticsearch.search(
+                        index=index, q=q, size=size, from_=from_offset)
                 else:
                     raise ValueError("Either 'body' or 'q' is required for search")
 
                 hits = result["hits"]["hits"]
                 total = result["hits"]["total"]["value"]
 
-                data = [{"id": hit["_id"], "score": hit["_score"], "source": hit["_source"]} for hit in hits]
+                data = [{"id": hit["_id"], "score": hit["_score"],
+                    "source": hit["_source"]} for hit in hits]
 
                 logger.debug(f"Elasticsearch search: {len(data)} results")
 
@@ -506,7 +510,7 @@ class UnifiedDataLayer:
             value = self.redis.get(key)
 
             if value is None:
-                logger.debug(f"Cache miss: {key}")
+                logger.debug("Cache miss: %s", key)
                 return None
 
             # Try to deserialize JSON
@@ -544,7 +548,7 @@ class UnifiedDataLayer:
 
             self.redis.setex(key, ttl, value)
 
-            logger.debug(f"Cache set: {key}, ttl={ttl}")
+            logger.debug("Cache set: %s, ttl={ttl}", key)
 
         except Exception as e:
             logger.error(f"Cache set failed: {e}", exc_info=True)

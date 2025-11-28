@@ -28,7 +28,8 @@ class ServiceHealthChecker:
         if not service_name or not isinstance(service_name, str):
             logger.warning(
                 "Invalid service_name in check_service_health",
-                extra={"service_name_type": (type(service_name).__name__ if service_name else None)},
+                extra={"service_name_type": (
+                    type(service_name).__name__ if service_name else None)},
             )
             return ServiceHealthResponse(
                 service_name=service_name or "unknown",

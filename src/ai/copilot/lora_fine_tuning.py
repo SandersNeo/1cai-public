@@ -72,7 +72,6 @@ class LoRAFineTuner:
 
         try:
             import torch
-            from datasets import load_dataset
             from peft import LoraConfig, TaskType, get_peft_model
             from transformers import (
                 AutoModelForCausalLM,
@@ -80,6 +79,8 @@ class LoRAFineTuner:
                 Trainer,
                 TrainingArguments,
             )
+
+            from datasets import load_dataset
 
             # 1. Load base model
             logger.info("Loading base model...")

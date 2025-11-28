@@ -38,14 +38,14 @@ class WikiSearchService:
             # Truncate if too long
             text_to_embed = text_to_embed[:8000]
 
-            vector = await self.embedding.encode(text_to_embed)
+            await self.embedding.encode(text_to_embed)
 
             # Prepare payload
             payload = {"page_id": page_id, "title": title, "snippet": content[:200]}
 
             # Upsert to Qdrant
             # Stub: self.qdrant.upsert(self.COLLECTION_NAME, points=[...])
-            logger.info(f"Indexed wiki page {page_id} in Qdrant")
+            logger.info("Indexed wiki page %s in Qdrant", page_id)
 
         except Exception as e:
             logger.error(f"Failed to index wiki page {page_id}: {e}", exc_info=True)
@@ -55,11 +55,11 @@ class WikiSearchService:
         Semantic search for wiki pages.
         """
         try:
-            vector = await self.embedding.encode(query)
+            await self.embedding.encode(query)
 
             # Stub: results = self.qdrant.search(self.COLLECTION_NAME, vector, limit=limit)
             # Returning mock results for MVP
-            logger.info(f"Searching wiki for: {query}")
+            logger.info("Searching wiki for: %s", query)
 
             return [
                 {

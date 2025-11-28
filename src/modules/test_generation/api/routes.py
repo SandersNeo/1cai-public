@@ -60,8 +60,10 @@ async def generate_tests(request: Request, request_data: TestGenerationRequest):
         total_functions = len(tests)
         total_test_cases = sum(len(t.get("testCases", [])) for t in tests)
 
-        coverage_values = [t.get("coverage", {}).get("lines", 0) for t in tests if "coverage" in t]
-        avg_coverage = sum(coverage_values) / len(coverage_values) if coverage_values else 0
+        coverage_values = [t.get("coverage", {}).get("lines", 0)
+                                 for t in tests if "coverage" in t]
+        avg_coverage = sum(coverage_values) / \
+                           len(coverage_values) if coverage_values else 0
 
         summary = {
             "totalTests": len(tests),
@@ -90,7 +92,8 @@ async def generate_tests(request: Request, request_data: TestGenerationRequest):
             },
             exc_info=True,
         )
-        raise HTTPException(status_code=500, detail="An error occurred while generating tests")
+        raise HTTPException(
+            status_code=500, detail="An error occurred while generating tests")
 
 
 @router.get("/health", summary="Check service status")

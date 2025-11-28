@@ -2,8 +2,8 @@
 Минимальная версия VLM Server для диагностики
 """
 
-from fastapi import FastAPI
 import uvicorn
+from fastapi import FastAPI
 
 app = FastAPI()
 
@@ -20,4 +20,5 @@ async def health():
 
 if __name__ == "__main__":
     print("Starting minimal VLM Server on http://localhost:8000")
-    uvicorn.run(app, host="127.0.0.1", port=8000, reload=False, log_level="info")  # Только localhost  # Без reload
+    uvicorn.run(app, host="127.0.0.1", port=8000, reload=False,
+                log_level="info")  # Только localhost  # Без reload

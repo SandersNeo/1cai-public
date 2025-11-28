@@ -83,7 +83,7 @@ class EdgeFunction(ServerlessFunction):
         self.handler = handler
         self.region = region
         self.timeout = timeout
-        logger.info(f"EdgeFunction created for region: {region}")
+        logger.info("EdgeFunction created for region: %s", region)
 
     async def invoke(
         self, context: FunctionContext, event: Dict[str, Any]
@@ -156,7 +156,7 @@ class ServerlessRuntime:
     def register(self, name: str, function: ServerlessFunction) -> None:
         """Регистрация функции"""
         self._functions[name] = function
-        logger.info(f"Function registered: {name}")
+        logger.info("Function registered: %s", name)
 
     async def invoke(
         self,

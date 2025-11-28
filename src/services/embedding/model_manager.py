@@ -52,7 +52,7 @@ class ModelManager:
             if torch.cuda.is_available():
                 num_gpus = torch.cuda.device_count()
                 self._gpu_devices = list(range(num_gpus))
-                logger.info(f"Found {num_gpus} GPU device(s): {self._gpu_devices}")
+                logger.info("Found %s GPU device(s): {self._gpu_devices}", num_gpus)
         except ImportError:
             pass
 
@@ -89,13 +89,13 @@ class ModelManager:
                 else:
                     self.model_cpu = self.model
 
-                logger.info(f"Model loaded on {device}")
+                logger.info("Model loaded on %s", device)
                 return
             except Exception as e:
                 if attempt < max_retries - 1:
                     time.sleep(retry_delay * (2**attempt))
                 else:
-                    logger.error(f"Failed to load model: {e}")
+                    logger.error("Failed to load model: %s", e)
                     self.model = None
 
     def _load_hybrid_models(self, max_retries: int, retry_delay: float):
@@ -110,7 +110,7 @@ class ModelManager:
                     model = transformer_cls(self.model_name, device=f"cuda:{device_id}")
                     self._gpu_models[device_id] = model
                 except Exception as e:
-                    logger.warning(f"Failed to load on GPU {device_id}: {e}")
+                    logger.warning("Failed to load on GPU %s: {e}", device_id)
 
             if self._gpu_models:
                 self.model_gpu = self._gpu_models[list(self._gpu_models.keys())[0]]
@@ -120,7 +120,7 @@ class ModelManager:
                 transformer_cls = getattr(module, "SentenceTransformer")
                 self.model_gpu = transformer_cls(self.model_name, device="cuda")
             except Exception as e:
-                logger.warning(f"Failed to load GPU model: {e}")
+                logger.warning("Failed to load GPU model: %s", e)
 
         # CPU
         try:
@@ -128,7 +128,7 @@ class ModelManager:
             transformer_cls = getattr(module, "SentenceTransformer")
             self.model_cpu = transformer_cls(self.model_name, device="cpu")
         except Exception as e:
-            logger.warning(f"Failed to load CPU model: {e}")
+            logger.warning("Failed to load CPU model: %s", e)
 
         self.model = self.model_gpu or self.model_cpu
 

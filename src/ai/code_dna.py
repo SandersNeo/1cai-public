@@ -375,7 +375,7 @@ class CodeDNAEngine:
 
         # 3. Эволюция
         for generation in range(generations):
-            logger.info(f"Generation {generation + 1}/{generations}")
+            logger.info("Generation {generation + 1}/%s", generations)
 
             # Оценка приспособленности
             await self._evaluate_fitness(fitness_fn)

@@ -5,8 +5,9 @@ Cost Optimizer Service
 Перенесено и рефакторено из devops_agent_extended.py.
 """
 
-from typing import Any, Dict, List
+from typing import Dict, List
 
+from src.modules.devops.domain.exceptions import CostOptimizationError
 from src.modules.devops.domain.models import (
     CostOptimization,
     CostOptimizationResult,
@@ -14,7 +15,6 @@ from src.modules.devops.domain.models import (
     OptimizationEffort,
     UsageMetrics,
 )
-from src.modules.devops.domain.exceptions import CostOptimizationError
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -23,7 +23,7 @@ logger = StructuredLogger(__name__).logger
 class CostOptimizer:
     """
     Сервис оптимизации затрат на инфраструктуру
-    
+
     Features:
     - Анализ текущих затрат
     - Rightsizing рекомендации
@@ -43,7 +43,7 @@ class CostOptimizer:
     def _load_rightsizing_rules(self) -> List[Dict]:
         """
         Правила rightsizing
-        
+
         TODO: Перенести в OptimizationRepository
         """
         return [
@@ -70,8 +70,8 @@ class CostOptimizer:
         ]
 
     async def analyze_costs(
-        self, 
-        current_setup: InfrastructureConfig, 
+        self,
+        current_setup: InfrastructureConfig,
         usage_metrics: UsageMetrics
     ) -> CostOptimizationResult:
         """
@@ -134,16 +134,16 @@ class CostOptimizer:
             )
 
         except Exception as e:
-            logger.error(f"Cost analysis failed: {e}")
+            logger.error("Cost analysis failed: %s", e)
             raise CostOptimizationError(
                 f"Failed to analyze costs: {e}",
                 details={"provider": current_setup.provider}
             )
 
     def _create_cpu_optimization(
-        self, 
-        setup: InfrastructureConfig, 
-        metrics: UsageMetrics, 
+        self,
+        setup: InfrastructureConfig,
+        metrics: UsageMetrics,
         current_cost: float
     ) -> CostOptimization:
         """Создание рекомендации по оптимизации CPU"""
@@ -161,9 +161,9 @@ class CostOptimizer:
         )
 
     def _create_memory_optimization(
-        self, 
-        setup: InfrastructureConfig, 
-        metrics: UsageMetrics, 
+        self,
+        setup: InfrastructureConfig,
+        metrics: UsageMetrics,
         current_cost: float
     ) -> CostOptimization:
         """Создание рекомендации по оптимизации памяти"""
@@ -181,8 +181,8 @@ class CostOptimizer:
         )
 
     def _create_reserved_instances_optimization(
-        self, 
-        setup: InfrastructureConfig, 
+        self,
+        setup: InfrastructureConfig,
         current_cost: float
     ) -> CostOptimization:
         """Создание рекомендации по Reserved Instances"""
@@ -202,10 +202,10 @@ class CostOptimizer:
     def _calculate_cost(self, setup: InfrastructureConfig) -> float:
         """
         Расчет стоимости инфраструктуры
-        
+
         Args:
             setup: Конфигурация инфраструктуры
-            
+
         Returns:
             Месячная стоимость в USD
         """
@@ -232,10 +232,10 @@ class CostOptimizer:
     def _downsize_instance(self, current: str) -> str:
         """
         Даунсайз инстанса на один tier
-        
+
         Args:
             current: Текущий тип инстанса
-            
+
         Returns:
             Рекомендуемый тип инстанса
         """
@@ -247,24 +247,24 @@ class CostOptimizer:
             "db.m5.2xlarge": "db.m5.xlarge",
             "db.m5.xlarge": "db.m5.large",
         }
-        
+
         # Azure mapping
         azure_mapping = {
             "Standard_D8s_v3": "Standard_D4s_v3",
             "Standard_D4s_v3": "Standard_D2s_v3",
         }
-        
+
         # GCP mapping
         gcp_mapping = {
             "n1-standard-8": "n1-standard-4",
             "n1-standard-4": "n1-standard-2",
         }
-        
+
         # Try all mappings
         for mapping in [aws_mapping, azure_mapping, gcp_mapping]:
             if current in mapping:
                 return mapping[current]
-        
+
         return current
 
 

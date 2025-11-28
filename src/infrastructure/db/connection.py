@@ -28,7 +28,8 @@ _pool: Optional[asyncpg.Pool] = None
 DEFAULT_MIN_SIZE = int(os.getenv("DB_POOL_MIN_SIZE", "5"))
 DEFAULT_MAX_SIZE = int(os.getenv("DB_POOL_MAX_SIZE", "20"))
 DEFAULT_MAX_QUERIES = int(os.getenv("DB_POOL_MAX_QUERIES", "50000"))
-DEFAULT_MAX_INACTIVE_CONNECTION_LIFETIME = int(os.getenv("DB_POOL_MAX_INACTIVE_LIFETIME", "300"))
+DEFAULT_MAX_INACTIVE_CONNECTION_LIFETIME = int(
+    os.getenv("DB_POOL_MAX_INACTIVE_LIFETIME", "300"))
 DEFAULT_COMMAND_TIMEOUT = int(os.getenv("DB_COMMAND_TIMEOUT", "60"))
 DEFAULT_CONNECT_TIMEOUT = int(os.getenv("DB_CONNECT_TIMEOUT", "30"))
 
@@ -92,7 +93,8 @@ async def create_pool(max_retries: int = 1, retry_delay: int = 1) -> Optional[as
                 )
                 break
             except asyncio.TimeoutError:
-                logger.warning(f"Database connection timeout (attempt {attempt + 1}/{max_retries})")
+                logger.warning(
+                    f"Database connection timeout (attempt {attempt + 1}/{max_retries})")
                 if attempt < max_retries - 1:
                     backoff_delay = retry_delay * (2**attempt)
                     await asyncio.sleep(backoff_delay)
@@ -149,7 +151,8 @@ def get_pool() -> asyncpg.Pool:
         RuntimeError: If pool not initialized
     """
     if _pool is None:
-        raise RuntimeError("Database pool not initialized. " "Call create_pool() during application startup.")
+        raise RuntimeError(
+            "Database pool not initialized. " "Call create_pool() during application startup.")
 
     return _pool
 

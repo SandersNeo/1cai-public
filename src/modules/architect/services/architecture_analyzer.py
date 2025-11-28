@@ -4,16 +4,13 @@ Architecture Analyzer Service
 Сервис для глубокого анализа архитектуры с расчетом метрик.
 """
 
-from typing import Optional
 
+from src.modules.architect.domain.exceptions import ArchitectureAnalysisError
 from src.modules.architect.domain.models import (
-    ArchitectureMetrics,
-    ArchitectureAnalysisResult,
-    HealthStatus,
     AntiPattern,
-)
-from src.modules.architect.domain.exceptions import (
-    ArchitectureAnalysisError,
+    ArchitectureAnalysisResult,
+    ArchitectureMetrics,
+    HealthStatus,
 )
 from src.utils.structured_logging import StructuredLogger
 
@@ -116,7 +113,7 @@ class ArchitectureAnalyzer:
             )
 
         except Exception as e:
-            logger.error(f"Failed to analyze architecture: {e}")
+            logger.error("Failed to analyze architecture: %s", e)
             raise ArchitectureAnalysisError(
                 f"Failed to analyze architecture: {e}",
                 details={"config_name": config_name}

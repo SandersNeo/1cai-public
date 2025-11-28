@@ -61,7 +61,8 @@ async def generate_code(api_request: Request, request: GenerationRequest):
         valid_types = ["function", "procedure", "test"]
         code_type = request.type.lower() if request.type else "function"
         if code_type not in valid_types:
-            raise HTTPException(status_code=400, detail=f"Invalid code_type: {code_type}")
+            raise HTTPException(
+                status_code=400, detail=f"Invalid code_type: {code_type}")
 
         code = await copilot_service.generate_code(prompt=prompt, code_type=code_type, timeout=10.0)
 

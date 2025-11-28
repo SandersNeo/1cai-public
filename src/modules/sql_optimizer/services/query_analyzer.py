@@ -7,14 +7,14 @@ Query Analyzer Service
 import re
 from typing import List
 
+from src.modules.sql_optimizer.domain.exceptions import (
+    InvalidQueryError,
+    QueryAnalysisError,
+)
 from src.modules.sql_optimizer.domain.models import (
-    SQLQuery,
     QueryAnalysis,
     QueryComplexity,
-)
-from src.modules.sql_optimizer.domain.exceptions import (
-    QueryAnalysisError,
-    InvalidQueryError,
+    SQLQuery,
 )
 from src.utils.structured_logging import StructuredLogger
 
@@ -38,9 +38,7 @@ class QueryAnalyzer:
             optimization_repository: Repository для patterns
         """
         if optimization_repository is None:
-            from src.modules.sql_optimizer.repositories import (
-                OptimizationRepository
-            )
+            from src.modules.sql_optimizer.repositories import OptimizationRepository
             optimization_repository = OptimizationRepository()
 
         self.optimization_repository = optimization_repository
@@ -99,7 +97,7 @@ class QueryAnalyzer:
         except InvalidQueryError:
             raise
         except Exception as e:
-            logger.error(f"Failed to analyze query: {e}")
+            logger.error("Failed to analyze query: %s", e)
             raise QueryAnalysisError(
                 f"Failed to analyze query: {e}",
                 details={}
@@ -181,7 +179,8 @@ class QueryAnalyzer:
         """Извлечение колонок из WHERE"""
         columns = []
         # Simplified extraction
-        where_match = re.search(r'where\s+(.*?)(?:group|order|limit|$)', query_text, re.IGNORECASE | re.DOTALL)
+        where_match = re.search(r'where\s+(.*?)(?:group|order|limit|$)',
+                                query_text, re.IGNORECASE | re.DOTALL)
         if where_match:
             where_clause = where_match.group(1)
             # Extract table.column patterns

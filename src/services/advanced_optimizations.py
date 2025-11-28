@@ -111,7 +111,7 @@ class SLOTracker:
                 timestamp = time.time()
 
             if slo_name not in self.slos:
-                logger.debug(f"Unknown SLO name: {slo_name}")
+                logger.debug("Unknown SLO name: %s", slo_name)
                 return
 
             # Валидация значения
@@ -122,7 +122,7 @@ class SLOTracker:
                 return
 
             if value < 0:
-                logger.warning(f"Negative metric value for {slo_name}: {value}")
+                logger.warning("Negative metric value for %s: {value}", slo_name)
                 return
 
             self.sli_history[slo_name].append(
@@ -368,7 +368,7 @@ class AdaptiveQuantizer:
                             f"Auto-recalibrated quantizer on {len(self.calibration_data)} samples"
                         )
                     except Exception as e:
-                        logger.debug(f"Error in auto-recalibration: {e}")
+                        logger.debug("Error in auto-recalibration: %s", e)
 
             if not self.calibrated:
                 # Используем простую квантизацию без калибровки
@@ -423,7 +423,7 @@ class AdaptiveQuantizer:
                 return []
 
             if scale <= 0:
-                logger.warning(f"Invalid scale for dequantization: {scale}")
+                logger.warning("Invalid scale for dequantization: %s", scale)
                 scale = 1.0
 
             arr = np.array(
@@ -606,7 +606,7 @@ class SemanticCacheANN:
                         return self.embeddings[idx], similarity, self.texts[idx]
 
         except Exception as e:
-            logger.warning(f"Error in ANN search: {e}, falling back to linear")
+            logger.warning("Error in ANN search: %s, falling back to linear", e)
             return self._linear_search(query_embedding, threshold)
 
         return None
@@ -671,11 +671,11 @@ class PredictiveBatchOptimizer:
         try:
             # Валидация входных данных
             if not isinstance(text_length, int) or text_length < 0:
-                logger.warning(f"Invalid text_length: {text_length}")
+                logger.warning("Invalid text_length: %s", text_length)
                 text_length = 1000  # Default
 
             if not isinstance(available_memory, (int, float)) or available_memory <= 0:
-                logger.warning(f"Invalid available_memory: {available_memory}")
+                logger.warning("Invalid available_memory: %s", available_memory)
                 available_memory = 1024.0  # Default MB
 
             # Если есть обученная модель, используем её
@@ -847,7 +847,7 @@ class PredictiveBatchOptimizer:
                     )
                     return
                 except Exception as e:
-                    logger.debug(f"Error training {model_name}: {e}, trying next model")
+                    logger.debug("Error training %s: {e}, trying next model", model_name)
                     continue
 
             logger.warning("Failed to train any model")

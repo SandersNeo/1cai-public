@@ -5,11 +5,12 @@ FastAPI routes for revolutionary AI components.
 Follows Clean Architecture - this is the API layer.
 """
 
-from fastapi import APIRouter, HTTPException, Depends
-from typing import Dict, Any
+from typing import Any, Dict
 
-from src.modules.revolutionary.services.orchestrator import RevolutionaryOrchestrator
+from fastapi import APIRouter, Depends, HTTPException
+
 from src.modules.revolutionary.domain.models import RevolutionaryOrchestratorState
+from src.modules.revolutionary.services.orchestrator import RevolutionaryOrchestrator
 
 router = APIRouter(
     prefix="/revolutionary",
@@ -40,7 +41,7 @@ async def health_check(
 ) -> Dict[str, Any]:
     """
     Check health of revolutionary components.
-    
+
     Returns:
         Health status of all enabled components
     """
@@ -70,7 +71,7 @@ async def get_state(
 ) -> RevolutionaryOrchestratorState:
     """
     Get detailed state of all revolutionary components.
-    
+
     Returns:
         Complete state including metrics for each component
     """
@@ -87,10 +88,10 @@ async def trigger_evolution(
 ) -> Dict[str, Any]:
     """
     Trigger Self-Evolving AI evolution cycle.
-    
+
     Returns:
         Evolution results
-    
+
     Raises:
         HTTPException: If Self-Evolving AI is not enabled
     """
@@ -111,13 +112,13 @@ async def trigger_healing(
 ) -> Dict[str, Any]:
     """
     Trigger Self-Healing Code to fix bugs.
-    
+
     Args:
         code: Code to heal
-    
+
     Returns:
         Healing results
-    
+
     Raises:
         HTTPException: If Self-Healing Code is not enabled
     """
@@ -137,21 +138,21 @@ async def get_metrics(
 ) -> Dict[str, Any]:
     """
     Get Prometheus-compatible metrics for all components.
-    
+
     Returns:
         Metrics in Prometheus format
     """
     state = orchestrator.get_state()
-    
+
     metrics = {
         "revolutionary_components_total": state.total_enabled,
         "revolutionary_overall_health": state.overall_health,
     }
-    
+
     # Add component-specific metrics
     for comp in state.components:
         prefix = f"revolutionary_{comp.name}"
         metrics[f"{prefix}_status"] = 1 if comp.status == "active" else 0
         metrics[f"{prefix}_enabled"] = 1 if comp.enabled else 0
-    
+
     return metrics

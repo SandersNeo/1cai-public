@@ -3,7 +3,6 @@ Health Calculator Service
 Calculates system health score based on actual metrics
 """
 import time
-from typing import Optional
 
 import asyncpg
 

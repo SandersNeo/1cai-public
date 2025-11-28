@@ -6,9 +6,9 @@ Pydantic модели для Technical Writer модуля согласно Clea
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class HTTPMethod(str, Enum):

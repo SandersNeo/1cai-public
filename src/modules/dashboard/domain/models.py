@@ -2,11 +2,9 @@
 Dashboard Domain Models
 Pydantic models for all dashboard responses
 """
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
-
 
 # ==================== COMMON MODELS ====================
 
@@ -27,7 +25,8 @@ class Metric(BaseModel):
     change: Optional[float] = Field(None, description="Percentage change")
     trend: Optional[str] = Field(None, description="Trend: up, down, stable")
     status: Optional[str] = Field(None, description="Status: good, warning, critical")
-    format: str = Field(default="number", description="Format: number, currency, percentage")
+    format: str = Field(
+        default="number", description="Format: number, currency, percentage")
 
 
 # ==================== EXECUTIVE DASHBOARD ====================

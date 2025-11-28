@@ -10,7 +10,8 @@ from celery.schedules import crontab
 from celery.utils.log import get_task_logger
 
 # Adjust path to include src
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+sys.path.append(os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
 from src.config import settings
 from src.ml.experiments.mlflow_manager import MLFlowManager
@@ -150,8 +151,10 @@ def retrain_all_models_parallel(self) -> Dict[str, Any]:
         "recommendation",
     ]
 
-    training_group = group(retrain_single_model.s(model_type) for model_type in model_types)
-    pipeline = chord(training_group)(evaluate_all_models.s() | cleanup_old_experiments.s())
+    training_group = group(retrain_single_model.s(model_type)
+                           for model_type in model_types)
+    pipeline = chord(training_group)(
+        evaluate_all_models.s() | cleanup_old_experiments.s())
 
     try:
         result = pipeline.get(timeout=3600)
@@ -256,7 +259,8 @@ def _get_mock_training_data(model_type: str) -> pd.DataFrame:
     """Generate mock data"""
     if model_type == "classification":
         return pd.DataFrame(
-            {"feature_1": np.random.rand(100), "feature_2": np.random.rand(100), "label": np.random.randint(0, 2, 100)}
+            {"feature_1": np.random.rand(100), "feature_2": np.random.rand(
+                100), "label": np.random.randint(0, 2, 100)}
         )
     return pd.DataFrame({"feature1": np.random.rand(100), "target": np.random.rand(100)})
 

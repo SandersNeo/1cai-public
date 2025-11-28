@@ -18,7 +18,7 @@ class QdrantStrategy(AIStrategy):
             self.embedding_service = EmbeddingService()
             self.is_available = True
         except Exception as e:
-            logger.warning(f"Qdrant/Embedding services not available: {e}")
+            logger.warning("Qdrant/Embedding services not available: %s", e)
             self.client = None
             self.embedding_service = None
             self.is_available = False

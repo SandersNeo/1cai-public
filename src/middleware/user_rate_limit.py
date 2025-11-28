@@ -71,7 +71,8 @@ class UserRateLimitMiddleware(BaseHTTPMiddleware):
             extra={"max_requests": max_requests, "window_seconds": window_seconds},
         )
 
-    async def dispatch(self, request: Request, call_next) -> Response:  # type: ignore[override]
+    # type: ignore[override]
+    async def dispatch(self, request: Request, call_next) -> Response:
         limiter_key = self._build_rate_key(request)
         if limiter_key:
             try:

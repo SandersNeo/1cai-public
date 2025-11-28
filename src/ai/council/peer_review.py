@@ -6,11 +6,12 @@ Implements Stage 2 of council process: cross-evaluation of responses.
 
 import asyncio
 import random
-from typing import List, Dict, Optional
 from dataclasses import dataclass
+from typing import Dict, List, Optional
+
 from loguru import logger
 
-from .config import ANONYMIZE_RESPONSES, REQUIRE_RANKINGS
+from .config import ANONYMIZE_RESPONSES
 
 
 @dataclass
@@ -101,7 +102,8 @@ class PeerReview:
         """
         try:
             # Create review prompt
-            review_prompt = self._create_review_prompt(query=query, responses=responses_to_review)
+            review_prompt = self._create_review_prompt(
+                query=query, responses=responses_to_review)
 
             # Get provider for reviewer model
             provider = self.orchestrator._get_provider(reviewer_model)
@@ -110,7 +112,8 @@ class PeerReview:
             review_response = await provider.generate(prompt=review_prompt, context=context or {})
 
             # Parse rankings from response
-            rankings, reasoning = self._parse_review_response(review_response, num_responses=len(responses_to_review))
+            rankings, reasoning = self._parse_review_response(
+                review_response, num_responses=len(responses_to_review))
 
             return ReviewResult(
                 reviewer_model=reviewer_model,
@@ -148,7 +151,8 @@ class PeerReview:
         anonymized = []
         for i, idx in enumerate(shuffled_indices):
             anonymized.append(
-                {"label": f"Response {labels[i]}", "response": responses[idx]["response"], "original_index": idx}
+                {"label": f"Response {labels[i]}", "response": responses[idx]
+                    ["response"], "original_index": idx}
             )
 
         return anonymized
@@ -166,7 +170,8 @@ class PeerReview:
         """
         # Format responses
         responses_text = "\n\n".join(
-            [f"{r.get('label', f'Response {i+1}')}:\n{r['response']}" for i, r in enumerate(responses)]
+            [f"{r.get('label', f'Response {i+1}')}:\n{r['response']}" for i,
+                      r in enumerate(responses)]
         )
 
         prompt = f"""You are an expert reviewer evaluating multiple AI responses to a query.
@@ -189,7 +194,7 @@ Your task:
 
 3. Provide your rankings in this format:
    Rankings: [1, 2, 3, ...]
-   
+
 4. Explain your reasoning for the rankings.
 
 Please provide your review now."""
@@ -211,7 +216,8 @@ Please provide your review now."""
 
         # Try to extract rankings
         # Look for patterns like "Rankings: [1, 2, 3]" or "1, 2, 3"
-        patterns = [r"Rankings?:\s*\[([0-9,\s]+)\]", r"Rankings?:\s*([0-9,\s]+)", r"\[([0-9,\s]+)\]"]
+        patterns = [r"Rankings?:\s*\[([0-9,\s]+)\]",
+                                      r"Rankings?:\s*([0-9,\s]+)", r"\[([0-9,\s]+)\]"]
 
         rankings = None
         for pattern in patterns:
@@ -258,6 +264,7 @@ Please provide your review now."""
                     counts[i] += review.confidence
 
         # Calculate averages
-        avg_rankings = [scores[i] / counts[i] if counts[i] > 0 else float(i + 1) for i in range(num_responses)]
+        avg_rankings = [scores[i] / counts[i] if counts[i] >
+            0 else float(i + 1) for i in range(num_responses)]
 
         return avg_rankings

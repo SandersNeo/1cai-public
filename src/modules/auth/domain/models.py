@@ -5,6 +5,7 @@ Domain models for Authentication module.
 """
 
 from typing import List, Optional
+
 from pydantic import BaseModel, Field
 
 

@@ -8,15 +8,14 @@ Log Analyzer Service
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List
 
+from src.modules.devops.domain.exceptions import LogAnalysisError
 from src.modules.devops.domain.models import (
     LogAnalysisResult,
     LogAnomaly,
-    LogCategory,
     LogSeverity,
 )
-from src.modules.devops.domain.exceptions import LogAnalysisError
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -25,7 +24,7 @@ logger = StructuredLogger(__name__).logger
 class LogAnalyzer:
     """
     Сервис анализа логов
-    
+
     Features:
     - Pattern matching для обнаружения ошибок
     - Anomaly detection
@@ -45,7 +44,7 @@ class LogAnalyzer:
     def _load_error_patterns(self) -> List[Dict]:
         """
         База паттернов ошибок
-        
+
         TODO: Перенести в OptimizationRepository
         """
         return [
@@ -159,7 +158,7 @@ class LogAnalyzer:
             )
 
         except Exception as e:
-            logger.error(f"Log analysis failed: {e}")
+            logger.error("Log analysis failed: %s", e)
             raise LogAnalysisError(
                 f"Failed to analyze logs: {e}",
                 details={"log_type": log_type}

@@ -11,15 +11,15 @@ Enhanced rate limiting with:
 from __future__ import annotations
 
 import time
-from typing import Optional, Dict
 from enum import Enum
+from typing import Dict, Optional
 
 from fastapi import HTTPException, status
+from prometheus_client import Counter
 from redis.asyncio import Redis
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
-from prometheus_client import Counter, Histogram
 
 from src.modules.auth.application.service import AuthService
 from src.utils.structured_logging import StructuredLogger
@@ -60,14 +60,14 @@ rate_limit_requests = Counter(
 class TieredRateLimitMiddleware(BaseHTTPMiddleware):
     """
     Apply tiered rate limiting based on user role and endpoint.
-    
+
     Features:
     - Different limits per tier (free/pro/enterprise)
     - Path-based limits (revolutionary endpoints have separate limits)
     - Burst protection (sliding window)
     - Prometheus metrics
     """
-    
+
     def __init__(
         self,
         app,
@@ -79,27 +79,27 @@ class TieredRateLimitMiddleware(BaseHTTPMiddleware):
         self.redis = redis_client
         self.auth_service = auth_service
         self.window_seconds = window_seconds
-        
+
         logger.info("TieredRateLimitMiddleware initialized")
-    
+
     async def dispatch(self, request: Request, call_next) -> Response:
         """Apply tiered rate limiting"""
-        
+
         # Determine user tier and limit
         tier, max_requests = self._get_tier_and_limit(request)
-        
+
         # Build rate limit key
         limiter_key = self._build_rate_key(request, tier)
-        
+
         if limiter_key:
             try:
                 # Increment counter
                 current_value = await self.redis.incr(limiter_key)
-                
+
                 # Set expiry on first request
                 if current_value == 1:
                     await self.redis.expire(limiter_key, self.window_seconds)
-                
+
                 # Check limit
                 if current_value > max_requests:
                     # Record metric
@@ -107,7 +107,7 @@ class TieredRateLimitMiddleware(BaseHTTPMiddleware):
                         tier=tier.value,
                         path=str(request.url.path)
                     ).inc()
-                    
+
                     logger.warning(
                         "Rate limit exceeded",
                         extra={
@@ -117,7 +117,7 @@ class TieredRateLimitMiddleware(BaseHTTPMiddleware):
                             "path": str(request.url.path),
                         },
                     )
-                    
+
                     raise HTTPException(
                         status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                         detail={
@@ -134,24 +134,26 @@ class TieredRateLimitMiddleware(BaseHTTPMiddleware):
                             "Retry-After": str(self.window_seconds)
                         }
                     )
-                
+
                 # Record successful request
                 rate_limit_requests.labels(
                     tier=tier.value,
                     path=str(request.url.path),
                     status="allowed"
                 ).inc()
-                
+
                 # Process request
                 response = await call_next(request)
-                
+
                 # Add rate limit headers
                 response.headers["X-RateLimit-Limit"] = str(max_requests)
-                response.headers["X-RateLimit-Remaining"] = str(max(0, max_requests - current_value))
-                response.headers["X-RateLimit-Reset"] = str(int(time.time()) + self.window_seconds)
-                
+                response.headers["X-RateLimit-Remaining"] = str(
+                    max(0, max_requests - current_value))
+                response.headers["X-RateLimit-Reset"] = str(
+                    int(time.time()) + self.window_seconds)
+
                 return response
-                
+
             except HTTPException:
                 raise
             except Exception as e:
@@ -162,13 +164,13 @@ class TieredRateLimitMiddleware(BaseHTTPMiddleware):
                 )
                 # Graceful fallback
                 return await call_next(request)
-        
+
         return await call_next(request)
-    
+
     def _get_tier_and_limit(self, request: Request) -> tuple[UserTier, int]:
         """
         Determine user tier and corresponding limit.
-        
+
         Returns:
             (tier, max_requests)
         """
@@ -176,43 +178,43 @@ class TieredRateLimitMiddleware(BaseHTTPMiddleware):
         path = str(request.url.path)
         if "/revolutionary" in path:
             return UserTier.REVOLUTIONARY, TIER_LIMITS[UserTier.REVOLUTIONARY]
-        
+
         # Get user from request state
         current_user = getattr(request.state, "current_user", None)
-        
+
         if current_user:
             # Get user tier from user object
             user_tier = getattr(current_user, "tier", None)
-            
+
             if user_tier == "enterprise":
                 return UserTier.ENTERPRISE, TIER_LIMITS[UserTier.ENTERPRISE]
             elif user_tier == "pro":
                 return UserTier.PRO, TIER_LIMITS[UserTier.PRO]
-        
+
         # Default to free tier
         return UserTier.FREE, TIER_LIMITS[UserTier.FREE]
-    
+
     def _build_rate_key(self, request: Request, tier: UserTier) -> Optional[str]:
         """Build rate limit key"""
         try:
             window = int(time.time() // self.window_seconds)
-            
+
             # Try to get user ID
             current_user = getattr(request.state, "current_user", None)
-            
+
             if current_user and getattr(current_user, "user_id", None):
                 user_id = str(getattr(current_user, "user_id"))
                 user_id = user_id.replace(":", "").replace(" ", "")
                 return f"rl:v2:{tier.value}:user:{user_id}:{window}"
-            
+
             # Fallback to IP
             if request.client and request.client.host:
                 host = str(request.client.host)
                 host = host.replace(":", "").replace(" ", "")
                 return f"rl:v2:{tier.value}:ip:{host}:{window}"
-            
+
             return None
-            
+
         except Exception as e:
             logger.error(
                 f"Error building rate key: {e}",

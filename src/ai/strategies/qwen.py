@@ -22,7 +22,7 @@ class QwenStrategy(AIStrategy):
         try:
             return QwenCoderClient()
         except Exception as e:
-            logger.warning(f"Qwen client not available: {e}")
+            logger.warning("Qwen client not available: %s", e)
             return None
 
     async def execute(self, query: str, context: Dict[str, Any]) -> Dict[str, Any]:

@@ -10,10 +10,10 @@ Provides integration with Dify for:
 """
 
 import logging
-from typing import Any, Dict, List, Optional
 from enum import Enum
-import httpx
+from typing import Any, Dict, List, Optional
 
+import httpx
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class WorkflowType(Enum):
 class DifyClient:
     """
     Dify Platform integration client
-    
+
     Features:
     - Workflow execution
     - Multi-agent orchestration
@@ -40,7 +40,7 @@ class DifyClient:
     - Prompt management
     - Model management
     """
-    
+
     def __init__(
         self,
         api_key: str,
@@ -48,7 +48,7 @@ class DifyClient:
     ):
         """
         Initialize Dify client
-        
+
         Args:
             api_key: Dify API key
             base_url: Dify API base URL
@@ -56,7 +56,7 @@ class DifyClient:
         self.api_key = api_key
         self.base_url = base_url
         self.logger = logging.getLogger("dify_client")
-        
+
         self.client = httpx.AsyncClient(
             base_url=base_url,
             headers={
@@ -65,7 +65,7 @@ class DifyClient:
             },
             timeout=60.0
         )
-    
+
     async def create_workflow(
         self,
         name: str,
@@ -75,13 +75,13 @@ class DifyClient:
     ) -> str:
         """
         Create a new workflow
-        
+
         Args:
             name: Workflow name
             workflow_type: Type of workflow
             steps: Workflow steps configuration
             description: Optional description
-            
+
         Returns:
             Workflow ID
         """
@@ -96,17 +96,17 @@ class DifyClient:
                 }
             )
             response.raise_for_status()
-            
+
             data = response.json()
             workflow_id = data.get("id")
-            
-            self.logger.info(f"Created workflow: {workflow_id}")
+
+            self.logger.info("Created workflow: %s", workflow_id)
             return workflow_id
-            
+
         except Exception as e:
-            self.logger.error(f"Failed to create workflow: {e}")
+            self.logger.error("Failed to create workflow: %s", e)
             raise
-    
+
     async def execute_workflow(
         self,
         workflow_id: str,
@@ -115,12 +115,12 @@ class DifyClient:
     ) -> Dict[str, Any]:
         """
         Execute a workflow
-        
+
         Args:
             workflow_id: Workflow ID
             inputs: Input parameters
             user_id: Optional user ID for tracking
-            
+
         Returns:
             Workflow execution result
         """
@@ -133,13 +133,13 @@ class DifyClient:
                 }
             )
             response.raise_for_status()
-            
+
             result = response.json()
-            
+
             self.logger.info(
                 f"Workflow {workflow_id} executed successfully"
             )
-            
+
             return {
                 "status": "success",
                 "outputs": result.get("data", {}),
@@ -149,22 +149,22 @@ class DifyClient:
                     "elapsed_time": result.get("elapsed_time", 0)
                 }
             }
-            
+
         except httpx.HTTPStatusError as e:
-            self.logger.error(f"Workflow execution failed: {e}")
+            self.logger.error("Workflow execution failed: %s", e)
             return {
                 "status": "error",
                 "error": str(e),
                 "outputs": {}
             }
         except Exception as e:
-            self.logger.error(f"Unexpected error: {e}")
+            self.logger.error("Unexpected error: %s", e)
             return {
                 "status": "error",
                 "error": str(e),
                 "outputs": {}
             }
-    
+
     async def create_rag_dataset(
         self,
         name: str,
@@ -172,11 +172,11 @@ class DifyClient:
     ) -> str:
         """
         Create RAG dataset
-        
+
         Args:
             name: Dataset name
             documents: List of documents to index
-            
+
         Returns:
             Dataset ID
         """
@@ -189,20 +189,20 @@ class DifyClient:
                 }
             )
             response.raise_for_status()
-            
+
             dataset_id = response.json().get("id")
-            
+
             # Upload documents
             for doc in documents:
                 await self._upload_document(dataset_id, doc)
-            
-            self.logger.info(f"Created RAG dataset: {dataset_id}")
+
+            self.logger.info("Created RAG dataset: %s", dataset_id)
             return dataset_id
-            
+
         except Exception as e:
-            self.logger.error(f"Failed to create dataset: {e}")
+            self.logger.error("Failed to create dataset: %s", e)
             raise
-    
+
     async def _upload_document(
         self,
         dataset_id: str,
@@ -215,8 +215,8 @@ class DifyClient:
                 json=document
             )
         except Exception as e:
-            self.logger.error(f"Failed to upload document: {e}")
-    
+            self.logger.error("Failed to upload document: %s", e)
+
     async def query_rag(
         self,
         dataset_id: str,
@@ -225,12 +225,12 @@ class DifyClient:
     ) -> List[Dict[str, Any]]:
         """
         Query RAG dataset
-        
+
         Args:
             dataset_id: Dataset ID
             query: Search query
             top_k: Number of results
-            
+
         Returns:
             Retrieved documents
         """
@@ -243,9 +243,9 @@ class DifyClient:
                 }
             )
             response.raise_for_status()
-            
+
             results = response.json().get("records", [])
-            
+
             return [
                 {
                     "content": r.get("content"),
@@ -254,21 +254,21 @@ class DifyClient:
                 }
                 for r in results
             ]
-            
+
         except Exception as e:
-            self.logger.error(f"RAG query failed: {e}")
+            self.logger.error("RAG query failed: %s", e)
             return []
-    
+
     async def get_workflow_status(
         self,
         execution_id: str
     ) -> Dict[str, Any]:
         """
         Get workflow execution status
-        
+
         Args:
             execution_id: Execution ID
-            
+
         Returns:
             Execution status
         """
@@ -277,13 +277,13 @@ class DifyClient:
                 f"/workflow-runs/{execution_id}"
             )
             response.raise_for_status()
-            
+
             return response.json()
-            
+
         except Exception as e:
-            self.logger.error(f"Failed to get status: {e}")
+            self.logger.error("Failed to get status: %s", e)
             return {"status": "unknown"}
-    
+
     async def close(self):
         """Close HTTP client"""
         await self.client.aclose()
@@ -342,25 +342,25 @@ def get_dify_client(
 ) -> DifyClient:
     """
     Get or create Dify client singleton
-    
+
     Args:
         api_key: Dify API key
         base_url: Optional base URL
-        
+
     Returns:
         DifyClient instance
     """
     global _dify_client
-    
+
     if _dify_client is None:
         if not api_key:
             raise ValueError("API key required for first initialization")
-        
+
         _dify_client = DifyClient(
             api_key=api_key,
             base_url=base_url or "https://api.dify.ai/v1"
         )
-    
+
     return _dify_client
 
 

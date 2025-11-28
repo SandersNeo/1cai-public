@@ -8,7 +8,8 @@ from prometheus_client import Counter, Histogram
 
 # Council metrics
 council_queries_total = Counter(
-    "council_queries_total", "Total number of council queries", ["status"]  # success, error
+    "council_queries_total", "Total number of council queries", [
+        "status"]  # success, error
 )
 
 council_latency_seconds = Histogram(
@@ -21,7 +22,8 @@ council_cost_multiplier = Histogram(
 
 # Security metrics
 poetic_detections_total = Counter(
-    "poetic_detections_total", "Total number of poetic form detections", ["is_poetic"]  # true, false
+    "poetic_detections_total", "Total number of poetic form detections", [
+        "is_poetic"]  # true, false
 )
 
 jailbreak_attempts_blocked = Counter(

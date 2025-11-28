@@ -10,23 +10,23 @@ AI ассистент для DevOps инженеров с LLM интеграци
 import logging
 from typing import Any, Dict, List, Optional
 
-from src.ai.agents.base_agent import BaseAgent, AgentCapability
+from src.ai.agents.base_agent import AgentCapability, BaseAgent
 from src.ai.llm import TaskType
 from src.ml.anomaly_detection import get_anomaly_detector
+from src.modules.devops.domain.models import (
+    InfrastructureConfig,
+    PipelineConfig,
+    PipelineMetrics,
+    UsageMetrics,
+)
 
 # Import DevOps services
 from src.modules.devops.services import (
-    PipelineOptimizer,
-    LogAnalyzer,
     CostOptimizer,
-    IaCGenerator,
     DockerAnalyzer,
-)
-from src.modules.devops.domain.models import (
-    PipelineConfig,
-    PipelineMetrics,
-    InfrastructureConfig,
-    UsageMetrics,
+    IaCGenerator,
+    LogAnalyzer,
+    PipelineOptimizer,
 )
 
 logger = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 class DevOpsAgentEnhanced(BaseAgent):
     """
     Enhanced AI агент для DevOps инженеров
-    
+
     Features:
     - LLM-based log analysis
     - CI/CD pipeline optimization
@@ -76,45 +76,45 @@ class DevOpsAgentEnhanced(BaseAgent):
     ) -> Dict[str, Any]:
         """
         LLM-based log analysis
-        
+
         Args:
             logs: Список логов
             source: Источник логов
-            
+
         Returns:
             Анализ логов
         """
         if not self.llm_selector:
             return {"status": "llm_not_available"}
-        
+
         # Sanitize logs (remove sensitive data)
         sanitized_logs = "\n".join(logs[:100])  # Limit for LLM
-        
+
         try:
             analysis = await self.llm_selector.generate(
                 task_type=TaskType.LOG_ANALYSIS,
                 prompt=f"""
                 Проанализируй логи {source}:
-                
+
                 {sanitized_logs}
-                
+
                 Найди:
                 1. Ошибки и warnings
                 2. Performance bottlenecks
                 3. Security issues
                 4. Рекомендации по оптимизации
-                
+
                 Формат: JSON
                 """,
                 context={"source": source}
             )
-            
+
             return {
                 "analysis": analysis["response"],
                 "status": "completed"
             }
         except Exception as e:
-            self.logger.error(f"Log analysis failed: {e}")
+            self.logger.error("Log analysis failed: %s", e)
             return {"status": "failed", "error": str(e)}
 
     async def optimize_cicd(
@@ -123,41 +123,41 @@ class DevOpsAgentEnhanced(BaseAgent):
     ) -> Dict[str, Any]:
         """
         Оптимизация CI/CD pipeline
-        
+
         Args:
             pipeline_config: Конфигурация pipeline
-            
+
         Returns:
             Рекомендации по оптимизации
         """
         if not self.llm_selector:
             return {"status": "llm_not_available"}
-        
+
         try:
             optimization = await self.llm_selector.generate(
                 task_type=TaskType.METRICS_ANALYSIS,
                 prompt=f"""
                 Оптимизируй CI/CD pipeline:
-                
+
                 Конфигурация: {pipeline_config}
-                
+
                 Предложи:
                 1. Параллелизацию задач
                 2. Кэширование зависимостей
                 3. Оптимизацию Docker образов
                 4. Сокращение времени сборки
-                
+
                 Формат: JSON с recommendations
                 """,
                 context={"platform": "GitLab CI"}
             )
-            
+
             return {
                 "recommendations": optimization["response"],
                 "status": "completed"
             }
         except Exception as e:
-            self.logger.error(f"CI/CD optimization failed: {e}")
+            self.logger.error("CI/CD optimization failed: %s", e)
             return {"status": "failed", "error": str(e)}
 
     async def deploy_kubernetes(
@@ -168,12 +168,12 @@ class DevOpsAgentEnhanced(BaseAgent):
     ) -> Dict[str, Any]:
         """
         Деплой в Kubernetes
-        
+
         Args:
             app_name: Название приложения
             image: Docker образ
             replicas: Количество реплик
-            
+
         Returns:
             Результат деплоя
         """
@@ -182,7 +182,7 @@ class DevOpsAgentEnhanced(BaseAgent):
                 "status": "k8s_not_configured",
                 "recommendation": "Configure Kubernetes client"
             }
-        
+
         # TODO: Integrate with Kubernetes API
         return {
             "app_name": app_name,
@@ -196,11 +196,11 @@ class DevOpsAgentEnhanced(BaseAgent):
     ) -> Dict[str, Any]:
         """
         ML-based anomaly detection in logs
-        
+
         Args:
             logs: List of log entries with metadata
             train_first: Whether to train model first
-            
+
         Returns:
             Detected anomalies
         """
@@ -210,43 +210,43 @@ class DevOpsAgentEnhanced(BaseAgent):
                 train_result = self.anomaly_detector.train(logs, "logs")
                 if train_result["status"] != "trained":
                     return train_result
-            
+
             # Detect anomalies
             detection = self.anomaly_detector.detect(logs, "logs")
-            
+
             # Enhance with LLM analysis if anomalies found
             if self.llm_selector and detection.get("anomalies"):
                 anomalies_summary = "\n".join([
                     f"- {a['data'].get('message', 'N/A')[:100]}..."
                     for a in detection["anomalies"][:5]
                 ])
-                
+
                 llm_analysis = await self.llm_selector.generate(
                     task_type=TaskType.LOG_ANALYSIS,
                     prompt=f"""
                     ML обнаружил аномалии в логах:
-                    
+
                     Аномалии:
                     {anomalies_summary}
-                    
+
                     Проанализируй:
                     1. Возможные причины
                     2. Критичность
                     3. Рекомендации по исправлению
-                    
+
                     Формат: JSON
                     """,
                     context={"task": "anomaly_analysis"}
                 )
-                
+
                 detection["llm_analysis"] = llm_analysis.get("response", "")
-            
+
             return detection
-            
+
         except Exception as e:
-            self.logger.error(f"Anomaly detection failed: {e}")
+            self.logger.error("Anomaly detection failed: %s", e)
             return {"status": "failed", "error": str(e)}
-    
+
     async def detect_metric_anomalies(
         self,
         metrics: List[Dict[str, Any]],
@@ -254,11 +254,11 @@ class DevOpsAgentEnhanced(BaseAgent):
     ) -> Dict[str, Any]:
         """
         ML-based anomaly detection in metrics
-        
+
         Args:
             metrics: List of metric data points
             train_first: Whether to train model first
-            
+
         Returns:
             Detected anomalies
         """
@@ -268,10 +268,10 @@ class DevOpsAgentEnhanced(BaseAgent):
                 train_result = self.anomaly_detector.train(metrics, "metrics")
                 if train_result["status"] != "trained":
                     return train_result
-            
+
             # Detect anomalies
             detection = self.anomaly_detector.detect(metrics, "metrics")
-            
+
             # Enhance with LLM if anomalies found
             if self.llm_selector and detection.get("anomalies"):
                 anomalies_info = []
@@ -282,32 +282,32 @@ class DevOpsAgentEnhanced(BaseAgent):
                         f"Memory: {data.get('memory_usage', 0)}%, "
                         f"Errors: {data.get('error_rate', 0)}"
                     )
-                
+
                 llm_analysis = await self.llm_selector.generate(
                     task_type=TaskType.METRICS_ANALYSIS,
                     prompt=f"""
                     ML обнаружил аномалии в метриках:
-                    
+
                     {chr(10).join(anomalies_info)}
-                    
+
                     Определи:
                     1. Тип проблемы (CPU/Memory/Network)
                     2. Срочность
                     3. Действия для mitigation
-                    
+
                     Формат: JSON
                     """,
                     context={"task": "metric_anomaly_analysis"}
                 )
-                
+
                 detection["llm_analysis"] = llm_analysis.get("response", "")
-            
+
             return detection
-            
+
         except Exception as e:
-            self.logger.error(f"Metric anomaly detection failed: {e}")
+            self.logger.error("Metric anomaly detection failed: %s", e)
             return {"status": "failed", "error": str(e)}
-    
+
     async def auto_scale(
         self,
         app_name: str,
@@ -315,39 +315,39 @@ class DevOpsAgentEnhanced(BaseAgent):
     ) -> Dict[str, Any]:
         """
         Auto-scaling на основе метрик
-        
+
         Args:
             app_name: Название приложения
             metrics: Метрики (CPU, memory, RPS)
-            
+
         Returns:
             Решение по scaling
         """
         if not self.llm_selector:
             return {"status": "llm_not_available"}
-        
+
         try:
             decision = await self.llm_selector.generate(
                 task_type=TaskType.SCALING_DECISION,
                 prompt=f"""
                 Реши нужен ли scaling для приложения:
-                
+
                 App: {app_name}
                 CPU: {metrics.get('cpu', 0)}%
                 Memory: {metrics.get('memory', 0)}%
                 RPS: {metrics.get('rps', 0)}
-                
+
                 Верни: action (scale_up/scale_down/no_action), replicas, reasoning
                 """,
                 context={"platform": "kubernetes"}
             )
-            
+
             return {
                 "decision": decision["response"],
                 "status": "completed"
             }
         except Exception as e:
-            self.logger.error(f"Auto-scaling decision failed: {e}")
+            self.logger.error("Auto-scaling decision failed: %s", e)
             return {"status": "failed", "error": str(e)}
 
     # ==================== NEW METHODS: Modular Services Integration ====================
@@ -387,7 +387,7 @@ class DevOpsAgentEnhanced(BaseAgent):
                 "status": "completed"
             }
         except Exception as e:
-            self.logger.error(f"Pipeline optimization failed: {e}")
+            self.logger.error("Pipeline optimization failed: %s", e)
             return {"status": "failed", "error": str(e)}
 
     async def analyze_logs_enhanced(
@@ -448,7 +448,7 @@ class DevOpsAgentEnhanced(BaseAgent):
                 "status": "completed"
             }
         except Exception as e:
-            self.logger.error(f"Enhanced log analysis failed: {e}")
+            self.logger.error("Enhanced log analysis failed: %s", e)
             return {"status": "failed", "error": str(e)}
 
     async def optimize_infrastructure_costs(
@@ -480,7 +480,7 @@ class DevOpsAgentEnhanced(BaseAgent):
                 "status": "completed"
             }
         except Exception as e:
-            self.logger.error(f"Cost optimization failed: {e}")
+            self.logger.error("Cost optimization failed: %s", e)
             return {"status": "failed", "error": str(e)}
 
     async def generate_infrastructure_code(
@@ -517,7 +517,7 @@ class DevOpsAgentEnhanced(BaseAgent):
                 "status": "completed"
             }
         except Exception as e:
-            self.logger.error(f"IaC generation failed: {e}")
+            self.logger.error("IaC generation failed: %s", e)
             return {"status": "failed", "error": str(e)}
 
     async def analyze_docker_infrastructure(
@@ -544,7 +544,7 @@ class DevOpsAgentEnhanced(BaseAgent):
                 "status": "completed"
             }
         except Exception as e:
-            self.logger.error(f"Docker infrastructure analysis failed: {e}")
+            self.logger.error("Docker infrastructure analysis failed: %s", e)
             return {"status": "failed", "error": str(e)}
 
 

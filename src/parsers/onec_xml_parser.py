@@ -11,11 +11,11 @@
 - Object metadata - документы, справочники, отчеты и т.д.
 """
 
+import logging
 import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -95,19 +95,21 @@ class OneCXMLParser:
                 for obj_type, obj_name in self.OBJECT_TYPES.items():
                     objects = child_objects.findall(f".//{obj_type}")
                     if objects:
-                        config_data["objects"][obj_name] = [obj.text for obj in objects if obj.text]
+                        config_data["objects"][obj_name] = [
+                            obj.text for obj in objects if obj.text]
 
             # Извлечение подсистем
             subsystems = root.findall(".//Subsystem")
             config_data["subsystems"] = [sub.text for sub in subsystems if sub.text]
 
             self.stats["parsed_files"] += 1
-            logger.info(f"Parsed configuration: {config_data['name']} v{config_data['version']}")
+            logger.info(
+                f"Parsed configuration: {config_data['name']} v{config_data['version']}")
 
             return config_data
 
         except ET.ParseError as e:
-            logger.error(f"XML parse error in {xml_path}: {e}")
+            logger.error("XML parse error in %s: {e}", xml_path)
             self.stats["errors"] += 1
             return None
         except Exception as e:
@@ -192,7 +194,8 @@ class OneCXMLParser:
                 is_export = "Экспорт" in match.group(0) or "Export" in match.group(0)
 
                 # Определение типа (функция или процедура)
-                proc_type = "function" if "Функция" in match.group(0) or "Function" in match.group(0) else "procedure"
+                proc_type = "function" if "Функция" in match.group(
+                    0) or "Function" in match.group(0) else "procedure"
 
                 # Парсинг параметров
                 parameters = []
@@ -206,7 +209,8 @@ class OneCXMLParser:
                             parameters.append(param_name)
 
                 # Извлечение комментария перед процедурой/функцией
-                description = self._extract_procedure_description(module_text, match.start())
+                description = self._extract_procedure_description(
+                    module_text, match.start())
 
                 procedures.append(
                     {
@@ -292,7 +296,8 @@ class OneCXMLParser:
             return metadata
 
         except Exception as e:
-            logger.error(f"Error parsing object metadata {xml_path}: {e}", exc_info=True)
+            logger.error(
+                f"Error parsing object metadata {xml_path}: {e}", exc_info=True)
             self.stats["errors"] += 1
             return None
 
@@ -303,12 +308,13 @@ class OneCXMLParser:
         try:
             file_size = xml_path.stat().st_size
             if file_size > self.MAX_XML_SIZE:
-                logger.warning(f"File {xml_path} is too large: {file_size} bytes (max {self.MAX_XML_SIZE})")
+                logger.warning(
+                    f"File {xml_path} is too large: {file_size} bytes (max {self.MAX_XML_SIZE})")
                 self.stats["warnings"] += 1
                 return False
             return True
         except Exception as e:
-            logger.error(f"Error checking file size for {xml_path}: {e}")
+            logger.error("Error checking file size for %s: {e}", xml_path)
             return False
 
     def _get_text(self, element: ET.Element, xpath: str) -> Optional[str]:

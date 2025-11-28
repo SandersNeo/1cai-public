@@ -75,7 +75,7 @@ class NetworkResilienceLayer:
                 self.dns_manager = get_dns_manager()
                 logger.info("DNS Manager initialized")
             except Exception as e:
-                logger.warning(f"Failed to initialize DNS Manager: {e}")
+                logger.warning("Failed to initialize DNS Manager: %s", e)
 
         # TCP Optimizer
         self.tcp_optimizer: Optional[TCPOptimizer] = None
@@ -86,10 +86,10 @@ class NetworkResilienceLayer:
                 try:
                     self.tcp_optimizer.apply_optimizations()
                 except Exception as e:
-                    logger.debug(f"TCP optimizations require root: {e}")
+                    logger.debug("TCP optimizations require root: %s", e)
                 logger.info("TCP Optimizer initialized")
             except Exception as e:
-                logger.warning(f"Failed to initialize TCP Optimizer: {e}")
+                logger.warning("Failed to initialize TCP Optimizer: %s", e)
 
         # Multi-Path Router
         self.multipath_router: Optional[MultiPathRouter] = None
@@ -99,7 +99,7 @@ class NetworkResilienceLayer:
                 asyncio.create_task(self.multipath_router.start_health_monitoring())
                 logger.info("Multi-Path Router initialized")
             except Exception as e:
-                logger.warning(f"Failed to initialize Multi-Path Router: {e}")
+                logger.warning("Failed to initialize Multi-Path Router: %s", e)
 
         # Traffic Shaper
         self.traffic_shaper: Optional[TrafficShaper] = None
@@ -108,7 +108,7 @@ class NetworkResilienceLayer:
                 self.traffic_shaper = TrafficShaper()
                 logger.info("Traffic Shaper initialized")
             except Exception as e:
-                logger.warning(f"Failed to initialize Traffic Shaper: {e}")
+                logger.warning("Failed to initialize Traffic Shaper: %s", e)
 
         # VPN Manager
         self.vpn_manager: Optional[VPNManager] = None
@@ -118,7 +118,7 @@ class NetworkResilienceLayer:
                 asyncio.create_task(self.vpn_manager.start_health_monitoring())
                 logger.info("VPN Manager initialized")
             except Exception as e:
-                logger.warning(f"Failed to initialize VPN Manager: {e}")
+                logger.warning("Failed to initialize VPN Manager: %s", e)
 
         # Protocol Obfuscator
         self.protocol_obfuscator: Optional[ProtocolObfuscator] = None
@@ -127,7 +127,7 @@ class NetworkResilienceLayer:
                 self.protocol_obfuscator = ProtocolObfuscator()
                 logger.info("Protocol Obfuscator initialized")
             except Exception as e:
-                logger.warning(f"Failed to initialize Protocol Obfuscator: {e}")
+                logger.warning("Failed to initialize Protocol Obfuscator: %s", e)
 
     async def resolve_domain(self, domain: str, record_type: str = "A") -> list[str]:
         """

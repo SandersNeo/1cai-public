@@ -5,15 +5,12 @@ Query Rewriter Service
 """
 
 import re
-from typing import List
 
+from src.modules.sql_optimizer.domain.exceptions import QueryOptimizationError
 from src.modules.sql_optimizer.domain.models import (
-    SQLQuery,
     OptimizedQuery,
     QueryAnalysis,
-)
-from src.modules.sql_optimizer.domain.exceptions import (
-    QueryOptimizationError
+    SQLQuery,
 )
 from src.utils.structured_logging import StructuredLogger
 
@@ -33,7 +30,6 @@ class QueryRewriter:
 
     def __init__(self):
         """Initialize rewriter"""
-        pass
 
     async def rewrite_query(
         self,
@@ -80,7 +76,8 @@ class QueryRewriter:
                         improvements.append("Removed function from WHERE clause")
 
                 elif "LIKE with leading wildcard" in issue:
-                    improvements.append("Consider full-text search instead of LIKE '%...'")
+                    improvements.append(
+                        "Consider full-text search instead of LIKE '%...'")
 
             # Estimate speedup
             estimated_speedup = self._estimate_speedup(

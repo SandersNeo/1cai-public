@@ -90,7 +90,7 @@ class WikiService:
         """
         content = data.content
         if blueprint_id:
-            logger.info(f"Applying blueprint {blueprint_id} to page {data.slug}")
+            logger.info("Applying blueprint %s to page {data.slug}", blueprint_id)
             content = f"# {data.title}\n\nGenerated from blueprint..."
 
         page_id = str(uuid.uuid4())
@@ -202,7 +202,7 @@ class WikiService:
                     page["id"],
                 )
 
-        logger.info(f"Updated page {slug} to v{new_version}")
+        logger.info("Updated page %s to v{new_version}", slug)
 
         return PageDTO(
             id=page["id"],
@@ -255,7 +255,7 @@ class WikiService:
         """
         AI RAG Chatbot stub (Ask Wiki).
         """
-        logger.info(f"Asking Wiki: {query}")
+        logger.info("Asking Wiki: %s", query)
         return {
             "answer": "This is a stub answer from the AI RAG system based on your query.",
             "sources": ["/wiki/pages/architecture-overview", "/wiki/pages/api-docs"],

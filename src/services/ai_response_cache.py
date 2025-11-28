@@ -88,7 +88,8 @@ class AIResponseCache:
             return
 
         if not SENTENCE_TRANSFORMERS_AVAILABLE:
-            logger.warning("sentence-transformers not available, using fallback hash-based embeddings")
+            logger.warning(
+                "sentence-transformers not available, using fallback hash-based embeddings")
             self.model_loaded = True
             return
 
@@ -100,7 +101,7 @@ class AIResponseCache:
                 import torch
 
                 device = "cuda" if torch.cuda.is_available() else "cpu"
-                logger.info(f"Using device: {device}")
+                logger.info("Using device: %s", device)
                 self.model = SentenceTransformer(self.model_name, device=device)
             except ImportError:
                 # Fallback to CPU if torch not available
@@ -140,7 +141,8 @@ class AIResponseCache:
                 # Limit text length (prevent memory issues)
                 max_length = 10000
                 if len(text) > max_length:
-                    logger.warning(f"Text too long ({len(text)} chars), truncating to {max_length}")
+                    logger.warning(
+                        f"Text too long ({len(text)} chars), truncating to {max_length}")
                     text = text[:max_length]
 
                 # Get real embedding
@@ -192,10 +194,11 @@ class AIResponseCache:
         if self.model is not None:
             try:
                 # Batch encode (much faster)
-                embeddings = self.model.encode(texts, convert_to_numpy=True, batch_size=32, show_progress_bar=False)
+                embeddings = self.model.encode(
+                    texts, convert_to_numpy=True, batch_size=32, show_progress_bar=False)
                 return list(embeddings)
             except Exception as e:
-                logger.error(f"Batch embedding error: {e}")
+                logger.error("Batch embedding error: %s", e)
                 # Fallback to individual
                 return [self._get_hash_embedding(t) for t in texts]
 
@@ -228,7 +231,8 @@ class AIResponseCache:
                 f"Saved {len(self.embeddings)} embeddings to disk", extra={"cache_path": str(self.embedding_cache_path)}
             )
         except Exception as e:
-            logger.error(f"Failed to save embedding cache: {e}", extra={"error_type": type(e).__name__})
+            logger.error(f"Failed to save embedding cache: {e}", extra={
+                         "error_type": type(e).__name__})
 
     def _cosine_similarity(self, a: np.ndarray, b: np.ndarray) -> float:
         """Calculate cosine similarity between two vectors"""
@@ -456,7 +460,7 @@ class AIResponseCache:
                 self.embedding_cache_path.unlink()
                 logger.info("Cleared disk cache")
             except Exception as e:
-                logger.error(f"Failed to clear disk cache: {e}")
+                logger.error("Failed to clear disk cache: %s", e)
 
         logger.info("AI response cache cleared")
 

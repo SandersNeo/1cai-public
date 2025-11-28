@@ -100,7 +100,8 @@ async def chat_with_assistant(
             content=response.message.content,
             role=response.message.role,
             timestamp=response.message.timestamp,
-            sources=[{"page_content": doc.page_content, "metadata": doc.metadata} for doc in response.sources],
+            sources=[{"page_content": doc.page_content, "metadata": doc.metadata}
+                for doc in response.sources],
             confidence=response.confidence,
             conversation_id=request.conversation_id or "default",
         )
@@ -109,7 +110,8 @@ async def chat_with_assistant(
         raise
     except Exception as e:
         logger.error(f"Error processing chat: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="An error occurred while processing chat request")
+        raise HTTPException(
+            status_code=500, detail="An error occurred while processing chat request")
 
 
 @router.post("/architect/analyze-requirements", summary="Analyze requirements for architect")
@@ -124,7 +126,8 @@ async def analyze_requirements(
     """
     try:
         if not request.requirements_text.strip():
-            raise HTTPException(status_code=400, detail="Requirements text cannot be empty")
+            raise HTTPException(
+                status_code=400, detail="Requirements text cannot be empty")
 
         max_length = 10000
         if len(request.requirements_text) > max_length:
@@ -136,7 +139,8 @@ async def analyze_requirements(
         timeout = 60.0
         try:
             result = await asyncio.wait_for(
-                service.analyze_requirements(requirements_text=request.requirements_text, context=request.context),
+                service.analyze_requirements(
+                    requirements_text=request.requirements_text, context=request.context),
                 timeout=timeout,
             )
         except asyncio.TimeoutError:
@@ -151,7 +155,8 @@ async def analyze_requirements(
         raise
     except Exception as e:
         logger.error(f"Error analyzing requirements: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="An error occurred while analyzing requirements")
+        raise HTTPException(
+            status_code=500, detail="An error occurred while analyzing requirements")
 
 
 @router.post("/architect/generate-diagram", summary="Generate architectural diagram")

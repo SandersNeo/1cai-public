@@ -7,12 +7,8 @@ Sensitive Data Scanner Service
 import re
 from typing import List
 
-from src.modules.security.domain.models import (
-    Secret,
-    SecretDetectionResult,
-    SecretType,
-)
 from src.modules.security.domain.exceptions import SecretDetectionError
+from src.modules.security.domain.models import Secret, SecretDetectionResult, SecretType
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -37,9 +33,7 @@ class SensitiveDataScanner:
                                 (опционально, для dependency injection)
         """
         if patterns_repository is None:
-            from src.modules.security.repositories import (
-                SecurityPatternsRepository
-            )
+            from src.modules.security.repositories import SecurityPatternsRepository
             patterns_repository = SecurityPatternsRepository()
 
         self.patterns_repository = patterns_repository
@@ -83,7 +77,7 @@ class SensitiveDataScanner:
             )
 
         except Exception as e:
-            logger.error(f"Failed to scan sensitive data: {e}")
+            logger.error("Failed to scan sensitive data: %s", e)
             raise SecretDetectionError(
                 f"Failed to scan sensitive data: {e}",
                 details={}

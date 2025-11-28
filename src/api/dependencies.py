@@ -5,6 +5,7 @@ from fastapi import Depends, HTTPException
 from src.db.neo4j_client import Neo4jClient
 from src.db.postgres_saver import PostgreSQLSaver
 from src.db.qdrant_client import QdrantClient
+
 # Moved to avoid circular import - imported inside functions that need them:
 # from src.exporters.archi_exporter import ArchiExporter
 # from src.exporters.archi_importer import ArchiImporter
@@ -109,7 +110,7 @@ def get_graph_service(
     """Get or create GraphService instance"""
     # Lazy import to avoid circular dependency
     from src.modules.graph_api.services.graph_service import GraphService
-    
+
     global _graph_service
 
     if _graph_service is None:
@@ -133,7 +134,7 @@ def get_archi_importer(
     """Get ArchiImporter instance"""
     # Lazy import to avoid circular dependency
     from src.exporters.archi_importer import ArchiImporter
-    
+
     return ArchiImporter(graph_service)
 
 

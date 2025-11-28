@@ -76,7 +76,7 @@ class HTTP3Client:
             )
 
         except Exception as e:
-            logger.warning(f"Failed to create HTTP client: {e}")
+            logger.warning("Failed to create HTTP client: %s", e)
             # Fallback на стандартный клиент
             self._client = httpx.AsyncClient()
 

@@ -1,24 +1,24 @@
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from datetime import datetime
+from typing import List
 
 import asyncpg
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 
 from src.database import get_db_pool
 from src.infrastructure.logging.structured_logging import StructuredLogger
-from src.modules.analytics.application.service import AnalyticsService
 from src.modules.analytics.api.schemas import (
-    OwnerDashboardResponse,
-    ExecutiveDashboardResponse,
-    PMDashboardResponse,
-    DeveloperDashboardResponse,
-    RevenueData,
     CustomersData,
+    DeveloperDashboardResponse,
+    ExecutiveDashboardResponse,
     MetricData,
-    SprintProgress,
+    OwnerDashboardResponse,
+    PMDashboardResponse,
     ReportRequest,
     ReportResponse,
+    RevenueData,
+    SprintProgress,
 )
+from src.modules.analytics.application.service import AnalyticsService
 
 logger = StructuredLogger(__name__).logger
 
@@ -61,7 +61,8 @@ async def get_report(report_id: str):
 async def get_owner_dashboard():
     """Get owner dashboard data (Mock for now)."""
     return OwnerDashboardResponse(
-        revenue=RevenueData(this_month=150000.0, last_month=120000.0, change_percent=25.0, trend="up"),
+        revenue=RevenueData(this_month=150000.0, last_month=120000.0,
+                            change_percent=25.0, trend="up"),
         customers=CustomersData(total=1250, new_this_month=45),
         growth_percent=12.0,
         system_status="healthy",
@@ -126,6 +127,7 @@ async def get_developer_dashboard():
         name="Developer Dashboard",
         assigned_tasks=[],
         code_reviews=[],
-        build_status={"status": "success", "last_build": datetime.now().isoformat(), "duration": "2m 30s"},
+        build_status={"status": "success",
+            "last_build": datetime.now().isoformat(), "duration": "2m 30s"},
         code_quality={"coverage": 85.0, "bugs": 0},
     )

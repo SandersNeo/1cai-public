@@ -4,9 +4,9 @@ Nested Scenario Hub
 Self-modifying automation hub with Nested Learning.
 """
 
-from typing import Any, Dict, List, Optional, Callable
-import time
 import asyncio
+import time
+from typing import Any, Callable, Dict, Optional
 
 from src.ml.continual_learning.scenario_memory import ScenarioMemory
 from src.utils.structured_logging import StructuredLogger
@@ -83,7 +83,7 @@ class NestedScenarioHub:
             "registered_at": time.time(),
         }
 
-        logger.info(f"Registered scenario: {scenario_id}")
+        logger.info("Registered scenario: %s", scenario_id)
 
     async def execute_scenario(
         self,
@@ -122,7 +122,8 @@ class NestedScenarioHub:
 
         # Auto-optimize if enabled
         if auto_optimize:
-            optimization = self.memory.suggest_modifications(scenario_id, final_parameters)
+            optimization = self.memory.suggest_modifications(
+                scenario_id, final_parameters)
 
             if optimization["action"] in ["replace", "modify"]:
                 logger.info(
@@ -148,7 +149,8 @@ class NestedScenarioHub:
             error = None
 
         except Exception as e:
-            logger.error(f"Scenario execution failed: {e}", exc_info=True, extra={"scenario_id": scenario_id})
+            logger.error(f"Scenario execution failed: {e}", exc_info=True, extra={
+                         "scenario_id": scenario_id})
             result = None
             success = False
             error = str(e)
@@ -200,7 +202,8 @@ class NestedScenarioHub:
         """
         analysis = self.memory.analyze_success_patterns(scenario_id)
         suggestions = self.memory.suggest_modifications(
-            scenario_id, self.scenarios.get(scenario_id, {}).get("default_parameters", {})
+            scenario_id, self.scenarios.get(
+                scenario_id, {}).get("default_parameters", {})
         )
 
         return {**analysis, "suggestions": suggestions}

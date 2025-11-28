@@ -10,14 +10,14 @@ from typing import Any, Dict, List, Optional
 
 import yaml
 
+from src.modules.devops.domain.exceptions import PipelineOptimizationError
 from src.modules.devops.domain.models import (
+    OptimizationEffort,
     PipelineConfig,
     PipelineMetrics,
     PipelineOptimization,
     PipelineStage,
-    OptimizationEffort,
 )
-from src.modules.devops.domain.exceptions import PipelineOptimizationError
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -238,7 +238,7 @@ class PipelineOptimizer:
             )
 
         except Exception as e:
-            logger.error(f"Failed to generate optimized pipeline: {e}")
+            logger.error("Failed to generate optimized pipeline: %s", e)
             raise PipelineOptimizationError(
                 f"Failed to generate optimized pipeline: {e}",
                 details={"original_config": original_config.name}

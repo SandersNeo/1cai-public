@@ -220,7 +220,7 @@ class AdvancedDistributedAgentNetwork(DistributedAgentNetwork):
         if votes >= required:
             state.state = NodeState.LEADER
             state.leader_id = candidate_id
-            logger.info(f"Leader elected: {candidate_id}")
+            logger.info("Leader elected: %s", candidate_id)
             return candidate_id
 
         # Не избран, поиск существующего лидера

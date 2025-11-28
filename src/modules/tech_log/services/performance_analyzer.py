@@ -6,15 +6,13 @@ Performance Analyzer Service
 
 from typing import Dict, List
 
+from src.modules.tech_log.domain.exceptions import PerformanceAnalysisError
 from src.modules.tech_log.domain.models import (
-    TechLogEvent,
-    PerformanceIssue,
-    PerformanceAnalysisResult,
     IssueType,
+    PerformanceAnalysisResult,
+    PerformanceIssue,
     Severity,
-)
-from src.modules.tech_log.domain.exceptions import (
-    PerformanceAnalysisError
+    TechLogEvent,
 )
 from src.utils.structured_logging import StructuredLogger
 
@@ -39,7 +37,6 @@ class PerformanceAnalyzer:
 
     def __init__(self):
         """Initialize analyzer"""
-        pass
 
     async def analyze_performance(
         self,
@@ -95,7 +92,7 @@ class PerformanceAnalyzer:
             )
 
         except Exception as e:
-            logger.error(f"Failed to analyze performance: {e}")
+            logger.error("Failed to analyze performance: %s", e)
             raise PerformanceAnalysisError(
                 f"Failed to analyze performance: {e}",
                 details={}

@@ -3,7 +3,7 @@ PM Dashboard Service
 Business logic for project management metrics
 """
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Any, Dict
 
 import asyncpg
 

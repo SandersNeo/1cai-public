@@ -99,7 +99,7 @@ class AdvancedAnalytics:
 
         self._metrics_data[component].append(metric_entry)
 
-        logger.debug(f"Metric collected: {component}.{metric_type.value} = {value}")
+        logger.debug("Metric collected: %s.{metric_type.value} = {value}", component)
 
     def analyze_performance(
         self, component: str, period_days: int = 7

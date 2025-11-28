@@ -6,14 +6,12 @@ Anti-Pattern Detector Service
 
 from typing import List
 
+from src.modules.architect.domain.exceptions import AntiPatternDetectionError
 from src.modules.architect.domain.models import (
     AntiPattern,
     AntiPatternType,
-    Severity,
     Effort,
-)
-from src.modules.architect.domain.exceptions import (
-    AntiPatternDetectionError,
+    Severity,
 )
 from src.utils.structured_logging import StructuredLogger
 
@@ -40,7 +38,7 @@ class AntiPatternDetector:
         """
         if patterns_repository is None:
             from src.modules.architect.repositories import (
-                ArchitecturePatternsRepository
+                ArchitecturePatternsRepository,
             )
             patterns_repository = ArchitecturePatternsRepository()
 
@@ -95,7 +93,7 @@ class AntiPatternDetector:
             return anti_patterns
 
         except Exception as e:
-            logger.error(f"Failed to detect anti-patterns: {e}")
+            logger.error("Failed to detect anti-patterns: %s", e)
             raise AntiPatternDetectionError(
                 f"Failed to detect anti-patterns: {e}",
                 details={"config_name": config_name}

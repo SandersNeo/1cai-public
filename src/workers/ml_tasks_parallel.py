@@ -140,7 +140,8 @@ def retrain_single_model(self, model_type: str) -> Dict[str, Any]:
         training_data = _get_training_data(model_type)
 
         if training_data is None or len(training_data) == 0:
-            task_logger.warning("No training data for model", extra={"model_type": model_type})
+            task_logger.warning("No training data for model",
+                                extra={"model_type": model_type})
             return {
                 "model_type": model_type,
                 "status": "skipped",
@@ -233,14 +234,17 @@ def retrain_all_models_parallel(self) -> Dict[str, Any]:
         "recommendation",
     ]
 
-    task_logger.info("Training models in parallel", extra={"models_count": len(model_types)})
+    task_logger.info("Training models in parallel", extra={
+                     "models_count": len(model_types)})
 
     # Создаем группу параллельных задач
-    training_group = group(retrain_single_model.s(model_type) for model_type in model_types)
+    training_group = group(retrain_single_model.s(model_type)
+                           for model_type in model_types)
 
     # Цепочка: train all → evaluate → cleanup
     # chord = execute group, then callback
-    pipeline = chord(training_group)(evaluate_all_models.s() | cleanup_old_experiments.s())
+    pipeline = chord(training_group)(
+        evaluate_all_models.s() | cleanup_old_experiments.s())
 
     try:
         # Ждем завершения всего pipeline
@@ -304,7 +308,8 @@ def evaluate_all_models(training_results: List[Dict]) -> Dict[str, Any]:
     )
 
     if failed:
-        task_logger.warning("Failed models", extra={"failed_models": [r["model_type"] for r in failed]})
+        task_logger.warning("Failed models", extra={
+                            "failed_models": [r["model_type"] for r in failed]})
 
     # Оценка каждой модели
     evaluations = {}
@@ -427,7 +432,8 @@ def check_model_drift() -> Dict[str, Any]:
             )
 
     if drift_detected:
-        task_logger.warning("Total models with drift", extra={"drift_count": len(drift_detected)})
+        task_logger.warning("Total models with drift", extra={
+                            "drift_count": len(drift_detected)})
 
         # Send email alert
         try:
@@ -442,14 +448,17 @@ def check_model_drift() -> Dict[str, Any]:
             if alert_emails:
                 success = email_service.send_drift_alert(drift_detected, alert_emails)
                 if success:
-                    task_logger.info(f"Drift alert sent successfully", extra={"recipients": len(alert_emails)})
+                    task_logger.info(f"Drift alert sent successfully",
+                                     extra={"recipients": len(alert_emails)})
                 else:
                     task_logger.warning("Failed to send drift alert email")
             else:
-                task_logger.warning("No alert emails configured. Set ALERT_EMAILS environment variable.")
+                task_logger.warning(
+                    "No alert emails configured. Set ALERT_EMAILS environment variable.")
 
         except Exception as e:
-            task_logger.error(f"Error sending drift alert: {e}", extra={"error_type": type(e).__name__}, exc_info=True)
+            task_logger.error(f"Error sending drift alert: {e}", extra={
+                              "error_type": type(e).__name__}, exc_info=True)
     else:
         task_logger.info("✅ No drift detected in any model")
 
@@ -475,10 +484,12 @@ def _get_training_data(model_type: str) -> Optional[pd.DataFrame]:
     Returns:
         DataFrame с features и target или None если данных нет
     """
-    task_logger.info("Loading training data from database", extra={"model_type": model_type})
+    task_logger.info("Loading training data from database",
+                     extra={"model_type": model_type})
 
     try:
         import psycopg2
+
         from config import settings
 
         # Подключение к PostgreSQL
@@ -515,7 +526,7 @@ def _get_training_data(model_type: str) -> Optional[pd.DataFrame]:
 
         config = table_mapping.get(model_type)
         if not config:
-            task_logger.warning(f"Unknown model type: {model_type}")
+            task_logger.warning("Unknown model type: %s", model_type)
             return None
 
         # Формируем SQL запрос
@@ -530,13 +541,14 @@ def _get_training_data(model_type: str) -> Optional[pd.DataFrame]:
         conn.close()
 
         if len(df) == 0:
-            task_logger.warning(f"No training data found for {model_type}")
+            task_logger.warning("No training data found for %s", model_type)
             # Fallback на mock данные для тестирования
             return _get_mock_training_data(model_type)
 
         task_logger.info(
             f"Loaded training data",
-            extra={"model_type": model_type, "rows": len(df), "features": len(config["features"])},
+            extra={"model_type": model_type, "rows": len(
+                df), "features": len(config["features"])},
         )
 
         return df
@@ -553,7 +565,7 @@ def _get_training_data(model_type: str) -> Optional[pd.DataFrame]:
 
 def _get_mock_training_data(model_type: str) -> pd.DataFrame:
     """Генерация mock данных для тестирования"""
-    task_logger.info(f"Generating mock training data for {model_type}")
+    task_logger.info("Generating mock training data for %s", model_type)
 
     if model_type == "classification":
         return pd.DataFrame(
@@ -615,29 +627,29 @@ def _evaluate_model(model_type: str) -> Dict[str, Any]:
     Returns:
         Dict с метриками оценки
     """
-    task_logger.info(f"Evaluating model: {model_type}")
+    task_logger.info("Evaluating model: %s", model_type)
 
     try:
         from sklearn.metrics import (
             accuracy_score,
-            precision_score,
-            recall_score,
             f1_score,
             mean_squared_error,
+            precision_score,
             r2_score,
+            recall_score,
             silhouette_score,
         )
 
         # Загружаем test данные
         test_data = _get_test_data(model_type)
         if test_data is None or len(test_data) == 0:
-            task_logger.warning(f"No test data for {model_type}")
+            task_logger.warning("No test data for %s", model_type)
             return {"score": 0.0, "model_type": model_type, "error": "no_test_data"}
 
         # Загружаем модель из MLflow
         model = _load_model_from_mlflow(model_type)
         if model is None:
-            task_logger.warning(f"No trained model found for {model_type}")
+            task_logger.warning("No trained model found for %s", model_type)
             return {"score": 0.0, "model_type": model_type, "error": "no_model"}
 
         # Получаем features и target
@@ -717,6 +729,7 @@ def _get_test_data(model_type: str) -> Optional[pd.DataFrame]:
     """Загрузка test данных (20% от общего датасета)"""
     try:
         import psycopg2
+
         from config import settings
 
         conn = psycopg2.connect(settings.DATABASE_URL)
@@ -749,7 +762,7 @@ def _get_test_data(model_type: str) -> Optional[pd.DataFrame]:
         return df if len(df) > 0 else None
 
     except Exception as e:
-        task_logger.error(f"Failed to load test data: {e}")
+        task_logger.error("Failed to load test data: %s", e)
         return None
 
 
@@ -757,6 +770,7 @@ def _load_model_from_mlflow(model_type: str):
     """Загрузка модели из MLflow"""
     try:
         import mlflow
+
         from config import settings
 
         mlflow.set_tracking_uri(settings.MLFLOW_TRACKING_URI)
@@ -773,7 +787,7 @@ def _load_model_from_mlflow(model_type: str):
             return model
 
     except Exception as e:
-        task_logger.error(f"Failed to load model from MLflow: {e}")
+        task_logger.error("Failed to load model from MLflow: %s", e)
         return None
 
 
@@ -788,7 +802,8 @@ def _update_features() -> int:
 
     try:
         from qdrant_client import QdrantClient
-        from qdrant_client.models import Distance, VectorParams, PointStruct
+        from qdrant_client.models import Distance, PointStruct, VectorParams
+
         from config import settings
 
         # Подключение к Qdrant
@@ -801,9 +816,10 @@ def _update_features() -> int:
             client.get_collection(collection_name)
         except:
             client.create_collection(
-                collection_name=collection_name, vectors_config=VectorParams(size=384, distance=Distance.COSINE)
+                collection_name=collection_name, vectors_config=VectorParams(
+                    size=384, distance=Distance.COSINE)
             )
-            task_logger.info(f"Created collection: {collection_name}")
+            task_logger.info("Created collection: %s", collection_name)
 
         # Загружаем новые features из PostgreSQL
         import psycopg2
@@ -812,7 +828,7 @@ def _update_features() -> int:
 
         # Извлекаем агрегированные features за последний час
         query = """
-            SELECT 
+            SELECT
                 entity_id,
                 feature_name,
                 feature_value,
@@ -860,12 +876,14 @@ def _update_features() -> int:
 
         updated_count = len(points)
 
-        task_logger.info(f"Feature store updated", extra={"updated_features": updated_count})
+        task_logger.info(f"Feature store updated", extra={
+                         "updated_features": updated_count})
 
         return updated_count
 
     except Exception as e:
-        task_logger.error(f"Feature store update failed: {e}", extra={"error_type": type(e).__name__}, exc_info=True)
+        task_logger.error(f"Feature store update failed: {e}", extra={
+                          "error_type": type(e).__name__}, exc_info=True)
         return 0
 
 
@@ -883,7 +901,7 @@ def _calculate_drift(model_type: str) -> float:
     Returns:
         Drift score (0.0 - 1.0), где >0.15 считается значительным drift
     """
-    task_logger.info(f"Calculating drift for {model_type}")
+    task_logger.info("Calculating drift for %s", model_type)
 
     try:
         from scipy.stats import ks_2samp
@@ -891,13 +909,13 @@ def _calculate_drift(model_type: str) -> float:
         # Загружаем reference data (данные на которых обучалась модель)
         reference_data = _get_reference_data(model_type)
         if reference_data is None or len(reference_data) == 0:
-            task_logger.warning(f"No reference data for {model_type}")
+            task_logger.warning("No reference data for %s", model_type)
             return 0.0
 
         # Загружаем current data (текущие данные)
         current_data = _get_current_data(model_type)
         if current_data is None or len(current_data) == 0:
-            task_logger.warning(f"No current data for {model_type}")
+            task_logger.warning("No current data for %s", model_type)
             return 0.0
 
         features = _get_features(model_type)
@@ -923,11 +941,12 @@ def _calculate_drift(model_type: str) -> float:
 
             task_logger.debug(
                 f"Feature drift: {feature}",
-                extra={"feature": feature, "ks_statistic": float(statistic), "p_value": float(p_value)},
+                extra={"feature": feature, "ks_statistic": float(
+                    statistic), "p_value": float(p_value)},
             )
 
         if len(drift_scores) == 0:
-            task_logger.warning(f"No drift scores calculated for {model_type}")
+            task_logger.warning("No drift scores calculated for %s", model_type)
             return 0.0
 
         # Средний drift score по всем features
@@ -963,6 +982,7 @@ def _get_reference_data(model_type: str) -> Optional[pd.DataFrame]:
     """Загрузка reference данных (данные на которых обучалась модель)"""
     try:
         import psycopg2
+
         from config import settings
 
         conn = psycopg2.connect(settings.DATABASE_URL)
@@ -991,7 +1011,7 @@ def _get_reference_data(model_type: str) -> Optional[pd.DataFrame]:
         return df if len(df) > 0 else None
 
     except Exception as e:
-        task_logger.error(f"Failed to load reference data: {e}")
+        task_logger.error("Failed to load reference data: %s", e)
         return None
 
 
@@ -999,6 +1019,7 @@ def _get_current_data(model_type: str) -> Optional[pd.DataFrame]:
     """Загрузка текущих данных (последние 7 дней)"""
     try:
         import psycopg2
+
         from config import settings
 
         conn = psycopg2.connect(settings.DATABASE_URL)
@@ -1027,7 +1048,7 @@ def _get_current_data(model_type: str) -> Optional[pd.DataFrame]:
         return df if len(df) > 0 else None
 
     except Exception as e:
-        task_logger.error(f"Failed to load current data: {e}")
+        task_logger.error("Failed to load current data: %s", e)
         return None
 
 
@@ -1050,7 +1071,8 @@ def retrain_specific_models(model_types: List[str]) -> Dict[str, Any]:
     task_logger.info("Retraining specific models", extra={"model_types": model_types})
 
     # Параллельное обучение выбранных моделей
-    training_group = group(retrain_single_model.s(model_type) for model_type in model_types)
+    training_group = group(retrain_single_model.s(model_type)
+                           for model_type in model_types)
 
     pipeline = chord(training_group)(evaluate_all_models.s())
 

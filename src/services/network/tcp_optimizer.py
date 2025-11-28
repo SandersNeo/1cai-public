@@ -185,7 +185,7 @@ class TCPOptimizer:
             try:
                 subprocess.run(["sysctl", "-w", f"{param}={value}"], check=True)
             except Exception as e:
-                logger.warning(f"Failed to restore {param}: {e}")
+                logger.warning("Failed to restore %s: {e}", param)
 
     def get_current_config(self) -> Dict[str, str]:
         """Получить текущую конфигурацию TCP"""

@@ -133,12 +133,12 @@ class OCRService:
                 return
 
             except ImportError as e:
-                logger.error(f"DeepSeek-OCR dependencies not installed: {e}")
+                logger.error("DeepSeek-OCR dependencies not installed: %s", e)
                 self.deepseek_available = False
                 raise
             except Exception as e:
                 if attempt == max_retries - 1:
-                    logger.error(f"Failed to initialize DeepSeek-OCR: {e}")
+                    logger.error("Failed to initialize DeepSeek-OCR: %s", e)
                     self.deepseek_available = False
                     raise
 
@@ -164,7 +164,7 @@ class OCRService:
             self.tesseract_available = True
             logger.info("Tesseract OCR initialized (fallback)")
         except Exception as e:
-            logger.warning(f"Tesseract not available: {e}")
+            logger.warning("Tesseract not available: %s", e)
             self.tesseract_available = False
 
     def _init_fallback_providers(self):
@@ -213,7 +213,7 @@ class OCRService:
                     raise ValueError(f"Unknown provider: {self.provider}")
 
             except Exception as e:
-                logger.warning(f"Primary provider failed: {e}")
+                logger.warning("Primary provider failed: %s", e)
                 errors.append(f"{self.provider}: {e}")
 
                 if self.enable_fallback:
@@ -297,13 +297,13 @@ class OCRService:
 
         for name, ocr_method in fallback_attempts:
             try:
-                logger.info(f"Trying fallback: {name}")
+                logger.info("Trying fallback: %s", name)
                 result = await ocr_method(image_path, **kwargs)
                 result["metadata"]["fallback_from"] = self.provider.value
                 result["metadata"]["used_provider"] = name.lower()
                 return result
             except Exception as e:
-                logger.warning(f"Fallback {name} failed: {e}")
+                logger.warning("Fallback %s failed: {e}", name)
                 continue
         return None
 
@@ -399,7 +399,7 @@ class OCRService:
             return {"raw_response": response_text}
 
         except Exception as e:
-            logger.error(f"AI parsing error: {e}")
+            logger.error("AI parsing error: %s", e)
             return {}
 
     def __del__(self):
@@ -428,10 +428,10 @@ def get_ocr_service(
 async def quick_ocr(image_path: str) -> str:
     """
     Быстрое OCR - только текст без парсинга
-    
+
     Args:
         image_path: Путь к изображению
-    
+
     Returns:
         Распознанный текст
     """
@@ -446,15 +446,14 @@ async def ocr_with_structure(
 ) -> Dict[str, Any]:
     """
     OCR с извлечением структуры
-    
+
     Args:
         image_path: Путь к изображению
         document_type: Тип документа
-    
+
     Returns:
         Dict с текстом и структурированными данными
     """
     service = get_ocr_service(enable_ai_parsing=True)
     result = await service.process_image(image_path, document_type=document_type)
     return result.to_dict()
-

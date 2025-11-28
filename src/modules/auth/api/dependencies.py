@@ -10,10 +10,10 @@ from typing import Optional
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 
+from src.modules.auth.application.roles import enrich_user_from_db
+from src.modules.auth.application.service import AuthService
 from src.modules.auth.domain.models import CurrentUser
 from src.modules.auth.infrastructure.config import AuthSettings
-from src.modules.auth.application.service import AuthService
-from src.modules.auth.application.roles import enrich_user_from_db
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token", auto_error=False)
 

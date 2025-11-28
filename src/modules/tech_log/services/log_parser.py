@@ -4,20 +4,15 @@ Log Parser Service
 Сервис для парсинга технологического журнала 1С.
 """
 
-import re
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Tuple
 
+from src.modules.tech_log.domain.exceptions import LogFileNotFoundError, LogParsingError
 from src.modules.tech_log.domain.models import (
-    TechLogEvent,
     LogAnalysisResult,
     Severity,
-    EventType,
-)
-from src.modules.tech_log.domain.exceptions import (
-    LogParsingError,
-    LogFileNotFoundError,
+    TechLogEvent,
 )
 from src.utils.structured_logging import StructuredLogger
 
@@ -41,7 +36,6 @@ class LogParser:
 
     def __init__(self):
         """Initialize parser"""
-        pass
 
     async def parse_tech_log(
         self,
@@ -100,7 +94,7 @@ class LogParser:
             )
 
         except Exception as e:
-            logger.error(f"Failed to parse tech log: {e}")
+            logger.error("Failed to parse tech log: %s", e)
             raise LogParsingError(
                 f"Failed to parse tech log: {e}",
                 details={"log_path": log_path}
@@ -143,11 +137,11 @@ class LogParser:
                     if event:
                         events.append(event)
                 except Exception as e:
-                    logger.debug(f"Failed to parse line: {e}")
+                    logger.debug("Failed to parse line: %s", e)
                     continue
 
         except Exception as e:
-            logger.error(f"Failed to read log file {log_file}: {e}")
+            logger.error("Failed to read log file %s: {e}", log_file)
 
         return events
 
@@ -190,7 +184,7 @@ class LogParser:
             )
 
         except Exception as e:
-            logger.debug(f"Failed to parse event: {e}")
+            logger.debug("Failed to parse event: %s", e)
             return None
 
     def _determine_severity(

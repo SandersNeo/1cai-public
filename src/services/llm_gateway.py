@@ -72,7 +72,7 @@ class LLMGateway:
             try:
                 self.cache = IntelligentCache(max_size=1000, default_ttl_seconds=300)
             except Exception as e:
-                logger.warning(f"Failed to initialize cache: {e}")
+                logger.warning("Failed to initialize cache: %s", e)
 
         self.health_monitor: Optional[LLMHealthMonitor] = None
         if enable_health_monitoring and self.manager:
@@ -86,7 +86,7 @@ class LLMGateway:
                 )
                 asyncio.create_task(self.health_monitor.start_monitoring())
             except Exception as e:
-                logger.warning(f"Failed to initialize health monitor: {e}")
+                logger.warning("Failed to initialize health monitor: %s", e)
 
         self.circuit_breakers: Dict[str, CircuitBreaker] = {}
         if enable_circuit_breaker:
@@ -140,7 +140,7 @@ class LLMGateway:
 
                 return OllamaClient()
         except Exception as e:
-            logger.debug(f"Failed to create default client for {provider_name}: {e}")
+            logger.debug("Failed to create default client for %s: {e}", provider_name)
         return None
 
     async def generate(
@@ -171,7 +171,7 @@ class LLMGateway:
                     ).inc()
                     return cached
             except Exception as e:
-                logger.debug(f"Cache get error: {e}")
+                logger.debug("Cache get error: %s", e)
 
         provider_chain = self._build_provider_chain(role)
 
@@ -249,13 +249,13 @@ class LLMGateway:
                     try:
                         await asyncio.to_thread(self.cache.set, cache_key, response)
                     except Exception as e:
-                        logger.debug(f"Cache set error: {e}")
+                        logger.debug("Cache set error: %s", e)
 
                 return response
 
             except Exception as e:
                 last_error = e
-                logger.warning(f"Provider {provider.name} failed: {e}")
+                logger.warning("Provider {provider.name} failed: %s", e)
                 llm_gateway_requests_total.labels(
                     provider=provider.name, role=role or "unknown", status="error"
                 ).inc()
@@ -269,7 +269,7 @@ class LLMGateway:
                     ).inc()
                 continue
 
-        logger.error(f"All providers failed, last error: {last_error}")
+        logger.error("All providers failed, last error: %s", last_error)
         return await self._offline_fallback(prompt, role, last_error)
 
     async def _call_provider_with_timeout(self, *args, timeout: float = 30.0, **kwargs):
@@ -357,7 +357,7 @@ class LLMGateway:
                     metadata={"role": role, "offline": True, "fallback": True},
                 )
             except Exception as e:
-                logger.debug(f"Ollama offline fallback also failed: {e}")
+                logger.debug("Ollama offline fallback also failed: %s", e)
 
         return LLMGatewayResponse(
             provider="offline",

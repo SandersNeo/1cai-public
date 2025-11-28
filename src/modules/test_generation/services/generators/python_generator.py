@@ -84,7 +84,8 @@ class PythonTestGenerator:
         """Generate pytest test code"""
 
         if test_type == "happy":
-            param_values = ", ".join([f"'{p}_value'" if i % 2 == 0 else str(i) for i, p in enumerate(params)])
+            param_values = ", ".join(
+                [f"'{p}_value'" if i % 2 == 0 else str(i) for i, p in enumerate(params)])
             return f"""
 def test_{function_name}_happy_path():
     # Arrange

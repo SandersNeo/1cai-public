@@ -5,8 +5,9 @@ Detects poetic structure in user input to prevent adversarial poetry jailbreaks.
 """
 
 import re
-from typing import Dict, List
 from dataclasses import dataclass
+from typing import Dict, List
+
 from loguru import logger
 
 
@@ -61,7 +62,8 @@ class PoeticFormDetector:
         metaphor_score = self._detect_metaphors(text)
 
         # Combine scores (weighted)
-        poetic_score = rhyme_score * 0.3 + meter_score * 0.2 + verse_score * 0.3 + metaphor_score * 0.2
+        poetic_score = rhyme_score * 0.3 + meter_score * \
+            0.2 + verse_score * 0.3 + metaphor_score * 0.2
 
         # Detect patterns
         patterns = []
@@ -77,7 +79,8 @@ class PoeticFormDetector:
         is_poetic = poetic_score > self.threshold
 
         if is_poetic:
-            logger.warning(f"Poetic form detected (confidence: {poetic_score:.2f})", extra={"patterns": patterns})
+            logger.warning(f"Poetic form detected (confidence: {poetic_score:.2f})", extra={
+                           "patterns": patterns})
 
         return PoeticAnalysis(
             is_poetic=is_poetic,
@@ -156,7 +159,8 @@ class PoeticFormDetector:
 
         # Check for consistency
         avg_syllables = sum(syllable_counts) / len(syllable_counts)
-        variance = sum((s - avg_syllables) ** 2 for s in syllable_counts) / len(syllable_counts)
+        variance = sum((s - avg_syllables) **
+                       2 for s in syllable_counts) / len(syllable_counts)
 
         # Low variance = consistent meter
         consistency = 1.0 / (1.0 + variance)
@@ -183,7 +187,8 @@ class PoeticFormDetector:
         # Verse indicators
         has_stanzas = empty_lines > 0
         has_multiple_lines = content_lines >= 4
-        has_short_lines = sum(1 for line in lines if line.strip() and len(line.strip()) < 60) > content_lines * 0.7
+        has_short_lines = sum(1 for line in lines if line.strip()
+                              and len(line.strip()) < 60) > content_lines * 0.7
 
         score = 0.0
         if has_stanzas:

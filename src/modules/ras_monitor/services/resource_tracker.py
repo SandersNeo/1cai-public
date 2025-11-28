@@ -6,13 +6,11 @@ Resource Tracker Service
 
 from typing import List
 
+from src.modules.ras_monitor.domain.exceptions import ResourceMonitoringError
 from src.modules.ras_monitor.domain.models import (
-    ResourceUsage,
-    ResourceType,
     ClusterMetrics,
-)
-from src.modules.ras_monitor.domain.exceptions import (
-    ResourceMonitoringError
+    ResourceType,
+    ResourceUsage,
 )
 from src.utils.structured_logging import StructuredLogger
 
@@ -36,9 +34,7 @@ class ResourceTracker:
             monitoring_repository: Repository для thresholds
         """
         if monitoring_repository is None:
-            from src.modules.ras_monitor.repositories import (
-                MonitoringRepository
-            )
+            from src.modules.ras_monitor.repositories import MonitoringRepository
             monitoring_repository = MonitoringRepository()
 
         self.monitoring_repository = monitoring_repository
@@ -121,7 +117,7 @@ class ResourceTracker:
             return resources
 
         except Exception as e:
-            logger.error(f"Failed to track resources: {e}")
+            logger.error("Failed to track resources: %s", e)
             raise ResourceMonitoringError(
                 f"Failed to track resources: {e}",
                 details={}

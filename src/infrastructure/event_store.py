@@ -225,7 +225,8 @@ class PostgreSQLEventStore(EventStore):
             cursor = self.conn.cursor()
 
             # Получаем текущую версию потока
-            cursor.execute("SELECT COALESCE(MAX(version), 0) FROM events WHERE stream_id = %s", (stream_id,))
+            cursor.execute(
+                "SELECT COALESCE(MAX(version), 0) FROM events WHERE stream_id = %s", (stream_id,))
             current_version = cursor.fetchone()[0]
             next_version = current_version + 1
 
@@ -278,6 +279,7 @@ class PostgreSQLEventStore(EventStore):
         """
         try:
             import json
+
             from psycopg2.extras import RealDictCursor
 
             cursor = self.conn.cursor(cursor_factory=RealDictCursor)
@@ -315,7 +317,8 @@ class PostgreSQLEventStore(EventStore):
                 event = Event(
                     id=row["event_id"],
                     type=EventType(row["event_type"]),
-                    payload=json.loads(row["payload"]) if isinstance(row["payload"], str) else row["payload"],
+                    payload=json.loads(row["payload"]) if isinstance(
+                        row["payload"], str) else row["payload"],
                     metadata=json.loads(row["metadata"])
                     if row["metadata"] and isinstance(row["metadata"], str)
                     else row["metadata"],
@@ -326,7 +329,8 @@ class PostgreSQLEventStore(EventStore):
 
             logger.debug(
                 f"Retrieved stream from PostgreSQL",
-                extra={"stream_id": stream_id, "events_count": len(events), "version": max_version},
+                extra={"stream_id": stream_id, "events_count": len(
+                    events), "version": max_version},
             )
 
             return EventStream(stream_id, events, max_version)
@@ -356,6 +360,7 @@ class PostgreSQLEventStore(EventStore):
         """
         try:
             import json
+
             from psycopg2.extras import RealDictCursor
 
             cursor = self.conn.cursor(cursor_factory=RealDictCursor)
@@ -397,7 +402,8 @@ class PostgreSQLEventStore(EventStore):
                 event = Event(
                     id=row["event_id"],
                     type=EventType(row["event_type"]),
-                    payload=json.loads(row["payload"]) if isinstance(row["payload"], str) else row["payload"],
+                    payload=json.loads(row["payload"]) if isinstance(
+                        row["payload"], str) else row["payload"],
                     metadata=json.loads(row["metadata"])
                     if row["metadata"] and isinstance(row["metadata"], str)
                     else row["metadata"],
@@ -407,7 +413,8 @@ class PostgreSQLEventStore(EventStore):
 
             logger.debug(
                 f"Retrieved events from PostgreSQL",
-                extra={"count": len(events), "event_type": event_type.value if event_type else None},
+                extra={"count": len(
+                    events), "event_type": event_type.value if event_type else None},
             )
 
             return events

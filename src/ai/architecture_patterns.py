@@ -8,8 +8,8 @@ Comprehensive collection of architecture patterns for 1C systems:
 - Pattern matching and suggestions
 """
 
-from typing import Dict, List, Optional, Any
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class PatternCategory(Enum):
@@ -25,7 +25,7 @@ class PatternCategory(Enum):
 
 class ArchitecturePattern:
     """Architecture pattern definition"""
-    
+
     def __init__(
         self,
         name: str,
@@ -56,7 +56,7 @@ ARCHITECTURE_PATTERNS = {
         name="Hexagonal Architecture (Ports & Adapters)",
         category=PatternCategory.ARCHITECTURE,
         description="""
-        Архитектура, изолирующая бизнес-логику от внешних зависимостей 
+        Архитектура, изолирующая бизнес-логику от внешних зависимостей
         через порты (интерфейсы) и адаптеры (реализации).
         """,
         use_cases=[
@@ -81,7 +81,7 @@ ARCHITECTURE_PATTERNS = {
         - Общие модули как порты (интерфейсы)
         - Модули объектов как адаптеры
         - Разделение на слои: Domain, Application, Infrastructure
-        
+
         Пример структуры:
         - ОбщиеМодули/ДоменСлой_* (бизнес-логика)
         - ОбщиеМодули/ПриложениеСлой_* (use cases)
@@ -94,12 +94,12 @@ ARCHITECTURE_PATTERNS = {
         ],
         related_patterns=["clean_architecture", "ddd", "onion_architecture"]
     ),
-    
+
     "clean_architecture": ArchitecturePattern(
         name="Clean Architecture",
         category=PatternCategory.ARCHITECTURE,
         description="""
-        Архитектура с концентрическими слоями, где зависимости 
+        Архитектура с концентрическими слоями, где зависимости
         направлены внутрь к бизнес-логике.
         """,
         use_cases=[
@@ -125,7 +125,7 @@ ARCHITECTURE_PATTERNS = {
         2. Use Cases (Сценарии) - общие модули с бизнес-логикой
         3. Interface Adapters - модули форм, HTTP сервисы
         4. Frameworks & Drivers - платформа 1С
-        
+
         Правило зависимостей: внешние слои зависят от внутренних
         """,
         examples=[
@@ -134,7 +134,7 @@ ARCHITECTURE_PATTERNS = {
         ],
         related_patterns=["hexagonal", "ddd", "cqrs"]
     ),
-    
+
     # CQRS & Event Sourcing
     "cqrs": ArchitecturePattern(
         name="CQRS (Command Query Responsibility Segregation)",
@@ -164,7 +164,7 @@ ARCHITECTURE_PATTERNS = {
         - Command: Документы (запись)
         - Query: Регистры накопления/сведений (чтение)
         - Разные представления данных для отчетов
-        
+
         Пример:
         - Документ "Продажа" (команда записи)
         - Регистр "ОстаткиТоваров" (модель чтения)
@@ -177,7 +177,7 @@ ARCHITECTURE_PATTERNS = {
         ],
         related_patterns=["event_sourcing", "ddd", "eventual_consistency"]
     ),
-    
+
     "event_sourcing": ArchitecturePattern(
         name="Event Sourcing",
         category=PatternCategory.DATA,
@@ -207,7 +207,7 @@ ARCHITECTURE_PATTERNS = {
         - Движения документов = изменения состояния
         - Регистры = проекции событий
         - Проведение = применение событий
-        
+
         Дополнительно:
         - Регистр сведений для хранения событий
         - Механизм подписок на события
@@ -219,7 +219,7 @@ ARCHITECTURE_PATTERNS = {
         ],
         related_patterns=["cqrs", "event_driven", "saga"]
     ),
-    
+
     # Domain-Driven Design
     "ddd": ArchitecturePattern(
         name="Domain-Driven Design (DDD)",
@@ -252,7 +252,7 @@ ARCHITECTURE_PATTERNS = {
         - Value Object = структура
         - Repository = менеджер объекта
         - Domain Service = общий модуль
-        
+
         Пример:
         Подсистема "Продажи" (Bounded Context):
         - Документ "Заказ" (Aggregate Root)
@@ -266,7 +266,7 @@ ARCHITECTURE_PATTERNS = {
         ],
         related_patterns=["hexagonal", "cqrs", "microservices"]
     ),
-    
+
     # Microservices
     "domain_oriented_microservices": ArchitecturePattern(
         name="Domain-Oriented Microservices",
@@ -298,7 +298,7 @@ ARCHITECTURE_PATTERNS = {
         - Разные базы 1С как микросервисы
         - Интеграция через HTTP-сервисы
         - Event-driven через NATS/RabbitMQ
-        
+
         Паттерны интеграции:
         - API Gateway (nginx)
         - Service Mesh (для множества баз)
@@ -311,7 +311,7 @@ ARCHITECTURE_PATTERNS = {
         ],
         related_patterns=["ddd", "api_gateway", "event_driven"]
     ),
-    
+
     # Integration Patterns
     "api_gateway": ArchitecturePattern(
         name="API Gateway",
@@ -343,7 +343,7 @@ ARCHITECTURE_PATTERNS = {
         - Кэширование ответов
         - Rate limiting
         - JWT аутентификация
-        
+
         Конфигурация nginx:
         location /api/sales { proxy_pass http://1c_sales; }
         location /api/warehouse { proxy_pass http://1c_warehouse; }
@@ -355,7 +355,7 @@ ARCHITECTURE_PATTERNS = {
         ],
         related_patterns=["microservices", "bff", "service_mesh"]
     ),
-    
+
     # Performance Patterns
     "caching_strategy": ArchitecturePattern(
         name="Multi-Level Caching",
@@ -386,12 +386,12 @@ ARCHITECTURE_PATTERNS = {
         2. Серверный кэш (переменные модуля сеанса)
         3. Redis (внешний кэш)
         4. CDN (для статики)
-        
+
         Стратегии:
         - Cache-Aside (проверка перед запросом)
         - Write-Through (запись в кэш и БД)
         - Write-Behind (отложенная запись)
-        
+
         Пример:
         Кэширование справочников в модуле сеанса
         """,
@@ -402,7 +402,7 @@ ARCHITECTURE_PATTERNS = {
         ],
         related_patterns=["read_through", "write_through", "cache_aside"]
     ),
-    
+
     # Anti-Patterns
     "nanoservices": ArchitecturePattern(
         name="Nanoservices (Anti-pattern)",
@@ -425,7 +425,7 @@ ARCHITECTURE_PATTERNS = {
         - Каждый справочник в отдельной базе
         - HTTP-сервис для каждой функции
         - Чрезмерная модульность
-        
+
         Как избежать:
         - Группировать по доменам (DDD)
         - Один микросервис = один Bounded Context
@@ -437,7 +437,7 @@ ARCHITECTURE_PATTERNS = {
         ],
         related_patterns=["domain_oriented_microservices", "ddd"]
     ),
-    
+
     "god_object": ArchitecturePattern(
         name="God Object (Anti-pattern)",
         category=PatternCategory.ANTI_PATTERN,
@@ -459,12 +459,12 @@ ARCHITECTURE_PATTERNS = {
         - Общий модуль с 1000+ строк
         - Модуль объекта с десятками методов
         - Один документ для всех операций
-        
+
         Как исправить:
         - Разделить по ответственности (SRP)
         - Выделить Domain Services
         - Использовать композицию
-        
+
         Пример рефакторинга:
         ОбщийМодуль "РаботаСДокументами" (God Object)
         →
@@ -483,10 +483,10 @@ ARCHITECTURE_PATTERNS = {
 
 class PatternMatcher:
     """Pattern matching and suggestion engine"""
-    
+
     def __init__(self):
         self.patterns = ARCHITECTURE_PATTERNS
-    
+
     def suggest_patterns(
         self,
         problem_description: str,
@@ -494,17 +494,17 @@ class PatternMatcher:
     ) -> List[ArchitecturePattern]:
         """
         Suggest patterns based on problem description
-        
+
         Args:
             problem_description: Description of the problem
             context: Additional context (domain, scale, etc)
-            
+
         Returns:
             List of suggested patterns
         """
         suggestions = []
         problem_lower = problem_description.lower()
-        
+
         # Simple keyword matching (can be enhanced with ML)
         keywords_map = {
             "тестируемость": ["hexagonal", "clean_architecture"],
@@ -515,7 +515,7 @@ class PatternMatcher:
             "интеграция": ["api_gateway", "event_driven"],
             "масштабируемость": ["microservices", "cqrs"],
         }
-        
+
         for keyword, pattern_keys in keywords_map.items():
             if keyword in problem_lower:
                 for key in pattern_keys:
@@ -523,13 +523,13 @@ class PatternMatcher:
                         pattern = self.patterns[key]
                         if pattern not in suggestions:
                             suggestions.append(pattern)
-        
+
         return suggestions[:5]  # Top 5
-    
+
     def get_pattern(self, pattern_key: str) -> Optional[ArchitecturePattern]:
         """Get pattern by key"""
         return self.patterns.get(pattern_key)
-    
+
     def get_patterns_by_category(
         self,
         category: PatternCategory
@@ -539,33 +539,33 @@ class PatternMatcher:
             p for p in self.patterns.values()
             if p.category == category
         ]
-    
+
     def get_anti_patterns(self) -> List[ArchitecturePattern]:
         """Get all anti-patterns"""
         return self.get_patterns_by_category(PatternCategory.ANTI_PATTERN)
-    
+
     def validate_architecture(
         self,
         architecture_description: str
     ) -> Dict[str, Any]:
         """
         Validate architecture against anti-patterns
-        
+
         Args:
             architecture_description: Description of architecture
-            
+
         Returns:
             Validation results with warnings
         """
         warnings = []
         desc_lower = architecture_description.lower()
-        
+
         # Check for anti-patterns
         anti_pattern_indicators = {
             "god_object": ["один модуль", "все в одном", "универсальный"],
             "nanoservices": ["каждая функция", "отдельный сервис для"],
         }
-        
+
         for anti_pattern_key, indicators in anti_pattern_indicators.items():
             for indicator in indicators:
                 if indicator in desc_lower:
@@ -577,7 +577,7 @@ class PatternMatcher:
                             "description": pattern.description,
                             "recommendation": f"Избегайте {pattern.name}"
                         })
-        
+
         return {
             "valid": len(warnings) == 0,
             "warnings": warnings,
@@ -592,10 +592,10 @@ _pattern_matcher: Optional[PatternMatcher] = None
 def get_pattern_matcher() -> PatternMatcher:
     """Get or create pattern matcher singleton"""
     global _pattern_matcher
-    
+
     if _pattern_matcher is None:
         _pattern_matcher = PatternMatcher()
-    
+
     return _pattern_matcher
 
 

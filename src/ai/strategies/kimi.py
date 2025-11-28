@@ -16,7 +16,7 @@ class KimiStrategy(AIStrategy):
             self.client = KimiClient(config=config)
             self.is_available = self.client.is_configured
         except Exception as e:
-            logger.warning(f"Kimi client not available: {e}")
+            logger.warning("Kimi client not available: %s", e)
             self.client = None
             self.is_available = False
 

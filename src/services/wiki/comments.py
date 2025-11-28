@@ -54,7 +54,7 @@ class WikiCommentsService:
                 parent_id,
             )
 
-        logger.info(f"Added comment {comment_id} to page {page_id}")
+        logger.info("Added comment %s to page {page_id}", comment_id)
 
         return CommentDTO(
             id=comment_id,

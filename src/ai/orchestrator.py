@@ -78,7 +78,7 @@ class AIOrchestrator:
             self.council = CouncilOrchestrator(self)
             logger.info("Council orchestrator initialized")
         except Exception as e:
-            logger.warning(f"Council orchestrator not available: {e}")
+            logger.warning("Council orchestrator not available: %s", e)
 
     def _get_strategy(self, service: AIService, context: Dict) -> Any:
         """Get strategy for service"""
@@ -128,7 +128,7 @@ class AIOrchestrator:
                     logger.info("Poetic form detected, forcing council mode for safety")
 
             except Exception as e:
-                logger.error(f"Security validation error: {e}")
+                logger.error("Security validation error: %s", e)
                 # Continue without security validation on error
 
         # Check if council mode requested

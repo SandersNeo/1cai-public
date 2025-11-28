@@ -6,14 +6,10 @@ BPMN Generator Service
 
 import html
 import re
-from datetime import datetime
-from typing import Any, Dict, List
+from typing import List
 
-from src.modules.business_analyst.domain.models import (
-    BPMNDiagram,
-    DecisionPoint,
-)
 from src.modules.business_analyst.domain.exceptions import BPMNGenerationError
+from src.modules.business_analyst.domain.models import BPMNDiagram, DecisionPoint
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -141,7 +137,8 @@ class BPMNGenerator:
                     DecisionPoint(
                         condition=groups[0].strip(),
                         true_path=groups[1].strip() if len(groups) > 1 else "Да",
-                        false_path=groups[2].strip() if len(groups) > 2 and groups[2] else "Нет",
+                        false_path=groups[2].strip() if len(
+                            groups) > 2 and groups[2] else "Нет",
                     )
                 )
 

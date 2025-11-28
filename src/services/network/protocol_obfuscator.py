@@ -60,7 +60,7 @@ class ProtocolObfuscator:
         try:
             obfuscator = self.obfuscation_methods.get(method)
             if not obfuscator:
-                logger.warning(f"Unknown obfuscation method: {method}")
+                logger.warning("Unknown obfuscation method: %s", method)
                 return data
 
             obfuscated = obfuscator(data, **kwargs)
@@ -79,7 +79,7 @@ class ProtocolObfuscator:
             return obfuscated
 
         except Exception as e:
-            logger.error(f"Obfuscation failed: {e}")
+            logger.error("Obfuscation failed: %s", e)
             if protocol_obfuscation_operations_total:
                 protocol_obfuscation_operations_total.labels(
                     obfuscation_type=method, status="error"
@@ -104,11 +104,11 @@ class ProtocolObfuscator:
             elif method == "base64_encoding":
                 return self._deobfuscate_base64(data, **kwargs)
             else:
-                logger.warning(f"Deobfuscation not implemented for: {method}")
+                logger.warning("Deobfuscation not implemented for: %s", method)
                 return data
 
         except Exception as e:
-            logger.error(f"Deobfuscation failed: {e}")
+            logger.error("Deobfuscation failed: %s", e)
             return data
 
     def _obfuscate_as_http(self, data: bytes, domain: str = "example.com") -> bytes:

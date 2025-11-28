@@ -6,7 +6,6 @@ from typing import Any, Dict, List
 
 from src.ai.agents.code_review.ai_reviewer import AICodeReviewer
 from src.infrastructure.logging.structured_logging import StructuredLogger
-from src.modules.github_integration.domain.models import PRFile, ReviewComment, ReviewResult
 from src.modules.github_integration.services.github_client import GitHubClient
 
 logger = StructuredLogger(__name__).logger
@@ -135,7 +134,8 @@ class ReviewService:
             review_result: AI review result
         """
         # Format comments for GitHub
-        comments = self._format_comments_for_github(review_result.get("file_reviews", []))
+        comments = self._format_comments_for_github(
+            review_result.get("file_reviews", []))
 
         # Determine review event type
         overall_status = review_result.get("overall_status", "COMMENTED")

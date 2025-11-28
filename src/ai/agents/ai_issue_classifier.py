@@ -138,9 +138,9 @@ class AIIssueClassifier:
 
         # 3. ML classification (если модель доступна)
         if self.model:
-            ml_category = await self._ml_classify(features)
+            await self._ml_classify(features)
         else:
-            ml_category = matched_pattern
+            pass
 
         # 4. Определение root cause
         root_cause = self._determine_root_cause(issue_data, matched_pattern)

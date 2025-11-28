@@ -2,9 +2,9 @@
 Verification Script for API Refactoring
 Run this script to verify that all refactored modules are importable and backward compatibility is maintained.
 """
-import sys
 import logging
 import os
+import sys
 
 # Add project root to sys.path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -17,14 +17,14 @@ logger = logging.getLogger(__name__)
 
 
 def verify_module(name, legacy_path, new_path):
-    logger.info(f"Verifying {name}...")
+    logger.info("Verifying %s...", name)
     try:
         # 1. Verify New Module Import
-        logger.info(f"  Importing new module: {new_path}")
+        logger.info("  Importing new module: %s", new_path)
         __import__(new_path)
 
         # 2. Verify Legacy Proxy Import
-        logger.info(f"  Importing legacy proxy: {legacy_path}")
+        logger.info("  Importing legacy proxy: %s", legacy_path)
         legacy = __import__(legacy_path, fromlist=["*"])
 
         # 3. Verify Exports
@@ -34,13 +34,13 @@ def verify_module(name, legacy_path, new_path):
             logger.error("  ❌ Router NOT exported from legacy proxy")
             return False
 
-        logger.info(f"✅ {name} verification passed")
+        logger.info("✅ %s verification passed", name)
         return True
     except ImportError as e:
-        logger.error(f"❌ ImportError in {name}: {e}")
+        logger.error("❌ ImportError in %s: {e}", name)
         return False
     except Exception as e:
-        logger.error(f"❌ Unexpected error in {name}: {e}")
+        logger.error("❌ Unexpected error in %s: {e}", name)
         return False
 
 
@@ -63,10 +63,11 @@ def main():
 
     logger.info("-" * 30)
     if success_count == len(modules_to_verify):
-        logger.info(f"✅ ALL {success_count} MODULES VERIFIED SUCCESSFULLY")
+        logger.info("✅ ALL %s MODULES VERIFIED SUCCESSFULLY", success_count)
         sys.exit(0)
     else:
-        logger.error(f"❌ FAILED: Only {success_count}/{len(modules_to_verify)} modules verified")
+        logger.error(
+            f"❌ FAILED: Only {success_count}/{len(modules_to_verify)} modules verified")
         sys.exit(1)
 
 

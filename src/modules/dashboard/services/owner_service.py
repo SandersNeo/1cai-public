@@ -2,7 +2,7 @@
 Owner Dashboard Service
 Business logic for simple owner-level business metrics
 """
-from typing import Dict, Any
+from typing import Any, Dict
 
 import asyncpg
 

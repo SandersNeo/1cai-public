@@ -8,7 +8,8 @@ Uses FAISS (Facebook AI Similarity Search) for high-performance
 vector indexing and retrieval.
 """
 
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
+
 import numpy as np
 
 from src.utils.structured_logging import StructuredLogger
@@ -108,7 +109,8 @@ class VectorIndex:
         if metadata:
             self.metadata[key] = metadata
 
-        logger.debug(f"Added embedding to index", extra={"key": key, "total_size": len(self.keys)})
+        logger.debug(f"Added embedding to index", extra={
+                     "key": key, "total_size": len(self.keys)})
 
     def search(
         self, query: np.ndarray, k: int = 5, filter_fn: Optional[Callable[[Dict], bool]] = None

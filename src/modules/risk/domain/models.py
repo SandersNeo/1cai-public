@@ -8,8 +8,10 @@ class RiskAssessmentRequest(BaseModel):
     """Risk assessment request"""
 
     requirements: str = Field(..., description="Project requirements")
-    context: Optional[Dict[str, Any]] = Field(default=None, description="Project context")
-    architecture: Optional[Dict[str, Any]] = Field(default=None, description="Architecture solution")
+    context: Optional[Dict[str, Any]] = Field(
+        default=None, description="Project context")
+    architecture: Optional[Dict[str, Any]] = Field(
+        default=None, description="Architecture solution")
 
 
 class RiskAssessmentResponse(BaseModel):

@@ -3,8 +3,8 @@ import os
 import re
 from typing import Dict, List
 
-from src.utils.structured_logging import StructuredLogger
 from src.config import USE_NESTED_COMPLETION
+from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 
@@ -33,12 +33,15 @@ class CopilotService:
         self._nested = None
         if USE_NESTED_COMPLETION:
             try:
-                from src.modules.copilot.services.nested_copilot_service import NestedCopilotService
+                from src.modules.copilot.services.nested_copilot_service import (
+                    NestedCopilotService,
+                )
 
                 self._nested = NestedCopilotService(self)
                 logger.info("Nested completion enabled for CopilotService")
             except Exception as e:
-                logger.warning(f"Failed to initialize nested completion: {e}", exc_info=True)
+                logger.warning(
+                    f"Failed to initialize nested completion: {e}", exc_info=True)
 
     async def get_completions(
         self,
@@ -92,7 +95,8 @@ class CopilotService:
             )
 
         if "Результат" in current_line:
-            suggestions.append({"text": " = ", "description": "Присвоение значения", "score": 0.8})
+            suggestions.append(
+                {"text": " = ", "description": "Присвоение значения", "score": 0.8})
 
         return suggestions[:max_suggestions]
 
@@ -207,7 +211,8 @@ class CopilotService:
             function_name = "ТестоваяФункция"
 
         function_name = function_name[:200]
-        clean_name = re.sub(r"[^\\wА-Яа-я]", "", function_name) if function_name else "ТестоваяФункция"
+        clean_name = re.sub(r"[^\\wА-Яа-я]", "",
+                            function_name) if function_name else "ТестоваяФункция"
         if not clean_name:
             clean_name = "ТестоваяФункция"
 

@@ -6,19 +6,20 @@ Main orchestration logic for LLM Council multi-agent consensus.
 
 import asyncio
 import time
-from typing import List, Dict, Optional
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
+from typing import Dict, List, Optional
+
 from loguru import logger
 
+from .chairman import Chairman, SynthesisResult
 from .config import (
-    COUNCIL_MODELS,
     CHAIRMAN_MODEL,
+    COUNCIL_MODELS,
     COUNCIL_TIMEOUT_SECONDS,
-    MIN_COUNCIL_SIZE,
     MAX_COUNCIL_SIZE,
+    MIN_COUNCIL_SIZE,
 )
 from .peer_review import PeerReview, ReviewResult
-from .chairman import Chairman, SynthesisResult
 
 
 @dataclass
@@ -106,7 +107,8 @@ class CouncilOrchestrator:
             # Stage 3: Chairman Synthesis
             logger.info("Stage 3: Chairman synthesis")
             synthesis = await asyncio.wait_for(
-                self._stage3_chairman_synthesis(query, opinions, reviews, config.chairman, context),
+                self._stage3_chairman_synthesis(
+                    query, opinions, reviews, config.chairman, context),
                 timeout=config.timeout / 3,
             )
 
@@ -124,9 +126,11 @@ class CouncilOrchestrator:
 
             return CouncilResponse(
                 final_answer=synthesis.final_response,
-                individual_opinions=[{"model": o["model"], "response": o["response"]} for o in opinions],
+                individual_opinions=[{"model": o["model"],
+                    "response": o["response"]} for o in opinions],
                 peer_reviews=[
-                    {"reviewer": r.reviewer_model, "rankings": r.rankings, "reasoning": r.reasoning[:200]}  # Truncate
+                    {"reviewer": r.reviewer_model, "rankings": r.rankings,
+                        "reasoning": r.reasoning[:200]}  # Truncate
                     for r in reviews
                 ]
                 if config.include_reviews
@@ -139,7 +143,7 @@ class CouncilOrchestrator:
             logger.error(f"Council query timeout after {config.timeout}s")
             raise
         except Exception as e:
-            logger.error(f"Council query error: {e}")
+            logger.error("Council query error: %s", e)
             raise
 
     async def _stage1_first_opinions(self, query: str, models: List[str], context: Optional[Dict]) -> List[Dict]:
@@ -162,12 +166,13 @@ class CouncilOrchestrator:
         valid_responses = []
         for model, response in zip(models, responses):
             if isinstance(response, Exception):
-                logger.error(f"Error from {model}: {response}")
+                logger.error("Error from %s: {response}", model)
             else:
                 valid_responses.append({"model": model, "response": response})
 
         if len(valid_responses) < MIN_COUNCIL_SIZE:
-            raise ValueError(f"Insufficient responses: {len(valid_responses)} < {MIN_COUNCIL_SIZE}")
+            raise ValueError(
+                f"Insufficient responses: {len(valid_responses)} < {MIN_COUNCIL_SIZE}")
 
         return valid_responses
 
@@ -238,10 +243,13 @@ class CouncilOrchestrator:
             ValueError: If config is invalid
         """
         if len(config.models) < MIN_COUNCIL_SIZE:
-            raise ValueError(f"Council size {len(config.models)} < minimum {MIN_COUNCIL_SIZE}")
+            raise ValueError(
+                f"Council size {len(config.models)} < minimum {MIN_COUNCIL_SIZE}")
 
         if len(config.models) > MAX_COUNCIL_SIZE:
-            raise ValueError(f"Council size {len(config.models)} > maximum {MAX_COUNCIL_SIZE}")
+            raise ValueError(
+                f"Council size {len(config.models)} > maximum {MAX_COUNCIL_SIZE}")
 
         if config.chairman not in config.models:
-            logger.warning(f"Chairman {config.chairman} not in council models, " f"will use separate provider")
+            logger.warning(
+                f"Chairman {config.chairman} not in council models, " f"will use separate provider")

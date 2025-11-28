@@ -354,17 +354,17 @@ class CodeToTestGenerator:
             tests.append(
                 f"""// Edge case: максимальные значения
 Процедура Тест_{func_info.name}_МаксимальныеЗначения() Экспорт
-    
+
     // Arrange
     {param_inits};
-    
+
     // Act
     Результат = {func_info.name}({', '.join(p['name'] for p in func_info.parameters)});
-    
+
     // Assert
     ЮТест.ОжидаетЧто(Результат, "Результат с максимальными значениями")
         .ЭтоНеНеопределено();
-    
+
 КонецПроцедуры
 """
             )
