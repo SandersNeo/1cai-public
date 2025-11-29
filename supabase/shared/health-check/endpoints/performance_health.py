@@ -7,12 +7,11 @@ Performance Health Check Endpoint
 
 import asyncio
 import json
-import statistics
 import time
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import aiohttp
 import psutil
@@ -447,7 +446,6 @@ DEFAULT_PERFORMANCE_CONFIG = {
 if __name__ == "__main__":
     # Пример использования
     async def main():
-        import os
         config = DEFAULT_PERFORMANCE_CONFIG
         checker = PerformanceHealthChecker(config)
         result = await checker.async_check()

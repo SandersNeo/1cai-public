@@ -1,0 +1,396 @@
+{
+  "total_time_ms": 1944.61059999594,
+  "imports": [
+    {
+      "module_name": "src.ai.advanced_orchestrator",
+      "import_time_ms": 205.46500000637025,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.agents",
+      "import_time_ms": 276.9358999939868,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.architecture_patterns",
+      "import_time_ms": 0.6166999955894426,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.clients",
+      "import_time_ms": 238.65529999602586,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.code_analysis",
+      "import_time_ms": 0.4067999980179593,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.connection_pool",
+      "import_time_ms": 0.4459000047063455,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.copilot",
+      "import_time_ms": 0.3600000054575503,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.council",
+      "import_time_ms": 23.803799995221198,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.distributed_agent_network",
+      "import_time_ms": 1.9953000009991229,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.distributed_agent_network_advanced",
+      "import_time_ms": 1.4744999934919178,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.graph_refs_builder",
+      "import_time_ms": 2.478399997926317,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.healing",
+      "import_time_ms": 0.3752000047825277,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.intelligent_cache",
+      "import_time_ms": 0.7593000045744702,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.llm",
+      "import_time_ms": 0.3198999911546707,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.llm_provider_abstraction",
+      "import_time_ms": 0.8964000007836148,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.mcp",
+      "import_time_ms": 0.24700000358279794,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.nested_provider_selector",
+      "import_time_ms": 0.7418000022880733,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.nl_to_cypher",
+      "import_time_ms": 0.5667000077664852,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.orchestrator",
+      "import_time_ms": 0.6716999923810363,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.playbook_executor",
+      "import_time_ms": 15.675800008466467,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.predictive_code_generation",
+      "import_time_ms": 1.4521999983116984,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.predictive_code_generation_advanced",
+      "import_time_ms": 54.65009999170434,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.prompts",
+      "import_time_ms": 0.6840999994892627,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.query_classifier",
+      "import_time_ms": 0.8280999900307506,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.qwen_client",
+      "import_time_ms": 0.8018000080483034,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.role_based_router",
+      "import_time_ms": 1.195199991343543,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.scenario_examples",
+      "import_time_ms": 0.29940000968053937,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.scenario_hub",
+      "import_time_ms": 1.9483000069158152,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.scenario_policy",
+      "import_time_ms": 0.570999996853061,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.scenario_recommender",
+      "import_time_ms": 0.3480000013951212,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.security",
+      "import_time_ms": 0.6991999980527908,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.self_evolving_ai",
+      "import_time_ms": 1.5065999905345961,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.self_evolving_ai_advanced",
+      "import_time_ms": 1.155199992354028,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.sql_optimizer_secure",
+      "import_time_ms": 0.7699999987380579,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.tool_registry",
+      "import_time_ms": 2.2380000009434298,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.tool_registry_examples",
+      "import_time_ms": 0.3102999908151105,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.ai.utils",
+      "import_time_ms": 0.24470000062137842,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.admin_dashboard",
+      "import_time_ms": 22.744399990187958,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.analytics",
+      "import_time_ms": 0.3698999935295433,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.assistants",
+      "import_time_ms": 63.69300000369549,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.ba_sessions",
+      "import_time_ms": 73.31399999384303,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.billing_webhooks",
+      "import_time_ms": 4.052499993122183,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.bpmn_api",
+      "import_time_ms": 8.830499995383434,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.code_analyzers",
+      "import_time_ms": 4.328399998485111,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.code_approval",
+      "import_time_ms": 7.944600001792423,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.code_review",
+      "import_time_ms": 47.49430000083521,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.copilot",
+      "import_time_ms": 7.912500004749745,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.dashboard",
+      "import_time_ms": 8.29100000555627,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.devops",
+      "import_time_ms": 0.952799993683584,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.devops_api",
+      "import_time_ms": 9.660299998358823,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.documentation",
+      "import_time_ms": 8.354300007340498,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.gateway",
+      "import_time_ms": 242.73460000404157,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.github_integration",
+      "import_time_ms": 17.68669999728445,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.graph_api",
+      "import_time_ms": 482.99400000541937,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.knowledge_base",
+      "import_time_ms": 0.39069999183993787,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.marketplace",
+      "import_time_ms": 29.972400006954558,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.metrics",
+      "import_time_ms": 10.294000006979331,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.ml",
+      "import_time_ms": 10.190300003159791,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.performance_analyzer",
+      "import_time_ms": 0.7148000004235655,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.revolutionary",
+      "import_time_ms": 0.4566999996313825,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.risk",
+      "import_time_ms": 9.4913000066299,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.tenant_management",
+      "import_time_ms": 8.571500002290122,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.test_generation",
+      "import_time_ms": 12.962599997990765,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.websocket",
+      "import_time_ms": 5.05749999138061,
+      "is_toplevel": true,
+      "children": []
+    },
+    {
+      "module_name": "src.modules.wiki",
+      "import_time_ms": 2.3169999913079664,
+      "is_toplevel": true,
+      "children": []
+    }
+  ],
+  "timestamp": "2025-11-29 09:33:23.194782"
+}

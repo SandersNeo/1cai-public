@@ -365,7 +365,6 @@ class PrometheusOpenTelemetryBridge:
         """Экспорт Prometheus метрик в OpenTelemetry"""
         # Здесь можно реализовать экспорт Prometheus метрик в OpenTelemetry
         # Например, создавать соответствующие счетчики и гистограммы
-        pass
 
 
 # Автоматическая инициализация OpenTelemetry

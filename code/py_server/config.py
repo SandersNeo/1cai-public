@@ -10,7 +10,6 @@
 - Настройки безопасности
 """
 
-import os
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -405,7 +404,7 @@ __all__ = [
 
 if __name__ == "__main__":
     # Вывод текущей конфигурации для отладки
-    import json
+    pass
     
     print("=== Текущая конфигурация ===")
     print(f"Окружение: {config.environment}")

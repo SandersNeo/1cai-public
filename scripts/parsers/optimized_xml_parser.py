@@ -16,12 +16,11 @@
 
 import hashlib
 import json
-import os
 import sys
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional
+from typing import Any, Dict, Iterator, Optional
 
 try:
     from lxml import etree

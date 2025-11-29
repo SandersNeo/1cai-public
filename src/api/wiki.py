@@ -1,30 +1,9 @@
 """
-Wiki API Routes - Minimal Implementation
+Wiki API Routes - Backward Compatibility
 
-This module provides basic wiki functionality.
-Full implementation is in src/modules/wiki/
+This module re-exports the router from src.modules.wiki.api.routes.
 """
 
-from fastapi import APIRouter
+from src.modules.wiki.api.routes import router
 
-router = APIRouter(tags=["Wiki"])
-
-
-@router.get("/health")
-async def health_check():
-    """Wiki service health check"""
-    return {
-        "status": "healthy",
-        "service": "wiki",
-        "version": "1.0.0",
-    }
-
-
-@router.get("/")
-async def list_pages():
-    """List all wiki pages"""
-    return {
-        "pages": [],
-        "total": 0,
-        "message": "Wiki service is operational",
-    }
+__all__ = ["router"]

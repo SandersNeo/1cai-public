@@ -7,10 +7,7 @@
 """
 
 import logging
-import os
 import sys
-from pathlib import Path
-from typing import Any, Dict, List
 
 logging.basicConfig(
     level=logging.INFO,

@@ -5,7 +5,6 @@ End-to-end tests for graph evolution tracking.
 """
 
 import pytest
-import asyncio
 
 from src.modules.graph_api.services.temporal_graph_service import TemporalGraphService
 from src.modules.graph_api.services.graph_service import GraphService

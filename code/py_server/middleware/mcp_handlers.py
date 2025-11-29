@@ -12,11 +12,10 @@
 """
 
 import asyncio
-import json
 import logging
 import traceback
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List
 
 # Импорты иерархии исключений
 from errors.base import McpError, ServiceUnavailableError, TimeoutError
@@ -27,17 +26,13 @@ from errors.mcp import (McpInvalidRequestError, McpJsonRpcError,
                         McpToolNotFoundError)
 from errors.transport import ServiceUnavailableTransportError, TransportError
 from errors.validation import ValidationError
-from fastapi import FastAPI, HTTPException, Request, Response
-from fastapi.responses import JSONResponse, StreamingResponse
-from starlette.responses import Response as StarletteResponse
+from fastapi import FastAPI, Request, Response
+from fastapi.responses import JSONResponse
 
-from .correlation import (format_correlation_context, get_correlation_id,
-                          log_with_correlation)
-from .error_handler import with_error_handling
+from .correlation import (format_correlation_context, get_correlation_id)
 # Импорты модулей проекта
 from .response_models import (ErrorCategory, ErrorResponse, ErrorSeverity,
-                              HealthCheckResponse, Language, McpErrorResponse,
-                              McpResponse, McpSuccessResponse)
+                              Language)
 
 logger = logging.getLogger(__name__)
 

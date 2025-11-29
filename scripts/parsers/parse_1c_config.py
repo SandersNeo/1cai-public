@@ -7,9 +7,6 @@
 Версия: 1.0.0
 """
 
-import gzip
-import json
-import os
 import re
 import sys
 import xml.etree.ElementTree as ET

@@ -9,13 +9,12 @@ import asyncio
 import json
 import time
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import plotly.graph_objs as go
 import plotly.utils
-import websockets
 from flask import Flask, jsonify, render_template, request
 from flask_socketio import SocketIO, emit
 

@@ -7,9 +7,7 @@ Code Execution Service
 """
 
 import asyncio
-import json
 import logging
-from datetime import datetime
 from typing import Any, Dict, Optional
 
 import httpx
@@ -186,7 +184,6 @@ class CodeExecutionService:
         # - code_execution_memory_mb
         # - code_execution_success_rate
         # - code_execution_total
-        pass
     
     async def health_check(self) -> bool:
         """Проверить доступность Execution Harness"""

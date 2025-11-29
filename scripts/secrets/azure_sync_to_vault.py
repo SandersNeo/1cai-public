@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import argparse
 import os
-from typing import Iterable
 
 import hvac
 from azure.identity import ClientSecretCredential

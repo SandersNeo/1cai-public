@@ -12,11 +12,10 @@ import json
 import shutil
 import tempfile
 from pathlib import Path
-from typing import Any, AsyncGenerator, Dict, List, Optional
-from unittest.mock import AsyncMock, MagicMock
+from typing import Any, Dict, Optional
+from unittest.mock import AsyncMock
 
 import pytest
-import pytest_asyncio
 
 from src.core.engine import CodeGenerationEngine
 from src.core.validator import CodeValidator

@@ -16,14 +16,14 @@
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Dict, List
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from neural_bsl_parser import (BSLTokenizer, CodeIntent,
                                CodeTransformerEncoder, IntentClassifier,
-                               NeuralBSLParser, QualityScorer)
+                               QualityScorer)
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 

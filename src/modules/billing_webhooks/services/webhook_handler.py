@@ -16,7 +16,7 @@ logger = StructuredLogger(__name__).logger
 class BillingWebhookHandler:
     """Handler for Stripe webhooks."""
 
-    def __init__(self, db_pool: asyncpg.Pool):
+    def __init__(self, db_pool: asyncpg.Pool) -> None:
         self.db = db_pool
         self.webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 
@@ -68,7 +68,7 @@ class BillingWebhookHandler:
         logger.info("Unhandled event type", extra={"event_type": event_type})
         return {"status": "skipped"}
 
-    async def _handle_subscription_created(self, subscription: Dict, event: Dict):
+    async def _handle_subscription_created(self, subscription: Dict[str, Any], event: Dict[str, Any]) -> None:
         """Handle subscription creation."""
         customer_id = subscription.get("customer")
         subscription_id = subscription.get("id")
@@ -92,7 +92,7 @@ class BillingWebhookHandler:
 
                 await self._log_billing_event(tenant["id"], "subscription_created", event)
 
-    async def _handle_subscription_updated(self, subscription: Dict, event: Dict):
+    async def _handle_subscription_updated(self, subscription: Dict[str, Any], event: Dict[str, Any]) -> None:
         """Handle subscription update."""
         subscription_id = subscription.get("id")
         status = subscription.get("status")
@@ -114,7 +114,7 @@ class BillingWebhookHandler:
 
                 await self._log_billing_event(tenant["id"], "subscription_updated", event)
 
-    async def _handle_subscription_deleted(self, subscription: Dict, event: Dict):
+    async def _handle_subscription_deleted(self, subscription: Dict[str, Any], event: Dict[str, Any]) -> None:
         """Handle subscription deletion."""
         subscription_id = subscription.get("id")
 
@@ -137,7 +137,7 @@ class BillingWebhookHandler:
 
                 await self._log_billing_event(tenant["id"], "subscription_cancelled", event)
 
-    async def _handle_payment_succeeded(self, invoice: Dict, event: Dict):
+    async def _handle_payment_succeeded(self, invoice: Dict[str, Any], event: Dict[str, Any]) -> None:
         """Handle successful payment."""
         customer_id = invoice.get("customer")
         amount = invoice.get("amount_paid")
@@ -148,7 +148,7 @@ class BillingWebhookHandler:
             if tenant:
                 await self._log_billing_event(tenant["id"], "payment_succeeded", event, amount_cents=amount)
 
-    async def _handle_payment_failed(self, invoice: Dict, event: Dict):
+    async def _handle_payment_failed(self, invoice: Dict[str, Any], event: Dict[str, Any]) -> None:
         """Handle failed payment."""
         customer_id = invoice.get("customer")
 
@@ -163,7 +163,7 @@ class BillingWebhookHandler:
 
                 await self._log_billing_event(tenant["id"], "payment_failed", event)
 
-    async def _log_billing_event(self, tenant_id, event_type: str, event: Dict, amount_cents: int = None):
+    async def _log_billing_event(self, tenant_id: str, event_type: str, event: Dict[str, Any], amount_cents: int | None = None) -> None:
         """Log billing event."""
         async with self.db.acquire() as conn:
             await conn.execute(

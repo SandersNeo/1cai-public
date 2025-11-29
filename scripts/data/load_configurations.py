@@ -6,8 +6,6 @@
 Версия: 1.0.0
 """
 
-import json
-import os
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path

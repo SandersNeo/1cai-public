@@ -2,20 +2,16 @@
 
 """HTTP-сервер с поддержкой SSE и Streamable HTTP для MCP."""
 
-import asyncio
-import json
 import logging
 from contextlib import asynccontextmanager
-from typing import Any, Dict, Optional
-from urllib.parse import parse_qs, urlencode
+from typing import Optional
+from urllib.parse import urlencode
 
 import httpx
 import uvicorn
-from fastapi import FastAPI, Form, HTTPException, Request, Response
+from fastapi import FastAPI, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import (HTMLResponse, JSONResponse, RedirectResponse,
-                               StreamingResponse)
-from mcp.server.models import InitializationOptions
+from fastapi.responses import (HTMLResponse, JSONResponse, RedirectResponse)
 from mcp.server.sse import SseServerTransport
 from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
 from starlette.applications import Starlette

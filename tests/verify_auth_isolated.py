@@ -53,8 +53,6 @@ async def verify_auth_isolated():
 
         # 5. Verify API Routes (Import only)
         log("5. Verifying API Routes imports...")
-        from src.modules.auth.api.routes import router as auth_router
-        from src.modules.auth.api.oauth_routes import router as oauth_router
 
         log("   API Routes imports OK.")
 

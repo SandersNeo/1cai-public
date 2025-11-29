@@ -16,7 +16,6 @@ Target for 10/10:
 import asyncio
 import statistics
 import time
-from typing import List
 
 import httpx
 

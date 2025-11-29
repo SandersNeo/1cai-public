@@ -7,7 +7,7 @@ Integrates LLM Council with code review process.
 from typing import Dict, List, Optional
 
 
-from src.ai.orchestrator import orchestrator
+
 
 
 class CouncilCodeReviewService:
@@ -19,7 +19,8 @@ class CouncilCodeReviewService:
 
     def __init__(self):
         """Initialize council code review service"""
-        self.orchestrator = orchestrator
+        from src.ai.orchestrator import get_orchestrator
+        self.orchestrator = get_orchestrator()
 
     async def review_with_council(self, code: str, context: Optional[Dict] = None) -> Dict:
         """

@@ -14,16 +14,14 @@ import asyncio
 import logging
 import os
 import time
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 # Импорт компонентов request tracking
-from ratelimit import (RequestTracker, create_rate_limit_middleware,
-                       get_request_tracker, init_request_tracker,
-                       request_tracking_context)
+from ratelimit import (create_rate_limit_middleware, get_request_tracker,
+                       init_request_tracker, request_tracking_context)
 
 # Настройка логирования
 logging.basicConfig(

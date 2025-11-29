@@ -16,24 +16,16 @@
 import asyncio
 import concurrent.futures
 import gc
-import multiprocessing
 import os
 # Импорты приложения
 import sys
 import threading
 import time
-from collections import defaultdict, deque
+from collections import deque
 from dataclasses import dataclass
-from functools import wraps
-from typing import Any, Callable, Dict, List
-from unittest.mock import Mock, patch
 
-import httpx
 import psutil
 import pytest
-import pytest_benchmark
-from factory import Factory, Trait
-from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

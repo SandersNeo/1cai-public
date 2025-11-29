@@ -12,7 +12,7 @@ import logging
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Pattern, Set, Union
+from typing import Any, Dict, List, Optional, Pattern, Set
 
 
 class MaskingRule(Enum):

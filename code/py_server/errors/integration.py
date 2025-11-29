@@ -16,14 +16,12 @@
 Восстановимость зависит от типа ошибки.
 """
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 try:
-    from .base import (ErrorSeverity, McpError, NonRecoverableError,
-                       RecoverableError)
+    from .base import (ErrorSeverity, McpError)
 except ImportError:
-    from base import (ErrorSeverity, McpError, NonRecoverableError,
-                      RecoverableError)
+    from base import (ErrorSeverity, McpError)
 
 
 class IntegrationError(McpError):

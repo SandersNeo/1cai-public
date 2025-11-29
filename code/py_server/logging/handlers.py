@@ -10,16 +10,14 @@
 - Файлы и консоль
 """
 
-import asyncio
 import json
 import logging
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
-import aiohttp
 import structlog
 
 from .config import logging_config
@@ -137,7 +135,6 @@ class BaseHandler:
 
     def shutdown(self):
         """Закрытие обработчика"""
-        pass
 
 
 class ConsoleHandler(BaseHandler):

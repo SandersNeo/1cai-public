@@ -21,7 +21,7 @@ import json
 import logging
 import time
 import weakref
-from collections import defaultdict, deque
+from collections import deque
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -972,7 +972,6 @@ def setup_cache_middleware(
     Returns:
         Настроенный middleware
     """
-    from fastapi import FastAPI
 
     # Создаем middleware
     middleware = HTTPCacheMiddleware(

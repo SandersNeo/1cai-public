@@ -6,6 +6,4 @@ ML Module
 Partially refactored - domain models extracted, services remain in original file.
 Full migration planned for future iterations.
 """
-from src.api.ml import router
-
-__all__ = ["router"]
+__all__ = []

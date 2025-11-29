@@ -47,7 +47,7 @@ class CodeFixer:
                 # Find assignments without null checks
                 pattern = r"(\w+)\s*=\s*(\w+\.\w+\([^)]*\));"
 
-                def add_null_check(match):
+                def add_null_check(match: re.Match) -> str:
                     var_name = match.group(1)
                     call = match.group(2)
                     return f"{var_name} = {call};\nЕсли {var_name} = Неопределено Тогда\n    // Handle null\n    Возврат;\nКонецЕсли;"
@@ -98,7 +98,7 @@ class CodeFixer:
                 # Find bare numbers (except 0, 1, -1)
                 pattern = r"(?<=[^\w])(\d{2,})(?=[^\w])"
 
-                def replace_with_constant(match):
+                def replace_with_constant(match: re.Match) -> str:
                     num = match.group(1)
                     return f"КОНСТАНТА_{num}"
 

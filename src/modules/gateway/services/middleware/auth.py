@@ -2,7 +2,7 @@
 Authentication Middleware
 """
 import os
-from typing import List
+from typing import Any, List
 
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
@@ -16,7 +16,7 @@ logger = StructuredLogger(__name__).logger
 class AuthenticationMiddleware(BaseHTTPMiddleware):
     """Middleware for authentication"""
 
-    def __init__(self, app, allowed_paths: List[str] = None):
+    def __init__(self, app: Any, allowed_paths: List[str] = None) -> None:
         super().__init__(app)
         self.allowed_paths = allowed_paths or [
             "/health",
@@ -37,7 +37,7 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
             logger.warning(
                 "Using default API keys. Set GATEWAY_API_KEYS environment variable for production!")
 
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(self, request: Request, call_next: Any) -> Any:
         """Middleware for authentication with input validation"""
         try:
             # Check allowed paths

@@ -7,7 +7,6 @@
 
 import ast
 from pathlib import Path
-from typing import List, Optional, Tuple
 import argparse
 
 

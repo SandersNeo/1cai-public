@@ -8,7 +8,6 @@ Usage:
 """
 
 import asyncio
-import os
 import sys
 from pathlib import Path
 
@@ -17,7 +16,7 @@ parent_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(parent_dir))
 sys.path.insert(0, str(parent_dir / 'code' / 'py_server'))
 
-from mcp_code_generator import MCPCodeGenerator, generate_all_servers
+from mcp_code_generator import generate_all_servers
 
 
 async def get_mock_tools():

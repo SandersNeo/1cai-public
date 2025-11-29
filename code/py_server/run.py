@@ -13,7 +13,6 @@ import logging
 import signal
 import sys
 from pathlib import Path
-from typing import Optional
 
 import uvicorn
 
@@ -306,9 +305,9 @@ def main():
                 sys.exit(1)
         elif args.command == "info":
             # Информация о конфигурации
-            import json
+            pass
 
-            from config import config, get_config_for_environment
+            from config import config
             
             logger.info("=== Информация о конфигурации ===")
             logger.info(f"Текущее окружение: {config.environment}")

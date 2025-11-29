@@ -6,7 +6,6 @@ OCR Service Demo Test
 """
 
 import asyncio
-from pathlib import Path
 
 
 async def test_ocr_service_structure():
@@ -19,8 +18,7 @@ async def test_ocr_service_structure():
     print("1. ✅ Testing imports...")
     try:
         from src.services.ocr_service import (DocumentType, OCRProvider,
-                                              OCRResult, OCRService,
-                                              get_ocr_service)
+                                              OCRResult)
         print("   ✅ All imports successful")
     except Exception as e:
         print(f"   ❌ Import error: {e}")

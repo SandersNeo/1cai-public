@@ -3,10 +3,9 @@
 """
 Реализация паттерна Circuit Breaker
 """
-import logging
 import threading
 import time
-from collections import defaultdict, deque
+from collections import deque
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Any, Callable, Dict, List, Optional
@@ -312,7 +311,6 @@ class CircuitBreaker:
 
 class CircuitBreakerOpenError(Exception):
     """Исключение при открытом circuit breaker"""
-    pass
 
 
 class CircuitBreakerManager:

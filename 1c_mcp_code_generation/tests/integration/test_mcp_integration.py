@@ -8,16 +8,12 @@
 """
 
 import asyncio
-import json
-from typing import Any, Dict, List
 from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from src.mcp.client import MCP1CClient
-from src.mcp.handlers import RequestHandler, ResponseHandler
 from src.mcp.server import MCP1CServer
-from src.mcp.tools import CodeGenerationTool, SecurityTool, ValidationTool
 
 
 @pytest.mark.integration

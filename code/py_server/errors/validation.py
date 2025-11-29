@@ -15,12 +15,12 @@
 данные должны быть исправлены пользователем.
 """
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 try:
-    from .base import ErrorSeverity, McpError, NonRecoverableError
+    from .base import ErrorSeverity, NonRecoverableError
 except ImportError:
-    from base import ErrorSeverity, McpError, NonRecoverableError
+    from base import ErrorSeverity, NonRecoverableError
 
 
 class ValidationError(NonRecoverableError):

@@ -65,7 +65,12 @@ async def detailed_health_check():
     """
     try:
         health_checker = get_health_checker()
-        result = await health_checker.check_all()
+        
+        # Inject dependencies to avoid circular imports
+        from src.api.dependencies import ServiceContainer
+        pg_saver = ServiceContainer.get_postgres()
+        
+        result = await health_checker.check_all(pg_saver=pg_saver)
 
         logger.info(
             "Detailed health check completed",

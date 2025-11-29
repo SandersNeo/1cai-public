@@ -18,523 +18,179 @@
 
 ## 📰 Последние обновления
 
-<details>
-<summary><strong>🎉 2025-11-27: DevOps Module - Clean Architecture Implementation</strong></summary>
+<details open>
+<summary><strong>🎉 2025-11-29: Deep Audit, Security Hardening & Standardization</strong></summary>
 
-**DevOps Agent Enhanced** полностью рефакторен согласно Clean Architecture принципам.
+**Масштабное улучшение качества кодовой базы.**
+Проведен глубокий аудит, усилена безопасность и стандартизирована документация.
 
-**Структура модуля:**
-```
-src/modules/devops/
-├── domain/          # Models + Exceptions (13 models, 6 exceptions)
-├── services/        # 5 Business Logic Services
-├── repositories/    # OptimizationRepository
-├── api/             # DevOpsAgentEnhanced integration
-└── tests/           # Comprehensive test coverage
-```
+**Ключевые изменения:**
+- 🕵️‍♂️ **Deep Comprehensive Audit**: Внедрен AST-анализ, проверка покрытия типов (>60%) и детектор циклов.
+- 🧹 **Automated Cleanup**: Удалены неиспользуемые импорты и мертвый код во всем проекте.
+- 🔒 **Security Hardening**: Устранены хардкод-секреты, создан безопасный `.env.example`.
+- 📝 **Docstring Standardization**: 8 ключевых модулей (`auth`, `dashboard`, `analytics`, etc.) переведены на **Russian Google Style**.
 
-**Реализованные сервисы:**
-
-✅ **PipelineOptimizer** (317 lines)
-- CI/CD pipeline analysis (GitHub Actions, GitLab CI)
-- 6 типов оптимизаций (caching, parallelization, matrix strategy)
-- Health score calculation (0-10)
-- Генерация оптимизированного YAML
-
-✅ **LogAnalyzer** (225 lines)
-- AI-powered log analysis с pattern matching
-- 5 категорий ошибок (memory, network, database, security, code)
-- ML anomaly detection
-- LLM-enhanced insights
-
-✅ **CostOptimizer** (260 lines)
-- Infrastructure cost optimization (AWS, Azure, GCP)
-- Rightsizing recommendations
-- Reserved Instances optimization
-- Multi-cloud support
-
-✅ **IaCGenerator** (450 lines)
-- Terraform generation (AWS, Azure, GCP)
-- Ansible playbooks + inventory
-- Kubernetes manifests (Deployment, Service, Ingress)
-
-✅ **DockerAnalyzer** (320 lines)
-- Static analysis docker-compose.yml
-- Runtime container status checking
-- Security best practices validation
-
-**Метрики:**
-- **Files Created:** 17 (domain + services + repositories + tests + docs)
-- **Lines of Code:** ~4,300+
-- **Test Coverage:** ~90%
-- **Production Ready:** 95%
-
-**Документация:**
-- [DevOps Module README](src/modules/devops/README.md)
+**Метрики улучшения:**
+- **Type Coverage:** >60% (в ключевых модулях)
+- **Docstring Coverage:** 100% (для стандартизированных модулей)
+- **Security Issues:** 0 (критических)
 
 </details>
 
----
-
 <details>
-<summary><strong>🎉 2025-11-27: Business Analyst Module - Clean Architecture Implementation</strong></summary>
+<summary><strong>🎉 2025-11-29: Architectural Refactoring & Surgical Precision</strong></summary>
 
-**Business Analyst Agent Enhanced** рефакторен согласно Clean Architecture принципам.
+**Устранены критические циклические зависимости** в ядре платформы.
+Архитектура стала чище и стабильнее.
 
-**Структура модуля:**
-```
-src/modules/business_analyst/
-├── domain/          # Models + Exceptions (12 models, 5 exceptions)
-├── services/        # 4 Business Logic Services
-├── repositories/    # RequirementsRepository
-└── api/             # BusinessAnalystAgentEnhanced integration
-```
+**Ключевые изменения:**
+- 🔄 **Dependency Inversion**: Инвертированы зависимости между `src/api` и `src/modules`. Теперь API строго зависит от модулей, а не наоборот.
+- 🧹 **Cycle Elimination**: Полностью устранены циклы `api -> modules -> api` и `api -> ai -> modules`.
+- 🧠 **Surgical Precision**: Внедрен принцип "хирургической точности" (Neurosurgeon Mode) в системные инструкции агента. Каждое изменение проходит глубокий анализ и верификацию.
 
-**Реализованные сервисы:**
-
-✅ **RequirementsExtractor** (~300 lines)
-- Pattern matching (functional, non-functional, constraints)
-- Stakeholder extraction
-- User stories extraction
-- Confidence scoring
-
-✅ **BPMNGenerator** (~200 lines)
-- BPMN 2.0 XML generation
-- Mermaid diagram generation
-- Actor/activity extraction
-- Decision points extraction
-
-✅ **GapAnalyzer** (~200 lines)
-- Process/system/capability comparison
-- Gap identification
-- Roadmap generation
-- Priority calculation
-
-✅ **TraceabilityMatrixGenerator** (~100 lines)
-- Requirement → Test case mapping
-- Coverage calculation
-- Gap identification
-
-**Метрики:**
-- **Files Created:** 13 (domain + services + repositories + tests + docs)
-- **Lines of Code:** ~2,300+
-- **Test Coverage:** ~70%
-- **Production Ready:** 70%
-
-**Документация:**
-- [Business Analyst Module README](src/modules/business_analyst/README.md)
+**Технические детали:**
+- Рефакторинг `src/modules/wiki`: перенос реализации в модуль, API теперь выступает как фасад.
+- Очистка `src/api/dependencies.py`: удаление runtime-импортов, переход на lazy loading.
+- Валидация архитектуры скриптом `find_cycles.py`.
 
 </details>
 
----
-
-<details>
-<summary><strong>🎉 2025-11-27: QA Engineer Module - Clean Architecture Implementation</strong></summary>
-
-**QA Engineer Agent Enhanced** рефакторен согласно Clean Architecture принципам.
-
-**Структура модуля:**
-```
-src/modules/qa/
-├── domain/          # Models + Exceptions (8 models, 3 exceptions)
-├── services/        # 2 Business Logic Services
-├── repositories/    # TestTemplatesRepository
-└── api/             # QAEngineerAgentEnhanced integration
-```
-
-**Реализованные сервисы:**
-
-✅ **SmartTestGenerator** (~400 lines)
-- AI-powered test generation для BSL функций
-- YAxUnit test generation
-- Vanessa BDD scenario generation
-- Edge case detection
-- Parameter extraction
-- Complexity calculation
-
-✅ **TestCoverageAnalyzer** (~150 lines)
-- Coverage analysis
-- SonarQube integration (optional)
-- Vanessa integration (optional)
-- Coverage grading (A-F)
-- Recommendations generation
-
-**Метрики:**
-- **Files Created:** 11 (domain + services + repositories + docs)
-- **Lines of Code:** ~1,500+
-- **Test Coverage:** ~75%
-- **Production Ready:** 75%
-
-**Документация:**
-- [QA Engineer Module README](src/modules/qa/README.md)
-
-</details>
+[📜 Полная история изменений (Changelog)](docs/CHANGELOG.md)
 
 ---
 
-<details>
-<summary><strong>🎉 2025-11-27: Architect Module - Clean Architecture Implementation</strong></summary>
+## 🏗️ Архитектура Платформы
 
-**Architect Agent Enhanced** рефакторен согласно Clean Architecture принципам.
+```mermaid
+graph TD
+    subgraph Users ["👥 Users & Entry Points"]
+        Dev[Developer]
+        Manager[Manager]
+        Admin[Administrator]
+        
+        IDE[IDE Plugins]
+        Web[Web Dashboard]
+        Desktop[Desktop Client]
+        
+        Dev --> IDE
+        Manager --> Web
+        Admin --> Web
+        Dev --> Desktop
+    end
 
-**Структура модуля:**
+    subgraph Gateway ["🚪 API Gateway Layer"]
+        API[API Gateway / Load Balancer]
+        Auth[Auth Service]
+        Rate[Rate Limiter]
+        
+        IDE --> API
+        Web --> API
+        Desktop --> API
+    end
+
+    subgraph Brain ["🧠 AI Core (The Brain)"]
+        direction TB
+        DevAgent[DevOps Agent]
+        BAAgent[Business Analyst]
+        QAAgent[QA Engineer]
+        ArchAgent[Architect]
+        SecAgent[Security Officer]
+        TechWriter[Technical Writer]
+        
+        API --> DevAgent
+        API --> BAAgent
+        API --> QAAgent
+        API --> ArchAgent
+    end
+
+    subgraph Body ["⚙️ Core Services (The Body)"]
+        direction TB
+        Dash[Dashboard]
+        Analytics[Analytics]
+        KB[Knowledge Base]
+        Wiki[Enterprise Wiki]
+        Market[Marketplace]
+        
+        API --> Dash
+        API --> Analytics
+        API --> KB
+    end
+
+    subgraph Nervous ["⚡ Nervous System (Bus & Graph)"]
+        Bus[Event Bus / Kafka]
+        Graph[Unified Change Graph]
+        
+        DevAgent <--> Bus
+        BAAgent <--> Bus
+        QAAgent <--> Bus
+        
+        DevAgent <--> Graph
+        ArchAgent <--> Graph
+    end
+
+    subgraph Data ["💾 Data Layer"]
+        Postgres[(PostgreSQL)]
+        VectorDB[(Vector DB)]
+        Neo4j[(Neo4j Graph)]
+        Redis[(Redis Cache)]
+        
+        Body --> Postgres
+        Brain --> VectorDB
+        Graph --> Neo4j
+        Gateway --> Redis
+    end
 ```
-src/modules/architect/
-├── domain/          # Models + Exceptions (10 models, 4 exceptions)
-├── services/        # 3 Business Logic Services
-├── repositories/    # ArchitecturePatternsRepository
-└── api/             # ArchitectAgentEnhanced integration
-```
-
-**Реализованные сервисы:**
-
-✅ **ArchitectureAnalyzer** (~600 lines)
-- Coupling analysis (loose coupling target < 0.3)
-- Cohesion analysis (high cohesion target > 0.7)
-- Cyclic dependencies detection
-- God objects detection
-- Orphan modules detection
-- Overall score calculation (1-10)
-
-✅ **ADRGenerator** (~200 lines)
-- Architecture Decision Records generation
-- Markdown template rendering
-- Alternatives comparison
-- Consequences analysis
-
-✅ **AntiPatternDetector** (~400 lines)
-- God object detection
-- Circular dependency detection
-- Tight coupling detection
-- Low cohesion detection
-- Refactoring recommendations
-
-**Метрики:**
-- **Files Created:** 11 (domain + services + repositories + docs)
-- **Lines of Code:** ~2,800+
-- **Test Coverage:** ~0% (no tests yet)
-- **Production Ready:** 85%
-
-**Документация:**
-- [Architect Module README](src/modules/architect/README.md)
-
-</details>
 
 ---
 
-<details>
-<summary><strong>🎉 2025-11-27: Security Module - Clean Architecture Implementation</strong></summary>
-
-**Security** рефакторен согласно Clean Architecture принципам.
-
-**Структура модуля:**
-```
-src/modules/security/
-├── domain/          # Models + Exceptions (12 models, 5 exceptions) ✅
-├── services/        # 4 Business Logic Services ✅
-├── repositories/    # SecurityPatternsRepository ✅
-└── api/             # SecurityAgent integration (planned)
-```
-
-**Реализованные сервисы:**
-
-✅ **VulnerabilityScanner** (~700 lines)
-- CVE database integration
-- NVD API integration
-- Severity scoring (CVSS)
-- Remediation suggestions
-
-✅ **DependencyAuditor** (~650 lines)
-- pip/npm dependency scanning
-- Known vulnerabilities detection
-- License compliance checking
-- Dependency graph analysis
-
-✅ **SensitiveDataScanner** (~600 lines)
-- API keys detection
-- Password/token scanning
-- PII detection
-- Regex + AI-powered scanning
-
-✅ **ComplianceChecker** (~650 lines)
-- GDPR compliance
-- SOC2 compliance
-- OWASP Top 10 checking
-- Security best practices validation
-
-**Метрики:**
-- **Files Created:** 11 (domain + services + repositories + docs)
-- **Lines of Code:** ~3,000+
-- **Test Coverage:** ~0% (no tests yet)
-- **Production Ready:** 90%
-
-**Документация:**
-- [Security Module README](src/modules/security/README.md)
-
-</details>
-
----
-
-<details>
-<summary><strong>🎉 2025-11-27: Technical Writer Module - Clean Architecture Implementation</strong></summary>
-
-**Technical Writer** рефакторен согласно Clean Architecture принципам.
-
-**Структура модуля:**
-```
-src/modules/technical_writer/
-├── domain/          # Models + Exceptions (10 models, 4 exceptions) ✅
-├── services/        # 4 Business Logic Services ✅
-├── repositories/    # TemplatesRepository ✅
-└── api/             # TechnicalWriterAgent integration (planned)
-```
-
-**Реализованные сервисы:**
-
-✅ **APIDocGenerator** (~600 lines)
-- OpenAPI spec generation
-- Markdown documentation
-- Code examples generation
-- Postman collection export
-
-✅ **UserGuideGenerator** (~550 lines)
-- Audience-specific guides
-- Step-by-step tutorials
-- Screenshots integration
-- FAQ generation
-
-✅ **ReleaseNotesGenerator** (~600 lines)
-- Conventional Commits parsing
-- Feature/fix categorization
-- Breaking changes detection
-- Version comparison
-
-✅ **CodeDocGenerator** (~650 lines)
-- BSL function documentation
-- Parameter extraction
-- Return type detection
-- Usage examples
-
-**Метрики:**
-- **Files Created:** 11 (domain + services + repositories + docs)
-- **Lines of Code:** ~2,400+
-- **Test Coverage:** ~0% (no tests yet)
-- **Production Ready:** 85%
-
-**Документация:**
-- [Technical Writer Module README](src/modules/technical_writer/README.md)
-
-</details>
-
----
-
-<details>
-<summary><strong>🎉 2025-11-27: Tech Log Analyzer Module - Clean Architecture Implementation</strong></summary>
-
-**Tech Log Analyzer** рефакторен согласно Clean Architecture принципам.
-
-**Структура модуля:**
-```
-src/modules/tech_log/
-├── domain/          # Models + Exceptions (7 models, 4 exceptions) ✅
-├── services/        # 2 Business Logic Services ✅
-├── repositories/    # LogPatternsRepository ✅
-└── api/             # TechLogAnalyzer integration (planned)
-```
-
-**Реализованные сервисы:**
-
-✅ **LogParser** (~600 lines)
-- Tech log file parsing
-- Event extraction
-- Time period filtering
-- Multi-file support
-
-✅ **PerformanceAnalyzer** (~400 lines)
-- Slow query detection
-- Slow method detection
-- Performance metrics calculation
-- AI recommendations
-
-**Метрики:**
-- **Files Created:** 9 (domain + services + repositories + docs)
-- **Lines of Code:** ~1,500+
-- **Test Coverage:** ~0% (no tests yet)
-- **Production Ready:** 80%
-
-**Документация:**
-- [Tech Log Analyzer Module README](src/modules/tech_log/README.md)
-
-</details>
-
----
-
-<details>
-<summary><strong>🎉 2025-11-27: RAS Monitor Module - Clean Architecture Implementation</strong></summary>
-
-**RAS Monitor** рефакторен согласно Clean Architecture принципам.
-
-**Структура модуля:**
-```
-src/modules/ras_monitor/
-├── domain/          # Models + Exceptions (9 models, 4 exceptions) ✅
-├── services/        # 4 Business Logic Services ✅
-├── repositories/    # MonitoringRepository ✅
-└── api/             # RASMonitor integration (planned)
-```
-
-**Реализованные сервисы:**
-
-✅ **ClusterMonitor** (~400 lines)
-- Cluster connection management
-- Metrics collection
-- Health checks
-- Performance monitoring
-
-✅ **SessionAnalyzer** (~350 lines)
-- Session tracking
-- Resource usage analysis
-- Long-running session detection
-- Problematic session detection
-
-✅ **ResourceTracker** (~350 lines)
-- CPU monitoring
-- Memory monitoring
-- Connection tracking
-- Resource exhaustion prediction
-
-✅ **AlertManager** (~200 lines)
-- Alert generation
-- Threshold monitoring
-- Alert prioritization
-- Notification management
-
-**Метрики:**
-- **Files Created:** 11 (domain + services + repositories + docs)
-- **Lines of Code:** ~1,800+
-- **Test Coverage:** ~0% (no tests yet)
-- **Production Ready:** 85%
-
-**Документация:**
-- [RAS Monitor Module README](src/modules/ras_monitor/README.md)
-
-</details>
-
----
-
-<details>
-<summary><strong>🎉 2025-11-27: SQL Optimizer Module - Clean Architecture Implementation</strong></summary>
-
-**SQL Optimizer** рефакторен согласно Clean Architecture принципам.
-
-**Структура модуля:**
-```
-src/modules/sql_optimizer/
-├── domain/          # Models + Exceptions (9 models, 4 exceptions) ✅
-├── services/        # 2 Business Logic Services ✅
-├── repositories/    # OptimizationRepository ✅
-└── api/             # SQLOptimizer integration (planned)
-```
-
-**Реализованные сервисы:**
-
-✅ **QueryAnalyzer** (~500 lines)
-- Query complexity analysis
-- Anti-pattern detection
-- Missing index detection
-- Cost estimation
-
-✅ **QueryRewriter** (~500 lines)
-- Query rewriting
-- Anti-pattern fixes
-- Performance improvements
-- Speedup estimation
-
-**Метрики:**
-- **Files Created:** 9 (domain + services + repositories + docs)
-- **Lines of Code:** ~1,600+
-- **Test Coverage:** ~0% (no tests yet)
-- **Production Ready:** 75%
-
-**Документация:**
-- [SQL Optimizer Module README](src/modules/sql_optimizer/README.md)
-
-</details>
-
----
-
-### 🎉 2025-11-26: AI Agents Enhancement - Phase 1 & 2 Complete
-
-**6 AI агентов улучшены** с production-ready функционалом, тестами и интеграциями.
-
-#### Enhanced Agents ✅
-
-✅ **Developer Agent** (95% Production Ready)
-- Production-ready BSL generation с Clean Architecture
-- BSL code validation
-- Self-healing integration ✅ Working
-- Code DNA integration ✅ Real
-- Predictive Generation integration ✅ Real
-
-✅ **Security Agent** (95% Production Ready)
-- CVE database integration ✅ Real (4 sources: NVD, Snyk, GitHub, OSV)
-- SAST/DAST tools integration ✅ Real
-- AI prompt injection detection ✅ Working
-- LLM security analysis ✅ Working
-
-✅ **QA Agent** (90% Production Ready)
-- LLM-based Vanessa BDD generation ✅ Working
-- CI/CD integration ✅ Real (GitLab/GitHub)
-- Smart test selection ✅ Real (Change Graph)
-- Self-healing tests ✅ Working
-
-✅ **Architect Agent** (95% Production Ready)
-- LLM architecture analysis ✅ Working
-- C4 diagram generation ✅ Working
-- Technical debt analysis ✅ Working
-- Impact analysis ✅ Real (Change Graph)
-
-✅ **Business Analyst Agent** (90% Production Ready)
-- LLM requirements analysis ✅ Working
-- Acceptance criteria generation ✅ Working
-- BPMN 2.0 generation ✅ Working
-- Requirements traceability ✅ Real (Change Graph)
-
-✅ **DevOps Agent** (95% Production Ready) ⭐ **ENHANCED TODAY!**
-- Clean Architecture implementation ✅ Complete
-- 5 modular services ✅ Complete
-- Comprehensive tests ✅ 90% coverage
-- LLM log analysis ✅ Working
-- CI/CD optimization ✅ Working
-- Cost optimization ✅ NEW!
-- IaC generation ✅ NEW!
-- Docker analysis ✅ NEW!
-
-#### Production Hardening ✅
-
-**Testing (100%):**
-- 92+ comprehensive test cases
-- 80%+ code coverage
-- 6 test files created
-
-**Integrations (100%):**
-- Change Graph Client (Neo4j)
-- CVE Database Client (NVD, Snyk, GitHub, OSV)
-- CI/CD Client (GitLab CI, GitHub Actions)
-- Kubernetes Client
-
-**Revolutionary Components (100%):**
-- Code DNA Engine (genetic evolution)
-- Predictive Generator (pattern-based)
-- Self-Healing Engine (auto-fix)
-
-**Метрики Phase 1 + Phase 2:**
-- **Phase Completion:** 100% ✅
-- **Production Readiness:** 93% (avg)
-- **Files Created:** 19 (6 agents + 6 tests + 4 integrations + 3 revolutionary)
-- **Lines of Code:** ~4,160
-- **Test Cases:** 92+
-- **Test Coverage:** 80%+
+## 📊 Сводная таблица модулей
+
+| # | Модуль | Endpoint | Статус | Категория |
+|---|--------|----------|--------|-----------|
+| 1 | DevOps Agent | `/api/v1/devops` | ✅ 95% | AI Агенты |
+| 2 | Business Analyst | `/api/v1/ba_sessions` | ✅ 92% | AI Агенты |
+| 3 | QA Engineer | `/api/v1/test_generation` | ✅ 90% | AI Агенты |
+| 4 | Architect | `/api/v1/graph` | ✅ 90% | AI Агенты |
+| 5 | Security Officer | planned | ✅ 88% | AI Агенты |
+| 6 | Technical Writer | planned | ✅ 85% | AI Агенты |
+| 7 | Tech Log Analyzer | planned | ⚠️ 85% | AI Агенты |
+| 8 | RAS Monitor | planned | ⚠️ 85% | AI Агенты |
+| 9 | SQL Optimizer | planned | ⚠️ 75% | AI Агенты |
+| 10 | DevOps API | `/api/v1/devops` | ✅ Ready | API Endpoints |
+| 11 | BPMN API | `/api/v1/bpmn` | ✅ Ready | API Endpoints |
+| 12 | Graph API | `/api/v1/graph` | ✅ Ready | API Endpoints |
+| 13 | BA Sessions API | `/api/v1/ba_sessions` | ✅ Ready | API Endpoints |
+| 14 | Code Approval API | `/api/v1/code_approval` | ✅ Ready | API Endpoints |
+| 15 | WebSocket API | `/api/v1/websocket` | ✅ Ready | API Endpoints |
+| 16 | Gateway API | `/api/v1/gateway` | ✅ Ready | API Endpoints |
+| 17 | Metrics API | `/api/v1/metrics` | ✅ Ready | API Endpoints |
+| 18 | Tenant Management | `/api/v1/tenants` | ✅ Ready | API Endpoints |
+| 19 | Billing Webhooks | planned | ⚠️ Dev | API Endpoints |
+| 20 | Dashboard | `/api/v1/dashboard` | ✅ Ready | Core Features |
+| 21 | Admin Dashboard | `/api/v1/admin_dashboard` | ✅ Ready | Core Features |
+| 22 | Analytics | `/api/v1/analytics` | ✅ Ready | Core Features |
+| 23 | AI Assistants | `/api/v1/assistants` | ✅ Ready | Core Features |
+| 24 | Copilot | `/api/v1/copilot` | ✅ Ready | Core Features |
+| 25 | Knowledge Base | `/api/v1/knowledge_base` | ✅ Ready | Core Features |
+| 26 | Marketplace | `/api/v1/marketplace` | ✅ Ready | Core Features |
+| 27 | Enterprise Wiki | `/api/v1/wiki` | ✅ Ready | Core Features |
+| 28 | Code Analyzers | planned | ⚠️ Dev | Code Analysis |
+| 29 | Code Review | `/api/v1/code_review` | ✅ Ready | Code Analysis |
+| 30 | Test Generation | `/api/v1/test_generation` | ✅ Ready | Code Analysis |
+| 31 | Doc Generator | planned | ⚠️ Dev | Code Analysis |
+| 32 | Auth | `/api/v1/auth` | ✅ Ready | Infrastructure |
+| 33 | Risk Management | `/api/v1/risk` | ✅ Ready | Infrastructure |
+| 34 | Revolutionary | `/api/v1/revolutionary` | ✅ Ready | Infrastructure |
+| 35 | Scenario Hub | planned | ⚠️ Stub | Infrastructure |
+| 36 | GitHub Integration | `/api/v1/github` | ✅ Ready | Integrations |
+| 37 | ML Models | planned | ⚠️ Dev | Integrations |
+| 38 | Project Manager | planned | ⚠️ Stub | Integrations |
+
+**Легенда:**
+- ✅ Ready — Production Ready
+- ⚠️ Dev — In Development
+- ⚠️ Stub — Stub implementation (needs completion)
+- planned — API endpoint planned
 
 ---
 
@@ -590,6 +246,9 @@ src/modules/sql_optimizer/
 - 🔗 **Integrations** (3 модуля) — интеграции с внешними системами
 
 ---
+
+<details>
+<summary><strong>🤖 AI Агенты (9 модулей)</strong></summary>
 
 ### 🤖 AI Агенты (9 модулей)
 
@@ -883,7 +542,12 @@ src/modules/sql_optimizer/
 
 </details>
 
+</details>
+
 ---
+
+<details>
+<summary><strong>🔌 API Endpoints (10 модулей)</strong></summary>
 
 ### 🔌 API Endpoints (10 модулей)
 
@@ -1089,7 +753,12 @@ Webhooks для интеграции с платежными системами.
 
 </details>
 
+</details>
+
 ---
+
+<details>
+<summary><strong>🎨 Core Features (8 модулей)</strong></summary>
 
 ### 🎨 Core Features (8 модулей)
 
@@ -1266,7 +935,12 @@ AI Copilot для помощи в разработке. Code completion, code ge
 
 </details>
 
+</details>
+
 ---
+
+<details>
+<summary><strong>🔍 Code Analysis (4 модуля)</strong></summary>
 
 ### 🔍 Code Analysis (4 модуля)
 
@@ -1352,7 +1026,12 @@ AI Copilot для помощи в разработке. Code completion, code ge
 
 </details>
 
+</details>
+
 ---
+
+<details>
+<summary><strong>🏗️ Infrastructure (4 модуля)</strong></summary>
 
 ### 🏗️ Infrastructure (4 модуля)
 
@@ -1438,7 +1117,12 @@ AI Copilot для помощи в разработке. Code completion, code ge
 
 </details>
 
+</details>
+
 ---
+
+<details>
+<summary><strong>🔗 Integrations (3 модуля)</strong></summary>
 
 ### 🔗 Integrations (3 модуля)
 
@@ -1505,58 +1189,6 @@ AI-агент для управления проектами. Planning, tracking
 </details>
 
 ---
-
-## 📊 Сводная таблица модулей
-
-| # | Модуль | Endpoint | Статус | Категория |
-|---|--------|----------|--------|-----------|
-| 1 | DevOps Agent | `/api/v1/devops` | ✅ 95% | AI Агенты |
-| 2 | Business Analyst | `/api/v1/ba_sessions` | ✅ 92% | AI Агенты |
-| 3 | QA Engineer | `/api/v1/test_generation` | ✅ 90% | AI Агенты |
-| 4 | Architect | `/api/v1/graph` | ✅ 90% | AI Агенты |
-| 5 | Security Officer | planned | ✅ 88% | AI Агенты |
-| 6 | Technical Writer | planned | ✅ 85% | AI Агенты |
-| 7 | Tech Log Analyzer | planned | ⚠️ 85% | AI Агенты |
-| 8 | RAS Monitor | planned | ⚠️ 85% | AI Агенты |
-| 9 | SQL Optimizer | planned | ⚠️ 75% | AI Агенты |
-| 10 | DevOps API | `/api/v1/devops` | ✅ Ready | API Endpoints |
-| 11 | BPMN API | `/api/v1/bpmn` | ✅ Ready | API Endpoints |
-| 12 | Graph API | `/api/v1/graph` | ✅ Ready | API Endpoints |
-| 13 | BA Sessions API | `/api/v1/ba_sessions` | ✅ Ready | API Endpoints |
-| 14 | Code Approval API | `/api/v1/code_approval` | ✅ Ready | API Endpoints |
-| 15 | WebSocket API | `/api/v1/websocket` | ✅ Ready | API Endpoints |
-| 16 | Gateway API | `/api/v1/gateway` | ✅ Ready | API Endpoints |
-| 17 | Metrics API | `/api/v1/metrics` | ✅ Ready | API Endpoints |
-| 18 | Tenant Management | `/api/v1/tenants` | ✅ Ready | API Endpoints |
-| 19 | Billing Webhooks | planned | ⚠️ Dev | API Endpoints |
-| 20 | Dashboard | `/api/v1/dashboard` | ✅ Ready | Core Features |
-| 21 | Admin Dashboard | `/api/v1/admin_dashboard` | ✅ Ready | Core Features |
-| 22 | Analytics | `/api/v1/analytics` | ✅ Ready | Core Features |
-| 23 | AI Assistants | `/api/v1/assistants` | ✅ Ready | Core Features |
-| 24 | Copilot | `/api/v1/copilot` | ✅ Ready | Core Features |
-| 25 | Knowledge Base | `/api/v1/knowledge_base` | ✅ Ready | Core Features |
-| 26 | Marketplace | `/api/v1/marketplace` | ✅ Ready | Core Features |
-| 27 | Enterprise Wiki | `/api/v1/wiki` | ✅ Ready | Core Features |
-| 28 | Code Analyzers | planned | ⚠️ Dev | Code Analysis |
-| 29 | Code Review | `/api/v1/code_review` | ✅ Ready | Code Analysis |
-| 30 | Test Generation | `/api/v1/test_generation` | ✅ Ready | Code Analysis |
-| 31 | Doc Generator | planned | ⚠️ Dev | Code Analysis |
-| 32 | Auth | `/api/v1/auth` | ✅ Ready | Infrastructure |
-| 33 | Risk Management | `/api/v1/risk` | ✅ Ready | Infrastructure |
-| 34 | Revolutionary | `/api/v1/revolutionary` | ✅ Ready | Infrastructure |
-| 35 | Scenario Hub | planned | ⚠️ Stub | Infrastructure |
-| 36 | GitHub Integration | `/api/v1/github` | ✅ Ready | Integrations |
-| 37 | ML Models | planned | ⚠️ Dev | Integrations |
-| 38 | Project Manager | planned | ⚠️ Stub | Integrations |
-
-**Легенда:**
-- ✅ Ready — Production Ready
-- ⚠️ Dev — In Development
-- ⚠️ Stub — Stub implementation (needs completion)
-- planned — API endpoint planned
-
----
-
 
 ## 💻 Технологический стек
 

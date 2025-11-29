@@ -15,6 +15,8 @@ import asyncio
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+
+
 import pandas as pd
 from fastapi import APIRouter, BackgroundTasks, Depends, FastAPI, HTTPException
 from fastapi.responses import JSONResponse
@@ -22,11 +24,6 @@ from pydantic import BaseModel, Field
 
 from src.config import settings
 from src.middleware.rate_limiter import limiter
-from src.ml.ab_testing.tester import ABTestConfig, ABTestManager, TestType
-from src.ml.experiments.mlflow_manager import MLFlowManager
-from src.ml.metrics.collector import AssistantRole, MetricsCollector, MetricType
-from src.ml.models.predictor import MLPredictor, create_model
-from src.ml.training.trainer import ModelTrainer, TrainingType
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -108,19 +105,24 @@ class ABTestPredictionRequest(BaseModel):
 
 
 # Глобальные экземпляры сервисов
-metrics_collector: Optional[MetricsCollector] = None
-model_trainer: Optional[ModelTrainer] = None
-mlflow_manager: Optional[MLFlowManager] = None
-ab_test_manager: Optional[ABTestManager] = None
+metrics_collector: Optional["MetricsCollector"] = None
+model_trainer: Optional["ModelTrainer"] = None
+mlflow_manager: Optional["MLFlowManager"] = None
+ab_test_manager: Optional["ABTestManager"] = None
 
 # Глобальные модели (в продакшене можно использовать кэш)
-trained_models: Dict[str, MLPredictor] = {}
+trained_models: Dict[str, "MLPredictor"] = {}
 active_ab_tests: Dict[str, str] = {}  # test_id -> user_id -> model_name
 
 
 def get_ml_services():
     """Зависимость для получения ML сервисов"""
     global metrics_collector, model_trainer, mlflow_manager, ab_test_manager
+
+    # Lazy imports
+    from src.ml.ab_testing.tester import ABTestManager
+    from src.ml.experiments.mlflow_manager import MLFlowManager
+    from src.ml.metrics.collector import MetricsCollector
 
     if metrics_collector is None:
         metrics_collector = MetricsCollector()
@@ -237,6 +239,7 @@ async def record_metric(
         # Input validation and sanitization (best practice)
         # Validate metric_type
         try:
+            from src.ml.metrics.collector import MetricType
             metric_type = MetricType(request.metric_type.lower())
         except ValueError:
             raise HTTPException(
@@ -246,6 +249,7 @@ async def record_metric(
 
         # Validate assistant_role
         try:
+            from src.ml.metrics.collector import AssistantRole
             assistant_role = AssistantRole(request.assistant_role.lower())
         except ValueError:
             raise HTTPException(
@@ -468,6 +472,7 @@ async def get_assistant_metrics(
 
         # Timeout для получения метрик (30 секунд)
         if metric_type:
+            from src.ml.metrics.collector import MetricType
             metric_enum = MetricType(metric_type.lower())
             metrics = await asyncio.wait_for(
                 asyncio.to_thread(
@@ -481,6 +486,7 @@ async def get_assistant_metrics(
         else:
             # Все метрики для роли
             metrics = {}
+            from src.ml.metrics.collector import MetricType
             for m_type in MetricType:
                 try:
                     m_data = await asyncio.wait_for(
@@ -560,6 +566,8 @@ async def get_assistant_metrics(
 async def create_model(request: ModelCreateRequest, services=Depends(get_ml_services)):
     """Создание модели ML"""
     try:
+        from src.ml.models.predictor import create_model
+
         # Создание модели
         model = create_model(
             model_type=request.model_type,
@@ -610,6 +618,9 @@ async def train_model(
     """Обучение модели"""
     try:
         # Создание training job
+        import pandas as pd
+        from src.ml.training.trainer import TrainingType
+
         training_data_df = pd.DataFrame(request.training_data)
 
         training_type_enum = TrainingType(request.training_type.lower())
@@ -666,6 +677,7 @@ async def predict_model(
             raise ValueError(f"Модель {model_name} не обучена")
 
         # Подготовка данных для предсказания
+        import pandas as pd
         input_df = pd.DataFrame([request.input_data])
 
         # Предсказание
@@ -756,6 +768,8 @@ async def create_ab_test(
         treatment_model = trained_models[request.treatment_model_name]
 
         # Создание конфигурации A/B теста
+        from src.ml.ab_testing.tester import ABTestConfig, TestType
+
         config = ABTestConfig(
             test_name=request.test_name,
             description=request.description,

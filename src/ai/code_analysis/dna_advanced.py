@@ -21,7 +21,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import List
 
-from src.ai.code_dna import CodeDNA, CodeDNAEngine, Gene
+from src.ai.code_analysis.dna import CodeDNA, CodeDNAEngine, Gene
 
 logger = logging.getLogger(__name__)
 

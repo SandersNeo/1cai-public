@@ -12,7 +12,7 @@ import re
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from src.ai.agents.qa_engineer_agent_extended import QAEngineerAgentExtended
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -36,6 +36,7 @@ class CodeToTestGenerator:
     """
 
     def __init__(self):
+        from src.ai.agents.qa_engineer_agent_extended import QAEngineerAgentExtended
         self.qa_agent = QAEngineerAgentExtended()
         logger.info("CodeToTestGenerator initialized")
 

@@ -427,7 +427,7 @@ class DeploymentOrchestrator:
             prometheus_url = "http://localhost:9090/api/v1/query"
 
             queries = {
-                "error_rate": f'rate(http_requests_total{{app="{name}",env="{environment}",status=~"5.."}}'[5m]) * 100',
+                "error_rate": f'rate(http_requests_total{{app="{name}",env="{environment}",status=~"5.."}}[5m]) * 100',
                 "response_time_p95": f'histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{{app="{name}",env="{environment}"}}[5m])) * 1000',
                 "success_rate": f'rate(http_requests_total{{app="{name}",env="{environment}",status=~"2.."}}[5m]) * 100',
             }

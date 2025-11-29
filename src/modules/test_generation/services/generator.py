@@ -18,7 +18,7 @@ logger = StructuredLogger(__name__).logger
 class TestGeneratorService:
     """Main service for test generation"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.bsl_generator = BSLTestGenerator()
         self.python_generator = PythonTestGenerator()
         self.js_generator = JSTestGenerator()

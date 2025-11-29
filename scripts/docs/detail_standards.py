@@ -6,9 +6,6 @@
 Использует шаблон из 152-ФЗ Compliance для создания детальных версий
 """
 
-import json
-import os
-from pathlib import Path
 
 # Конфигурация стандартов для детализации
 STANDARDS_CONFIG = {

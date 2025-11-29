@@ -2,7 +2,6 @@
 
 """Небольшой скрипт для демонстрации работы EventLogger."""
 
-from pathlib import Path
 
 from cursorext import EventLogger
 

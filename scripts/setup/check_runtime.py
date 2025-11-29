@@ -8,7 +8,6 @@ from __future__ import annotations
 import platform
 import shutil
 import subprocess
-import sys
 from typing import Iterable, List
 
 CANDIDATE_COMMANDS: List[List[str]] = [

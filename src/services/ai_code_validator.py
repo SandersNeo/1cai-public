@@ -18,7 +18,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from src.ai.agents.qa_engineer_agent_extended import QAEngineerAgentExtended
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -71,6 +71,10 @@ class AICodeValidator:
         self.ib_user = ib_user
         self.ib_password = ib_password
 
+        self.ib_user = ib_user
+        self.ib_password = ib_password
+
+        from src.ai.agents.qa_engineer_agent_extended import QAEngineerAgentExtended
         self.qa_agent = QAEngineerAgentExtended()
 
         logger.info(

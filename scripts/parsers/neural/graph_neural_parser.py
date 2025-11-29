@@ -20,7 +20,7 @@ Graph Neural Network Parser для BSL кода
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
 import numpy as np
 import torch

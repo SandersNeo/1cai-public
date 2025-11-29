@@ -20,19 +20,11 @@ import secrets
 # Импорты приложения
 import sys
 import time
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
-from unittest.mock import AsyncMock, Mock, patch
 
-import httpx
 import pytest
-from factory import Factory, Trait
-from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
-from freezegun import freeze_time
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from main import app
 
 # =============================================================================
 # SSE (SERVER-SENT EVENTS) ТЕСТЫ

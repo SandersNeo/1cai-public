@@ -17,12 +17,11 @@ Neural BSL Parser - Революционный парсер на нейросе�
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 class CodeIntent(Enum):

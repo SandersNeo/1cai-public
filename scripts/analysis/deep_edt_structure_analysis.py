@@ -9,13 +9,12 @@
 """
 
 import json
-import os
 import sys
 import time
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict
 
 
 class EDTStructureAnalyzer:

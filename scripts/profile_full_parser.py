@@ -6,7 +6,6 @@
 С реальными измерениями
 """
 
-import io
 import sys
 import time
 import xml.etree.ElementTree as ET

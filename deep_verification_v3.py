@@ -4,17 +4,13 @@ DEEP VERIFICATION V3 - ULTIMATE PROJECT AUDIT
 Strictly follows "CRITICAL RULES OF VERIFICATION" (Nov 7, 2025)
 """
 
-import ast
-import json
 import os
 import re
-import socket
 import sys
 import time
 import urllib.error
 import urllib.request
 from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 # Configuration

@@ -12,7 +12,6 @@ print("=" * 70)
 print("\n1️⃣ Проверка импорта модулей...")
 try:
     import psycopg2
-    from psycopg2 import pool
     print(f"✅ psycopg2 версия: {psycopg2.__version__}")
     print(f"✅ psycopg2.pool доступен")
 except ImportError as e:

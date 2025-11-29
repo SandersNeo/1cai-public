@@ -5,7 +5,6 @@ Workaround for security restrictions blocking automated test execution
 """
 
 import sys
-import os
 import importlib
 import argparse
 from pathlib import Path

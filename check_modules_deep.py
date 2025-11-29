@@ -1,8 +1,6 @@
 # [NEXUS IDENTITY] ID: 1206007516134762621 | DATE: 2025-11-19
 
 import os
-import re
-from pathlib import Path
 
 MODULES_DIR = "m1cai_modules"
 DOCS_DIR = "docs"

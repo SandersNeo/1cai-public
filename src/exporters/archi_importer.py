@@ -4,6 +4,7 @@ ArchiMate Importer - Import ArchiMate models into Unified Change Graph
 Imports ArchiMate XML files with transaction support and rollback.
 """
 
+from __future__ import annotations
 import logging
 import xml.etree.ElementTree as ET
 from typing import TYPE_CHECKING, Any, Dict, Optional

@@ -14,7 +14,6 @@
 import random
 import time
 from datetime import timedelta
-from typing import Any, Dict
 
 # Импорт системы мониторинга
 try:

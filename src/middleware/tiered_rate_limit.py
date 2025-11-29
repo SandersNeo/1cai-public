@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import time
 from enum import Enum
-from typing import Dict, Optional
+from typing import Dict, Optional, TYPE_CHECKING
 
 from fastapi import HTTPException, status
 from prometheus_client import Counter
@@ -21,7 +21,9 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from src.modules.auth.application.service import AuthService
+if TYPE_CHECKING:
+    from src.modules.auth.application.service import AuthService
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -72,7 +74,7 @@ class TieredRateLimitMiddleware(BaseHTTPMiddleware):
         self,
         app,
         redis_client: Redis,
-        auth_service: Optional[AuthService] = None,
+        auth_service: Optional["AuthService"] = None,
         window_seconds: int = 60,
     ) -> None:
         super().__init__(app)

@@ -9,7 +9,7 @@ from typing import Dict
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from src.database import get_pool
+from src.database import get_db_pool as get_pool
 from src.modules.auth.api.dependencies import get_current_user_id
 from src.modules.auth.api.schemas import (
     OAuthAuthorizeResponse,
@@ -28,8 +28,19 @@ oauth_service = OAuthService()
 
 @router.post("/{provider}/authorize", response_model=OAuthAuthorizeResponse)
 async def authorize_oauth(provider: str, user_id: int = Depends(get_current_user_id)) -> OAuthAuthorizeResponse:
-    """
-    Инициировать OAuth flow
+    """Инициирует процесс OAuth авторизации.
+
+    Генерирует URL для перенаправления пользователя на страницу провайдера.
+
+    Args:
+        provider: Имя провайдера (google, github, yandex).
+        user_id: ID текущего пользователя.
+
+    Returns:
+        OAuthAuthorizeResponse: URL авторизации.
+
+    Raises:
+        HTTPException: Если провайдер не найден или ошибка генерации URL.
     """
     try:
         pool = await get_pool()
@@ -52,8 +63,19 @@ async def authorize_oauth(provider: str, user_id: int = Depends(get_current_user
 
 @router.post("/{provider}/callback", response_model=OAuthCallbackResponse)
 async def oauth_callback(provider: str, request: OAuthCallbackRequest) -> OAuthCallbackResponse:
-    """
-    Обработать OAuth callback
+    """Обрабатывает OAuth callback от провайдера.
+
+    Обменивает код авторизации на токен доступа.
+
+    Args:
+        provider: Имя провайдера.
+        request: Данные callback (code, state).
+
+    Returns:
+        OAuthCallbackResponse: Результат авторизации.
+
+    Raises:
+        HTTPException: Если код невалиден или ошибка обмена.
     """
     try:
         pool = await get_pool()
@@ -80,8 +102,14 @@ async def oauth_callback(provider: str, request: OAuthCallbackRequest) -> OAuthC
 
 @router.get("/{provider}/status", response_model=OAuthStatusResponse)
 async def get_oauth_status(provider: str, user_id: int = Depends(get_current_user_id)) -> OAuthStatusResponse:
-    """
-    Проверить статус OAuth подключения
+    """Проверяет статус подключения OAuth провайдера.
+
+    Args:
+        provider: Имя провайдера.
+        user_id: ID пользователя.
+
+    Returns:
+        OAuthStatusResponse: Статус подключения и время истечения токена.
     """
     try:
         pool = await get_pool()
@@ -103,8 +131,14 @@ async def get_oauth_status(provider: str, user_id: int = Depends(get_current_use
 
 @router.delete("/{provider}/disconnect", response_model=OAuthDisconnectResponse)
 async def disconnect_oauth(provider: str, user_id: int = Depends(get_current_user_id)) -> OAuthDisconnectResponse:
-    """
-    Отключить OAuth провайдера
+    """Отключает OAuth провайдера (удаляет токен).
+
+    Args:
+        provider: Имя провайдера.
+        user_id: ID пользователя.
+
+    Returns:
+        OAuthDisconnectResponse: Статус операции.
     """
     try:
         pool = await get_pool()
@@ -122,8 +156,10 @@ async def disconnect_oauth(provider: str, user_id: int = Depends(get_current_use
 
 @router.get("/providers")
 async def list_providers() -> Dict:
-    """
-    Получить список поддерживаемых OAuth провайдеров
+    """Возвращает список поддерживаемых OAuth провайдеров.
+
+    Returns:
+        Dict: Конфигурация провайдеров (имя, настроен ли, scopes).
     """
     providers = {}
     for name, config in oauth_service.providers.items():

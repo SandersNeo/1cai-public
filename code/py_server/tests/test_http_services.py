@@ -19,28 +19,22 @@ Comprehensive тесты HTTP сервисов для 1С MCP сервера
 
 import asyncio
 import hashlib
-import json
 import os
 # Импорты приложения
 import sys
 import time
-import uuid
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from datetime import datetime
 from unittest.mock import AsyncMock, Mock, patch
 
 import httpx
 import pytest
 from factory import Factory, Trait
 from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
-from freezegun import freeze_time
-from pytest import fixture, mark
+from pytest import fixture
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from api.cache_admin import (CacheHealth, CacheKeyInfo, CacheStats,
-                             MemoryCache, cache_metrics)
-from config import Environment, config
+from api.cache_admin import (CacheStats, MemoryCache, cache_metrics)
 from main import app
 
 # =============================================================================

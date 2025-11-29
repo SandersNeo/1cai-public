@@ -15,14 +15,13 @@ CLI: показать решения политики (AUTO/NEEDS_APPROVAL/FORBI
 
 import argparse
 import json
-from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Dict
 
 import yaml
 
 from src.ai.scenario_hub import AutonomyLevel, ScenarioPlan
-from src.ai.scenario_policy import StepDecision, assess_plan_execution
+from src.ai.scenario_policy import assess_plan_execution
 
 
 def _load_plan(path: Path) -> Dict[str, Any]:

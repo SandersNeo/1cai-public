@@ -1,14 +1,12 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from src.api.dependencies import (
-    get_embedding_service,
-    get_neo4j_client,
+from src.services.common_dependencies import (
     get_postgres_client,
     get_qdrant_client,
 )
-from src.db.neo4j_client import Neo4jClient
+from src.db.neo4j_client import Neo4jClient, get_neo4j_client
 from src.db.postgres_saver import PostgreSQLSaver
 from src.db.qdrant_client import QdrantClient
 from src.modules.graph_api.domain.models import (
@@ -20,33 +18,22 @@ from src.modules.graph_api.services.graph_service import (
     GraphService,
     VectorSearchService,
 )
-from src.services.embedding_service import EmbeddingService
+from src.modules.graph_api.dependencies import (
+    get_graph_service,
+    get_vector_search_service,
+)
 
 router = APIRouter(tags=["graph"])
 
 
-def get_graph_service(
-    neo4j_client: Optional[Neo4jClient] = Depends(get_neo4j_client),
-) -> GraphService:
-    if not neo4j_client:
-        raise HTTPException(status_code=503, detail="Neo4j not available")
-    return GraphService(neo4j_client)
 
-
-def get_vector_search_service(
-    qdrant_client: Optional[QdrantClient] = Depends(get_qdrant_client),
-    embedding_service: Optional[EmbeddingService] = Depends(get_embedding_service),
-) -> VectorSearchService:
-    if not qdrant_client or not embedding_service:
-        raise HTTPException(status_code=503, detail="Vector search not available")
-    return VectorSearchService(qdrant_client, embedding_service)
 
 
 @router.post("/graph/query")
 async def execute_graph_query(
     request: GraphQueryRequest,
     service: GraphService = Depends(get_graph_service),
-):
+) -> Dict[str, Any]:
     """Execute custom Cypher query."""
     try:
         records = await service.execute_query(request.query, request.parameters)
@@ -60,7 +47,7 @@ async def execute_graph_query(
 @router.get("/graph/configurations")
 async def get_configurations(
     service: GraphService = Depends(get_graph_service),
-):
+) -> Dict[str, Any]:
     """Get all configurations."""
     try:
         configs = await service.get_configurations()
@@ -75,7 +62,7 @@ async def get_objects(
     object_type: Optional[str] = Query(
         None, max_length=100, description="Filter by object type"),
     service: GraphService = Depends(get_graph_service),
-):
+) -> Dict[str, Any]:
     """Get objects of a configuration."""
     if not config_name or len(config_name) > 200:
         raise HTTPException(status_code=400, detail="Invalid config_name")
@@ -92,7 +79,7 @@ async def get_objects(
 async def get_function_dependencies(
     request: FunctionDependenciesRequest,
     service: GraphService = Depends(get_graph_service),
-):
+) -> Any:
     """Get function call graph."""
     try:
         result = await service.get_function_dependencies(request.module_name, request.function_name)
@@ -105,7 +92,7 @@ async def get_function_dependencies(
 async def semantic_search(
     request: SemanticSearchRequest,
     service: VectorSearchService = Depends(get_vector_search_service),
-):
+) -> Dict[str, Any]:
     """Semantic code search using Qdrant."""
     try:
         results = await service.semantic_search(request.query, request.configuration, request.limit)
@@ -121,7 +108,7 @@ async def get_stats_overview(
     neo4j_client: Optional[Neo4jClient] = Depends(get_neo4j_client),
     qdrant_client: Optional[QdrantClient] = Depends(get_qdrant_client),
     pg_client: Optional[PostgreSQLSaver] = Depends(get_postgres_client),
-):
+) -> Dict[str, Any]:
     """Get overall statistics."""
     stats = {}
 

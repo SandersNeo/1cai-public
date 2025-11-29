@@ -9,11 +9,9 @@ Fine-tune Qwen-Coder on SmolTalk Dataset
 import json
 import logging
 import os
-import sys
 from pathlib import Path
 from typing import Optional
 
-import bitsandbytes as bnb
 import torch
 from datasets import load_dataset
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training

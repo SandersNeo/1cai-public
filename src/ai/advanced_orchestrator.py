@@ -13,15 +13,15 @@ Integration of advanced components with AI Orchestrator:
 
 import asyncio
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
-from src.ai.distributed_agent_network import DistributedAgentNetwork
 from src.ai.llm_provider_abstraction import LLMProviderAbstraction
 from src.ai.orchestrator import AIOrchestrator
-from src.ai.self_evolving_ai import SelfEvolvingAI
-from src.ai.self_healing_code import SelfHealingCode
 from src.infrastructure.event_bus import EventBus, EventPublisher, EventType
 from src.monitoring.advanced_metrics import AdvancedMetricsCollector
+
+if TYPE_CHECKING:
+    pass
 
 logger = logging.getLogger(__name__)
 
@@ -47,12 +47,17 @@ class AdvancedAIOrchestrator(AIOrchestrator):
 
         # Self-Evolving AI
         llm_provider = self._get_llm_provider()
+        
+        # Lazy load heavy components
+        from src.ai.self_evolving_ai import SelfEvolvingAI
         self.evolving_ai = SelfEvolvingAI(llm_provider, self.event_bus)
 
         # Self-Healing Code
+        from src.ai.healing.code import SelfHealingCode
         self.healing_code = SelfHealingCode(llm_provider, self.event_bus)
 
         # Distributed Agent Network
+        from src.ai.distributed_agent_network import DistributedAgentNetwork
         self.agent_network = DistributedAgentNetwork(self.event_bus)
 
         # Metrics
@@ -200,6 +205,8 @@ class AdvancedAIOrchestrator(AIOrchestrator):
         - Достижения консенсуса
         - Коллаборации агентов
         """
+
+        # Lazy import Task
         from src.ai.distributed_agent_network import Task
 
         # Создание задачи
@@ -231,3 +238,4 @@ class AdvancedAIOrchestrator(AIOrchestrator):
     def get_metrics_summary(self) -> Dict[str, Any]:
         """Получение сводки метрик"""
         return self.metrics.get_summary()
+

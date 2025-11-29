@@ -6,7 +6,7 @@ AI ассистент для архитекторов с LLM интеграци�
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from src.ai.agents.base_agent import AgentCapability, BaseAgent
 from src.ai.architecture_patterns import get_pattern_matcher
@@ -19,12 +19,12 @@ from src.modules.architect.domain.models import (
     ArchitectureAnalysisResult,
 )
 
-# Import new services
-from src.modules.architect.services import (
-    ADRGenerator,
-    AntiPatternDetector,
-    ArchitectureAnalyzer,
-)
+if TYPE_CHECKING:
+    from src.modules.architect.services import (
+        ADRGenerator,
+        AntiPatternDetector,
+        ArchitectureAnalyzer,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -43,9 +43,9 @@ class ArchitectAgentEnhanced(BaseAgent):
 
     def __init__(
         self,
-        architecture_analyzer=None,
-        adr_generator=None,
-        anti_pattern_detector=None,
+        architecture_analyzer: Optional["ArchitectureAnalyzer"] = None,
+        adr_generator: Optional["ADRGenerator"] = None,
+        anti_pattern_detector: Optional["AntiPatternDetector"] = None,
     ):
         super().__init__(
             agent_name="architect_agent_enhanced",
@@ -56,14 +56,24 @@ class ArchitectAgentEnhanced(BaseAgent):
         )
         self.logger = logging.getLogger("architect_agent_enhanced")
 
-        # Initialize new services
-        self.architecture_analyzer = (
-            architecture_analyzer or ArchitectureAnalyzer()
-        )
-        self.adr_generator = adr_generator or ADRGenerator()
-        self.anti_pattern_detector = (
-            anti_pattern_detector or AntiPatternDetector()
-        )
+        # Initialize new services with lazy loading
+        if architecture_analyzer:
+            self.architecture_analyzer = architecture_analyzer
+        else:
+            from src.modules.architect.services import ArchitectureAnalyzer
+            self.architecture_analyzer = ArchitectureAnalyzer()
+
+        if adr_generator:
+            self.adr_generator = adr_generator
+        else:
+            from src.modules.architect.services import ADRGenerator
+            self.adr_generator = ADRGenerator()
+
+        if anti_pattern_detector:
+            self.anti_pattern_detector = anti_pattern_detector
+        else:
+            from src.modules.architect.services import AntiPatternDetector
+            self.anti_pattern_detector = AntiPatternDetector()
 
         # Change Graph integration (stub)
         self.change_graph = None

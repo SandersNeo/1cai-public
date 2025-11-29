@@ -1,45 +1,37 @@
-# [NEXUS IDENTITY] ID: -6726814223650585514 | DATE: 2025-11-19
-
-"""
-AI Orchestrator - Intelligent routing of queries to AI services
-Версия: 3.1.0
-Refactored: API endpoints moved to src/api/orchestrator_api.py
-"""
+# AI Orchestrator - Intelligent routing of queries to AI services
+# Версия: 3.1.0
+# Refactored: API endpoints moved to src/api/orchestrator_api.py
 
 import asyncio
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, TYPE_CHECKING
 
-# Import extracted classifier
-from src.ai.query_classifier import AIService, QueryClassifier, QueryIntent
-from src.ai.strategies.graph import Neo4jStrategy
-from src.ai.strategies.kimi import KimiStrategy
-from src.ai.strategies.llm_providers import (
-    GigaChatStrategy,
-    NaparnikStrategy,
-    OllamaStrategy,
-    TabnineStrategy,
-    YandexGPTStrategy,
-)
-
-# Import strategies
-from src.ai.strategies.qwen import QwenStrategy
-from src.ai.strategies.semantic import QdrantStrategy
-from src.monitoring.prometheus_metrics import (
-    orchestrator_cache_hits_total,
-    orchestrator_cache_misses_total,
-)
+from src.ai.query_classifier import QueryClassifier, QueryIntent, QueryType, AIService
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 
+if TYPE_CHECKING:
+    pass
 
 class AIOrchestrator:
-    """Main AI orchestrator - routes queries to appropriate services using Strategy Pattern"""
+    # Main AI orchestrator - routes queries to appropriate services using Strategy Pattern
 
     def __init__(self):
         self.classifier = QueryClassifier()
 
-        # Initialize strategies
+        # Initialize strategies (Lazy Loading)
+        from src.ai.strategies.graph import Neo4jStrategy
+        from src.ai.strategies.kimi import KimiStrategy
+        from src.ai.strategies.llm_providers import (
+            GigaChatStrategy,
+            NaparnikStrategy,
+            OllamaStrategy,
+            TabnineStrategy,
+            YandexGPTStrategy,
+        )
+        from src.ai.strategies.qwen import QwenStrategy
+        from src.ai.strategies.semantic import QdrantStrategy
+
         self.strategies = {
             AIService.QWEN_CODER: QwenStrategy(),
             AIService.KIMI_K2: KimiStrategy(),
@@ -63,8 +55,8 @@ class AIOrchestrator:
         # Graph Helper
         self.graph_helper = None
         try:
-            from src.ai.code_graph import InMemoryCodeGraphBackend
-            from src.ai.code_graph_query_helper import GraphQueryHelper
+            from src.ai.code_analysis.graph import InMemoryCodeGraphBackend
+            from src.ai.code_analysis.graph_query_helper import GraphQueryHelper
 
             self.graph_helper = GraphQueryHelper(InMemoryCodeGraphBackend())
         except Exception:
@@ -81,7 +73,7 @@ class AIOrchestrator:
             logger.warning("Council orchestrator not available: %s", e)
 
     def _get_strategy(self, service: AIService, context: Dict) -> Any:
-        """Get strategy for service"""
+        # Get strategy for service
         if service == AIService.EXTERNAL_AI:
             # Fallback or specific logic
             return self.strategies.get(AIService.QWEN_CODER)
@@ -94,7 +86,7 @@ class AIOrchestrator:
         return self.strategies.get(service)
 
     async def process_query(self, query: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Process query and return response"""
+        # Process query and return response
         if not query:
             raise ValueError("Query must be a non-empty string")
 
@@ -188,17 +180,13 @@ class AIOrchestrator:
     async def process_query_with_council(
         self, query: str, context: Optional[Dict[str, Any]] = None, council_config: Optional[Dict] = None
     ) -> Dict[str, Any]:
-        """
-        Process query with LLM Council consensus.
-
-        Args:
-            query: User query
-            context: Optional context
-            council_config: Optional council configuration
-
-        Returns:
-            Council response with all stages
-        """
+        # Process query with LLM Council consensus.
+        # Args:
+        #     query: User query
+        #     context: Optional context
+        #     council_config: Optional council configuration
+        # Returns:
+        #     Council response with all stages
         if not self.council:
             raise ValueError("Council orchestrator not available")
 
@@ -216,15 +204,11 @@ class AIOrchestrator:
         return council_response.to_dict()
 
     def _get_provider(self, model_name: str):
-        """
-        Get provider for model name.
-
-        Args:
-            model_name: Model name (kimi, qwen, gigachat, yandexgpt)
-
-        Returns:
-            Provider strategy
-        """
+        # Get provider for model name.
+        # Args:
+        #     model_name: Model name (kimi, qwen, gigachat, yandexgpt)
+        # Returns:
+        #     Provider strategy
         # Map model names to strategies
         model_map = {
             "kimi": AIService.KIMI_K2,
@@ -240,7 +224,7 @@ class AIOrchestrator:
         return self.strategies.get(service)
 
     async def _execute_strategies(self, query: str, intent: QueryIntent, context: Dict) -> Dict:
-        """Execute strategies based on intent"""
+        # Execute strategies based on intent
 
         # Single service optimization
         if len(intent.preferred_services) == 1:
@@ -264,14 +248,17 @@ class AIOrchestrator:
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
-        combined_results = {}
+        # Aggregate results
         successful_count = 0
+        combined_results = {}
 
-        for name, result in zip(service_names, results):
+        for i, result in enumerate(results):
+            service_name = service_names[i]
             if isinstance(result, Exception):
-                combined_results[name] = {"status": "failed", "error": str(result)}
+                logger.error(f"Service {service_name} failed: {result}")
+                combined_results[service_name] = {"error": str(result)}
             else:
-                combined_results[name] = {**result, "status": "success"}
+                combined_results[service_name] = result
                 successful_count += 1
 
         return {
@@ -283,7 +270,7 @@ class AIOrchestrator:
         }
 
     def _enrich_response(self, response: Dict, query: str, intent: QueryIntent):
-        """Add metadata to response"""
+        # Add metadata to response
         meta = response.get("_meta", {})
         meta["intent"] = {
             "query_type": intent.query_type.value,
@@ -292,8 +279,18 @@ class AIOrchestrator:
         response["_meta"] = meta
 
 
-# Orchestrator instance
-orchestrator = AIOrchestrator()
+# Global instance is removed to prevent import-time initialization
+# Use get_orchestrator() to access the singleton instance
+
+_orchestrator_instance = None
+
+def get_orchestrator() -> AIOrchestrator:
+    # Get or create the global AIOrchestrator instance
+    global _orchestrator_instance
+    if _orchestrator_instance is None:
+        _orchestrator_instance = AIOrchestrator()
+    return _orchestrator_instance
+
 
 # DEPRECATED: app is moved to src/api/orchestrator_api.py
 # We keep a dummy app here if needed for imports, but ideally imports should be fixed.

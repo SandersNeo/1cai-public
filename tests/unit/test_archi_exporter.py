@@ -3,7 +3,7 @@ Unit tests for ArchiExporter
 """
 
 import pytest
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock
 from src.exporters.archi_exporter import ArchiExporter
 
 

@@ -7,7 +7,6 @@
 """
 
 import os
-import subprocess
 import sys
 import time
 
@@ -352,7 +351,7 @@ def run_full_demonstration():
 if __name__ == "__main__":
     # Проверяем зависимости
     try:
-        import psutil
+        pass
     except ImportError:
         print("⚠️  Рекомендуется установить psutil для мониторинга памяти:")
         print("   pip install psutil")

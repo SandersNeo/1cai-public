@@ -14,21 +14,16 @@
 """
 
 import asyncio
-import json
 import random
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Dict, List
 
 # Импорты модуля кэширования
-from cache import (LRU, TTLCacheStrategy, cache_aggregates, cache_metadata_1c,
-                   cache_tool_result, cached, cached_async, cleanup_expired,
-                   get_cache, get_cache_stats, get_cached_aggregates,
-                   get_cached_metadata_1c, get_cached_tool_result, init_cache)
-from cache.config import (CacheProfiles, EnvironmentDetector,
-                          get_tool_cache_config, print_config)
-from cache.integration_examples import (CacheManager,
-                                        MCPServerCacheIntegration,
+from cache import (cache_aggregates, cache_metadata_1c, cache_tool_result, get_cache,
+                   get_cache_stats, get_cached_aggregates, get_cached_metadata_1c, get_cached_tool_result,
+                   init_cache)
+from cache.integration_examples import (MCPServerCacheIntegration,
                                         OneCCacheIntegration)
 
 

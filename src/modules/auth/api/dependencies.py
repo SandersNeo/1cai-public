@@ -1,7 +1,7 @@
 # [NEXUS IDENTITY] ID: 2068138963340429857 | DATE: 2025-11-19
 
 """
-API Dependencies for Authentication module.
+API зависимости для модуля аутентификации.
 """
 
 from functools import lru_cache
@@ -29,6 +29,21 @@ def get_auth_service() -> AuthService:
 
 
 async def get_current_user(request: Request, token: Optional[str] = Depends(oauth2_scheme)) -> CurrentUser:
+    """Получает текущего пользователя из запроса.
+
+    Извлекает токен из заголовка Authorization или X-Service-Token,
+    валидирует его и возвращает пользователя.
+
+    Args:
+        request: Объект HTTP запроса.
+        token: JWT токен (если есть).
+
+    Returns:
+        CurrentUser: Текущий пользователь.
+
+    Raises:
+        HTTPException: Если токен невалиден или отсутствует (401).
+    """
     auth_service = get_auth_service()
 
     if token:
@@ -82,8 +97,13 @@ def require_permissions(*permissions: str):
 
 # Dependency для получения user_id (для OAuth)
 async def get_current_user_id(current_user: CurrentUser = Depends(get_current_user)) -> int:
-    """
-    Получить ID текущего пользователя из сессии/JWT
+    """Получить ID текущего пользователя из сессии/JWT.
+
+    Args:
+        current_user: Текущий пользователь.
+
+    Returns:
+        int: ID пользователя.
     """
     # Временная заглушка или реальная логика конвертации
     # Если user_id в CurrentUser это строка (например UUID), а в OAuth нужен int,

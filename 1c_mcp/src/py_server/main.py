@@ -5,10 +5,8 @@
 import argparse
 import asyncio
 import logging
-import os
 import sys
 from pathlib import Path
-from typing import Optional
 
 from dotenv import load_dotenv
 

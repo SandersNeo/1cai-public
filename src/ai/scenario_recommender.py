@@ -14,7 +14,7 @@ import logging
 import time
 from typing import Any, Dict, List, Optional, Set
 
-from src.ai.code_graph import CodeGraphBackend, NodeKind
+from src.ai.code_analysis.graph import CodeGraphBackend, NodeKind
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ class ScenarioRecommender:
         # Если узлы графа не предоставлены, попробуем найти их
         if not graph_nodes and self.backend:
             try:
-                from src.ai.code_graph_query_helper import GraphQueryHelper
+                from src.ai.code_analysis.graph_query_helper import GraphQueryHelper
 
                 helper = GraphQueryHelper(self.backend)
                 found_nodes = await helper.find_nodes_by_query(query, max_results=10)

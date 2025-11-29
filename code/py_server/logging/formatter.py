@@ -8,7 +8,6 @@ correlation_id, метрик и APM интеграции.
 """
 
 import json
-import logging
 import time
 import traceback
 import uuid

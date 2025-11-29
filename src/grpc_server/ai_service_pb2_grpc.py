@@ -79,12 +79,13 @@ class AIOrchestratorServicer(object):
 
 
 def add_AIOrchestratorServicer_to_server(servicer, server):
-        """TODO: Описать функцию add_AIOrchestratorServicer_to_server.
+    """TODO: Описать функцию add_AIOrchestratorServicer_to_server.
                 
                 Args:
                     servicer: TODO: Описать параметр.
                     server: TODO: Описать параметр.
-                """    rpc_method_handlers = {
+    """
+    rpc_method_handlers = {
             'ProcessQuery': grpc.unary_unary_rpc_method_handler(
                     servicer.ProcessQuery,
                     request_deserializer=ai__service__pb2.QueryRequest.FromString,
@@ -115,20 +116,7 @@ class AIOrchestrator(object):
 
     @staticmethod
     def ProcessQuery(request,
-                """TODO: Описать функцию ProcessQuery.
-                        
-                        Args:
-                            request: TODO: Описать параметр.
-                            target: TODO: Описать параметр.
-                            options: TODO: Описать параметр.
-                            channel_credentials: TODO: Описать параметр.
-                            call_credentials: TODO: Описать параметр.
-                            insecure: TODO: Описать параметр.
-                            compression: TODO: Описать параметр.
-                            wait_for_ready: TODO: Описать параметр.
-                            timeout: TODO: Описать параметр.
-                            metadata: TODO: Описать параметр.
-                        """            target,
+            target,
             options=(),
             channel_credentials=None,
             call_credentials=None,
@@ -155,20 +143,7 @@ class AIOrchestrator(object):
 
     @staticmethod
     def StreamQuery(request,
-                """TODO: Описать функцию StreamQuery.
-                        
-                        Args:
-                            request: TODO: Описать параметр.
-                            target: TODO: Описать параметр.
-                            options: TODO: Описать параметр.
-                            channel_credentials: TODO: Описать параметр.
-                            call_credentials: TODO: Описать параметр.
-                            insecure: TODO: Описать параметр.
-                            compression: TODO: Описать параметр.
-                            wait_for_ready: TODO: Описать параметр.
-                            timeout: TODO: Описать параметр.
-                            metadata: TODO: Описать параметр.
-                        """            target,
+            target,
             options=(),
             channel_credentials=None,
             call_credentials=None,
@@ -195,20 +170,7 @@ class AIOrchestrator(object):
 
     @staticmethod
     def StreamScreenContext(request_iterator,
-                """TODO: Описать функцию StreamScreenContext.
-                        
-                        Args:
-                            request_iterator: TODO: Описать параметр.
-                            target: TODO: Описать параметр.
-                            options: TODO: Описать параметр.
-                            channel_credentials: TODO: Описать параметр.
-                            call_credentials: TODO: Описать параметр.
-                            insecure: TODO: Описать параметр.
-                            compression: TODO: Описать параметр.
-                            wait_for_ready: TODO: Описать параметр.
-                            timeout: TODO: Описать параметр.
-                            metadata: TODO: Описать параметр.
-                        """            target,
+            target,
             options=(),
             channel_credentials=None,
             call_credentials=None,
@@ -288,12 +250,13 @@ class CodeGraphServiceServicer(object):
 
 
 def add_CodeGraphServiceServicer_to_server(servicer, server):
-        """TODO: Описать функцию add_CodeGraphServiceServicer_to_server.
+    """TODO: Описать функцию add_CodeGraphServiceServicer_to_server.
                 
                 Args:
                     servicer: TODO: Описать параметр.
                     server: TODO: Описать параметр.
-                """    rpc_method_handlers = {
+    """
+    rpc_method_handlers = {
             'SearchCode': grpc.unary_unary_rpc_method_handler(
                     servicer.SearchCode,
                     request_deserializer=ai__service__pb2.CodeSearchRequest.FromString,
@@ -324,20 +287,7 @@ class CodeGraphService(object):
 
     @staticmethod
     def SearchCode(request,
-                """TODO: Описать функцию SearchCode.
-                        
-                        Args:
-                            request: TODO: Описать параметр.
-                            target: TODO: Описать параметр.
-                            options: TODO: Описать параметр.
-                            channel_credentials: TODO: Описать параметр.
-                            call_credentials: TODO: Описать параметр.
-                            insecure: TODO: Описать параметр.
-                            compression: TODO: Описать параметр.
-                            wait_for_ready: TODO: Описать параметр.
-                            timeout: TODO: Описать параметр.
-                            metadata: TODO: Описать параметр.
-                        """            target,
+            target,
             options=(),
             channel_credentials=None,
             call_credentials=None,
@@ -364,20 +314,7 @@ class CodeGraphService(object):
 
     @staticmethod
     def AnalyzeDependencies(request,
-                """TODO: Описать функцию AnalyzeDependencies.
-                        
-                        Args:
-                            request: TODO: Описать параметр.
-                            target: TODO: Описать параметр.
-                            options: TODO: Описать параметр.
-                            channel_credentials: TODO: Описать параметр.
-                            call_credentials: TODO: Описать параметр.
-                            insecure: TODO: Описать параметр.
-                            compression: TODO: Описать параметр.
-                            wait_for_ready: TODO: Описать параметр.
-                            timeout: TODO: Описать параметр.
-                            metadata: TODO: Описать параметр.
-                        """            target,
+            target,
             options=(),
             channel_credentials=None,
             call_credentials=None,
@@ -404,20 +341,7 @@ class CodeGraphService(object):
 
     @staticmethod
     def GetMetadata(request,
-                """TODO: Описать функцию GetMetadata.
-                        
-                        Args:
-                            request: TODO: Описать параметр.
-                            target: TODO: Описать параметр.
-                            options: TODO: Описать параметр.
-                            channel_credentials: TODO: Описать параметр.
-                            call_credentials: TODO: Описать параметр.
-                            insecure: TODO: Описать параметр.
-                            compression: TODO: Описать параметр.
-                            wait_for_ready: TODO: Описать параметр.
-                            timeout: TODO: Описать параметр.
-                            metadata: TODO: Описать параметр.
-                        """            target,
+            target,
             options=(),
             channel_credentials=None,
             call_credentials=None,
@@ -485,12 +409,13 @@ class ScenarioServiceServicer(object):
 
 
 def add_ScenarioServiceServicer_to_server(servicer, server):
-        """TODO: Описать функцию add_ScenarioServiceServicer_to_server.
+    """TODO: Описать функцию add_ScenarioServiceServicer_to_server.
                 
                 Args:
                     servicer: TODO: Описать параметр.
                     server: TODO: Описать параметр.
-                """    rpc_method_handlers = {
+    """
+    rpc_method_handlers = {
             'GetRecommendations': grpc.unary_unary_rpc_method_handler(
                     servicer.GetRecommendations,
                     request_deserializer=ai__service__pb2.ScenarioRequest.FromString,
@@ -516,20 +441,7 @@ class ScenarioService(object):
 
     @staticmethod
     def GetRecommendations(request,
-                """TODO: Описать функцию GetRecommendations.
-                        
-                        Args:
-                            request: TODO: Описать параметр.
-                            target: TODO: Описать параметр.
-                            options: TODO: Описать параметр.
-                            channel_credentials: TODO: Описать параметр.
-                            call_credentials: TODO: Описать параметр.
-                            insecure: TODO: Описать параметр.
-                            compression: TODO: Описать параметр.
-                            wait_for_ready: TODO: Описать параметр.
-                            timeout: TODO: Описать параметр.
-                            metadata: TODO: Описать параметр.
-                        """            target,
+            target,
             options=(),
             channel_credentials=None,
             call_credentials=None,
@@ -556,20 +468,7 @@ class ScenarioService(object):
 
     @staticmethod
     def ExecuteScenario(request,
-                """TODO: Описать функцию ExecuteScenario.
-                        
-                        Args:
-                            request: TODO: Описать параметр.
-                            target: TODO: Описать параметр.
-                            options: TODO: Описать параметр.
-                            channel_credentials: TODO: Описать параметр.
-                            call_credentials: TODO: Описать параметр.
-                            insecure: TODO: Описать параметр.
-                            compression: TODO: Описать параметр.
-                            wait_for_ready: TODO: Описать параметр.
-                            timeout: TODO: Описать параметр.
-                            metadata: TODO: Описать параметр.
-                        """            target,
+            target,
             options=(),
             channel_credentials=None,
             call_credentials=None,

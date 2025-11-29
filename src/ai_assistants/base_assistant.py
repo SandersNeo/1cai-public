@@ -21,203 +21,218 @@ from pydantic import BaseModel, Field
 
 # Упрощенные классы для тестирования (без внешних зависимостей)
 class Document:
-        """Класс Document.
-                
-                TODO: Добавить описание класса.
-                
-                Attributes:
-                    TODO: Описать атрибуты класса.
-                """    def __init__(self, page_content: str, metadata: dict = None):
-            """TODO: Описать функцию __init__.
-                    
-                    Args:
-                        page_content: TODO: Описать параметр.
-                        metadata: TODO: Описать параметр.
-                    """        self.page_content = page_content
+    """Класс Document.
+    
+    TODO: Добавить описание класса.
+    
+    Attributes:
+        TODO: Описать атрибуты класса.
+    """
+    def __init__(self, page_content: str, metadata: dict = None):
+        """TODO: Описать функцию __init__.
+        
+        Args:
+            page_content: TODO: Описать параметр.
+            metadata: TODO: Описать параметр.
+        """
+        self.page_content = page_content
         self.metadata = metadata or {}
 
 
 class HumanMessage:
-        """Класс HumanMessage.
-                
-                TODO: Добавить описание класса.
-                
-                Attributes:
-                    TODO: Описать атрибуты класса.
-                """    def __init__(self, content: str):
-            """TODO: Описать функцию __init__.
-                    
-                    Args:
-                        content: TODO: Описать параметр.
-                    """        self.content = content
+    """Класс HumanMessage.
+    
+    TODO: Добавить описание класса.
+    
+    Attributes:
+        TODO: Описать атрибуты класса.
+    """
+    def __init__(self, content: str):
+        """TODO: Описать функцию __init__.
+        
+        Args:
+            content: TODO: Описать параметр.
+        """
+        self.content = content
 
 
 class AIMessage:
-        """Класс AIMessage.
-                
-                TODO: Добавить описание класса.
-                
-                Attributes:
-                    TODO: Описать атрибуты класса.
-                """    def __init__(self, content: str):
-            """TODO: Описать функцию __init__.
-                    
-                    Args:
-                        content: TODO: Описать параметр.
-                    """        self.content = content
+    """Класс AIMessage.
+    
+    TODO: Добавить описание класса.
+    
+    Attributes:
+        TODO: Описать атрибуты класса.
+    """
+    def __init__(self, content: str):
+        """TODO: Описать функцию __init__.
+        
+        Args:
+            content: TODO: Описать параметр.
+        """
+        self.content = content
 
 
 class ChatPromptTemplate:
-        """Класс ChatPromptTemplate.
-                
-                TODO: Добавить описание класса.
-                
-                Attributes:
-                    TODO: Описать атрибуты класса.
-                """    def __init__(self, messages):
-            """TODO: Описать функцию __init__.
-                    
-                    Args:
-                        messages: TODO: Описать параметр.
-                    """        self.messages = messages
+    """Класс ChatPromptTemplate.
+    
+    TODO: Добавить описание класса.
+    
+    Attributes:
+        TODO: Описать атрибуты класса.
+    """
+    def __init__(self, messages):
+        """TODO: Описать функцию __init__.
+        
+        Args:
+            messages: TODO: Описать параметр.
+        """
+        self.messages = messages
 
     @classmethod
     def from_messages(cls, messages):
-            """TODO: Описать функцию from_messages.
-                    
-                    Args:
-                        messages: TODO: Описать параметр.
-                    """        return cls(messages)
+        """TODO: Описать функцию from_messages.
+        
+        Args:
+            messages: TODO: Описать параметр.
+        """
+        return cls(messages)
 
     def format_prompt(self, **kwargs):
-            """TODO: Описать функцию format_prompt.
-                    """        class MockPromptValue:
-                """Класс MockPromptValue.
-                        
-                        TODO: Добавить описание класса.
-                        
-                        Attributes:
-                            TODO: Описать атрибуты класса.
-                        """            def __init__(self, messages):
-                    """TODO: Описать функцию __init__.
-                            
-                            Args:
-                                messages: TODO: Описать параметр.
-                            """                self._messages = messages
+        """TODO: Описать функцию format_prompt."""
+        class MockPromptValue:
+            """Класс MockPromptValue.
+            
+            TODO: Добавить описание класса.
+            
+            Attributes:
+                TODO: Описать атрибуты класса.
+            """
+            def __init__(self, messages):
+                """TODO: Описать функцию __init__.
+                
+                Args:
+                    messages: TODO: Описать параметр.
+                """
+                self._messages = messages
 
             def to_messages(self):
-                    """TODO: Описать функцию to_messages.
-                            """                return self._messages
+                """TODO: Описать функцию to_messages."""
+                return self._messages
 
         return MockPromptValue(self.messages)
 
 
 class ConversationalRetrievalChain:
-        """Класс ConversationalRetrievalChain.
-                
-                TODO: Добавить описание класса.
-                
-                Attributes:
-                    TODO: Описать атрибуты класса.
-                """    def __init__(self, **kwargs):
-            """TODO: Описать функцию __init__.
-                    """        pass
+    """Класс ConversationalRetrievalChain.
+    
+    TODO: Добавить описание класса.
+    
+    Attributes:
+        TODO: Описать атрибуты класса.
+    """
+    def __init__(self, **kwargs):
+        """TODO: Описать функцию __init__."""
 
     @classmethod
     def from_llm(cls, llm, retriever, **kwargs):
-            """TODO: Описать функцию from_llm.
-                    
-                    Args:
-                        llm: TODO: Описать параметр.
-                        retriever: TODO: Описать параметр.
-                    """        return cls(llm=llm, retriever=retriever, **kwargs)
+        """TODO: Описать функцию from_llm.
+        
+        Args:
+            llm: TODO: Описать параметр.
+            retriever: TODO: Описать параметр.
+        """
+        return cls(llm=llm, retriever=retriever, **kwargs)
 
     async def ainvoke(self, inputs):
-            """TODO: Описать функцию ainvoke.
-                    
-                    Args:
-                        inputs: TODO: Описать параметр.
-                    """        return {"answer": "Test response", "source_documents": []}
+        """TODO: Описать функцию ainvoke.
+        
+        Args:
+            inputs: TODO: Описать параметр.
+        """
+        return {"answer": "Test response", "source_documents": []}
 
 
 class ChatOpenAI:
-        """Класс ChatOpenAI.
-                
-                TODO: Добавить описание класса.
-                
-                Attributes:
-                    TODO: Описать атрибуты класса.
-                """    def __init__(self, **kwargs):
-            """TODO: Описать функцию __init__.
-                    """        pass
+    """Класс ChatOpenAI.
+    
+    TODO: Добавить описание класса.
+    
+    Attributes:
+        TODO: Описать атрибуты класса.
+    """
+    def __init__(self, **kwargs):
+        """TODO: Описать функцию __init__."""
 
     async def ainvoke(self, messages):
-            """TODO: Описать функцию ainvoke.
-                    
-                    Args:
-                        messages: TODO: Описать параметр.
-                    """        return AIMessage("Test AI response")
+        """TODO: Описать функцию ainvoke.
+        
+        Args:
+            messages: TODO: Описать параметр.
+        """
+        return AIMessage("Test AI response")
 
 
 class OpenAIEmbeddings:
-        """Класс OpenAIEmbeddings.
-                
-                TODO: Добавить описание класса.
-                
-                Attributes:
-                    TODO: Описать атрибуты класса.
-                """    def __init__(self, **kwargs):
-            """TODO: Описать функцию __init__.
-                    """        pass
+    """Класс OpenAIEmbeddings.
+    
+    TODO: Добавить описание класса.
+    
+    Attributes:
+        TODO: Описать атрибуты класса.
+    """
+    def __init__(self, **kwargs):
+        """TODO: Описать функцию __init__."""
 
 
 class SupabaseVectorStore:
-        """Класс SupabaseVectorStore.
-                
-                TODO: Добавить описание класса.
-                
-                Attributes:
-                    TODO: Описать атрибуты класса.
-                """    def __init__(self, **kwargs):
-            """TODO: Описать функцию __init__.
-                    """        pass
+    """Класс SupabaseVectorStore.
+    
+    TODO: Добавить описание класса.
+    
+    Attributes:
+        TODO: Описать атрибуты класса.
+    """
+    def __init__(self, **kwargs):
+        """TODO: Описать функцию __init__."""
 
     def as_retriever(self, **kwargs):
-            """TODO: Описать функцию as_retriever.
-                    """        return self
+        """TODO: Описать функцию as_retriever."""
+        return self
 
     async def aadd_documents(self, docs):
-            """TODO: Описать функцию aadd_documents.
-                    
-                    Args:
-                        docs: TODO: Описать параметр.
-                    """        pass
+        """TODO: Описать функцию aadd_documents.
+        
+        Args:
+            docs: TODO: Описать параметр.
+        """
 
 
 def create_client(*args, **kwargs):
-        """TODO: Описать функцию create_client.
-                """    class MockSupabaseClient:
-            """Класс MockSupabaseClient.
-                    
-                    TODO: Добавить описание класса.
-                    
-                    Attributes:
-                        TODO: Описать атрибуты класса.
-                    """        def table(self, *args, **kwargs):
-                """TODO: Описать функцию table.
-                        """            return self
+    """TODO: Описать функцию create_client."""
+    class MockSupabaseClient:
+        """Класс MockSupabaseClient.
+        
+        TODO: Добавить описание класса.
+        
+        Attributes:
+            TODO: Описать атрибуты класса.
+        """
+        def table(self, *args, **kwargs):
+            """TODO: Описать функцию table."""
+            return self
 
         def select(self, *args, **kwargs):
-                """TODO: Описать функцию select.
-                        """            return self
+            """TODO: Описать функцию select."""
+            return self
 
         def limit(self, *args, **kwargs):
-                """TODO: Описать функцию limit.
-                        """            return self
+            """TODO: Описать функцию limit."""
+            return self
 
         def execute(self, *args, **kwargs):
-                """TODO: Описать функцию execute.
-                        """            return []
+            """TODO: Описать функцию execute."""
+            return []
 
     return MockSupabaseClient()
 
@@ -250,13 +265,14 @@ class AssistantResponse(BaseModel):
     )
 
     class Config:
-            """Класс Config.
-                    
-                    TODO: Добавить описание класса.
-                    
-                    Attributes:
-                        TODO: Описать атрибуты класса.
-                    """        arbitrary_types_allowed = True
+        """Класс Config.
+        
+        TODO: Добавить описание класса.
+        
+        Attributes:
+            TODO: Описать атрибуты класса.
+        """
+        arbitrary_types_allowed = True
 
 
 class AssistantConfig(BaseModel):

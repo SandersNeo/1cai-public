@@ -20,7 +20,7 @@ class PRFile(BaseModel):
     raw_url: Optional[str] = Field(None, description="URL to raw file content")
 
     @validator("filename")
-    def validate_filename(cls, v):
+    def validate_filename(cls, v: str) -> str:
         """Validate filename is not empty and has reasonable length"""
         if not v or not v.strip():
             raise ValueError("Filename cannot be empty")
@@ -48,7 +48,7 @@ class PullRequestEvent(BaseModel):
     sender_login: str = Field(..., description="Event sender GitHub login")
 
     @validator("action")
-    def validate_action(cls, v):
+    def validate_action(cls, v: str) -> str:
         """Validate PR action is one of the expected values"""
         valid_actions = {"opened", "synchronize", "reopened", "edited", "closed"}
         if v not in valid_actions:
@@ -56,14 +56,14 @@ class PullRequestEvent(BaseModel):
         return v
 
     @validator("number")
-    def validate_number(cls, v):
+    def validate_number(cls, v: int) -> int:
         """Validate PR number is positive"""
         if v <= 0:
             raise ValueError("PR number must be positive")
         return v
 
     @validator("repository_full_name")
-    def validate_repo_name(cls, v):
+    def validate_repo_name(cls, v: str) -> str:
         """Validate repository full name format"""
         if "/" not in v:
             raise ValueError("Repository full name must be in format 'owner/repo'")
@@ -84,7 +84,7 @@ class ReviewComment(BaseModel):
         None, description="Position in diff (for GitHub API)")
 
     @validator("body")
-    def validate_body(cls, v):
+    def validate_body(cls, v: str) -> str:
         """Validate comment body is not empty"""
         if not v or not v.strip():
             raise ValueError("Comment body cannot be empty")
@@ -93,7 +93,7 @@ class ReviewComment(BaseModel):
         return v.strip()
 
     @validator("severity")
-    def validate_severity(cls, v):
+    def validate_severity(cls, v: str) -> str:
         """Validate severity level"""
         valid_severities = {"error", "warning", "info"}
         if v not in valid_severities:
@@ -116,7 +116,7 @@ class ReviewResult(BaseModel):
                                 description="Review timestamp")
 
     @validator("event")
-    def validate_event(cls, v):
+    def validate_event(cls, v: str) -> str:
         """Validate review event type"""
         valid_events = {"APPROVE", "REQUEST_CHANGES", "COMMENT"}
         if v not in valid_events:
@@ -124,7 +124,7 @@ class ReviewResult(BaseModel):
         return v
 
     @validator("body")
-    def validate_body(cls, v):
+    def validate_body(cls, v: str) -> str:
         """Validate review body is not empty"""
         if not v or not v.strip():
             raise ValueError("Review body cannot be empty")

@@ -15,14 +15,12 @@ MCP-специфичные исключения для 1С MCP сервера
 Основано на спецификации Model Context Protocol (MCP).
 """
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 try:
-    from .base import (ErrorSeverity, McpError, NonRecoverableError,
-                       RecoverableError)
+    from .base import (ErrorSeverity, McpError, NonRecoverableError)
 except ImportError:
-    from base import (ErrorSeverity, McpError, NonRecoverableError,
-                      RecoverableError)
+    from base import (ErrorSeverity, McpError, NonRecoverableError)
 
 
 class McpProtocolError(McpError):

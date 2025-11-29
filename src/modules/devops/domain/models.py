@@ -45,7 +45,7 @@ class PipelineConfig(BaseModel):
 
     @field_validator('total_duration', 'build_time', 'test_time', 'deploy_time')
     @classmethod
-    def validate_positive(cls, v):
+    def validate_positive(cls, v: Optional[int]) -> Optional[int]:
         if v is not None and v < 0:
             raise ValueError("Duration must be positive")
         return v

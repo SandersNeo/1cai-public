@@ -7,32 +7,18 @@
 retry политики и fallback стратегии.
 """
 
-import asyncio
-import os
-import tempfile
 import threading
 import time
 import unittest
-from unittest.mock import MagicMock, Mock, patch
 
-from resilience import (AdminNotificationStrategy, CircuitBreaker,
-                        CircuitBreakerConfig, CircuitBreakerManager,
+from resilience import (CircuitBreaker, CircuitBreakerConfig,
                         CircuitBreakerOpenError, CircuitBreakerState,
-                        CircuitBreakerStats, DegradationLevel, FallbackData,
-                        FallbackResult, FallbackStrategy,
-                        FallbackStrategyManager, GracefulDegradationConfig,
-                        GracefulDegradationManager, MCPClientFallbackStrategy,
-                        OAuth2FallbackStrategy, OneCFallbackStrategy,
-                        RetryAttempt, RetryPolicy)
+                        DegradationLevel, FallbackStrategyManager,
+                        GracefulDegradationConfig, GracefulDegradationManager, RetryPolicy)
 from resilience import \
     RetryPolicyConfig  # Circuit Breaker; Graceful Degradation; Retry Policy; Fallback Strategies; Configuration; Utils
-from resilience import RetryPolicyConfig as DefaultRetryPolicyConfig
-from resilience import (RetryPolicyManager, RetryStats, ServiceContext,
-                        ServiceMetrics, ServiceType, create_circuit_breaker,
-                        create_retry_policy, get_circuit_breaker_manager,
-                        get_fallback_strategy_manager,
-                        get_graceful_degradation_manager,
-                        get_resilience_status, get_retry_policy_manager,
+from resilience import (ServiceContext, ServiceType, create_circuit_breaker,
+                        create_retry_policy, get_graceful_degradation_manager, get_resilience_status,
                         reset_all_resilience_systems)
 
 

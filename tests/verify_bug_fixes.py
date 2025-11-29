@@ -20,8 +20,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.db.neo4j_client import Neo4jClient
 from src.modules.graph_api.services.graph_service import GraphService
-from src.exporters.archi_exporter import ArchiExporter
-from src.exporters.archi_importer import ArchiImporter
 from src.api.dependencies import get_neo4j_client, get_graph_service
 
 

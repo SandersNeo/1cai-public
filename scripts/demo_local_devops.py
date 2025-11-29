@@ -2,7 +2,6 @@ import asyncio
 import os
 import sys
 import logging
-import json
 
 # Добавляем корень проекта в sys.path
 sys.path.append(os.getcwd())

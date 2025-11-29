@@ -4,6 +4,8 @@ Code Review API Routes
 import asyncio
 from datetime import datetime
 
+from typing import Any, Dict
+
 from fastapi import APIRouter, HTTPException, Request, Response
 
 from src.infrastructure.logging.structured_logging import StructuredLogger
@@ -48,7 +50,7 @@ fixer = CodeFixer()
     """,
 )
 @limiter.limit(PUBLIC_RATE_LIMIT)
-async def analyze_code(request: Request, request_data: CodeContextRequest, response: Response):
+async def analyze_code(request: Request, request_data: CodeContextRequest, response: Response) -> CodeAnalysisResponse:
     """
     Analyze code with improvement suggestions
     """
@@ -211,7 +213,7 @@ async def analyze_code(request: Request, request_data: CodeContextRequest, respo
     description="Apply automatic fix to code based on suggestion",
 )
 @limiter.limit("20/minute")
-async def auto_fix_code_endpoint(api_request: Request, request: AutoFixRequest, response: Response):
+async def auto_fix_code_endpoint(api_request: Request, request: AutoFixRequest, response: Response) -> AutoFixResponse:
     return await fixer.apply_auto_fix(request)
 
 
@@ -219,7 +221,7 @@ async def auto_fix_code_endpoint(api_request: Request, request: AutoFixRequest, 
     "/health",
     summary="Check service status",
 )
-async def health_check():
+async def health_check() -> Dict[str, Any]:
     """Check Code Review service availability"""
     # Check OpenAI availability
     openai_analyzer = get_openai_analyzer()

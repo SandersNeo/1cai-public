@@ -377,10 +377,10 @@ class OCRService:
         self, text: str, document_type: DocumentType
     ) -> Dict[str, Any]:
         try:
-            from src.api.orchestrator_api import orchestrator
+            from src.ai.orchestrator import get_orchestrator
 
             prompt = f"Parse this {document_type.value} document:\n{text}\nReturn JSON."
-            result = await orchestrator.process_query(
+            result = await get_orchestrator().process_query(
                 prompt,
                 context={
                     "type": "document_parsing",

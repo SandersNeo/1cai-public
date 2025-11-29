@@ -1,6 +1,7 @@
 """
-BA Dashboard Service
-Business logic for business analyst requirements and traceability
+Сервис дашборда бизнес-аналитика.
+
+Бизнес-логика для работы с требованиями и трассируемостью.
 """
 from datetime import datetime, timedelta
 from typing import Any, Dict
@@ -13,17 +14,16 @@ logger = StructuredLogger(__name__).logger
 
 
 class BAService:
-    """BA dashboard business logic"""
+    """Бизнес-логика дашборда BA."""
 
     async def get_dashboard(self, conn: asyncpg.Connection) -> Dict[str, Any]:
-        """
-        Get BA dashboard data
+        """Получает данные для дашборда бизнес-аналитика.
 
         Args:
-            conn: Database connection
+            conn: Подключение к БД.
 
         Returns:
-            BA dashboard data dictionary
+            Dict[str, Any]: Словарь с данными дашборда.
         """
         try:
             # Get tenant
@@ -133,7 +133,7 @@ class BAService:
             return self._get_demo_dashboard()
 
     def _get_demo_dashboard(self) -> Dict[str, Any]:
-        """Demo data for BA dashboard"""
+        """Возвращает демонстрационные данные для дашборда BA."""
         return {
             "requirements_summary": {
                 "total": 45,

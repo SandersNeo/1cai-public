@@ -13,7 +13,7 @@ import json
 import os
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable
 
 DEFAULT_IGNORE = {
     "__pycache__",

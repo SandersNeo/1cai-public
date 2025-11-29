@@ -5,7 +5,6 @@ Tests to verify tiered rate limiting works correctly.
 """
 
 import pytest
-import time
 from fastapi.testclient import TestClient
 from unittest.mock import Mock, patch
 from src.main import app
@@ -32,7 +31,6 @@ class TestTieredRateLimiting:
     def test_pro_tier_higher_limit(self):
         """Pro tier should have higher limit than free"""
         # This would require mocking authenticated user with pro tier
-        pass
     
     def test_rate_limit_headers_present(self):
         """Rate limit headers should be present in response"""
@@ -61,7 +59,6 @@ class TestTieredRateLimiting:
             mock_redis_instance.incr.return_value = 1000  # Exceed limit
             
             # This test would need proper setup
-            pass
 
 
 class TestRateLimitMetrics:

@@ -21,10 +21,8 @@ import asyncio
 import hashlib
 import json
 import logging
-import os
 import pickle
 import time
-import weakref
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from contextlib import asynccontextmanager
@@ -104,12 +102,10 @@ class CacheStrategy(ABC):
     @abstractmethod
     def should_evict(self, cache: 'MCPToolsCache', key: str, entry: CacheEntry) -> bool:
         """Определяет, нужно ли вытеснить запись"""
-        pass
     
     @abstractmethod
     def select_eviction_target(self, cache: 'MCPToolsCache') -> Optional[str]:
         """Выбирает запись для вытеснения"""
-        pass
 
 
 class LRUStrategy(CacheStrategy):

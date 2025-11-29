@@ -1,6 +1,7 @@
 """
-Health Calculator Service
-Calculates system health score based on actual metrics
+Сервис калькулятора здоровья.
+
+Рассчитывает оценку здоровья системы на основе реальных метрик.
 """
 import time
 
@@ -12,17 +13,16 @@ logger = StructuredLogger(__name__).logger
 
 
 class HealthCalculator:
-    """Calculates system health score"""
+    """Рассчитывает оценку здоровья системы."""
 
     async def calculate_health_score(self, conn: asyncpg.Connection) -> int:
-        """
-        Calculate real system health score based on actual metrics
+        """Рассчитывает реальную оценку здоровья системы на основе метрик.
 
         Args:
-            conn: Database connection
+            conn: Подключение к БД.
 
         Returns:
-            int: Health score from 0-100
+            int: Оценка здоровья от 0 до 100.
         """
         score = 100
 
@@ -99,14 +99,13 @@ class HealthCalculator:
         return max(0, min(100, score))  # Clamp between 0-100
 
     def get_health_status(self, score: int) -> str:
-        """
-        Get health status from score
+        """Получает статус здоровья на основе оценки.
 
         Args:
-            score: Health score 0-100
+            score: Оценка здоровья (0-100).
 
         Returns:
-            str: Status (healthy, warning, critical)
+            str: Статус (healthy, warning, critical).
         """
         if score >= 80:
             return "healthy"
@@ -116,14 +115,13 @@ class HealthCalculator:
             return "critical"
 
     def get_health_message(self, score: int) -> str:
-        """
-        Get health message from score
+        """Получает сообщение о здоровье на основе оценки.
 
         Args:
-            score: Health score 0-100
+            score: Оценка здоровья (0-100).
 
         Returns:
-            str: Health message
+            str: Сообщение о здоровье.
         """
         if score >= 80:
             return "All systems operational"

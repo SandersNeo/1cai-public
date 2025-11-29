@@ -3,14 +3,13 @@ Tests for Council Orchestrator
 """
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 from src.ai.council.council_orchestrator import (
     CouncilOrchestrator,
     CouncilConfig,
     CouncilResponse,
 )
-from src.ai.council.peer_review import ReviewResult
 
 
 @pytest.fixture

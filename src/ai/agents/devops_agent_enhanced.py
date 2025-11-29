@@ -2,9 +2,6 @@
 
 """
 Enhanced DevOps AI Agent
-AI ассистент для DevOps инженеров с LLM интеграцией и модульной архитектурой
-
-Интегрирует сервисы из src/modules/devops/services согласно Clean Architecture.
 """
 
 import logging
@@ -12,25 +9,6 @@ from typing import Any, Dict, List, Optional
 
 from src.ai.agents.base_agent import AgentCapability, BaseAgent
 from src.ai.llm import TaskType
-from src.ml.anomaly_detection import get_anomaly_detector
-from src.modules.devops.domain.models import (
-    InfrastructureConfig,
-    PipelineConfig,
-    PipelineMetrics,
-    UsageMetrics,
-)
-
-# Import DevOps services
-from src.modules.devops.services import (
-    CostOptimizer,
-    DockerAnalyzer,
-    IaCGenerator,
-    LogAnalyzer,
-    PipelineOptimizer,
-)
-
-logger = logging.getLogger(__name__)
-
 
 class DevOpsAgentEnhanced(BaseAgent):
     """
@@ -47,18 +25,22 @@ class DevOpsAgentEnhanced(BaseAgent):
         super().__init__(
             agent_name="devops_agent_enhanced",
             capabilities=[
-                AgentCapability.DEPLOYMENT,
-                AgentCapability.MONITORING,
+                AgentCapability.DEVOPS,
+                AgentCapability.LOG_ANALYSIS,
             ]
         )
         self.logger = logging.getLogger("devops_agent_enhanced")
 
-        # ML Anomaly Detector
-        self.anomaly_detector = get_anomaly_detector()
-
-        # Initialize DevOps services (Clean Architecture)
+        # Initialize new services
+        from src.modules.devops.services import (
+            CostOptimizer,
+            DockerAnalyzer,
+            IaCGenerator,
+            LogAnalyzer,
+            PipelineOptimizer,
+        )
         self.pipeline_optimizer = PipelineOptimizer()
-        self.log_analyzer = LogAnalyzer(anomaly_detector=self.anomaly_detector)
+        self.log_analyzer = LogAnalyzer()
         self.cost_optimizer = CostOptimizer()
         self.iac_generator = IaCGenerator()
         self.docker_analyzer = DockerAnalyzer()

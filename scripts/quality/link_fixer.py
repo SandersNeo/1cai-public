@@ -10,7 +10,7 @@
 
 import json
 from pathlib import Path
-from typing import Dict, List, Set
+from typing import Dict, List
 import re
 import shutil
 

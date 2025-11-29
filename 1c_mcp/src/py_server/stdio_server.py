@@ -2,7 +2,6 @@
 
 """Stdio сервер для MCP."""
 
-import asyncio
 import logging
 
 import mcp.server.stdio

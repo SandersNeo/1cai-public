@@ -5,29 +5,22 @@
 """
 
 import asyncio
-import json
-import os
 import sys
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import pytest
 
 # Добавляем путь к исходному коду
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.py_server.code_generation.engine import CodeGenerationEngine
 from src.py_server.code_generation.llm.client import LLMClient
-from src.py_server.code_generation.prompts.context import (
-    ComplexityLevel, ContextData, ContextualPromptBuilder, QualityRequirement)
 from src.py_server.code_generation.prompts.manager import (PromptManager,
                                                            PromptTemplate)
-from src.py_server.code_generation.prompts.optimizer import PromptOptimizer
 from src.py_server.code_generation.security.manager import SecurityManager
 from src.py_server.code_generation.templates.library import (CodeTemplate,
                                                              TemplateLibrary)
-from src.py_server.code_generation.templates.processor import TemplateProcessor
 from src.py_server.code_generation.validation.validator import CodeValidator
 
 
@@ -148,7 +141,6 @@ def test_config(request):
 # Исключения для тестирования
 class TestException(Exception):
     """Исключение для тестов."""
-    pass
 
 
 # Маркеры для категоризации тестов

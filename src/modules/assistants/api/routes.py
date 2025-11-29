@@ -33,7 +33,7 @@ def get_architect_service() -> ArchitectService:
 
 
 @router.get("/health", summary="Check API health")
-async def health_check():
+async def health_check() -> Dict[str, Any]:
     """Check AI Assistants API health"""
     return {
         "status": "healthy",
@@ -43,7 +43,7 @@ async def health_check():
 
 
 @router.get("/", summary="List available assistants")
-async def list_assistants():
+async def list_assistants() -> Dict[str, Any]:
     """Get list of available AI assistants"""
     return {
         "assistants": settings.assistant_configs,
@@ -58,7 +58,7 @@ async def chat_with_assistant(
     assistant_role: str,
     request: ChatRequest,
     service: ArchitectService = Depends(get_architect_service),
-):
+) -> ChatResponse:
     """
     Chat with specific assistant
     """
@@ -120,7 +120,7 @@ async def analyze_requirements(
     api_request: Request,
     request: AnalyzeRequirementsRequest,
     service: ArchitectService = Depends(get_architect_service),
-):
+) -> Dict[str, Any]:
     """
     Specialized requirements analysis for architect
     """
@@ -165,7 +165,7 @@ async def generate_diagram(
     api_request: Request,
     request: GenerateDiagramRequest,
     service: ArchitectService = Depends(get_architect_service),
-):
+) -> Dict[str, Any]:
     """
     Generate architectural diagram in Mermaid format
     """
@@ -189,7 +189,7 @@ async def comprehensive_analysis(
     api_request: Request,
     request: ComprehensiveAnalysisRequest,
     service: ArchitectService = Depends(get_architect_service),
-):
+) -> Dict[str, Any]:
     """
     Full analysis: requirements + architecture + risks
     """
@@ -211,7 +211,7 @@ async def assess_risks(
     api_request: Request,
     request: RiskAssessmentRequest,
     service: ArchitectService = Depends(get_architect_service),
-):
+) -> Dict[str, Any]:
     """
     Assess risks of architectural solution
     """
@@ -226,7 +226,7 @@ async def assess_risks(
 
 
 @router.get("/architect/conversation-history", summary="Architect conversation history")
-async def get_conversation_history(limit: int = 50, service: ArchitectService = Depends(get_architect_service)):
+async def get_conversation_history(limit: int = 50, service: ArchitectService = Depends(get_architect_service)) -> Dict[str, Any]:
     """
     Get conversation history with architect assistant
     """
@@ -260,7 +260,7 @@ async def get_conversation_history(limit: int = 50, service: ArchitectService = 
 @router.delete("/architect/conversation-history", summary="Clear conversation history")
 async def clear_conversation_history(
     service: ArchitectService = Depends(get_architect_service),
-):
+) -> Dict[str, Any]:
     """
     Clear conversation history with architect assistant
     """
@@ -281,7 +281,7 @@ async def clear_conversation_history(
 @router.get("/architect/stats", summary="Architect assistant stats")
 async def get_assistant_stats(
     service: ArchitectService = Depends(get_architect_service),
-):
+) -> Dict[str, Any]:
     """
     Get usage statistics of the assistant
     """
@@ -303,7 +303,7 @@ async def add_knowledge(
     role: str = "architect",
     user_id: str = "system",
     service: ArchitectService = Depends(get_architect_service),
-):
+) -> Dict[str, Any]:
     """
     Add new documents to assistant's knowledge base
     """

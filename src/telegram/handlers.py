@@ -14,7 +14,7 @@ from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.types import Message
 
-from src.ai.orchestrator import AIOrchestrator
+from src.ai.orchestrator import get_orchestrator
 from src.services.ocr_service import DocumentType, get_ocr_service
 from src.services.speech_to_text_service import get_stt_service
 from src.telegram.config import config
@@ -26,7 +26,7 @@ logger = StructuredLogger(__name__).logger
 router = Router()
 
 # Services
-orchestrator = AIOrchestrator()
+# orchestrator is now accessed via get_orchestrator()
 formatter = TelegramFormatter()
 rate_limiter = RateLimiter(
     max_per_minute=config.max_requests_per_minute,
@@ -111,7 +111,7 @@ async def cmd_search(message: Message):
 
     try:
         # Поиск через orchestrator
-        result = await orchestrator.process_query(
+        result = await get_orchestrator().process_query(
             query,
             context={
                 "type": "semantic_search",
@@ -170,7 +170,7 @@ async def cmd_generate(message: Message):
 
     try:
         # Генерация через orchestrator
-        result = await orchestrator.process_query(
+        result = await get_orchestrator().process_query(
             f"Создай функцию: {description}",
             context={
                 "type": "code_generation",
@@ -232,7 +232,7 @@ async def cmd_dependencies(message: Message):
 
     try:
         # Анализ через orchestrator
-        result = await orchestrator.process_query(
+        result = await get_orchestrator().process_query(
             f"Покажи зависимости функции {function_name} в модуле {module_name}",
             context={
                 "type": "dependency_analysis",
@@ -330,7 +330,7 @@ async def handle_voice(message: Message):
             )
 
             # Обрабатываем как обычный текст через orchestrator
-            result = await orchestrator.process_query(
+            result = await get_orchestrator().process_query(
                 text,
                 context={
                     "type": "voice_query",
@@ -643,7 +643,7 @@ async def handle_text(message: Message):
 
     try:
         # Обработка естественного запроса
-        result = await orchestrator.process_query(
+        result = await get_orchestrator().process_query(
             query, context={"type": "natural_query", "user_id": message.from_user.id}
         )
 

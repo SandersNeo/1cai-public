@@ -8,7 +8,6 @@ import ast
 import re
 import json
 from pathlib import Path
-from typing import List, Tuple
 
 PYLINT_RESULTS = Path("c:/1cAI/pylint_results_after_fixes.json")
 SRC_DIR = Path("c:/1cAI/src")

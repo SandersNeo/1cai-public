@@ -18,7 +18,7 @@ class SessionService:
         user_id: str,
         role: str,
         topic: Optional[str] = None,
-    ):
+    ) -> None:
         """Join a session"""
         await ba_session_manager.join_session(
             session_id,
@@ -28,11 +28,11 @@ class SessionService:
             topic=topic,
         )
 
-    async def leave_session(self, session_id: str, user_id: str):
+    async def leave_session(self, session_id: str, user_id: str) -> None:
         """Leave a session"""
         await ba_session_manager.leave_session(session_id, user_id)
 
-    async def broadcast(self, session_id: str, message: Dict[str, Any], sender: str):
+    async def broadcast(self, session_id: str, message: Dict[str, Any], sender: str) -> None:
         """Broadcast a message to a session"""
         await ba_session_manager.broadcast(session_id, message, sender=sender)
 

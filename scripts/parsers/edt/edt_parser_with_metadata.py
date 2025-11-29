@@ -17,14 +17,11 @@ EDT Configuration Parser with Enhanced Metadata Extraction
 """
 
 import json
-import os
-import re
 import sys
 import time
 import xml.etree.ElementTree as ET
-from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
 # Импорт базового парсера
 sys.path.insert(0, str(Path(__file__).parent))

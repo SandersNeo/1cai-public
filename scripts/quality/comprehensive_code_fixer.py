@@ -4,7 +4,6 @@ Comprehensive Code Quality Fixer
 Fixes all pylint issues automatically where possible.
 """
 
-import os
 import re
 import subprocess
 from pathlib import Path

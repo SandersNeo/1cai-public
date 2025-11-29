@@ -9,22 +9,18 @@
 """
 
 import asyncio
-import json
 import time
-from typing import Any, Dict
 
 import uvicorn
-from fastapi import FastAPI, Response
+from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 # Импортируем наш модуль кэширования
 try:
-    from .http_cache import (CacheHeaders, ETagManager, metrics_collector,
-                             setup_cache_middleware)
+    from .http_cache import (CacheHeaders, metrics_collector, setup_cache_middleware)
 except ImportError:
     # Для запуска как отдельного скрипта
-    from http_cache import (CacheHeaders, ETagManager, metrics_collector,
-                            setup_cache_middleware)
+    from http_cache import (CacheHeaders, metrics_collector, setup_cache_middleware)
 
 
 def create_demo_app() -> FastAPI:

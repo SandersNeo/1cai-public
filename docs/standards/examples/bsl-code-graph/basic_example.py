@@ -9,7 +9,6 @@
 3. Анализ влияния изменений
 """
 
-from src.ai.code_graph import EdgeKind, NodeKind
 from src.ai.code_graph_1c_builder import OneCCodeGraphBuilder
 
 

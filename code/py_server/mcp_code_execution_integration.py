@@ -11,10 +11,10 @@
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from agent_orchestrator import AgentOrchestrator, get_orchestrator
-from mcp_tools_search import SearchToolsService, get_search_service
+from agent_orchestrator import get_orchestrator
+from mcp_tools_search import get_search_service
 
 logger = logging.getLogger(__name__)
 

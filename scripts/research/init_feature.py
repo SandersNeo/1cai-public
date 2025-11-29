@@ -19,7 +19,6 @@ from __future__ import annotations
 import argparse
 import datetime as _dt
 import re
-import shutil
 import sys
 from dataclasses import dataclass
 from pathlib import Path

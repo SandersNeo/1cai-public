@@ -12,9 +12,7 @@
 - Интеграция с FastAPI и OAuth2
 """
 
-import asyncio
 import hashlib
-import json
 import logging
 import threading
 import time
@@ -22,8 +20,7 @@ from abc import ABC, abstractmethod
 from collections import defaultdict, deque
 from contextlib import asynccontextmanager
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, Optional
 
 try:
     import redis.asyncio as redis
@@ -94,7 +91,6 @@ class BaseTracker(ABC):
     @abstractmethod
     def add_request(self, metrics: RequestMetrics) -> bool:
         """Добавить запрос и вернуть True если разрешен"""
-        pass
     
     def _start_cleanup_task(self):
         """Запустить задачу очистки"""

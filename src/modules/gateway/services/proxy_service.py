@@ -15,7 +15,7 @@ logger = StructuredLogger(__name__).logger
 class ProxyService:
     """Service for proxying requests to microservices"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.client = httpx.AsyncClient(timeout=httpx.Timeout(30.0, connect=10.0))
 
     async def proxy_request(

@@ -196,3 +196,21 @@ class Neo4jClient:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.disconnect()
+
+
+# Global instance
+_neo4j_client: Optional[Neo4jClient] = None
+
+
+def get_neo4j_client() -> Neo4jClient:
+    """Get or create Neo4j client with connection validation"""
+    global _neo4j_client
+
+    if _neo4j_client is None:
+        _neo4j_client = Neo4jClient()
+        if not _neo4j_client.connect():
+            logger.warning("Neo4j not available")
+            # We don't raise HTTPException here to avoid dependency on fastapi
+            # The caller should handle the connection failure
+            
+    return _neo4j_client

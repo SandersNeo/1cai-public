@@ -7,7 +7,6 @@ import numpy as np
 
 from src.ml.continual_learning.cms import ContinuumMemorySystem
 from src.ml.continual_learning.memory_level import MemoryLevel, MemoryLevelConfig
-from src.ml.continual_learning.types import SurpriseScore
 
 
 class TestMemoryLevelConfig:

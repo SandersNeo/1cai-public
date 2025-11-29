@@ -8,7 +8,6 @@ Tool Indexer
 """
 
 import hashlib
-import json
 import logging
 from typing import Any, Dict, List, Optional
 
@@ -272,7 +271,6 @@ class ToolIndexer:
         if self._embedding_service is None:
             # Попробовать OpenAI
             try:
-                import openai
                 self._embedding_service = 'openai'
                 logger.info("Using OpenAI for embeddings")
             except ImportError:

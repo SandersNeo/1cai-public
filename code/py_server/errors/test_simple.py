@@ -13,8 +13,7 @@ import sys
 # Добавляем текущую папку в путь для импорта
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from base import ErrorSeverity, McpError
-from integration import IntegrationError
+from base import McpError
 from transport import TransportError
 from validation import ValidationError
 

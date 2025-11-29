@@ -31,8 +31,15 @@ analytics_service = AnalyticsService()
 
 
 @router.post("/reports", response_model=ReportResponse)
-async def generate_report(request: ReportRequest):
-    """Generate a new analytics report."""
+async def generate_report(request: ReportRequest) -> ReportResponse:
+    """Генерирует новый аналитический отчет.
+
+    Args:
+        request: Параметры отчета (заголовок, период, компоненты).
+
+    Returns:
+        ReportResponse: Сгенерированный отчет.
+    """
     report = analytics_service.generate_report(
         title=request.title, period_days=request.period_days, components=request.components
     )
@@ -40,14 +47,28 @@ async def generate_report(request: ReportRequest):
 
 
 @router.get("/reports", response_model=List[ReportResponse])
-async def get_reports():
-    """Get all generated reports."""
+async def get_reports() -> List[ReportResponse]:
+    """Возвращает список всех сгенерированных отчетов.
+
+    Returns:
+        List[ReportResponse]: Список отчетов.
+    """
     return analytics_service.get_all_reports()
 
 
 @router.get("/reports/{report_id}", response_model=ReportResponse)
-async def get_report(report_id: str):
-    """Get a specific report by ID."""
+async def get_report(report_id: str) -> ReportResponse:
+    """Получает конкретный отчет по ID.
+
+    Args:
+        report_id: ID отчета.
+
+    Returns:
+        ReportResponse: Данные отчета.
+
+    Raises:
+        HTTPException: Если отчет не найден (404).
+    """
     report = analytics_service.get_report(report_id)
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
@@ -58,8 +79,12 @@ async def get_report(report_id: str):
 
 
 @router.get("/dashboard/owner", response_model=OwnerDashboardResponse)
-async def get_owner_dashboard():
-    """Get owner dashboard data (Mock for now)."""
+async def get_owner_dashboard() -> OwnerDashboardResponse:
+    """Получает данные для дашборда владельца.
+
+    Returns:
+        OwnerDashboardResponse: Метрики выручки, клиентов и роста.
+    """
     return OwnerDashboardResponse(
         revenue=RevenueData(this_month=150000.0, last_month=120000.0,
                             change_percent=25.0, trend="up"),
@@ -79,8 +104,12 @@ async def get_owner_dashboard():
 
 
 @router.get("/dashboard/executive", response_model=ExecutiveDashboardResponse)
-async def get_executive_dashboard(db_pool: asyncpg.Pool = Depends(get_db_pool)):
-    """Get executive dashboard data."""
+async def get_executive_dashboard(db_pool: asyncpg.Pool = Depends(get_db_pool)) -> ExecutiveDashboardResponse:
+    """Получает данные для исполнительного дашборда.
+
+    Returns:
+        ExecutiveDashboardResponse: KPI, ROI и метрики здоровья системы.
+    """
     # Simplified implementation migrating from dashboard_api.py
     return ExecutiveDashboardResponse(
         id="exec",
@@ -100,8 +129,12 @@ async def get_executive_dashboard(db_pool: asyncpg.Pool = Depends(get_db_pool)):
 
 
 @router.get("/dashboard/pm", response_model=PMDashboardResponse)
-async def get_pm_dashboard():
-    """Get PM dashboard data (Mock for now)."""
+async def get_pm_dashboard() -> PMDashboardResponse:
+    """Получает данные для дашборда менеджера проектов.
+
+    Returns:
+        PMDashboardResponse: Статус проектов, спринтов и загрузка команды.
+    """
     return PMDashboardResponse(
         id="pm",
         projects=[],
@@ -120,8 +153,12 @@ async def get_pm_dashboard():
 
 
 @router.get("/dashboard/developer", response_model=DeveloperDashboardResponse)
-async def get_developer_dashboard():
-    """Get developer dashboard data (Mock for now)."""
+async def get_developer_dashboard() -> DeveloperDashboardResponse:
+    """Получает данные для дашборда разработчика.
+
+    Returns:
+        DeveloperDashboardResponse: Задачи, код-ревью и статус сборки.
+    """
     return DeveloperDashboardResponse(
         id="dev",
         name="Developer Dashboard",

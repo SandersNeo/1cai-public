@@ -3,12 +3,13 @@ QA Engineer Domain Exceptions
 
 Custom exceptions для QA Engineer модуля.
 """
+from typing import Any, Dict
 
 
 class QAError(Exception):
     """Базовое исключение для QA модуля"""
 
-    def __init__(self, message: str, details: dict = None):
+    def __init__(self, message: str, details: Dict[str, Any] | None = None) -> None:
         self.message = message
         self.details = details or {}
         super().__init__(self.message)

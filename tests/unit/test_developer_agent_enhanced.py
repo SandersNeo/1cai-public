@@ -3,7 +3,6 @@ Test for Developer Agent Enhanced
 """
 
 import pytest
-import asyncio
 from src.ai.agents.developer_agent_enhanced import DeveloperAgentEnhanced
 from src.ai.agents.base_agent import AgentCapability
 

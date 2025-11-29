@@ -2,7 +2,6 @@
 
 """Конфигурация MCP-прокси сервера."""
 
-import os
 from typing import Literal, Optional
 
 from pydantic import Field

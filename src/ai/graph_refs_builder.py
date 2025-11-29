@@ -19,7 +19,7 @@ import logging
 from pathlib import Path
 from typing import List, Optional
 
-from src.ai.code_graph import CodeGraphBackend, NodeKind
+from src.ai.code_analysis.graph import CodeGraphBackend, NodeKind
 
 logger = logging.getLogger(__name__)
 
@@ -198,7 +198,7 @@ class GraphRefsBuilder:
             return []
 
         try:
-            from src.ai.code_graph_query_helper import GraphQueryHelper
+            from src.ai.code_analysis.graph_query_helper import GraphQueryHelper
 
             helper = GraphQueryHelper(self.backend)
             # Используем первое ключевое слово для поиска

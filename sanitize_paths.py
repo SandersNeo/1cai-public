@@ -1,5 +1,4 @@
 import re
-import sys
 
 
 def sanitize_file(filepath):

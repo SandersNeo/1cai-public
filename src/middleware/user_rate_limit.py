@@ -13,7 +13,7 @@ Request rate limiting middleware using Redis counters.
 from __future__ import annotations
 
 import time
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from fastapi import HTTPException, status
 from redis.asyncio import Redis
@@ -21,7 +21,9 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from src.modules.auth.application.service import AuthService
+if TYPE_CHECKING:
+    from src.modules.auth.application.service import AuthService
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -36,7 +38,7 @@ class UserRateLimitMiddleware(BaseHTTPMiddleware):
         redis_client: Redis,
         max_requests: int = 60,
         window_seconds: int = 60,
-        auth_service: Optional[AuthService] = None,
+        auth_service: Optional["AuthService"] = None,
     ) -> None:
         super().__init__(app)
 

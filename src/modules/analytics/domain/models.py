@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 
 
 class MetricType(str, Enum):
-    """Metric types"""
+    """Типы метрик."""
 
     PERFORMANCE = "performance"
     QUALITY = "quality"
@@ -16,7 +16,7 @@ class MetricType(str, Enum):
 
 @dataclass
 class AnalyticsReport:
-    """Analytics Report Domain Model"""
+    """Доменная модель аналитического отчета."""
 
     id: str
     title: str
@@ -28,7 +28,7 @@ class AnalyticsReport:
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
-        """Serialize report"""
+        """Сериализует отчет в словарь."""
         return {
             "id": self.id,
             "title": self.title,

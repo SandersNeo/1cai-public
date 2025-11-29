@@ -1,7 +1,8 @@
 # [NEXUS IDENTITY] ID: 962687204371806439 | DATE: 2025-11-19
 
 """
-API для импорта данных в базу знаний из различных источников
+API для импорта данных в базу знаний из различных источников.
+
 Версия: 1.0.0
 """
 
@@ -25,7 +26,7 @@ logger = StructuredLogger(__name__).logger
 
 # Модели данных
 class ImportRequest(BaseModel):
-    """Запрос на импорт данных"""
+    """Модель запроса на импорт данных."""
 
     config_name: str = Field(..., description="Название конфигурации")
     source: str = Field(default="manual", description="Источник данных")
@@ -34,7 +35,7 @@ class ImportRequest(BaseModel):
 
 
 class ModuleImport(BaseModel):
-    """Импорт модуля"""
+    """Модель импорта модуля."""
 
     name: str
     description: str = ""
@@ -46,7 +47,7 @@ class ModuleImport(BaseModel):
 
 
 class BestPracticeImport(BaseModel):
-    """Импорт best practice"""
+    """Модель импорта лучшей практики."""
 
     title: str
     description: str
@@ -56,7 +57,7 @@ class BestPracticeImport(BaseModel):
 
 
 class BulkImportRequest(BaseModel):
-    """Массовый импорт"""
+    """Модель массового импорта."""
 
     config_name: str
     modules: List[ModuleImport] = []
@@ -66,8 +67,20 @@ class BulkImportRequest(BaseModel):
 
 # Эндпоинты
 @router.post("/import/json")
-async def import_from_json(config_name: str, file: UploadFile = File(...), overwrite: bool = False):
-    """Импорт данных из JSON файла"""
+async def import_from_json(config_name: str, file: UploadFile = File(...), overwrite: bool = False) -> Dict[str, Any]:
+    """Импортирует данные из JSON файла.
+
+    Args:
+        config_name: Название конфигурации.
+        file: Загружаемый JSON файл.
+        overwrite: Флаг перезаписи существующих данных.
+
+    Returns:
+        Dict[str, Any]: Результат импорта.
+
+    Raises:
+        HTTPException: Если произошла ошибка при импорте.
+    """
     try:
         content = await file.read()
         data = json.loads(content)
@@ -96,8 +109,20 @@ async def import_from_json(config_name: str, file: UploadFile = File(...), overw
 
 
 @router.post("/import/csv")
-async def import_from_csv(config_name: str, file: UploadFile = File(...), type: str = "modules"):
-    """Импорт данных из CSV файла"""
+async def import_from_csv(config_name: str, file: UploadFile = File(...), type: str = "modules") -> Dict[str, Any]:
+    """Импортирует данные из CSV файла.
+
+    Args:
+        config_name: Название конфигурации.
+        file: Загружаемый CSV файл.
+        type: Тип данных ("modules" или "best_practices").
+
+    Returns:
+        Dict[str, Any]: Результат импорта.
+
+    Raises:
+        HTTPException: Если произошла ошибка при импорте.
+    """
     try:
         content = await file.read()
         decoded = content.decode("utf-8")
@@ -120,8 +145,18 @@ async def import_from_csv(config_name: str, file: UploadFile = File(...), type: 
 
 
 @router.post("/import/bulk")
-async def bulk_import(request: BulkImportRequest):
-    """Массовый импорт модулей и best practices"""
+async def bulk_import(request: BulkImportRequest) -> Dict[str, Any]:
+    """Выполняет массовый импорт модулей и лучших практик.
+
+    Args:
+        request: Объект запроса с данными для импорта.
+
+    Returns:
+        Dict[str, Any]: Результат импорта.
+
+    Raises:
+        HTTPException: Если произошла ошибка при импорте.
+    """
     try:
         modules_count = 0
         for module in request.modules:
@@ -144,8 +179,12 @@ async def bulk_import(request: BulkImportRequest):
 
 
 @router.get("/templates/json")
-async def download_json_template():
-    """Скачать шаблон JSON для импорта"""
+async def download_json_template() -> StreamingResponse:
+    """Скачивает шаблон JSON для импорта.
+
+    Returns:
+        StreamingResponse: Файл шаблона.
+    """
     template = {
         "modules": [
             {"name": "ОбщийМодуль_Пример", "description": "Описание модуля",
@@ -171,8 +210,15 @@ async def download_json_template():
 
 
 @router.get("/templates/csv")
-async def download_csv_template(type: str = "modules"):
-    """Скачать шаблон CSV для импорта"""
+async def download_csv_template(type: str = "modules") -> StreamingResponse:
+    """Скачивает шаблон CSV для импорта.
+
+    Args:
+        type: Тип шаблона ("modules" или "best_practices").
+
+    Returns:
+        StreamingResponse: Файл шаблона.
+    """
     if type == "modules":
         csv_content = "name,description,code,object_type,object_name\n"
         csv_content += "ОбщийМодуль_Пример,Описание,// Код,CommonModule,Пример\n"

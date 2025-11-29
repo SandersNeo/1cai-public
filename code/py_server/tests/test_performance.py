@@ -25,25 +25,19 @@
 Дата: 2025-10-29
 """
 
-import asyncio
 import gc
 import json
 import math
-import multiprocessing as mp
 import os
 import random
 import statistics
 import sys
 import threading
 import time
-import warnings
-from concurrent.futures import (ProcessPoolExecutor, ThreadPoolExecutor,
-                                as_completed)
+from concurrent.futures import (ThreadPoolExecutor, as_completed)
 from contextlib import contextmanager
-from dataclasses import asdict, dataclass
-from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Tuple
-from unittest.mock import Mock
+from dataclasses import dataclass
+from typing import Any, Dict, List
 
 # Добавляем путь для импортов
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -61,14 +55,11 @@ except ImportError:
     pytest_benchmark = None
 
 # Настройка тестового окружения
-import uvicorn
 from fastapi.testclient import TestClient
 # Импорт компонентов системы
-from ratelimit import (FixedWindowCounter, MemoryRateLimitStore,
-                       RateLimitManager, RedisRateLimitStore,
-                       SlidingWindowCounter, TokenBucket)
+from ratelimit import RateLimitManager
 
-from cache import MCP_CACHE, MemoryCache
+from cache import MCP_CACHE
 from main import app
 
 # =============================================================================

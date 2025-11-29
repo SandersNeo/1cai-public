@@ -7,7 +7,6 @@ Automated Fix Script for Code Review Issues
 
 import os
 import re
-from pathlib import Path
 
 
 def fix_get_db_pool_implementations():

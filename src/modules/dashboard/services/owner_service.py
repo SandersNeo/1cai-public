@@ -1,6 +1,7 @@
 """
-Owner Dashboard Service
-Business logic for simple owner-level business metrics
+Сервис дашборда владельца.
+
+Бизнес-логика для простых бизнес-метрик уровня владельца.
 """
 from typing import Any, Dict
 
@@ -12,17 +13,16 @@ logger = StructuredLogger(__name__).logger
 
 
 class OwnerService:
-    """Owner dashboard business logic"""
+    """Бизнес-логика дашборда владельца."""
 
     async def get_dashboard(self, conn: asyncpg.Connection) -> Dict[str, Any]:
-        """
-        Get owner dashboard data (simple business metrics)
+        """Получает данные для дашборда владельца (простые бизнес-метрики).
 
         Args:
-            conn: Database connection
+            conn: Подключение к БД.
 
         Returns:
-            Owner dashboard data dictionary
+            Dict[str, Any]: Словарь с данными дашборда.
         """
         try:
             # Get tenant
@@ -94,7 +94,7 @@ class OwnerService:
             return self._get_demo_dashboard()
 
     def _get_demo_dashboard(self) -> Dict[str, Any]:
-        """Demo data for owner dashboard"""
+        """Возвращает демонстрационные данные для дашборда владельца."""
         return {
             "business_health": "Excellent",
             "key_metrics": [

@@ -11,7 +11,6 @@ LLM Client для 1C AI MCP Code Generation
 """
 
 import asyncio
-import json
 import logging
 import time
 from dataclasses import dataclass

@@ -7,7 +7,6 @@ Demo Test Runner - Simplified
 
 import sys
 import time
-from pathlib import Path
 
 
 # Colors for Windows

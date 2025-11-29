@@ -1,11 +1,12 @@
 # [NEXUS IDENTITY] ID: -2939309114614425990 | DATE: 2025-11-19
 
 """
-API endpoints для работы с базой знаний по конфигурациям 1С
+API endpoints для работы с базой знаний по конфигурациям 1С.
+
 Версия: 1.0.0
 """
 
-from typing import Literal, Optional
+from typing import Any, Dict, Literal, Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
@@ -21,7 +22,7 @@ router = APIRouter()
 
 
 class ConfigurationRequest(BaseModel):
-    """Запрос информации о конфигурации"""
+    """Модель запроса информации о конфигурации."""
 
     configName: Literal["erp", "ut", "zup", "buh", "holding", "buhbit", "do", "ka"] = Field(
         ..., description="Название конфигурации"
@@ -29,7 +30,7 @@ class ConfigurationRequest(BaseModel):
 
 
 class ModuleDocumentationRequest(BaseModel):
-    """Запрос на добавление документации модуля"""
+    """Модель запроса на добавление документации модуля."""
 
     configName: str
     moduleName: str
@@ -37,7 +38,7 @@ class ModuleDocumentationRequest(BaseModel):
 
 
 class BestPracticeRequest(BaseModel):
-    """Запрос на добавление best practice"""
+    """Модель запроса на добавление лучшей практики."""
 
     configName: str
     category: str
@@ -45,7 +46,7 @@ class BestPracticeRequest(BaseModel):
 
 
 class PatternSearchRequest(BaseModel):
-    """Запрос на поиск паттернов"""
+    """Модель запроса на поиск паттернов."""
 
     configName: Optional[str] = None
     patternType: Optional[str] = None
@@ -53,7 +54,7 @@ class PatternSearchRequest(BaseModel):
 
 
 class CodeRecommendationRequest(BaseModel):
-    """Запрос рекомендаций на основе кода"""
+    """Модель запроса рекомендаций на основе кода."""
 
     code: str = Field(..., description="Код для анализа",
                       max_length=100000)  # Limit length
@@ -70,8 +71,12 @@ class CodeRecommendationRequest(BaseModel):
     summary="Список поддерживаемых конфигураций",
     description="Получение списка всех поддерживаемых типовых конфигураций 1С",
 )
-async def get_configurations():
-    """Список конфигураций"""
+async def get_configurations() -> Dict[str, Any]:
+    """Получает список поддерживаемых конфигураций.
+
+    Returns:
+        Dict[str, Any]: Словарь со списком конфигураций и их общим количеством.
+    """
     kb = get_knowledge_base()
 
     configurations = []
@@ -97,13 +102,17 @@ async def get_configurations():
     summary="Информация о конфигурации",
     description="Получение подробной информации о конкретной конфигурации",
 )
-async def get_configuration_info(config_name: str):
-    """
-    Информация о конфигурации с валидацией входных данных
+async def get_configuration_info(config_name: str) -> Dict[str, Any]:
+    """Получает информацию о конфигурации с валидацией входных данных.
 
-    Best practices:
-    - Sanitization имени конфигурации
-    - Защита от path traversal
+    Args:
+        config_name: Название конфигурации.
+
+    Returns:
+        Dict[str, Any]: Информация о конфигурации.
+
+    Raises:
+        HTTPException: Если имя конфигурации некорректно или конфигурация не найдена.
     """
     # Input validation and sanitization (best practice)
     sanitized_name = config_name.strip().lower()[:50]  # Limit length and normalize
@@ -131,14 +140,17 @@ async def get_configuration_info(config_name: str):
     summary="Рекомендации на основе кода",
     description="Получение рекомендаций на основе анализа кода и базы знаний",
 )
-async def get_recommendations(request: CodeRecommendationRequest):
-    """
-    Рекомендации на основе кода с валидацией входных данных
+async def get_recommendations(request: CodeRecommendationRequest) -> Dict[str, Any]:
+    """Получает рекомендации на основе кода с валидацией входных данных.
 
-    Best practices:
-    - Валидация длины кода
-    - Sanitization имени конфигурации
-    - Улучшенная обработка ошибок
+    Args:
+        request: Объект запроса с кодом и опциональным именем конфигурации.
+
+    Returns:
+        Dict[str, Any]: Список рекомендаций.
+
+    Raises:
+        HTTPException: Если код пустой, слишком длинный или имя конфигурации некорректно.
     """
     try:
         # Input validation and sanitization (best practice)
@@ -191,14 +203,17 @@ async def get_recommendations(request: CodeRecommendationRequest):
     summary="Поиск паттернов",
     description="Поиск паттернов в базе знаний",
 )
-async def search_patterns(request: PatternSearchRequest):
-    """
-    Поиск паттернов с валидацией входных данных
+async def search_patterns(request: PatternSearchRequest) -> Dict[str, Any]:
+    """Ищет паттерны в базе знаний с валидацией входных данных.
 
-    Best practices:
-    - Sanitization входных данных
-    - Защита от path traversal
-    - Улучшенная обработка ошибок
+    Args:
+        request: Объект запроса с параметрами поиска.
+
+    Returns:
+        Dict[str, Any]: Список найденных паттернов.
+
+    Raises:
+        HTTPException: Если имя конфигурации некорректно.
     """
     try:
         # Input validation and sanitization (best practice)
@@ -247,14 +262,17 @@ async def search_patterns(request: PatternSearchRequest):
     summary="Добавление документации модуля",
     description="Добавление документации модуля в базу знаний",
 )
-async def add_module_documentation(request: ModuleDocumentationRequest):
-    """
-    Добавление документации модуля с валидацией входных данных
+async def add_module_documentation(request: ModuleDocumentationRequest) -> Dict[str, Any]:
+    """Добавляет документацию модуля с валидацией входных данных.
 
-    Best practices:
-    - Sanitization имен конфигурации и модуля
-    - Защита от path traversal
-    - Улучшенная обработка ошибок
+    Args:
+        request: Объект запроса с данными модуля.
+
+    Returns:
+        Dict[str, Any]: Результат операции.
+
+    Raises:
+        HTTPException: Если данные некорректны или не удалось добавить документацию.
     """
     try:
         # Input validation and sanitization (best practice)
@@ -312,8 +330,18 @@ async def add_module_documentation(request: ModuleDocumentationRequest):
     summary="Добавление best practice",
     description="Добавление best practice в базу знаний",
 )
-async def add_best_practice(request: BestPracticeRequest):
-    """Добавление best practice"""
+async def add_best_practice(request: BestPracticeRequest) -> Dict[str, Any]:
+    """Добавляет лучшую практику в базу знаний.
+
+    Args:
+        request: Объект запроса с данными практики.
+
+    Returns:
+        Dict[str, Any]: Результат операции.
+
+    Raises:
+        HTTPException: Если не удалось добавить практику.
+    """
     try:
         kb = get_knowledge_base()
         success = kb.add_best_practice(
@@ -349,8 +377,18 @@ async def add_best_practice(request: BestPracticeRequest):
     summary="Загрузка конфигураций из директории",
     description="Загрузка конфигураций 1С из указанной директории",
 )
-async def load_from_directory(directory_path: str):
-    """Загрузка конфигураций из директории"""
+async def load_from_directory(directory_path: str) -> Dict[str, Any]:
+    """Загружает конфигурации из указанной директории.
+
+    Args:
+        directory_path: Путь к директории с конфигурациями.
+
+    Returns:
+        Dict[str, Any]: Результат загрузки.
+
+    Raises:
+        HTTPException: Если произошла ошибка при загрузке.
+    """
     try:
         kb = get_knowledge_base()
         loaded_count = kb.load_from_directory(directory_path)
@@ -375,8 +413,12 @@ async def load_from_directory(directory_path: str):
 
 
 @router.get("/health", tags=["Knowledge Base"], summary="Проверка состояния базы знаний")
-async def health_check():
-    """Проверка доступности базы знаний"""
+async def health_check() -> Dict[str, Any]:
+    """Проверяет доступность и состояние базы знаний.
+
+    Returns:
+        Dict[str, Any]: Статус здоровья и статистика.
+    """
     kb = get_knowledge_base()
 
     total_configs = 0

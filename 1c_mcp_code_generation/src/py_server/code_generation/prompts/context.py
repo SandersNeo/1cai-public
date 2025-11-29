@@ -7,11 +7,10 @@
 типа проекта, требований к качеству и других параметров.
 """
 
-import json
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 
 class ComplexityLevel(Enum):

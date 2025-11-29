@@ -28,7 +28,7 @@ logger = StructuredLogger(__name__).logger
 class MLFlowManager:
     """Менеджер MLflow экспериментов и моделей"""
 
-    def __init__(self, tracking_uri: Optional[str] = None):
+    def __init__(self, tracking_uri: Optional[str] = None) -> None:
         """Инициализация MLflow клиента"""
         self.tracking_uri = tracking_uri or settings.MLFLOW_TRACKING_URI
         self.client = MlflowClient(tracking_uri=self.tracking_uri)
@@ -41,7 +41,7 @@ class MLFlowManager:
 
         logger.info("MLflow инициализирован", extra={"tracking_uri": self.tracking_uri})
 
-    def _setup_experiments(self):
+    def _setup_experiments(self) -> None:
         """Создание и настройка экспериментов"""
 
         experiments = [
@@ -131,7 +131,7 @@ class MLFlowManager:
             )
             raise
 
-    def log_params(self, params: Dict[str, Any]):
+    def log_params(self, params: Dict[str, Any]) -> None:
         """Логирование параметров модели"""
 
         # Фильтруем параметры для MLflow
@@ -148,7 +148,7 @@ class MLFlowManager:
         logger.debug("Записаны параметры", extra={
                      "params_keys": list(filtered_params.keys())})
 
-    def log_metrics(self, metrics: Dict[str, float], step: Optional[int] = None):
+    def log_metrics(self, metrics: Dict[str, float], step: Optional[int] = None) -> None:
         """Логирование метрик"""
 
         # Фильтруем метрики
@@ -164,7 +164,7 @@ class MLFlowManager:
                 extra={"metrics_keys": list(filtered_metrics.keys())},
             )
 
-    def log_artifacts(self, artifacts: Dict[str, Union[str, Path]], prefix: str = ""):
+    def log_artifacts(self, artifacts: Dict[str, Union[str, Path]], prefix: str = "") -> None:
         """Логирование артефактов"""
 
         for name, path in artifacts.items():
@@ -185,12 +185,12 @@ class MLFlowManager:
 
     def log_model(
         self,
-        model,
+        model: Any,
         model_name: str,
         model_type: str,
         input_example: Optional[Any] = None,
         registered_model_name: Optional[str] = None,
-    ):
+    ) -> None:
         """Логирование модели"""
 
         try:
@@ -235,7 +235,7 @@ class MLFlowManager:
             )
             raise
 
-    def load_model(self, model_uri: str):
+    def load_model(self, model_uri: str) -> Any:
         """Загрузка модели из MLflow"""
 
         try:
@@ -254,7 +254,7 @@ class MLFlowManager:
             )
             raise
 
-    def register_model(self, run_id: str, model_name: str):
+    def register_model(self, run_id: str, model_name: str) -> Any:
         """Регистрация модели в MLflow Model Registry"""
 
         try:
@@ -376,7 +376,7 @@ class MLFlowManager:
 
         return comparison_results
 
-    def promote_model(self, model_name: str, version: str, stage: str):
+    def promote_model(self, model_name: str, version: str, stage: str) -> None:
         """Перевод модели в продакшен"""
 
         try:
@@ -406,7 +406,7 @@ class MLFlowManager:
             )
             raise
 
-    def log_dataframe(self, df: pd.DataFrame, name: str):
+    def log_dataframe(self, df: pd.DataFrame, name: str) -> None:
         """Логирование DataFrame как артефакт"""
 
         try:
@@ -443,7 +443,7 @@ class MLFlowManager:
         else:
             return "sklearn"  # Default fallback
 
-    def create_feature_store_experiment(self, features: pd.DataFrame, name: str):
+    def create_feature_store_experiment(self, features: pd.DataFrame, name: str) -> None:
         """Создание эксперимента для Feature Store"""
 
         try:
@@ -487,7 +487,7 @@ class MLFlowManager:
             )
             raise
 
-    def close_experiment(self, run_id: Optional[str] = None):
+    def close_experiment(self, run_id: Optional[str] = None) -> None:
         """Завершение эксперимента"""
 
         try:

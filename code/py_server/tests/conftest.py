@@ -12,28 +12,25 @@ Pytest конфигурация и фикстуры для HTTP сервисов
 """
 
 import asyncio
-import json
 import os
 import sys
 import tempfile
 import time
-from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Any, AsyncGenerator, Dict, Optional
+from typing import AsyncGenerator, Dict
 from unittest.mock import AsyncMock, Mock, patch
 
 import httpx
 import psutil
 import pytest
-from factory import Factory
 from freezegun import freeze_time
 
 # Добавляем путь к приложению
 sys.path.append(str(Path(__file__).parent.parent))
 
-from api.cache_admin import MemoryCache, active_caches, cache_metrics
-from config import Environment, config
+from api.cache_admin import MemoryCache, cache_metrics
+from config import Environment
 # Импорты приложения
 from main import app
 

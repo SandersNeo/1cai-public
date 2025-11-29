@@ -1,7 +1,7 @@
 # [NEXUS IDENTITY] ID: 2068138963340429857 | DATE: 2025-11-19
 
 """
-Domain models for Authentication module.
+Доменные модели для модуля аутентификации.
 """
 
 from typing import List, Optional
@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 
 
 class UserCredentials(BaseModel):
-    """User credentials model."""
+    """Модель учетных данных пользователя."""
 
     username: str
     password: str
@@ -22,7 +22,7 @@ class UserCredentials(BaseModel):
 
 
 class CurrentUser(BaseModel):
-    """Current authenticated user model."""
+    """Модель текущего аутентифицированного пользователя."""
 
     user_id: str
     username: str
@@ -32,7 +32,23 @@ class CurrentUser(BaseModel):
     email: Optional[str] = None
 
     def has_role(self, *required_roles: str) -> bool:
+        """Проверяет наличие хотя бы одной из указанных ролей.
+
+        Args:
+            required_roles: Список требуемых ролей.
+
+        Returns:
+            bool: True если есть роль, иначе False.
+        """
         return any(role in self.roles for role in required_roles)
 
     def has_permission(self, *required_permissions: str) -> bool:
+        """Проверяет наличие хотя бы одного из указанных прав.
+
+        Args:
+            required_permissions: Список требуемых прав.
+
+        Returns:
+            bool: True если есть право, иначе False.
+        """
         return any(permission in self.permissions for permission in required_permissions)

@@ -5,10 +5,8 @@
 """
 
 import json
-from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
-import pytest
 
 from src.py_server.code_generation.templates.library import (CodeTemplate,
                                                              TemplateLibrary,

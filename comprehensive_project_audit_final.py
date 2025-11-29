@@ -7,7 +7,6 @@
 Версия 2.0 - с учетом всех уроков
 """
 
-import json
 import os
 import re
 from collections import defaultdict

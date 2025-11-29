@@ -3,6 +3,7 @@ Code Approval API Routes
 """
 import asyncio
 from datetime import timedelta
+from typing import Any, Dict
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from slowapi import Limiter
@@ -43,7 +44,7 @@ async def generate_code(
     api_request: Request,
     request: CodeGenerationRequest,
     service: CodeApprovalService = Depends(get_approval_service),
-):
+) -> Dict[str, Any]:
     """
     Generate code with AI with input validation
     """
@@ -101,7 +102,7 @@ async def generate_code(
 
 
 @router.get("/preview/{token}")
-async def get_preview(token: str, service: CodeApprovalService = Depends(get_approval_service)):
+async def get_preview(token: str, service: CodeApprovalService = Depends(get_approval_service)) -> Dict[str, Any]:
     """
     Get preview suggestion for review
     """
@@ -138,7 +139,7 @@ async def approve_suggestion(
     api_request: Request,
     request: CodeApprovalRequest,
     service: CodeApprovalService = Depends(get_approval_service),
-):
+) -> Dict[str, Any]:
     """
     Approve and apply suggestion
     """
@@ -193,7 +194,7 @@ async def bulk_approve(
     api_request: Request,
     request: BulkApprovalRequest,
     service: CodeApprovalService = Depends(get_approval_service),
-):
+) -> Dict[str, Any]:
     """
     Bulk approval for multiple suggestions
     """
@@ -234,7 +235,7 @@ async def bulk_approve(
 
 
 @router.delete("/reject/{token}")
-async def reject_suggestion(token: str, service: CodeApprovalService = Depends(get_approval_service)):
+async def reject_suggestion(token: str, service: CodeApprovalService = Depends(get_approval_service)) -> Dict[str, Any]:
     """
     Reject suggestion
     """
@@ -255,7 +256,7 @@ async def reject_suggestion(token: str, service: CodeApprovalService = Depends(g
 
 
 @router.get("/pending")
-async def get_pending_suggestions(user_id: str, service: CodeApprovalService = Depends(get_approval_service)):
+async def get_pending_suggestions(user_id: str, service: CodeApprovalService = Depends(get_approval_service)) -> Dict[str, Any]:
     """
     Get all pending suggestions for user
     """

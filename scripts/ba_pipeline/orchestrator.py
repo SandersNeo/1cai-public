@@ -6,7 +6,7 @@ import argparse
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Type
+from typing import Dict, List, Optional, Sequence, Tuple, Type
 
 from scripts.ba_pipeline.base import BaseCollector, CollectorResult
 from scripts.ba_pipeline.collectors import (ConferenceCollector,

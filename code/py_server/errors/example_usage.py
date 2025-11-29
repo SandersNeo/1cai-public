@@ -20,7 +20,7 @@ from datetime import datetime
 # Добавляем текущую папку в путь для импорта
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from base import ErrorSeverity, McpError
+from base import McpError
 from integration import ExternalServiceUnavailableError
 from mapping import prepare_api_error_response, translate_python_error_to_1c
 from mcp import McpProtocolError, McpToolError

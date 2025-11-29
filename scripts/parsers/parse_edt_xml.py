@@ -6,14 +6,10 @@
 Версия: 2.0.0 - PostgreSQL Integration
 """
 
-import hashlib
 import json
-import os
-import re
 import sys
 import xml.etree.ElementTree as ET
 from collections import defaultdict
-from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -26,8 +22,6 @@ except ImportError:
     ImprovedBSLParser = None
 
 try:
-    import psycopg2
-    from psycopg2.extras import Json, execute_values
     POSTGRES_AVAILABLE = True
 except ImportError:
     print("[WARN] psycopg2 not installed. Install: pip install psycopg2-binary")
@@ -1042,7 +1036,6 @@ class EDTXMLParser:
 
 def parse_do_configuration():
     """Парсинг конфигурации DO из EDT XML файлов"""
-    import io
     import sys
 
     # Устанавливаем правильную кодировку для вывода

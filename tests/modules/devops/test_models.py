@@ -16,7 +16,6 @@ from src.modules.devops.domain.models import (
     LogAnalysisResult,
     LogAnomaly,
     LogSeverity,
-    LogCategory,
     CostOptimization,
     CostOptimizationResult,
     InfrastructureConfig,

@@ -11,14 +11,12 @@ import asyncio
 import logging
 import random
 import time
-from typing import Any, Dict, List
+from typing import Any, Dict
 
-from . import (CircuitBreaker, CircuitBreakerConfig, FallbackResult,
-               FallbackStrategy, GracefulDegradationConfig,
-               GracefulDegradationManager, RetryPolicy, RetryPolicyConfig,
-               ServiceContext, ServiceType, create_resilient_operation,
-               get_circuit_breaker_manager, get_fallback_strategy_manager,
-               get_graceful_degradation_manager, get_retry_policy_manager,
+from . import (CircuitBreaker, CircuitBreakerConfig, GracefulDegradationConfig,
+               GracefulDegradationManager, RetryPolicy,
+               RetryPolicyConfig, ServiceContext, ServiceType,
+               create_resilient_operation, get_fallback_strategy_manager, get_graceful_degradation_manager,
                with_exponential_backoff)
 
 # Настройка логирования

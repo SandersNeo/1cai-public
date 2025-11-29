@@ -6,14 +6,12 @@
 Версия: 2.0.0
 """
 
-import json
-import os
 import re
 import sys
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 sys.path.insert(0, str(Path(__file__).parent))
 

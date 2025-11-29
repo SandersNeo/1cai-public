@@ -7,10 +7,8 @@
 """
 
 import logging
-import os
 import sys
 import uuid
-from typing import Dict, List
 
 logging.basicConfig(
     level=logging.INFO,

@@ -7,7 +7,7 @@ Integrates LLM Council with test generation.
 from typing import Dict, Optional
 
 
-from src.ai.orchestrator import orchestrator
+
 
 
 class CouncilTestGenerationService:
@@ -19,7 +19,8 @@ class CouncilTestGenerationService:
 
     def __init__(self):
         """Initialize council test generation service"""
-        self.orchestrator = orchestrator
+        from src.ai.orchestrator import get_orchestrator
+        self.orchestrator = get_orchestrator()
 
     async def generate_tests_with_council(self, code: str, context: Optional[Dict] = None) -> Dict:
         """

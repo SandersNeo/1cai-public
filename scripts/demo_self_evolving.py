@@ -7,7 +7,6 @@ import logging
 sys.path.append(os.getcwd())
 
 from src.ai.self_evolving_ai import SelfEvolvingAI
-from src.ai.llm_provider_abstraction import LLMProviderAbstraction
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

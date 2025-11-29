@@ -7,7 +7,6 @@ import sys
 sys.path.append(os.getcwd())
 
 from src.ai.self_healing_code import SelfHealingCode
-from src.ai.llm_provider_abstraction import LLMProviderAbstraction
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

@@ -11,7 +11,6 @@ print("=" * 70)
 # Тест 1: Импорт SDK
 print("\n1️⃣ Проверка импорта qdrant-client...")
 try:
-    import qdrant_client
     print(f"✅ qdrant_client импортирован")
     from qdrant_client import QdrantClient as QdrantSDK
     print("✅ QdrantClient импортирован из SDK")

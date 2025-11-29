@@ -10,9 +10,9 @@ import json
 import time
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 
@@ -58,7 +58,6 @@ class BusinessFunctionChecker(ABC):
     @abstractmethod
     async def check(self) -> BusinessCheck:
         """Выполнить проверку функции"""
-        pass
 
 class AuthenticationChecker(BusinessFunctionChecker):
     """Проверка системы аутентификации"""
@@ -534,7 +533,7 @@ DEFAULT_BUSINESS_CONFIG = {
 }
 
 if __name__ == "__main__":
-    import os
+    pass
 
     # Пример использования
     async def main():

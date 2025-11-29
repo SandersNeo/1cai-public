@@ -3,7 +3,7 @@ Architect Assistant Service
 """
 from typing import Any, Dict, List
 
-from src.ai_assistants.architect_assistant import ArchitectAssistant
+
 from src.infrastructure.logging.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -17,6 +17,7 @@ class ArchitectService:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(ArchitectService, cls).__new__(cls)
+            from src.ai_assistants.architect_assistant import ArchitectAssistant
             cls._instance.assistant = ArchitectAssistant()
         return cls._instance
 

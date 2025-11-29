@@ -6,7 +6,6 @@
 Создает необходимые директории для работы системы
 """
 
-import os
 from pathlib import Path
 
 

@@ -1,5 +1,3 @@
-# [NEXUS IDENTITY] ID: 6575367605745973363 | DATE: 2025-11-27
-
 """
 Enhanced Business Analyst AI Agent
 AI ассистент для бизнес-аналитиков с LLM интеграцией
@@ -10,35 +8,11 @@ from typing import Any, Dict, List, Optional
 
 from src.ai.agents.base_agent import AgentCapability, BaseAgent
 from src.ai.llm import TaskType
-from src.integrations.docling_processor import get_docling_processor
-from src.modules.business_analyst.domain.models import (
-    BPMNDiagram,
-    GapAnalysisResult,
-    RequirementExtractionResult,
-    TraceabilityMatrix,
-)
-
-# Import new services
-from src.modules.business_analyst.services import (
-    BPMNGenerator,
-    GapAnalyzer,
-    RequirementsExtractor,
-    TraceabilityMatrixGenerator,
-)
-
-logger = logging.getLogger(__name__)
-
+from src.services.docling_processor import get_docling_processor
 
 class BusinessAnalystAgentEnhanced(BaseAgent):
     """
     Enhanced AI агент для бизнес-аналитиков
-
-    Features:
-    - LLM-based requirements analysis
-    - Acceptance criteria generation
-    - BPMN diagram generation
-    - Requirements traceability
-    - Clean Architecture services integration
     """
 
     def __init__(
@@ -58,6 +32,12 @@ class BusinessAnalystAgentEnhanced(BaseAgent):
         self.logger = logging.getLogger("business_analyst_agent_enhanced")
 
         # Initialize new services
+        from src.modules.business_analyst.services import (
+            BPMNGenerator,
+            GapAnalyzer,
+            RequirementsExtractor,
+            TraceabilityMatrixGenerator,
+        )
         self.requirements_extractor = (
             requirements_extractor or RequirementsExtractor()
         )
@@ -83,7 +63,7 @@ class BusinessAnalystAgentEnhanced(BaseAgent):
         document_text: str,
         document_type: str = "tz",
         source_path: Optional[str] = None,
-    ) -> RequirementExtractionResult:
+    ) -> Dict[str, Any]:
         """
         Enhanced requirements extraction using Clean Architecture service
 
@@ -102,7 +82,7 @@ class BusinessAnalystAgentEnhanced(BaseAgent):
     async def generate_bpmn_diagram(
         self,
         process_description: str
-    ) -> BPMNDiagram:
+    ) -> Any:
         """
         Generate BPMN diagram using Clean Architecture service
 
@@ -118,41 +98,11 @@ class BusinessAnalystAgentEnhanced(BaseAgent):
         self,
         current_state: Dict[str, Any],
         desired_state: Dict[str, Any]
-    ) -> GapAnalysisResult:
+    ) -> Any:
         """
         Perform gap analysis using Clean Architecture service
-
-        Args:
-            current_state: Текущее состояние
-            desired_state: Желаемое состояние
-
-        Returns:
-            GapAnalysisResult
         """
-        return await self.gap_analyzer.perform_gap_analysis(
-            current_state, desired_state
-        )
-
-    async def generate_traceability_matrix(
-        self,
-        requirements: List[Any],
-        test_cases: List[Dict[str, Any]]
-    ) -> TraceabilityMatrix:
-        """
-        Generate traceability matrix using Clean Architecture service
-
-        Args:
-            requirements: Список требований
-            test_cases: Список тест-кейсов
-
-        Returns:
-            TraceabilityMatrix
-        """
-        return await self.traceability_generator.generate_matrix(
-            requirements, test_cases
-        )
-
-    # === LEGACY METHODS: Backward Compatibility ===
+        return await self.gap_analyzer.analyze_gap(current_state, desired_state)
 
     async def analyze_requirements(
         self,
@@ -347,7 +297,7 @@ class BusinessAnalystAgentEnhanced(BaseAgent):
 
             if transcript["status"] != "success":
                 return transcript
-
+            
             # Extract requirements from transcript
             if self.llm_selector:
                 requirements = await self.llm_selector.generate(

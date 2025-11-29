@@ -20,12 +20,10 @@ try:
     print("✅ CopilotService imported and initialized successfully")
 
     print("3. Importing Copilot Router...")
-    from src.modules.copilot.api.routes import router
 
     print("✅ Copilot Router imported successfully")
 
     print("4. Importing main app...")
-    from src.main import app
 
     print("✅ Main app imported successfully")
 

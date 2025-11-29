@@ -1,6 +1,7 @@
 """
-Dashboard Domain Models
-Pydantic models for all dashboard responses
+Доменные модели дашбордов.
+
+Pydantic модели для всех ответов API дашбордов.
 """
 from typing import Any, Dict, List, Optional
 
@@ -10,7 +11,7 @@ from pydantic import BaseModel, Field
 
 
 class HealthScore(BaseModel):
-    """System health score model"""
+    """Модель оценки здоровья системы."""
 
     status: str = Field(..., description="Health status: healthy, warning, critical")
     score: int = Field(..., ge=0, le=100, description="Health score 0-100")
@@ -18,7 +19,7 @@ class HealthScore(BaseModel):
 
 
 class Metric(BaseModel):
-    """Generic metric model"""
+    """Общая модель метрики."""
 
     value: float = Field(..., description="Metric value")
     previous_value: Optional[float] = Field(None, description="Previous period value")
@@ -33,7 +34,7 @@ class Metric(BaseModel):
 
 
 class Alert(BaseModel):
-    """Alert model"""
+    """Модель алерта (уведомления)."""
 
     id: str
     type: str = Field(..., description="Alert type: info, warning, error")
@@ -44,7 +45,7 @@ class Alert(BaseModel):
 
 
 class Objective(BaseModel):
-    """Business objective model"""
+    """Модель бизнес-цели."""
 
     id: str
     title: str
@@ -54,7 +55,7 @@ class Objective(BaseModel):
 
 
 class Initiative(BaseModel):
-    """Top initiative model"""
+    """Модель ключевой инициативы."""
 
     id: str
     name: str
@@ -64,7 +65,7 @@ class Initiative(BaseModel):
 
 
 class UsageStats(BaseModel):
-    """Usage statistics model"""
+    """Модель статистики использования."""
 
     api_calls: int
     ai_queries: int
@@ -73,7 +74,7 @@ class UsageStats(BaseModel):
 
 
 class ExecutiveDashboard(BaseModel):
-    """Executive dashboard response model"""
+    """Модель ответа для исполнительного дашборда."""
 
     health: HealthScore
     roi: Metric
@@ -90,7 +91,7 @@ class ExecutiveDashboard(BaseModel):
 
 
 class ProjectsSummary(BaseModel):
-    """Projects summary model"""
+    """Сводка по проектам."""
 
     active: int
     completed: int
@@ -99,7 +100,7 @@ class ProjectsSummary(BaseModel):
 
 
 class ProjectTimeline(BaseModel):
-    """Project timeline item"""
+    """Элемент таймлайна проекта."""
 
     project_id: str
     project_name: str
@@ -109,7 +110,7 @@ class ProjectTimeline(BaseModel):
 
 
 class TeamMemberWorkload(BaseModel):
-    """Team member workload"""
+    """Загрузка участника команды."""
 
     member_id: str
     member_name: str
@@ -119,7 +120,7 @@ class TeamMemberWorkload(BaseModel):
 
 
 class SprintProgress(BaseModel):
-    """Sprint progress model"""
+    """Прогресс спринта."""
 
     sprint_number: int
     tasks_total: int
@@ -130,7 +131,7 @@ class SprintProgress(BaseModel):
 
 
 class Activity(BaseModel):
-    """Activity model"""
+    """Модель активности."""
 
     id: str
     type: str
@@ -141,7 +142,7 @@ class Activity(BaseModel):
 
 
 class PMDashboard(BaseModel):
-    """PM dashboard response model"""
+    """Модель ответа для дашборда PM."""
 
     projects_summary: ProjectsSummary
     timeline: List[ProjectTimeline]
@@ -154,7 +155,7 @@ class PMDashboard(BaseModel):
 
 
 class Task(BaseModel):
-    """Task model"""
+    """Модель задачи."""
 
     id: str
     title: str
@@ -167,7 +168,7 @@ class Task(BaseModel):
 
 
 class CodeReview(BaseModel):
-    """Code review model"""
+    """Модель код-ревью."""
 
     id: str
     pr_number: int
@@ -179,7 +180,7 @@ class CodeReview(BaseModel):
 
 
 class BuildStatus(BaseModel):
-    """Build status model"""
+    """Статус сборки."""
 
     status: str
     last_build_at: str
@@ -189,7 +190,7 @@ class BuildStatus(BaseModel):
 
 
 class CodeQuality(BaseModel):
-    """Code quality metrics"""
+    """Метрики качества кода."""
 
     coverage: int = Field(..., ge=0, le=100)
     complexity: int
@@ -199,7 +200,7 @@ class CodeQuality(BaseModel):
 
 
 class AISuggestion(BaseModel):
-    """AI suggestion model"""
+    """Предложение от AI."""
 
     id: str
     type: str
@@ -209,7 +210,7 @@ class AISuggestion(BaseModel):
 
 
 class DeveloperDashboard(BaseModel):
-    """Developer dashboard response model"""
+    """Модель ответа для дашборда разработчика."""
 
     assigned_tasks: List[Task]
     code_reviews: List[CodeReview]
@@ -222,7 +223,7 @@ class DeveloperDashboard(BaseModel):
 
 
 class TeamMetrics(BaseModel):
-    """Team metrics model"""
+    """Метрики команды."""
 
     velocity: int = Field(..., ge=0, le=100)
     code_quality: int = Field(..., ge=0, le=100)
@@ -231,7 +232,7 @@ class TeamMetrics(BaseModel):
 
 
 class TeamPerformance(BaseModel):
-    """Team member performance"""
+    """Производительность участника команды."""
 
     name: str
     role: str
@@ -242,7 +243,7 @@ class TeamPerformance(BaseModel):
 
 
 class TrendData(BaseModel):
-    """Trend data point"""
+    """Точка данных тренда."""
 
     week: str
     quality: Optional[int] = None
@@ -250,7 +251,7 @@ class TrendData(BaseModel):
 
 
 class TechnicalDebt(BaseModel):
-    """Technical debt metrics"""
+    """Метрики технического долга."""
 
     total_debt_hours: int
     critical_items: int
@@ -259,7 +260,7 @@ class TechnicalDebt(BaseModel):
 
 
 class TeamLeadDashboard(BaseModel):
-    """Team Lead dashboard response model"""
+    """Модель ответа для дашборда тимлида."""
 
     team_metrics: TeamMetrics
     code_quality_trends: List[TrendData]
@@ -272,7 +273,7 @@ class TeamLeadDashboard(BaseModel):
 
 
 class RequirementsSummary(BaseModel):
-    """Requirements summary"""
+    """Сводка по требованиям."""
 
     total: int
     approved: int
@@ -281,7 +282,7 @@ class RequirementsSummary(BaseModel):
 
 
 class Requirement(BaseModel):
-    """Requirement model"""
+    """Модель требования."""
 
     id: str
     title: str
@@ -292,7 +293,7 @@ class Requirement(BaseModel):
 
 
 class TraceabilityMatrix(BaseModel):
-    """Traceability matrix item"""
+    """Элемент матрицы трассируемости."""
 
     requirement_id: str
     requirement_title: str
@@ -302,7 +303,7 @@ class TraceabilityMatrix(BaseModel):
 
 
 class GapAnalysis(BaseModel):
-    """Gap analysis item"""
+    """Элемент gap-анализа."""
 
     area: str
     current_state: str
@@ -312,7 +313,7 @@ class GapAnalysis(BaseModel):
 
 
 class ProcessDiagram(BaseModel):
-    """Process diagram model"""
+    """Модель диаграммы процесса."""
 
     id: str
     name: str
@@ -322,7 +323,7 @@ class ProcessDiagram(BaseModel):
 
 
 class BADashboard(BaseModel):
-    """BA dashboard response model"""
+    """Модель ответа для дашборда бизнес-аналитика."""
 
     requirements_summary: RequirementsSummary
     recent_requirements: List[Requirement]
@@ -335,7 +336,7 @@ class BADashboard(BaseModel):
 
 
 class BusinessMetric(BaseModel):
-    """Business metric for owner"""
+    """Бизнес-метрика для владельца."""
 
     label: str
     value: str
@@ -344,7 +345,7 @@ class BusinessMetric(BaseModel):
 
 
 class OwnerDashboard(BaseModel):
-    """Owner dashboard response model (simple)"""
+    """Модель ответа для дашборда владельца (упрощенная)."""
 
     business_health: str
     key_metrics: List[BusinessMetric]

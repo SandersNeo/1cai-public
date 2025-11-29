@@ -6,7 +6,7 @@ router = APIRouter()
 
 
 @router.websocket("/ws/notifications/{user_id}")
-async def websocket_notifications(websocket: WebSocket, user_id: str):
+async def websocket_notifications(websocket: WebSocket, user_id: str) -> None:
     """WebSocket endpoint for real-time notifications."""
     service = WebSocketService()
     try:
@@ -16,7 +16,7 @@ async def websocket_notifications(websocket: WebSocket, user_id: str):
 
 
 # Helper function for external use
-async def notify_user(user_id: str, notification_type: str, data: dict):
+async def notify_user(user_id: str, notification_type: str, data: dict) -> None:
     """Send notification to user via WebSocket."""
     service = WebSocketService()
     await service.notify_user(user_id, notification_type, data)

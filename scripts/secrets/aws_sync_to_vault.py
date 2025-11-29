@@ -8,7 +8,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-from typing import Dict
 
 import boto3
 import hvac

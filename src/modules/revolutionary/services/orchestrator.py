@@ -5,8 +5,6 @@ Business logic for managing revolutionary AI components.
 Follows Clean Architecture - no framework dependencies in this layer.
 """
 
-import os
-from datetime import datetime
 from typing import Any, Dict
 
 from src.modules.revolutionary.domain.models import (
@@ -15,42 +13,7 @@ from src.modules.revolutionary.domain.models import (
     RevolutionaryOrchestratorState,
 )
 
-# Import revolutionary components
-try:
-    from src.infrastructure.event_bus import EventBus
-    EVENT_BUS_AVAILABLE = True
-except ImportError:
-    EVENT_BUS_AVAILABLE = False
-
-try:
-    from src.ai.self_evolving_ai import SelfEvolvingAI
-    SELF_EVOLVING_AVAILABLE = True
-except ImportError:
-    SELF_EVOLVING_AVAILABLE = False
-
-try:
-    from src.ai.self_healing_code import SelfHealingCode
-    SELF_HEALING_AVAILABLE = True
-except ImportError:
-    SELF_HEALING_AVAILABLE = False
-
-try:
-    from src.ai.distributed_agent_network import DistributedAgentNetwork
-    DISTRIBUTED_AGENTS_AVAILABLE = True
-except ImportError:
-    DISTRIBUTED_AGENTS_AVAILABLE = False
-
-try:
-    from src.ai.code_dna import CodeDNA
-    CODE_DNA_AVAILABLE = True
-except ImportError:
-    CODE_DNA_AVAILABLE = False
-
-try:
-    from src.ai.predictive_code_generation import PredictiveCodeGeneration
-    PREDICTIVE_AVAILABLE = True
-except ImportError:
-    PREDICTIVE_AVAILABLE = False
+# Imports moved to initialize method to avoid circular dependencies
 
 
 class RevolutionaryOrchestrator:
@@ -66,67 +29,80 @@ class RevolutionaryOrchestrator:
     - Predictive Code Generation
     """
 
-    def __init__(self):
-        self.components: Dict[str, Any] = {}
-        self.started_at = datetime.utcnow()
-        self._initialized = False
-
-        # Feature flags from environment
-        self.use_event_driven = os.getenv("USE_EVENT_DRIVEN", "false").lower() == "true"
-        self.use_self_evolving = os.getenv(
-            "USE_SELF_EVOLVING", "false").lower() == "true"
-        self.use_self_healing = os.getenv("USE_SELF_HEALING", "false").lower() == "true"
-        self.use_distributed_agents = os.getenv(
-            "USE_DISTRIBUTED_AGENTS", "false").lower() == "true"
-        self.use_code_dna = os.getenv("USE_CODE_DNA", "false").lower() == "true"
-        self.use_predictive = os.getenv(
-            "USE_PREDICTIVE_GENERATION", "false").lower() == "true"
-
     async def initialize(self) -> None:
         """Initialize all enabled revolutionary components"""
         if self._initialized:
             return
 
         # Initialize Event Bus
-        if self.use_event_driven and EVENT_BUS_AVAILABLE:
+        if self.use_event_driven:
             try:
+                from importlib import import_module
+                module = import_module("src.infrastructure.event_bus")
+                EventBus = getattr(module, "EventBus")
                 self.components["event_bus"] = EventBus()
                 await self.components["event_bus"].connect()
+            except ImportError:
+                print("Event Bus module not found")
             except Exception as e:
                 print(f"Failed to initialize Event Bus: {e}")
 
         # Initialize Self-Evolving AI
-        if self.use_self_evolving and SELF_EVOLVING_AVAILABLE:
+        if self.use_self_evolving:
             try:
+                from importlib import import_module
+                module = import_module("src.ai.self_evolving_ai")
+                SelfEvolvingAI = getattr(module, "SelfEvolvingAI")
                 self.components["self_evolving"] = SelfEvolvingAI()
+            except ImportError:
+                print("Self-Evolving AI module not found")
             except Exception as e:
                 print(f"Failed to initialize Self-Evolving AI: {e}")
 
         # Initialize Self-Healing Code
-        if self.use_self_healing and SELF_HEALING_AVAILABLE:
+        if self.use_self_healing:
             try:
+                from importlib import import_module
+                module = import_module("src.ai.healing.code")
+                SelfHealingCode = getattr(module, "SelfHealingCode")
                 self.components["self_healing"] = SelfHealingCode()
+            except ImportError:
+                print("Self-Healing Code module not found")
             except Exception as e:
                 print(f"Failed to initialize Self-Healing Code: {e}")
 
-        # Initialize Distributed Agent Network
-        if self.use_distributed_agents and DISTRIBUTED_AGENTS_AVAILABLE:
-            try:
+                from importlib import import_module
+                module = import_module("src.ai.distributed_agent_network")
+                DistributedAgentNetwork = getattr(module, "DistributedAgentNetwork")
                 self.components["distributed_agents"] = DistributedAgentNetwork()
+            except ImportError:
+                print("Distributed Agent Network module not found")
             except Exception as e:
                 print(f"Failed to initialize Distributed Agents: {e}")
 
         # Initialize Code DNA
-        if self.use_code_dna and CODE_DNA_AVAILABLE:
+        if self.use_code_dna:
             try:
+                from importlib import import_module
+                module = import_module("src.ai.code_analysis.dna")
+                CodeDNA = getattr(module, "CodeDNA")
                 self.components["code_dna"] = CodeDNA()
+            except ImportError:
+                print("Code DNA module not found")
             except Exception as e:
                 print(f"Failed to initialize Code DNA: {e}")
 
         # Initialize Predictive Generation
-        if self.use_predictive and PREDICTIVE_AVAILABLE:
+        if self.use_predictive:
             try:
+                from importlib import import_module
+                module = import_module("src.ai.predictive_code_generation")
+                PredictiveCodeGeneration = getattr(
+                    module, "PredictiveCodeGeneration"
+                )
                 self.components["predictive"] = PredictiveCodeGeneration()
+            except ImportError:
+                print("Predictive Code Generation module not found")
             except Exception as e:
                 print(f"Failed to initialize Predictive Generation: {e}")
 

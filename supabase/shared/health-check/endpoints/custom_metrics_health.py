@@ -7,12 +7,11 @@ Custom Business Metrics Health Check
 
 import asyncio
 import json
-import time
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import aiohttp
 
@@ -66,7 +65,6 @@ class MetricCollector(ABC):
     @abstractmethod
     async def collect(self) -> List[BusinessMetric]:
         """Собрать метрики"""
-        pass
 
 class UserEngagementCollector(MetricCollector):
     """Сборщик метрик пользовательского вовлечения"""
@@ -674,7 +672,7 @@ DEFAULT_CUSTOM_METRICS_CONFIG = {
 }
 
 if __name__ == "__main__":
-    import os
+    pass
 
     # Пример использования
     async def main():

@@ -16,7 +16,6 @@ EDT Configuration Parser
 """
 
 import json
-import os
 import re
 import sys
 import time

@@ -20,7 +20,6 @@ import sys
 import time
 import tracemalloc
 from pathlib import Path
-from typing import Dict
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 

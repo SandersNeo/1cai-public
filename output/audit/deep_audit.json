@@ -1,0 +1,451 @@
+{
+  "dependencies": {
+    "requirements_files": [
+      {
+        "file": "requirements-dev.txt",
+        "dependencies": 25,
+        "examples": [
+          "pytest==7.4.3",
+          "pytest-asyncio==0.21.1",
+          "pytest-cov==4.1.0",
+          "pytest-mock==3.12.0",
+          "pytest-timeout==2.2.0"
+        ]
+      },
+      {
+        "file": "requirements-neural.txt",
+        "dependencies": 9,
+        "examples": [
+          "torch>=2.0.0",
+          "torchvision>=0.15.0",
+          "transformers>=4.30.0",
+          "datasets>=2.14.0",
+          "accelerate>=0.20.0"
+        ]
+      },
+      {
+        "file": "requirements-parser-optimization.txt",
+        "dependencies": 6,
+        "examples": [
+          "lxml>=5.0.0",
+          "asyncpg>=0.29.0",
+          "requests>=2.31.0",
+          "pandas>=2.0.0",
+          "numpy>=1.24.0"
+        ]
+      },
+      {
+        "file": "requirements-stage1.txt",
+        "dependencies": 7,
+        "examples": [
+          "neo4j==5.15.0",
+          "qdrant-client==1.7.3",
+          "elasticsearch==8.11.0",
+          "sentence-transformers==2.2.2",
+          "torch==2.1.2"
+        ]
+      },
+      {
+        "file": "requirements-telegram.txt",
+        "dependencies": 5,
+        "examples": [
+          "aiogram==3.4.1",
+          "aiohttp==3.9.3",
+          "python-dotenv==1.0.0",
+          "openai>=1.0.0  # OpenAI Whisper API",
+          "chandra-ocr>=0.1.0  # Chandra OCR для таблиц, форм, рукописного текста"
+        ]
+      },
+      {
+        "file": "requirements.gateway.txt",
+        "dependencies": 11,
+        "examples": [
+          "fastapi==0.104.1",
+          "uvicorn[standard]==0.24.0",
+          "httpx==0.25.2",
+          "pydantic==2.5.0",
+          "slowapi==0.1.9"
+        ]
+      },
+      {
+        "file": "requirements.metrics.txt",
+        "dependencies": 6,
+        "examples": [
+          "fastapi==0.104.1",
+          "uvicorn[standard]==0.24.0",
+          "pydantic==2.5.0",
+          "python-multipart==0.0.6",
+          "redis==5.0.1"
+        ]
+      },
+      {
+        "file": "requirements.risk.txt",
+        "dependencies": 5,
+        "examples": [
+          "fastapi==0.104.1",
+          "uvicorn[standard]==0.24.0",
+          "pydantic==2.5.0",
+          "python-multipart==0.0.6",
+          "structlog==23.2.0"
+        ]
+      },
+      {
+        "file": "requirements.txt",
+        "dependencies": 64,
+        "examples": [
+          "python-dotenv==1.0.0",
+          "pyyaml==6.0.1",
+          "pydantic==2.9.2  # ✅ Updated from 2.5+",
+          "pydantic-settings==2.1.0",
+          "psycopg2-binary==2.9.9"
+        ]
+      }
+    ],
+    "total_dependencies": 138,
+    "unique_packages": [
+      "pytest-timeout",
+      "cryptography",
+      "sqlalchemy",
+      "chandra-ocr",
+      "sentence-transformers",
+      "responses",
+      "rich",
+      "scikit-learn",
+      "starlette",
+      "psutil",
+      "elasticsearch",
+      "prometheus-client",
+      "psycopg2-binary",
+      "types-redis",
+      "torch",
+      "langchain-community",
+      "nats-py",
+      "requests",
+      "jsonschema",
+      "numpy",
+      "curl-cffi",
+      "python-docx",
+      "faker",
+      "safety",
+      "python-json-logger",
+      "click",
+      "asyncpg",
+      "pydantic",
+      "pyyaml",
+      "mkdocs",
+      "mkdocstrings",
+      "pytest",
+      "accelerate",
+      "boto3",
+      "fastapi",
+      "python-dateutil",
+      "tenacity",
+      "mlflow",
+      "py-spy",
+      "types-PyYAML",
+      "qdrant-client",
+      "PyJWT",
+      "redis",
+      "pytest-asyncio",
+      "colorama",
+      "memory-profiler",
+      "langchain",
+      "aiohttp",
+      "slowapi",
+      "urllib3",
+      "pandas",
+      "markdownify",
+      "torchvision",
+      "matplotlib",
+      "python-jose[cryptography]",
+      "networkx",
+      "mypy",
+      "pytest-cov",
+      "lxml",
+      "allure-pytest",
+      "pytz",
+      "pydantic-settings",
+      "aiogram",
+      "datasets",
+      "python-multipart",
+      "black",
+      "openai",
+      "neo4j",
+      "python-dotenv",
+      "pytest-mock",
+      "transformers",
+      "hashlib-additional",
+      "pypdf",
+      "typer",
+      "prometheus-fastapi-instrumentator",
+      "beautifulsoup4",
+      "grpcio",
+      "jupyter",
+      "pylint",
+      "bandit",
+      "httpx",
+      "structlog",
+      "flake8",
+      "hypothesis",
+      "grpcio-tools",
+      "alembic",
+      "tqdm",
+      "ipython",
+      "isort",
+      "hiredis",
+      "apscheduler",
+      "mkdocs-material",
+      "uvicorn[standard]"
+    ]
+  },
+  "tests": {
+    "test_files": 221,
+    "test_directories": 207,
+    "test_functions": 1775
+  },
+  "documentation": {
+    "readme_files": 1596,
+    "total_md_files": 1346,
+    "total_doc_size_mb": 8.222394943237305
+  },
+  "configuration": {
+    "docker_compose_files": [
+      "docker-compose.dev.yml",
+      "docker-compose.monitoring.yml",
+      "docker-compose.mvp.yml",
+      "docker-compose.parser.yml",
+      "docker-compose.saas.yml",
+      "docker-compose.stage1.yml",
+      "docker-compose.yml"
+    ],
+    "dockerfiles": [
+      "Dockerfile",
+      "Dockerfile.backend",
+      "Dockerfile.dev",
+      "Dockerfile.gateway",
+      "Dockerfile.metrics",
+      "Dockerfile.risk",
+      ".ci\\templates\\dockerfile.yml",
+      "code\\Dockerfile.test",
+      "code\\py_server\\Dockerfile",
+      "demo\\demo-ai-assistants-1c\\docker\\services\\1c-integration\\Dockerfile",
+      "demo\\demo-ai-assistants-1c\\docker\\services\\ai-assistant\\Dockerfile",
+      "demo\\demo-ai-assistants-1c\\docker\\services\\analytics\\Dockerfile",
+      "demo\\demo-ai-assistants-1c\\docker\\services\\api-gateway\\Dockerfile",
+      "demo\\demo-ai-assistants-1c\\docker\\services\\security\\Dockerfile",
+      "demo\\demo-ai-assistants-1c\\docker\\services\\user-management\\Dockerfile",
+      "demo\\demo-ai-assistants-1c\\monitoring\\health-check\\Dockerfile",
+      "docker\\Dockerfile.telegram",
+      "docker\\ai-assistant\\Dockerfile",
+      "docker\\bsl-language-server\\Dockerfile",
+      "docker\\ml-system\\Dockerfile",
+      "docker\\ml-worker\\Dockerfile",
+      "docker\\mlflow\\Dockerfile",
+      "external\\nocobase\\Dockerfile",
+      "external\\nocobase\\Dockerfile.pro",
+      "external\\nocobase\\docker\\nocobase\\Dockerfile",
+      "external\\nocobase\\docker\\nocobase\\Dockerfile-full",
+      "external\\sgr-agent-core\\services\\api_service\\Dockerfile",
+      "frontend-portal\\Dockerfile"
+    ],
+    "config_files": [
+      "alembic.ini",
+      "pytest.ini"
+    ]
+  },
+  "security": {
+    "potential_secrets": [
+      {
+        "file": "1c_mcp\\src\\py_server\\cache\\test_oauth_cache.py",
+        "variable": "secret",
+        "line": 54
+      },
+      {
+        "file": "code\\py_server\\api\\cache_admin.py",
+        "variable": "expected_token",
+        "line": 130
+      },
+      {
+        "file": "code\\py_server\\logging\\sanitizers.py",
+        "variable": "PASSWORD",
+        "line": 24
+      },
+      {
+        "file": "code\\py_server\\logging\\sanitizers.py",
+        "variable": "API_KEY",
+        "line": 26
+      },
+      {
+        "file": "code\\py_server\\tests\\test_http_services.py",
+        "variable": "token_type",
+        "line": 70
+      },
+      {
+        "file": "scripts\\parsers\\neural\\neural_bsl_parser.py",
+        "variable": "START_TOKEN",
+        "line": 95
+      },
+      {
+        "file": "scripts\\testing\\run_demo_tests.py",
+        "variable": "password",
+        "line": 191
+      },
+      {
+        "file": "src\\modules\\security\\domain\\models.py",
+        "variable": "API_KEY",
+        "line": 44
+      },
+      {
+        "file": "src\\modules\\security\\domain\\models.py",
+        "variable": "PASSWORD",
+        "line": 45
+      },
+      {
+        "file": "src\\utils\\error_handling.py",
+        "variable": "INVALID_TOKEN",
+        "line": 72
+      },
+      {
+        "file": "src\\utils\\error_handling.py",
+        "variable": "TOKEN_EXPIRED",
+        "line": 73
+      },
+      {
+        "file": "src\\utils\\perfect_error_messages.py",
+        "variable": "AUTH_INVALID_TOKEN",
+        "line": 24
+      },
+      {
+        "file": "tests\\run_demo_tests.py",
+        "variable": "password",
+        "line": 211
+      },
+      {
+        "file": "tests\\security\\test_security.py",
+        "variable": "password",
+        "line": 279
+      },
+      {
+        "file": "tests\\test_driven_development\\test_all_critical_paths.py",
+        "variable": "password",
+        "line": 29
+      }
+    ],
+    "sql_injection_risks": [],
+    "hardcoded_ips": [
+      {
+        "file": "1c_mcp\\src\\py_server\\cache\\integration_example.py",
+        "ips": [
+          "192.168.1.100"
+        ]
+      },
+      {
+        "file": "1c_mcp_code_generation\\tests\\integration\\test_security.py",
+        "ips": [
+          "192.168.1.100"
+        ]
+      },
+      {
+        "file": "code\\py_server\\ratelimit\\demo_tracker.py",
+        "ips": [
+          "192.168.1.1"
+        ]
+      },
+      {
+        "file": "code\\py_server\\ratelimit\\limit_handler.py",
+        "ips": [
+          "192.168.1.100"
+        ]
+      },
+      {
+        "file": "code\\py_server\\ratelimit\\simple_test.py",
+        "ips": [
+          "192.168.1.100"
+        ]
+      },
+      {
+        "file": "code\\py_server\\ratelimit\\test_monitoring.py",
+        "ips": [
+          "192.168.1.100"
+        ]
+      },
+      {
+        "file": "code\\py_server\\ratelimit\\test_request_tracker.py",
+        "ips": [
+          "10.0.0.100",
+          "192.168.1.100"
+        ]
+      },
+      {
+        "file": "code\\py_server\\tests\\loadtest_ratelimit.py",
+        "ips": [
+          "192.168.1.100"
+        ]
+      },
+      {
+        "file": "code\\py_server\\tests\\test_ratelimit.py",
+        "ips": [
+          "192.168.1.1",
+          "10.0.0.1"
+        ]
+      },
+      {
+        "file": "external\\everywhere\\tools\\sync_i18n.py",
+        "ips": [
+          "2.0.0.0"
+        ]
+      },
+      {
+        "file": "src\\services\\network\\dns_manager.py",
+        "ips": [
+          "1.1.1.1",
+          "8.8.8.8"
+        ]
+      },
+      {
+        "file": "src\\services\\network\\traffic_shaper.py",
+        "ips": [
+          "120.0.0.0"
+        ]
+      },
+      {
+        "file": "src\\utils\\structured_logging.py",
+        "ips": [
+          "192.168.1.1"
+        ]
+      }
+    ]
+  },
+  "technical_debt": {
+    "todo_count": 146,
+    "fixme_count": 0,
+    "hack_count": 0,
+    "xxx_count": 0,
+    "deprecated_count": 3
+  },
+  "type_hints": {
+    "total_functions": 9740,
+    "fully_typed": 4610,
+    "partially_typed": 1310,
+    "untyped": 3820
+  },
+  "unused_imports": {
+    "count": 863,
+    "examples": [
+      "check_all_links.py: annotations",
+      "check_all_links.py: os",
+      "check_ci_api.py: time",
+      "check_modules_deep.py: re",
+      "check_modules_deep.py: Path",
+      "check_readme_vs_code.py: re",
+      "check_readme_vs_code.py: Path",
+      "check_security_comprehensive.py: defaultdict",
+      "cleanup_all_temp.py: annotations",
+      "comprehensive_project_audit_final.py: json"
+    ]
+  },
+  "cycles": {
+    "count": 0,
+    "cycles": []
+  }
+}

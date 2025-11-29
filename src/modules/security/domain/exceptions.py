@@ -3,12 +3,13 @@ Security Domain Exceptions
 
 Custom exceptions для Security модуля.
 """
+from typing import Any, Dict
 
 
 class SecurityError(Exception):
     """Базовое исключение для Security модуля"""
 
-    def __init__(self, message: str, details: dict = None):
+    def __init__(self, message: str, details: Dict[str, Any] | None = None) -> None:
         self.message = message
         self.details = details or {}
         super().__init__(self.message)

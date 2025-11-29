@@ -36,12 +36,13 @@ class HealthChecker:
     def __init__(self):
         self.checks = []
 
-    async def check_all(self, timeout: float = 10.0) -> Dict:
+    async def check_all(self, timeout: float = 10.0, pg_saver=None) -> Dict:
         """
         Run all health checks in parallel with timeout
 
         Args:
             timeout: Maximum time to wait for all checks (seconds)
+            pg_saver: Optional PostgreSQLSaver instance for check
         """
         # Input validation
         if not isinstance(timeout, (int, float)) or timeout <= 0:
@@ -52,7 +53,7 @@ class HealthChecker:
             timeout = 10.0  # Default timeout
 
         checks = [
-            self.check_postgresql(),
+            self.check_postgresql(pg_saver),
             self.check_redis(),
             self.check_neo4j(),
             self.check_qdrant(),
@@ -118,33 +119,31 @@ class HealthChecker:
             "total_count": len(service_names),
         }
 
-    async def check_postgresql(self) -> Dict:
+    async def check_postgresql(self, pg_saver=None) -> Dict:
         """Check PostgreSQL connection"""
         try:
             from urllib.parse import urlparse
 
             import asyncpg
 
-            # Try to use existing PostgreSQLSaver from ServiceContainer first
-            try:
-                from src.api.dependencies import ServiceContainer
-                pg_saver = ServiceContainer.get_postgres()
-                if pg_saver:
+            # Try to use provided PostgreSQLSaver first
+            if pg_saver:
+                try:
                     if pg_saver.is_connected():
                         return {
                             "status": "healthy",
-                            "message": "Connected via ServiceContainer PostgreSQLSaver",
+                            "message": "Connected via provided PostgreSQLSaver",
                         }
                     else:
                         logger.debug(
-                            "ServiceContainer PostgreSQLSaver exists but not connected, trying to connect...")
+                            "Provided PostgreSQLSaver exists but not connected, trying to connect...")
                         if pg_saver.connect() and pg_saver.is_connected():
                             return {
                                 "status": "healthy",
-                                "message": "Connected via ServiceContainer PostgreSQLSaver (reconnected)",
+                                "message": "Connected via provided PostgreSQLSaver (reconnected)",
                             }
-            except Exception as e:
-                logger.debug("ServiceContainer PostgreSQLSaver check failed: %s", e)
+                except Exception as e:
+                    logger.debug("Provided PostgreSQLSaver check failed: %s", e)
 
             # Try to create and connect new PostgreSQLSaver
             try:

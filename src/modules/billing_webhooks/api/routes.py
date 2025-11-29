@@ -1,5 +1,7 @@
 import os
 
+from typing import Any, Dict
+
 from fastapi import APIRouter, Header, HTTPException, Request
 
 from src.modules.billing_webhooks.services.webhook_handler import BillingWebhookHandler
@@ -7,7 +9,7 @@ from src.modules.billing_webhooks.services.webhook_handler import BillingWebhook
 router = APIRouter(tags=["Billing Webhooks"])
 
 
-def get_db_pool():
+def get_db_pool() -> Any:
     """DB pool dependency."""
     from src.database import get_pool
 
@@ -15,7 +17,7 @@ def get_db_pool():
 
 
 @router.post("/stripe")
-async def stripe_webhook(request: Request, stripe_signature: str = Header(None, alias="Stripe-Signature")):
+async def stripe_webhook(request: Request, stripe_signature: str = Header(None, alias="Stripe-Signature")) -> Dict[str, Any]:
     """Stripe webhook endpoint."""
     payload = await request.body()
 

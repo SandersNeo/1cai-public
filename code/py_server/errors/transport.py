@@ -16,14 +16,13 @@
 retry логику с экспоненциальным backoff.
 """
 
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 try:
-    from .base import ErrorSeverity, McpError, RecoverableError
+    from .base import ErrorSeverity, RecoverableError
 except ImportError:
-    from base import McpError, RecoverableError, ErrorSeverity
+    from base import RecoverableError, ErrorSeverity
 
-import urllib.parse
 
 
 class TransportError(RecoverableError):

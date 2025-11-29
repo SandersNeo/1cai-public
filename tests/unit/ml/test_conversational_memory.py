@@ -5,7 +5,6 @@ Tests multi-scale conversational memory system.
 """
 
 import pytest
-import time
 
 from src.ml.continual_learning.conversational_memory import ConversationalMemory, ConversationMemoryLevel
 

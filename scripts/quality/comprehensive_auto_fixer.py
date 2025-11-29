@@ -15,12 +15,9 @@ Target issues:
 - C0114: Missing module docstring (17)
 """
 
-import os
 import re
 import subprocess
 from pathlib import Path
-from typing import List, Set
-import json
 
 class ComprehensiveAutoFixer:
     def __init__(self, src_dir: str = "src"):

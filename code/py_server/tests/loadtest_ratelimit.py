@@ -13,12 +13,10 @@ Load Tests для системы Rate Limiting с использованием L
 Версия: 1.0.0
 """
 
-import json
 import random
 import time
 
 from locust import HttpUser, between, events, task
-from locust.runners import MasterRunner, SlaveRunner
 
 
 class RateLimitLoadTestUser(HttpUser):

@@ -19,10 +19,8 @@ BSL AST Parser - интеграция с bsl-language-server
 Версия: 1.0.0
 """
 
-import json
 import logging
 import os
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import requests

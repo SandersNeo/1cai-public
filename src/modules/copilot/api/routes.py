@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 from fastapi import APIRouter, HTTPException, Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -20,7 +22,7 @@ copilot_service = CopilotService()
 
 @router.post("/complete")
 @limiter.limit("60/minute")
-async def get_completions(api_request: Request, request: CompletionRequest):
+async def get_completions(api_request: Request, request: CompletionRequest) -> Dict[str, Any]:
     """Autocomplete endpoint."""
     try:
         code = request.code.strip()
@@ -48,7 +50,7 @@ async def get_completions(api_request: Request, request: CompletionRequest):
 
 @router.post("/generate")
 @limiter.limit("10/minute")
-async def generate_code(api_request: Request, request: GenerationRequest):
+async def generate_code(api_request: Request, request: GenerationRequest) -> Dict[str, Any]:
     """Code generation endpoint."""
     try:
         prompt = request.prompt.strip()
@@ -77,7 +79,7 @@ async def generate_code(api_request: Request, request: GenerationRequest):
 
 @router.post("/optimize")
 @limiter.limit("10/minute")
-async def optimize_code(api_request: Request, request: OptimizationRequest):
+async def optimize_code(api_request: Request, request: OptimizationRequest) -> Dict[str, Any]:
     """Code optimization endpoint."""
     try:
         code = request.code.strip()
@@ -98,7 +100,7 @@ async def optimize_code(api_request: Request, request: OptimizationRequest):
 
 @router.post("/generate-tests")
 @limiter.limit("10/minute")
-async def generate_tests(api_request: Request, request: GenerationRequest):
+async def generate_tests(api_request: Request, request: GenerationRequest) -> Dict[str, Any]:
     """Test generation endpoint."""
     tests = await copilot_service.generate_code(prompt=request.prompt, code_type="test")
     return {"tests": tests}

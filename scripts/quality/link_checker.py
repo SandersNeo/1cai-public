@@ -9,9 +9,8 @@
 
 import re
 from pathlib import Path
-from typing import List, Dict, Set, Tuple
+from typing import List, Dict
 import json
-from urllib.parse import urlparse
 import argparse
 
 

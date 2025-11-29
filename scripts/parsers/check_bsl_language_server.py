@@ -23,7 +23,6 @@ from __future__ import annotations
 import os
 import sys
 from textwrap import dedent
-from typing import Optional
 
 import requests
 

@@ -5,7 +5,6 @@ End-to-end tests for security validation flow.
 """
 
 import pytest
-from unittest.mock import AsyncMock, patch
 
 from src.security.poetic_detection import MultiStageValidator
 from src.ai.orchestrator import orchestrator

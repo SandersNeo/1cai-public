@@ -1,6 +1,6 @@
 # [NEXUS IDENTITY] ID: -8251860666297395792 | DATE: 2025-11-19
 
-"""Helpers for managing user roles & permissions from the database."""
+"""Вспомогательные функции для управления ролями и правами пользователей."""
 
 from __future__ import annotations
 
@@ -11,6 +11,14 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 async def enrich_user_from_db(user: "CurrentUser") -> "CurrentUser":
+    """Обогащает объект пользователя ролями и правами из БД.
+
+    Args:
+        user: Объект пользователя (CurrentUser).
+
+    Returns:
+        CurrentUser: Обновленный объект пользователя с загруженными ролями.
+    """
     try:
         from src.database import get_pool
 
@@ -48,6 +56,18 @@ async def grant_role(
     reason: Optional[str] = None,
     metadata: Optional[dict] = None,
 ) -> None:
+    """Назначает роль пользователю.
+
+    Args:
+        user_id: ID пользователя.
+        role: Название роли.
+        assigned_by: Кто назначил роль (опционально).
+        reason: Причина назначения (опционально).
+        metadata: Дополнительные данные (опционально).
+
+    Raises:
+        RuntimeError: Если пул БД не инициализирован.
+    """
     try:
         from src.database import get_pool
 
@@ -86,6 +106,18 @@ async def revoke_role(
     reason: Optional[str] = None,
     metadata: Optional[dict] = None,
 ) -> None:
+    """Отызвает роль у пользователя.
+
+    Args:
+        user_id: ID пользователя.
+        role: Название роли.
+        revoked_by: Кто отозвал роль (опционально).
+        reason: Причина отзывания (опционально).
+        metadata: Дополнительные данные (опционально).
+
+    Raises:
+        RuntimeError: Если пул БД не инициализирован.
+    """
     try:
         from src.database import get_pool
 
@@ -114,6 +146,16 @@ async def revoke_role(
 
 
 async def grant_permission(user_id: str, permission: str, assigned_by: Optional[str] = None) -> None:
+    """Назначает отдельное право (permission) пользователю.
+
+    Args:
+        user_id: ID пользователя.
+        permission: Название права.
+        assigned_by: Кто назначил (опционально).
+
+    Raises:
+        RuntimeError: Если пул БД не инициализирован.
+    """
     try:
         from src.database import get_pool
 
@@ -135,6 +177,15 @@ async def grant_permission(user_id: str, permission: str, assigned_by: Optional[
 
 
 async def revoke_permission(user_id: str, permission: str) -> None:
+    """Отызвает право у пользователя.
+
+    Args:
+        user_id: ID пользователя.
+        permission: Название права.
+
+    Raises:
+        RuntimeError: Если пул БД не инициализирован.
+    """
     try:
         from src.database import get_pool
 

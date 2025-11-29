@@ -52,20 +52,18 @@ class MarketplaceRepository:
     CATEGORY_CACHE_KEY = "marketplace:category-counts"
 
     def __init__(
-            """TODO: Описать функцию __init__.
-                    
-                    Args:
-                        pool: TODO: Описать параметр.
-                        cache: TODO: Описать параметр.
-                        storage_config: TODO: Описать параметр.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        self,
+        self,
         pool: AsyncpgPool,
         cache: Optional[Redis] = None,
         storage_config: Optional[Dict[str, str]] = None,
     ) -> None:
+        """Initialize the repository.
+        
+        Args:
+            pool: Database connection pool.
+            cache: Redis cache client.
+            storage_config: S3 storage configuration.
+        """
         self.pool = pool
         self.cache = cache
         self.storage_config = storage_config or {}
@@ -81,11 +79,8 @@ class MarketplaceRepository:
         self._bucket_verified = False
 
     async def init(self) -> None:
-            """TODO: Описать функцию init.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        if asyncpg is None:
+        """Initialize the database schema."""
+        if asyncpg is None:
             raise RuntimeError("asyncpg is required for MarketplaceRepository.init")
         async with self.pool.acquire() as conn:
             await conn.execute(
@@ -177,32 +172,19 @@ class MarketplaceRepository:
             )
 
     async def close(self) -> None:
-            """TODO: Описать функцию close.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        if self.cache:
+        """Close connections."""
+        if self.cache:
             await self.cache.close()
 
     async def create_plugin(
-            """TODO: Описать функцию create_plugin.
-                    
-                    Args:
-                        plugin_id: TODO: Описать параметр.
-                        owner_id: TODO: Описать параметр.
-                        owner_username: TODO: Описать параметр.
-                        payload: TODO: Описать параметр.
-                        download_url: TODO: Описать параметр.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        self,
+        self,
         plugin_id: str,
         owner_id: str,
         owner_username: str,
         payload: Dict[str, Any],
         download_url: str,
     ) -> Dict[str, Any]:
+        """Create a new plugin."""
         # Input validation
         if not plugin_id or not isinstance(plugin_id, str):
             logger.warning(
@@ -363,22 +345,13 @@ class MarketplaceRepository:
             raise
 
     async def store_artifact(
-            """TODO: Описать функцию store_artifact.
-                    
-                    Args:
-                        plugin_id: TODO: Описать параметр.
-                        data: TODO: Описать параметр.
-                        filename: TODO: Описать параметр.
-                        content_type: TODO: Описать параметр.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        self,
+        self,
         plugin_id: str,
         data: bytes,
         filename: str,
         content_type: Optional[str] = None,
     ) -> Dict[str, Any]:
+        """Store plugin artifact."""
         # Input validation
         if not plugin_id or not isinstance(plugin_id, str):
             logger.warning(
@@ -520,14 +493,8 @@ class MarketplaceRepository:
             raise
 
     async def get_plugin(self, plugin_id: str) -> Optional[Dict[str, Any]]:
-            """TODO: Описать функцию get_plugin.
-                    
-                    Args:
-                        plugin_id: TODO: Описать параметр.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        # Input validation
+        """Get plugin by ID."""
+        # Input validation
         if not plugin_id or not isinstance(plugin_id, str):
             logger.warning(
                 "Invalid plugin_id in get_plugin",
@@ -554,15 +521,8 @@ class MarketplaceRepository:
             return None
 
     async def update_plugin(self, plugin_id: str, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-            """TODO: Описать функцию update_plugin.
-                    
-                    Args:
-                        plugin_id: TODO: Описать параметр.
-                        update_data: TODO: Описать параметр.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        if not update_data:
+        """Update plugin details."""
+        if not update_data:
             return await self.get_plugin(plugin_id)
 
         set_parts: List[str] = ["updated_at = NOW()"]
@@ -594,14 +554,8 @@ class MarketplaceRepository:
         return None
 
     async def soft_delete_plugin(self, plugin_id: str) -> Optional[Dict[str, Any]]:
-            """TODO: Описать функцию soft_delete_plugin.
-                    
-                    Args:
-                        plugin_id: TODO: Описать параметр.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        async with self.pool.acquire() as conn:
+        """Soft delete a plugin."""
+        async with self.pool.acquire() as conn:
             record = await conn.fetchrow(
                 """
                 UPDATE marketplace_plugins
@@ -617,20 +571,7 @@ class MarketplaceRepository:
         return None
 
     async def search_plugins(
-            """TODO: Описать функцию search_plugins.
-                    
-                    Args:
-                        query_text: TODO: Описать параметр.
-                        category: TODO: Описать параметр.
-                        author: TODO: Описать параметр.
-                        sort_by: TODO: Описать параметр.
-                        order: TODO: Описать параметр.
-                        page: TODO: Описать параметр.
-                        page_size: TODO: Описать параметр.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        self,
+        self,
         query_text: Optional[str],
         category: Optional[str],
         author: Optional[str],
@@ -639,6 +580,7 @@ class MarketplaceRepository:
         page: int,
         page_size: int,
     ) -> Tuple[List[Dict[str, Any]], int]:
+        """Search plugins."""
         conditions = ["status = 'approved'", "visibility = 'public'"]
         params: List[Any] = []
 
@@ -686,15 +628,8 @@ class MarketplaceRepository:
         return [self._record_to_plugin(rec) for rec in records], total
 
     async def record_install(self, plugin_id: str, user_id: str) -> Optional[Dict[str, Any]]:
-            """TODO: Описать функцию record_install.
-                    
-                    Args:
-                        plugin_id: TODO: Описать параметр.
-                        user_id: TODO: Описать параметр.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        async with self.pool.acquire() as conn:
+        """Record plugin installation."""
+        async with self.pool.acquire() as conn:
             async with conn.transaction():
                 plugin = await conn.fetchrow(
                     "SELECT * FROM marketplace_plugins WHERE plugin_id = $1",
@@ -736,15 +671,8 @@ class MarketplaceRepository:
         return None
 
     async def remove_install(self, plugin_id: str, user_id: str) -> Optional[Dict[str, Any]]:
-            """TODO: Описать функцию remove_install.
-                    
-                    Args:
-                        plugin_id: TODO: Описать параметр.
-                        user_id: TODO: Описать параметр.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        async with self.pool.acquire() as conn:
+        """Remove plugin installation record."""
+        async with self.pool.acquire() as conn:
             async with conn.transaction():
                 plugin = await conn.fetchrow(
                     "SELECT * FROM marketplace_plugins WHERE plugin_id = $1",
@@ -781,15 +709,8 @@ class MarketplaceRepository:
         return None
 
     async def user_has_installed(self, plugin_id: str, user_id: str) -> bool:
-            """TODO: Описать функцию user_has_installed.
-                    
-                    Args:
-                        plugin_id: TODO: Описать параметр.
-                        user_id: TODO: Описать параметр.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        async with self.pool.acquire() as conn:
+        """Check if user has installed the plugin."""
+        async with self.pool.acquire() as conn:
             result = await conn.fetchval(
                 "SELECT 1 FROM marketplace_installs WHERE plugin_id = $1 AND user_id = $2",
                 plugin_id,
@@ -798,15 +719,8 @@ class MarketplaceRepository:
         return result is not None
 
     async def add_favorite(self, plugin_id: str, user_id: str) -> None:
-            """TODO: Описать функцию add_favorite.
-                    
-                    Args:
-                        plugin_id: TODO: Описать параметр.
-                        user_id: TODO: Описать параметр.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        async with self.pool.acquire() as conn:
+        """Add plugin to favorites."""
+        async with self.pool.acquire() as conn:
             await conn.execute(
                 """
                 INSERT INTO marketplace_favorites (plugin_id, user_id)
@@ -819,15 +733,8 @@ class MarketplaceRepository:
         await self._invalidate_caches(plugin_id)
 
     async def remove_favorite(self, plugin_id: str, user_id: str) -> None:
-            """TODO: Описать функцию remove_favorite.
-                    
-                    Args:
-                        plugin_id: TODO: Описать параметр.
-                        user_id: TODO: Описать параметр.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        async with self.pool.acquire() as conn:
+        """Remove plugin from favorites."""
+        async with self.pool.acquire() as conn:
             await conn.execute(
                 "DELETE FROM marketplace_favorites WHERE plugin_id = $1 AND user_id = $2",
                 plugin_id,
@@ -836,24 +743,14 @@ class MarketplaceRepository:
         await self._invalidate_caches(plugin_id)
 
     async def create_review(
-            """TODO: Описать функцию create_review.
-                    
-                    Args:
-                        review_id: TODO: Описать параметр.
-                        plugin_id: TODO: Описать параметр.
-                        user_id: TODO: Описать параметр.
-                        user_name: TODO: Описать параметр.
-                        payload: TODO: Описать параметр.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        self,
+        self,
         review_id: str,
         plugin_id: str,
         user_id: str,
         user_name: str,
         payload: Dict[str, Any],
     ) -> Optional[Dict[str, Any]]:
+        """Create a new review."""
         async with self.pool.acquire() as conn:
             async with conn.transaction():
                 plugin = await conn.fetchrow(
@@ -902,20 +799,12 @@ class MarketplaceRepository:
         return None
 
     async def list_reviews(
-            """TODO: Описать функцию list_reviews.
-                    
-                    Args:
-                        plugin_id: TODO: Описать параметр.
-                        page: TODO: Описать параметр.
-                        page_size: TODO: Описать параметр.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        self,
+        self,
         plugin_id: str,
         page: int,
         page_size: int,
     ) -> Tuple[List[Dict[str, Any]], int]:
+        """List reviews for a plugin."""
         offset = (page - 1) * page_size
         async with self.pool.acquire() as conn:
             records = await conn.fetch(
@@ -1013,11 +902,8 @@ class MarketplaceRepository:
             return stats
 
     async def get_category_counts(self) -> Dict[str, int]:
-            """TODO: Описать функцию get_category_counts.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        if self.cache:
+        """Get plugin counts by category."""
+        if self.cache:
             cached = await self.cache.get(self.CATEGORY_CACHE_KEY)
             if cached:
                 return json.loads(cached)
@@ -1036,14 +922,8 @@ class MarketplaceRepository:
         return counts
 
     async def get_featured_plugins(self, limit: int) -> List[Dict[str, Any]]:
-            """TODO: Описать функцию get_featured_plugins.
-                    
-                    Args:
-                        limit: TODO: Описать параметр.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        cache_key = self.FEATURED_CACHE_KEY.format(limit=limit)
+        """Get featured plugins."""
+        cache_key = self.FEATURED_CACHE_KEY.format(limit=limit)
         if self.cache:
             cached = await self.cache.get(cache_key)
             if cached:
@@ -1064,14 +944,8 @@ class MarketplaceRepository:
         return plugins
 
     async def get_trending_plugins(self, limit: int) -> List[Dict[str, Any]]:
-            """TODO: Описать функцию get_trending_plugins.
-                    
-                    Args:
-                        limit: TODO: Описать параметр.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        cache_key = self.TRENDING_CACHE_KEY.format(limit=limit)
+        """Get trending plugins."""
+        cache_key = self.TRENDING_CACHE_KEY.format(limit=limit)
         if self.cache:
             cached = await self.cache.get(cache_key)
             if cached:
@@ -1092,24 +966,14 @@ class MarketplaceRepository:
         return plugins
 
     async def add_complaint(
-            """TODO: Описать функцию add_complaint.
-                    
-                    Args:
-                        complaint_id: TODO: Описать параметр.
-                        plugin_id: TODO: Описать параметр.
-                        user_id: TODO: Описать параметр.
-                        reason: TODO: Описать параметр.
-                        details: TODO: Описать параметр.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        self,
+        self,
         complaint_id: str,
         plugin_id: str,
         user_id: str,
         reason: str,
         details: Optional[str],
     ) -> None:
+        """Add a complaint against a plugin."""
         async with self.pool.acquire() as conn:
             await conn.execute(
                 """
@@ -1125,11 +989,8 @@ class MarketplaceRepository:
             )
 
     async def refresh_cached_views(self) -> None:
-            """TODO: Описать функцию refresh_cached_views.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        if not self.cache:
+        """Refresh cached views."""
+        if not self.cache:
             return
         await self.get_category_counts()  # refresh
         for limit in (5, 10):
@@ -1137,14 +998,8 @@ class MarketplaceRepository:
             await self.get_trending_plugins(limit)
 
     async def build_download_payload(self, plugin: Dict[str, Any]) -> Dict[str, Any]:
-            """TODO: Описать функцию build_download_payload.
-                    
-                    Args:
-                        plugin: TODO: Описать параметр.
-                    
-                    Returns:
-                        TODO: Описать возвращаемое значение.
-                    """        artifact_path = plugin.get("artifact_path")
+        """Build download payload."""
+        artifact_path = plugin.get("artifact_path")
         presigned_url: Optional[str] = None
         if artifact_path and self._s3_available:
             try:

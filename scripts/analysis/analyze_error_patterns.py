@@ -5,7 +5,6 @@ Analyzes pylint errors and categorizes them for automated fixing.
 """
 
 import json
-import re
 from pathlib import Path
 from collections import defaultdict
 

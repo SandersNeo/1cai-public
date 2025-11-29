@@ -9,7 +9,6 @@ from pathlib import Path
 import tempfile
 
 from src.modules.devops.services.log_analyzer import LogAnalyzer
-from src.modules.devops.domain.models import LogSeverity, LogCategory
 
 
 @pytest.fixture

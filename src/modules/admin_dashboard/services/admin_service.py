@@ -11,13 +11,19 @@ logger = StructuredLogger(__name__).logger
 
 
 class AdminDashboardService:
-    """Service for admin dashboard."""
+    """Сервис для административной панели."""
 
     def __init__(self, db_pool: asyncpg.Pool):
         self.db = db_pool
 
     async def get_platform_stats(self) -> Dict:
-        """Get platform statistics."""
+        """Получает агрегированную статистику по всей платформе.
+
+        Собирает данные о тенантах, пользователях, выручке (MRR/ARR) и использовании ресурсов.
+
+        Returns:
+            Dict: Словарь с метриками платформы.
+        """
         async with self.db.acquire() as conn:
             tenants_stats = await conn.fetchrow(
                 """
@@ -88,7 +94,19 @@ class AdminDashboardService:
         }
 
     async def get_tenant_details(self, tenant_id: str) -> Dict:
-        """Get tenant details."""
+        """Получает полную информацию о конкретном тенанте.
+
+        Включает список пользователей, историю использования и биллинг.
+
+        Args:
+            tenant_id: ID тенанта.
+
+        Returns:
+            Dict: Структура с данными тенанта.
+
+        Raises:
+            HTTPException: Если тенант не найден (404).
+        """
         async with self.db.acquire() as conn:
             tenant = await conn.fetchrow("SELECT * FROM tenants WHERE id = $1", tenant_id)
 

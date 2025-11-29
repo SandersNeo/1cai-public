@@ -6,7 +6,7 @@ AI ассистент для тестировщиков с LLM интеграц�
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from src.ai.agents.base_agent import AgentCapability, BaseAgent
 from src.ai.llm import TaskType
@@ -15,8 +15,8 @@ from src.modules.qa.domain.models import (
     TestGenerationResult,
 )
 
-# Import new services
-from src.modules.qa.services import SmartTestGenerator, TestCoverageAnalyzer
+if TYPE_CHECKING:
+    from src.modules.qa.services import SmartTestGenerator, TestCoverageAnalyzer
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +35,8 @@ class QAEngineerAgentEnhanced(BaseAgent):
 
     def __init__(
         self,
-        test_generator=None,
-        coverage_analyzer=None,
+        test_generator: Optional["SmartTestGenerator"] = None,
+        coverage_analyzer: Optional["TestCoverageAnalyzer"] = None,
     ):
         super().__init__(
             agent_name="qa_engineer_agent_enhanced",
@@ -48,8 +48,17 @@ class QAEngineerAgentEnhanced(BaseAgent):
         self.logger = logging.getLogger("qa_engineer_agent_enhanced")
 
         # Initialize new services
-        self.test_generator = test_generator or SmartTestGenerator()
-        self.coverage_analyzer = coverage_analyzer or TestCoverageAnalyzer()
+        if test_generator:
+            self.test_generator = test_generator
+        else:
+            from src.modules.qa.services import SmartTestGenerator
+            self.test_generator = SmartTestGenerator()
+
+        if coverage_analyzer:
+            self.coverage_analyzer = coverage_analyzer
+        else:
+            from src.modules.qa.services import TestCoverageAnalyzer
+            self.coverage_analyzer = TestCoverageAnalyzer()
 
         # CI/CD integration (stubs)
         self.ci_client = None

@@ -8,9 +8,9 @@ logger = StructuredLogger(__name__).logger
 
 
 class AnalyticsService:
-    """
-    Application Service for Analytics Module.
-    Handles metrics collection, analysis, and report generation.
+    """Сервис аналитики.
+
+    Отвечает за сбор метрик, анализ производительности и генерацию отчетов.
     """
 
     def __init__(self):
@@ -25,7 +25,14 @@ class AnalyticsService:
         value: float,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> None:
-        """Collect a new metric entry."""
+        """Собирает новую метрику.
+
+        Args:
+            component: Имя компонента.
+            metric_type: Тип метрики.
+            value: Значение.
+            metadata: Дополнительные данные.
+        """
         if component not in self._metrics_data:
             self._metrics_data[component] = []
 
@@ -40,7 +47,15 @@ class AnalyticsService:
         logger.debug("Metric collected: %s.{metric_type.value} = {value}", component)
 
     def analyze_performance(self, component: str, period_days: int = 7) -> Dict[str, Any]:
-        """Analyze performance metrics for a component."""
+        """Анализирует производительность компонента за период.
+
+        Args:
+            component: Имя компонента.
+            period_days: Период анализа в днях.
+
+        Returns:
+            Dict[str, Any]: Статистика (avg, min, max, trend).
+        """
         cutoff = datetime.utcnow() - timedelta(days=period_days)
 
         metrics = self._metrics_data.get(component, [])
@@ -66,7 +81,14 @@ class AnalyticsService:
         }
 
     def _calculate_trend(self, values: List[float]) -> str:
-        """Calculate trend direction."""
+        """Вычисляет направление тренда.
+
+        Args:
+            values: Список значений.
+
+        Returns:
+            str: "improving", "degrading", "stable" или "insufficient_data".
+        """
         if len(values) < 2:
             return "insufficient_data"
 
@@ -86,7 +108,15 @@ class AnalyticsService:
             return "stable"
 
     def calculate_roi(self, component: str, period_days: int = 30) -> Dict[str, Any]:
-        """Calculate ROI for a component."""
+        """Рассчитывает ROI для компонента.
+
+        Args:
+            component: Имя компонента.
+            period_days: Период в днях.
+
+        Returns:
+            Dict[str, Any]: Данные ROI (improvement, cost_savings, roi_percent).
+        """
         cutoff = datetime.utcnow() - timedelta(days=period_days)
 
         # Collect metrics
@@ -119,7 +149,7 @@ class AnalyticsService:
         }
 
     def _calculate_improvement(self, metrics: List[Dict[str, Any]], metric_type: MetricType) -> float:
-        """Calculate percentage improvement for a metric type."""
+        """Рассчитывает процент улучшения для типа метрики."""
         type_metrics = [m for m in metrics if m["type"] == metric_type.value]
 
         if len(type_metrics) < 2:
@@ -137,7 +167,7 @@ class AnalyticsService:
         return 0.0
 
     def _estimate_cost_savings(self, performance_improvement: float, quality_improvement: float) -> float:
-        """Estimate cost savings based on improvements."""
+        """Оценивает экономию затрат на основе улучшений."""
         # Simplified model:
         # Performance improvement = less time = less cost
         # Quality improvement = fewer bugs = less fix cost
@@ -155,7 +185,16 @@ class AnalyticsService:
     def generate_report(
         self, title: str, period_days: int = 7, components: Optional[List[str]] = None
     ) -> AnalyticsReport:
-        """Generate a comprehensive analytics report."""
+        """Генерирует комплексный аналитический отчет.
+
+        Args:
+            title: Заголовок отчета.
+            period_days: Период анализа.
+            components: Список компонентов (опционально).
+
+        Returns:
+            AnalyticsReport: Объект отчета.
+        """
         period_end = datetime.utcnow()
         period_start = period_end - timedelta(days=period_days)
 
@@ -200,9 +239,9 @@ class AnalyticsService:
         return report
 
     def get_all_reports(self) -> List[AnalyticsReport]:
-        """Get all generated reports."""
+        """Возвращает все сгенерированные отчеты."""
         return self._reports.copy()
 
     def get_report(self, report_id: str) -> Optional[AnalyticsReport]:
-        """Get a specific report by ID."""
+        """Возвращает отчет по ID."""
         return next((r for r in self._reports if r.id == report_id), None)

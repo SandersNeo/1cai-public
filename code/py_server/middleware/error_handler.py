@@ -13,25 +13,21 @@
 
 import logging
 import traceback
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Union
 
 import httpx
 # Импорты иерархии исключений
 from errors.base import ErrorSeverity as McpErrorSeverity
-from errors.base import McpError, SystemError
-from errors.integration import IntegrationError
+from errors.base import McpError
 from errors.mcp import (McpInternalServerError, McpInvalidRequestError,
                         McpPromptError, McpProtocolError, McpRateLimitError,
                         McpResourceError, McpToolError)
-from errors.transport import TransportError
-from errors.validation import ValidationError
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException, RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.responses import JSONResponse
 
-from .correlation import (format_correlation_context, get_correlation_id,
-                          log_with_correlation)
+from .correlation import (format_correlation_context, get_correlation_id)
 # Импорты модулей проекта
 from .response_models import (ErrorCategory, ErrorResponse, ErrorSeverity,
                               Language)
@@ -566,7 +562,6 @@ def setup_global_exception_handler(
     
     if enable_structured_logging:
         # Настраиваем JSON форматтер для логгера если нужно
-        import json
         from logging.handlers import RotatingFileHandler
 
         # Проверяем наличие JSON форматтера

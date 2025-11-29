@@ -3,16 +3,14 @@
 """
 Стратегии fallback для критичных сервисов
 """
-import json
-import logging
 import threading
 import time
 from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import Any, Callable, Dict, List, Optional, Union
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional
 
 from .config import ServiceType, get_logger
-from .graceful_degradation import FallbackData, GracefulDegradationManager
+from .graceful_degradation import GracefulDegradationManager
 
 
 class FallbackStrategy(Enum):

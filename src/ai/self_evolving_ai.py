@@ -23,7 +23,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
-from src.ai.agents.devops_agent_extended import DevOpsAgentExtended
+
 from src.ai.llm_provider_abstraction import LLMProviderAbstraction
 from src.infrastructure.event_bus import EventBus, EventPublisher, EventType
 
@@ -111,7 +111,9 @@ class SelfEvolvingAI:
         self.event_publisher = EventPublisher(
             event_bus or EventBus(), "self-evolving-ai"
         )
-        self.devops_agent = DevOpsAgentExtended() # Для сбора реальных метрик
+        from src.ai.agents.devops_agent_extended import DevOpsAgentExtended
+
+        self.devops_agent = DevOpsAgentExtended()  # Для сбора реальных метрик
 
         self._performance_history: List[PerformanceMetrics] = []
         self._improvements: List[Improvement] = []

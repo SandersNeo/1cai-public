@@ -13,11 +13,9 @@ async def verify_auth_refactoring():
     try:
         # 1. Verify Imports
         print("1. Verifying Imports...")
-        from src.modules.auth.domain.models import UserCredentials, CurrentUser
         from src.modules.auth.application.service import AuthService
         from src.modules.auth.application.oauth_service import OAuthService
         from src.modules.auth.infrastructure.config import AuthSettings
-        from src.modules.auth.api.dependencies import get_auth_service, get_current_user
         from src.modules.auth.api.routes import router as auth_router
         from src.modules.auth.api.oauth_routes import router as oauth_router
 

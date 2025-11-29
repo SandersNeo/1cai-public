@@ -13,20 +13,17 @@ API администрирования кэша для 1С сервера
 - Интеграцию с различными типами кэшей
 """
 
-import asyncio
-import hashlib
 import json
 import logging
 import time
-from collections import defaultdict, deque
-from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Union
+from collections import deque
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 import psutil
-from fastapi import (APIRouter, Depends, HTTPException, Request, Response,
-                     Security, status)
-from fastapi.responses import JSONResponse
+from fastapi import (APIRouter, Depends, HTTPException, Request, Security,
+                     status)
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 

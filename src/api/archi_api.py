@@ -21,7 +21,7 @@ from src.api.dependencies import (
 )
 from src.exporters.archi_exporter import ArchiExporter
 from src.exporters.archi_importer import ArchiImporter
-from src.modules.graph_api.services.graph_service import GraphService
+
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -31,10 +31,8 @@ router = APIRouter(prefix="/api/v1/archi", tags=["archi"])
 # Prometheus metrics
 archi_exports_total = Counter("archi_exports_total", "Total Archi exports", ["status"])
 archi_imports_total = Counter("archi_imports_total", "Total Archi imports", ["status"])
-archi_export_duration = Histogram(
-    "archi_export_duration_seconds", "Archi export duration")
-archi_import_duration = Histogram(
-    "archi_import_duration_seconds", "Archi import duration")
+archi_export_duration = Histogram("archi_export_duration_seconds", "Archi export duration")
+archi_import_duration = Histogram("archi_import_duration_seconds", "Archi import duration")
 
 
 class ExportRequest(BaseModel):
@@ -46,23 +44,18 @@ class ExportRequest(BaseModel):
         max_length=255,
         description="Output filename (safe characters only)",
     )
-    filters: Optional[Dict[str, Any]] = Field(
-        default=None, description="Optional filters for export")
-    max_nodes: int = Field(default=1000, ge=1, le=10000,
-                           description="Maximum nodes to export")
-    max_relationships: int = Field(
-        default=2000, ge=1, le=20000, description="Maximum relationships to export")
+    filters: Optional[Dict[str, Any]] = Field(default=None, description="Optional filters for export")
+    max_nodes: int = Field(default=1000, ge=1, le=10000, description="Maximum nodes to export")
+    max_relationships: int = Field(default=2000, ge=1, le=20000, description="Maximum relationships to export")
 
     @validator("output_filename")
     def validate_filename(cls, v):
         """Validate filename for security"""
         if ".." in v or "/" in v or "\\" in v:
-            raise ValueError(
-                "Filename cannot contain path separators or parent directory references")
+            raise ValueError("Filename cannot contain path separators or parent directory references")
 
         if not re.match(r"^[a-zA-Z0-9_\-\.]+$", v):
-            raise ValueError(
-                "Filename can only contain alphanumeric characters, underscores, hyphens, and dots")
+            raise ValueError("Filename can only contain alphanumeric characters, underscores, hyphens, and dots")
 
         if not v.endswith(".archimate"):
             v = v + ".archimate"
@@ -97,7 +90,7 @@ class ImportResponse(BaseModel):
 async def export_to_archimate(
     request: ExportRequest,
     http_request: Request,
-    exporter: ArchiExporter = Depends(get_archi_exporter)  # ✅ DEPENDENCY INJECTION
+    exporter: ArchiExporter = Depends(get_archi_exporter),  # ✅ DEPENDENCY INJECTION
 ):
     """
     Export Unified Change Graph to ArchiMate format
@@ -127,15 +120,19 @@ async def export_to_archimate(
         # Export in background thread to avoid blocking
         loop = asyncio.get_event_loop()
         result_path = await loop.run_in_executor(
-            None, exporter.export_to_archimate, output_path, request.filters, request.max_nodes, request.max_relationships
+            None,
+            exporter.export_to_archimate,
+            output_path,
+            request.filters,
+            request.max_nodes,
+            request.max_relationships,
         )
 
         duration = time.time() - start_time
         archi_export_duration.observe(duration)
         archi_exports_total.labels(status="success").inc()
 
-        logger.info(f"Archi export successful: {result_path}", extra={
-                    "duration": duration})
+        logger.info(f"Archi export successful: {result_path}", extra={"duration": duration})
 
         return ExportResponse(
             status="success",
@@ -151,8 +148,7 @@ async def export_to_archimate(
 
 @router.post("/import", response_model=ImportResponse)
 async def import_from_archimate(
-    request: ImportRequest,
-    importer: ArchiImporter = Depends(get_archi_importer)  # ✅ DEPENDENCY INJECTION
+    request: ImportRequest, importer: ArchiImporter = Depends(get_archi_importer)  # ✅ DEPENDENCY INJECTION
 ):
     """
     Import ArchiMate model into Unified Change Graph
@@ -189,9 +185,7 @@ async def import_from_archimate(
 
 
 @router.get("/health")
-async def health_check(
-    graph_service: GraphService = Depends(get_graph_service)
-):
+async def health_check(graph_service=Depends(get_graph_service)):
     """
     Check Archi integration health with caching
 
@@ -199,7 +193,6 @@ async def health_check(
     """
     import time
 
-    # Simple in-memory cache
     cache_key = "archi_health_status"
     cache_ttl = 30  # seconds
 

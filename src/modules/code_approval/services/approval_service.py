@@ -1,10 +1,12 @@
 """
 Code Approval Service
 """
-from typing import Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List
 
-from src.ai.agents.developer_agent_secure import DeveloperAISecure
 from src.infrastructure.logging.structured_logging import StructuredLogger
+
+if TYPE_CHECKING:
+    pass
 
 logger = StructuredLogger(__name__).logger
 
@@ -17,6 +19,7 @@ class CodeApprovalService:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(CodeApprovalService, cls).__new__(cls)
+            from src.ai.agents.developer_agent_secure import DeveloperAISecure
             cls._instance.agent = DeveloperAISecure()
         return cls._instance
 

@@ -1,10 +1,5 @@
-"""
-Review Service
-Orchestrates code review process
-"""
 from typing import Any, Dict, List
 
-from src.ai.agents.code_review.ai_reviewer import AICodeReviewer
 from src.infrastructure.logging.structured_logging import StructuredLogger
 from src.modules.github_integration.services.github_client import GitHubClient
 
@@ -22,7 +17,14 @@ class ReviewService:
             github_client: GitHub API client
         """
         self.github_client = github_client
-        self.ai_reviewer = AICodeReviewer()
+        self._ai_reviewer = None
+
+    @property
+    def ai_reviewer(self) -> Any:
+        if self._ai_reviewer is None:
+            from src.ai.agents.code_review.ai_reviewer import AICodeReviewer
+            self._ai_reviewer = AICodeReviewer()
+        return self._ai_reviewer
 
     async def review_pull_request(self, repo_full_name: str, pr_number: int) -> Dict[str, Any]:
         """
@@ -124,7 +126,7 @@ class ReviewService:
             )
             raise
 
-    async def _post_review_to_github(self, repo_full_name: str, pr_number: int, review_result: Dict[str, Any]):
+    async def _post_review_to_github(self, repo_full_name: str, pr_number: int, review_result: Dict[str, Any]) -> None:
         """
         Post review to GitHub
 
@@ -166,7 +168,7 @@ class ReviewService:
                 extra={"repo": repo_full_name, "pr_number": pr_number},
             )
 
-    def _format_comments_for_github(self, file_reviews: List[Dict]) -> List[Dict[str, Any]]:
+    def _format_comments_for_github(self, file_reviews: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
         Format review comments for GitHub API
 
@@ -200,7 +202,7 @@ class ReviewService:
 
         return comments
 
-    def _format_issue_comment(self, issue: Dict) -> str:
+    def _format_issue_comment(self, issue: Dict[str, Any]) -> str:
         """
         Format a single issue as a Markdown comment
 

@@ -5,7 +5,6 @@ Tests scenario memory and self-modification.
 """
 
 import pytest
-import time
 
 from src.ml.continual_learning.scenario_memory import ScenarioMemory, ScenarioMemoryLevel
 

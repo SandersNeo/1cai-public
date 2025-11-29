@@ -10,17 +10,12 @@
 - Интеграция с веб-фреймворками
 """
 
-import asyncio
 import threading
 import time
-from typing import Any, Dict
 
-from sliding_window import (FixedWindowCounter, LeakyBucket,
-                            MultiWindowTracker, RateLimitManager,
-                            SlidingWindowAlgorithm, TokenBucket,
-                            create_multi_window_config,
-                            create_sliding_window_config,
-                            create_token_bucket_config, rate_limit)
+from sliding_window import (FixedWindowCounter, MultiWindowTracker,
+                            RateLimitManager, SlidingWindowAlgorithm,
+                            TokenBucket, rate_limit)
 
 
 def example_api_rate_limiting():

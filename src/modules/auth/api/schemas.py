@@ -1,7 +1,7 @@
 # [NEXUS IDENTITY] ID: 7823286099455197134 | DATE: 2025-11-19
 
 """
-API Schemas for Authentication module.
+API схемы для модуля аутентификации.
 """
 
 from typing import Optional
@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 
 class TokenResponse(BaseModel):
-    """Token response schema."""
+    """Схема ответа с токеном."""
 
     access_token: str
     token_type: str = "bearer"
@@ -18,21 +18,21 @@ class TokenResponse(BaseModel):
 
 
 class OAuthCallbackRequest(BaseModel):
-    """Request model для OAuth callback"""
+    """Модель запроса для OAuth callback."""
 
     code: str
     state: str
 
 
 class OAuthAuthorizeResponse(BaseModel):
-    """Response model для authorize endpoint"""
+    """Модель ответа для эндпоинта авторизации."""
 
     authorization_url: str
     provider: str
 
 
 class OAuthCallbackResponse(BaseModel):
-    """Response model для callback endpoint"""
+    """Модель ответа для callback эндпоинта."""
 
     status: str
     provider: str
@@ -41,7 +41,7 @@ class OAuthCallbackResponse(BaseModel):
 
 
 class OAuthStatusResponse(BaseModel):
-    """Response model для status endpoint"""
+    """Модель ответа для статуса подключения."""
 
     connected: bool
     provider: str
@@ -49,7 +49,7 @@ class OAuthStatusResponse(BaseModel):
 
 
 class OAuthDisconnectResponse(BaseModel):
-    """Response model для disconnect endpoint"""
+    """Модель ответа для отключения провайдера."""
 
     status: str
     provider: str

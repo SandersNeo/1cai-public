@@ -1,7 +1,7 @@
 """
-Nested Scenario Hub
+Хаб вложенных сценариев.
 
-Self-modifying automation hub with Nested Learning.
+Самомодифицирующийся хаб автоматизации с вложенным обучением.
 """
 
 import asyncio
@@ -15,14 +15,13 @@ logger = StructuredLogger(__name__).logger
 
 
 class NestedScenarioHub:
-    """
-    Self-modifying scenario automation hub
+    """Самомодифицирующийся хаб автоматизации сценариев.
 
     Features:
-    - Multi-scale scenario memory
-    - Success pattern tracking
-    - Automatic parameter optimization
-    - Self-modification based on feedback
+        - Многомасштабная память сценариев
+        - Отслеживание паттернов успеха
+        - Автоматическая оптимизация параметров
+        - Самомодификация на основе обратной связи
 
     Example:
         >>> hub = NestedScenarioHub()
@@ -35,11 +34,10 @@ class NestedScenarioHub:
     """
 
     def __init__(self, base_hub: Optional[Any] = None):
-        """
-        Initialize nested scenario hub
+        """Инициализирует хаб вложенных сценариев.
 
         Args:
-            base_hub: Base scenario hub (optional)
+            base_hub: Базовый хаб сценариев (опционально).
         """
         self.base = base_hub
 
@@ -67,14 +65,13 @@ class NestedScenarioHub:
         default_parameters: Optional[Dict] = None,
         description: Optional[str] = None,
     ):
-        """
-        Register a scenario
+        """Регистрирует сценарий.
 
         Args:
-            scenario_id: Unique scenario identifier
-            executor: Async function to execute scenario
-            default_parameters: Default parameters
-            description: Scenario description
+            scenario_id: Уникальный идентификатор сценария.
+            executor: Асинхронная функция для выполнения сценария.
+            default_parameters: Параметры по умолчанию.
+            description: Описание сценария.
         """
         self.scenarios[scenario_id] = {
             "executor": executor,
@@ -92,17 +89,16 @@ class NestedScenarioHub:
         auto_optimize: bool = True,
         executor: Optional[Callable] = None,
     ) -> Dict[str, Any]:
-        """
-        Execute scenario with optional auto-optimization
+        """Выполняет сценарий с опциональной авто-оптимизацией.
 
         Args:
-            scenario_id: Scenario to execute
-            parameters: Execution parameters
-            auto_optimize: Whether to auto-optimize parameters
-            executor: Optional executor override
+            scenario_id: Сценарий для выполнения.
+            parameters: Параметры выполнения.
+            auto_optimize: Включить ли авто-оптимизацию параметров.
+            executor: Опциональное переопределение исполнителя.
 
         Returns:
-            Execution result with metadata
+            Dict[str, Any]: Результат выполнения с метаданными.
         """
         self.stats["total_executions"] += 1
         start_time = time.time()
@@ -191,14 +187,13 @@ class NestedScenarioHub:
         }
 
     def get_scenario_analysis(self, scenario_id: str) -> Dict[str, Any]:
-        """
-        Get analysis for scenario
+        """Получает анализ для сценария.
 
         Args:
-            scenario_id: Scenario to analyze
+            scenario_id: Сценарий для анализа.
 
         Returns:
-            Analysis with recommendations
+            Dict[str, Any]: Анализ с рекомендациями.
         """
         analysis = self.memory.analyze_success_patterns(scenario_id)
         suggestions = self.memory.suggest_modifications(
@@ -209,7 +204,7 @@ class NestedScenarioHub:
         return {**analysis, "suggestions": suggestions}
 
     def get_stats(self) -> Dict[str, Any]:
-        """Get hub statistics"""
+        """Получает статистику хаба."""
         memory_stats = self.memory.get_stats()
 
         success_rate = (
@@ -226,7 +221,7 @@ class NestedScenarioHub:
         }
 
     def health_check(self) -> Dict[str, Any]:
-        """Health check"""
+        """Проверка здоровья хаба."""
         memory_health = self.memory.health_check()
 
         return {

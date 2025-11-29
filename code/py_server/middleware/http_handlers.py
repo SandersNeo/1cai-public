@@ -12,29 +12,24 @@ HTTP обработчики для FastAPI приложения
 - Graceful degradation для сервисов
 """
 
-import asyncio
-import json
 import logging
 import time
-from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, List, Optional, Union
+from datetime import datetime
+from typing import Any, Callable, Dict, Optional
 
 # Импорты иерархии исключений
-from errors.base import McpError
-from errors.mcp import McpRateLimitError
 from errors.transport import RateLimitExceededError
 from errors.validation import ValidationError
-from fastapi import Depends, FastAPI, HTTPException, Request, Response
-from fastapi.responses import JSONResponse, RedirectResponse
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.responses import JSONResponse
+from fastapi.security import HTTPBearer
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
 from .correlation import format_correlation_context, get_correlation_id
-from .error_handler import with_error_handling
 # Импорты модулей проекта
 from .response_models import (ErrorCategory, ErrorResponse, ErrorSeverity,
-                              HealthCheckResponse, Language)
+                              Language)
 
 logger = logging.getLogger(__name__)
 

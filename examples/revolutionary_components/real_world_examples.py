@@ -10,17 +10,12 @@ Real-World Examples - Примеры использования революци
 
 import asyncio
 import logging
-from datetime import datetime
 
 from src.ai.code_dna import CodeDNAEngine
-from src.ai.distributed_agent_network import (AgentRole,
-                                              DistributedAgentNetwork, Task)
 from src.ai.advanced_orchestrator import AdvancedAIOrchestrator
 from src.ai.predictive_code_generation import (PredictiveCodeGenerator,
                                                Requirement)
-from src.ai.self_evolving_ai import SelfEvolvingAI
 from src.ai.self_healing_code import SelfHealingCode
-from src.infrastructure.event_bus import EventBus, EventType
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

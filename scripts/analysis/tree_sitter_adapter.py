@@ -13,7 +13,7 @@ from __future__ import annotations
 import ctypes
 import logging
 from pathlib import Path
-from typing import Dict, Iterator, Optional, Sequence
+from typing import Dict, Iterator, Optional
 
 logger = logging.getLogger(__name__)
 

@@ -6,14 +6,14 @@ import asyncio
 import json
 import logging
 from pathlib import Path
-from typing import Iterable, List, Optional
+from typing import List, Optional
 
 import typer
 from prometheus_client import Counter, Gauge, Histogram, start_http_server
 
 from .config import DEFAULT_CONFIG, OutputFormat, ScrapeConfig
 from .scraper import ITSScraper
-from .writers import BaseWriter, persist_article
+from .writers import persist_article
 
 app = typer.Typer(help="Enhanced scraper for 1C ITS documentation.")
 

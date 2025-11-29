@@ -11,9 +11,8 @@ import argparse
 import json
 import re
 import sys
-from collections import Counter, defaultdict
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Set, Tuple
+from typing import Any, Dict, Iterable, List, Set
 
 from scripts.analysis.tree_sitter_adapter import ensure_parser, extract_calls
 

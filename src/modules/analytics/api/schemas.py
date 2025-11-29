@@ -1,10 +1,4 @@
-    """Модуль schemas.
-    
-    TODO: Добавить подробное описание модуля.
-    
-    Этот docstring был автоматически сгенерирован.
-    Пожалуйста, обновите его с правильным описанием.
-    """
+"""Модуль схем данных для аналитики и дашбордов."""
     
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -15,50 +9,57 @@ from pydantic import BaseModel
 
 
 class RevenueData(BaseModel):
-        """Класс RevenueData.
-                
-                TODO: Добавить описание класса.
-                
-                Attributes:
-                    TODO: Описать атрибуты класса.
-                """    this_month: float
+    """Данные о выручке.
+
+    Attributes:
+        this_month: Выручка за текущий месяц.
+        last_month: Выручка за прошлый месяц.
+        change_percent: Процент изменения.
+        trend: Тренд ("up" или "down").
+    """
+    this_month: float
     last_month: float
     change_percent: float
     trend: str  # "up" or "down"
 
 
 class CustomersData(BaseModel):
-        """Класс CustomersData.
-                
-                TODO: Добавить описание класса.
-                
-                Attributes:
-                    TODO: Описать атрибуты класса.
-                """    total: int
+    """Данные о клиентах.
+
+    Attributes:
+        total: Всего клиентов.
+        new_this_month: Новых клиентов за месяц.
+    """
+    total: int
     new_this_month: int
 
 
 class MetricData(BaseModel):
-        """Класс MetricData.
-                
-                TODO: Добавить описание класса.
-                
-                Attributes:
-                    TODO: Описать атрибуты класса.
-                """    value: float
+    """Общая модель метрики.
+
+    Attributes:
+        value: Значение метрики.
+        change: Изменение.
+        trend: Направление тренда.
+        status: Статус (good/warning/critical).
+    """
+    value: float
     change: float
     trend: str
     status: str
 
 
 class OwnerDashboardResponse(BaseModel):
-        """Класс OwnerDashboardResponse.
-                
-                TODO: Добавить описание класса.
-                
-                Attributes:
-                    TODO: Описать атрибуты класса.
-                """    revenue: RevenueData
+    """Ответ для дашборда владельца.
+
+    Attributes:
+        revenue: Данные о выручке.
+        customers: Данные о клиентах.
+        growth_percent: Процент роста.
+        system_status: Статус системы.
+        recent_activities: Список недавних активностей.
+    """
+    revenue: RevenueData
     customers: CustomersData
     growth_percent: float
     system_status: str  # "healthy", "warning", "critical"
@@ -66,13 +67,20 @@ class OwnerDashboardResponse(BaseModel):
 
 
 class ExecutiveDashboardResponse(BaseModel):
-        """Класс ExecutiveDashboardResponse.
-                
-                TODO: Добавить описание класса.
-                
-                Attributes:
-                    TODO: Описать атрибуты класса.
-                """    id: str
+    """Ответ для исполнительного дашборда.
+
+    Attributes:
+        id: ID дашборда.
+        health: Метрики здоровья.
+        roi: Метрики ROI.
+        users: Метрики пользователей.
+        growth: Метрики роста.
+        revenue_trend: Тренд выручки.
+        alerts: Активные алерты.
+        objectives: Стратегические цели.
+        metrics: Прочие метрики.
+    """
+    id: str
     health: Dict[str, str]
     roi: MetricData
     users: MetricData
@@ -84,13 +92,17 @@ class ExecutiveDashboardResponse(BaseModel):
 
 
 class SprintProgress(BaseModel):
-        """Класс SprintProgress.
-                
-                TODO: Добавить описание класса.
-                
-                Attributes:
-                    TODO: Описать атрибуты класса.
-                """    sprint_number: int
+    """Прогресс спринта.
+
+    Attributes:
+        sprint_number: Номер спринта.
+        tasks_done: Выполнено задач.
+        tasks_total: Всего задач.
+        progress: Прогресс (%).
+        blockers: Количество блокеров.
+        end_date: Дата окончания.
+    """
+    sprint_number: int
     tasks_done: int
     tasks_total: int
     progress: float
@@ -99,13 +111,17 @@ class SprintProgress(BaseModel):
 
 
 class PMDashboardResponse(BaseModel):
-        """Класс PMDashboardResponse.
-                
-                TODO: Добавить описание класса.
-                
-                Attributes:
-                    TODO: Описать атрибуты класса.
-                """    id: str
+    """Ответ для дашборда PM.
+
+    Attributes:
+        id: ID дашборда.
+        projects: Список проектов.
+        projects_summary: Сводка по проектам.
+        timeline: Таймлайн.
+        team_workload: Загрузка команды.
+        sprint_progress: Прогресс текущего спринта.
+    """
+    id: str
     projects: List[Dict[str, Any]]
     projects_summary: Dict[str, Any]
     timeline: List[Dict[str, Any]]
@@ -114,13 +130,18 @@ class PMDashboardResponse(BaseModel):
 
 
 class DeveloperDashboardResponse(BaseModel):
-        """Класс DeveloperDashboardResponse.
-                
-                TODO: Добавить описание класса.
-                
-                Attributes:
-                    TODO: Описать атрибуты класса.
-                """    id: str
+    """Ответ для дашборда разработчика.
+
+    Attributes:
+        id: ID дашборда.
+        name: Имя разработчика.
+        assigned_tasks: Назначенные задачи.
+        code_reviews: Код-ревью.
+        build_status: Статус сборки.
+        code_quality: Метрики качества кода.
+        ai_suggestions: Предложения AI.
+    """
+    id: str
     name: str
     assigned_tasks: List[Dict[str, Any]]
     code_reviews: List[Dict[str, Any]]
@@ -133,25 +154,32 @@ class DeveloperDashboardResponse(BaseModel):
 
 
 class ReportRequest(BaseModel):
-        """Класс ReportRequest.
-                
-                TODO: Добавить описание класса.
-                
-                Attributes:
-                    TODO: Описать атрибуты класса.
-                """    title: str
+    """Запрос на генерацию отчета.
+
+    Attributes:
+        title: Заголовок отчета.
+        period_days: Период в днях.
+        components: Список компонентов для анализа.
+    """
+    title: str
     period_days: int = 7
     components: Optional[List[str]] = None
 
 
 class ReportResponse(BaseModel):
-        """Класс ReportResponse.
-                
-                TODO: Добавить описание класса.
-                
-                Attributes:
-                    TODO: Описать атрибуты класса.
-                """    id: str
+    """Ответ с данными отчета.
+
+    Attributes:
+        id: ID отчета.
+        title: Заголовок.
+        period_start: Начало периода.
+        period_end: Конец периода.
+        metrics: Метрики отчета.
+        insights: Инсайты от AI.
+        recommendations: Рекомендации.
+        timestamp: Время создания.
+    """
+    id: str
     title: str
     period_start: datetime
     period_end: datetime

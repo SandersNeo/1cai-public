@@ -14,22 +14,19 @@
 import asyncio
 import json
 import time
-from typing import Any, Dict
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 
 # Импорт тестируемых модулей
-from .config import LoggingConfig, logging_config, setup_logging
+from .config import LoggingConfig, logging_config
 from .formatter import (HTTPRequestFormatter, LogLevel, PerformanceFormatter,
                         StructuredFormatter, create_log_structure)
-from .handlers import (APMHandler, ConsoleHandler, FileHandler, MonitorHandler,
-                       StructuredLogger)
+from .handlers import (ConsoleHandler, FileHandler, StructuredLogger)
 from .middleware import (LoggingMiddleware, correlation_context,
                          correlation_context_manager, log_execution_time,
                          with_correlation_id)
-from .sanitizers import (DataSanitizer, MaskingRule, sanitize_sensitive_data,
-                         sanitize_user_data)
+from .sanitizers import (DataSanitizer, MaskingRule, sanitize_user_data)
 
 
 class TestLoggingConfig:

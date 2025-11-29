@@ -11,13 +11,12 @@ import tempfile
 import threading
 import time
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 from ratelimit.metrics import (AlertManager, AlertRule, AlertSeverity,
-                               MetricType, PrometheusExporter,
-                               RateLimitDashboard, RateLimitMetrics,
-                               RateLimitMonitoringSystem, RealTimeMonitor,
-                               rate_limit_monitoring)
+                               PrometheusExporter, RateLimitDashboard,
+                               RateLimitMetrics, RateLimitMonitoringSystem,
+                               RealTimeMonitor, rate_limit_monitoring)
 
 
 class TestRateLimitMetrics(unittest.TestCase):

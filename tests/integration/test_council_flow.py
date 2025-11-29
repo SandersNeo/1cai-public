@@ -5,7 +5,7 @@ End-to-end tests for council query processing.
 """
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 from src.ai.orchestrator import orchestrator
 

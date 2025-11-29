@@ -16,16 +16,13 @@ def diagnose():
     # 1. Test basic imports
     try:
         log("Importing os...")
-        import os
 
         log("Importing sys...")
-        import sys
 
         log("Importing time...")
         import time
 
         log("Importing json...")
-        import json
 
         log("Basic imports success.")
     except Exception as e:
@@ -38,7 +35,6 @@ def diagnose():
         import pydantic
 
         log(f"Pydantic version: {pydantic.VERSION}")
-        from pydantic import BaseModel
 
         log("Pydantic imports success.")
     except Exception as e:
@@ -48,8 +44,6 @@ def diagnose():
     # 3. Test python-json-logger
     try:
         log("Importing pythonjsonlogger...")
-        import pythonjsonlogger
-        from pythonjsonlogger import jsonlogger
 
         log("pythonjsonlogger imports success.")
     except Exception as e:
@@ -59,7 +53,6 @@ def diagnose():
     # 4. Test StructuredLogger Import ONLY
     try:
         log("Importing src.infrastructure.logging.structured_logging (module only)...")
-        from src.infrastructure.logging import structured_logging
 
         log("Module import success.")
     except Exception as e:

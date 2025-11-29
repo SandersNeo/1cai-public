@@ -4,9 +4,6 @@
 Тесты для оптимизатора промптов.
 """
 
-import json
-from datetime import datetime
-from unittest.mock import Mock, patch
 
 import pytest
 

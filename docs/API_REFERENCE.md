@@ -485,6 +485,59 @@ Query-параметры:
 
 ---
 
+## 📊 Executive Dashboard API
+
+### GET /api/dashboard/metrics
+
+Получить ключевые бизнес-метрики (ROI, Health Score).
+
+**Response:**
+```json
+{
+  "roi_percentage": 450,
+  "system_health": 0.98,
+  "active_users": 1250
+}
+```
+
+---
+
+## 📚 Knowledge Base API
+
+### POST /api/knowledge/search
+
+Семантический поиск по базе знаний.
+
+**Request:**
+```json
+{
+  "query": "как настроить резервное копирование",
+  "limit": 5
+}
+```
+
+---
+
+## 🎭 Scenario Hub API
+
+### GET /api/scenarios
+
+Получить список доступных сценариев.
+
+### POST /api/scenarios/{id}/execute
+
+Запустить выполнение сценария.
+
+---
+
+## 📖 Wiki API
+
+### GET /api/wiki/pages/{slug}
+
+Получить содержимое Wiki-страницы.
+
+---
+
 ## 📈 Rate Limits
 
 ### Default Limits

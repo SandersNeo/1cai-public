@@ -17,8 +17,7 @@ Use case:
 """
 
 import copy
-from collections import defaultdict
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
 import torch
 import torch.nn as nn

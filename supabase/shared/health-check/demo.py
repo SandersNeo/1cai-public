@@ -6,23 +6,16 @@ Health Check System Demo
 """
 
 import asyncio
-import json
-import time
-from datetime import datetime
 from typing import Any, Dict
 
 # Импорт всех компонентов системы health checks
-from supabase.shared.health_check import (HealthCheckSystem,
-                                          create_default_config,
-                                          setup_health_checks_for_service)
+from supabase.shared.health_check import HealthCheckSystem
 from supabase.shared.health_check.endpoints import (BasicHealthChecker,
                                                     BusinessHealthChecker,
                                                     CustomMetricsHealthChecker,
                                                     DependenciesHealthChecker,
                                                     PerformanceHealthChecker)
-from supabase.shared.health_check.manager import (HealthCheckManager,
-                                                  IssueSeverity,
-                                                  OverallHealthStatus)
+from supabase.shared.health_check.manager import HealthCheckManager
 
 
 class HealthCheckDemo:

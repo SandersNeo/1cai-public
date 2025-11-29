@@ -15,11 +15,12 @@ import logging
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Sequence
+from typing import Any, Callable, Dict, List, Optional, Sequence, TYPE_CHECKING
 
 import yaml
 
-from src.ai.intelligent_cache import IntelligentCache
+if TYPE_CHECKING:
+    pass
 from src.monitoring.prometheus_metrics import (
     llm_gateway_fallbacks_total,
     llm_gateway_latency_seconds,
@@ -70,6 +71,7 @@ class LLMGateway:
         self.cache: Optional[IntelligentCache] = None
         if enable_cache:
             try:
+                from src.ai.intelligent_cache import IntelligentCache
                 self.cache = IntelligentCache(max_size=1000, default_ttl_seconds=300)
             except Exception as e:
                 logger.warning("Failed to initialize cache: %s", e)

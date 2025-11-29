@@ -1,7 +1,7 @@
 # [NEXUS IDENTITY] ID: 3863840099083275034 | DATE: 2025-11-22
 
 """
-OAuth Service for Authentication module.
+Сервис OAuth для модуля аутентификации.
 """
 
 import os
@@ -70,8 +70,18 @@ class OAuthService:
         }
 
     async def get_authorization_url(self, provider: str, db: asyncpg.Connection, user_id: int) -> str:
-        """
-        Сгенерировать OAuth authorization URL
+        """Генерирует URL для OAuth авторизации.
+
+        Args:
+            provider: Имя провайдера.
+            db: Подключение к БД.
+            user_id: ID пользователя.
+
+        Returns:
+            str: URL для редиректа.
+
+        Raises:
+            ValueError: Если провайдер не поддерживается или не настроен.
         """
         if provider not in self.providers:
             raise ValueError(f"Провайдер '{provider}' не поддерживается")
@@ -110,8 +120,19 @@ class OAuthService:
         return url
 
     async def exchange_code_for_token(self, provider: str, code: str, state: str, db: asyncpg.Connection) -> Dict:
-        """
-        Обменять authorization code на access token
+        """Обменивает код авторизации на токен доступа.
+
+        Args:
+            provider: Имя провайдера.
+            code: Код авторизации.
+            state: CSRF токен.
+            db: Подключение к БД.
+
+        Returns:
+            Dict: Данные токена (provider, user_id, expires_in).
+
+        Raises:
+            ValueError: Если провайдер не поддерживается или state невалиден.
         """
         if provider not in self.providers:
             raise ValueError(f"Провайдер '{provider}' не поддерживается")
@@ -158,8 +179,18 @@ class OAuthService:
         }
 
     async def refresh_token(self, provider: str, user_id: int, db: asyncpg.Connection) -> Dict:
-        """
-        Обновить access token используя refresh token
+        """Обновляет access token используя refresh token.
+
+        Args:
+            provider: Имя провайдера.
+            user_id: ID пользователя.
+            db: Подключение к БД.
+
+        Returns:
+            Dict: Новые данные токена.
+
+        Raises:
+            ValueError: Если провайдер не поддерживается или токен не найден.
         """
         if provider not in self.providers:
             raise ValueError(f"Провайдер '{provider}' не поддерживается")
@@ -200,8 +231,18 @@ class OAuthService:
         return token_data
 
     async def get_valid_access_token(self, provider: str, user_id: int, db: asyncpg.Connection) -> str:
-        """
-        Получить валидный access token, обновить если нужно
+        """Получает валидный access token, обновляя его при необходимости.
+
+        Args:
+            provider: Имя провайдера.
+            user_id: ID пользователя.
+            db: Подключение к БД.
+
+        Returns:
+            str: Расшифрованный access token.
+
+        Raises:
+            ValueError: Если токен не найден.
         """
         token_data = await self._get_token_data(db, provider, user_id)
         if not token_data:
@@ -221,8 +262,12 @@ class OAuthService:
         return self._decrypt_token(encrypted_token)
 
     async def disconnect(self, provider: str, user_id: int, db: asyncpg.Connection) -> None:
-        """
-        Отключить OAuth провайдера (удалить токены)
+        """Отключает OAuth провайдера (удаляет токены).
+
+        Args:
+            provider: Имя провайдера.
+            user_id: ID пользователя.
+            db: Подключение к БД.
         """
         await self._delete_tokens(db, provider, user_id)
         logger.info("Disconnected OAuth provider", extra={

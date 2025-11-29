@@ -10,18 +10,15 @@ Performance Benchmarks для системы Rate Limiting
 Версия: 1.0.0
 """
 
-import asyncio
-import gc
 import json
 import statistics
 import sys
 import threading
 import time
-import warnings
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 # Добавляем путь для импортов
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

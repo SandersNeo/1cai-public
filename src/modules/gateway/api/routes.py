@@ -3,6 +3,8 @@ Gateway API Routes
 """
 from datetime import datetime
 
+from typing import Any, Dict
+
 from fastapi import APIRouter, Request
 
 from src.infrastructure.logging.structured_logging import StructuredLogger
@@ -23,7 +25,7 @@ proxy_service = ProxyService()
 
 
 @router.get("/health", response_model=GatewayHealthResponse)
-async def get_gateway_health():
+async def get_gateway_health() -> GatewayHealthResponse:
     """Get gateway health status"""
     services_health = await health_checker.check_all_services()
 
@@ -43,7 +45,7 @@ async def get_gateway_health():
 
 
 @router.post("/proxy")
-async def proxy_request(request: ServiceRequest):
+async def proxy_request(request: ServiceRequest) -> Dict[str, Any]:
     """Proxy request to a microservice"""
     return await proxy_service.proxy_request(
         service=request.service,
@@ -60,7 +62,7 @@ async def proxy_path(
     service: str,
     path: str,
     request: Request,
-):
+) -> Dict[str, Any]:
     """Dynamic proxy endpoint"""
     # Extract body if present
     body = None

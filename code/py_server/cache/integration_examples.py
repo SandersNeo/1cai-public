@@ -16,16 +16,12 @@ MCP сервера и клиента 1С.
 Версия: 1.0.0
 """
 
-import asyncio
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from .mcp_cache import (cache_aggregates, cache_metadata_1c, cache_tool_result,
-                        cached, cached_async, cleanup_expired, get_cache,
-                        get_cache_stats, get_cached_aggregates,
-                        get_cached_metadata_1c, get_cached_tool_result,
+from .mcp_cache import (cached, get_cache, get_cache_stats,
                         init_cache)
 
 logger = logging.getLogger(__name__)

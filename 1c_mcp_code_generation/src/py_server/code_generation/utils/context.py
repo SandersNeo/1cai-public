@@ -10,13 +10,12 @@ Context Collector для 1C AI MCP Code Generation
 Дата: 30.10.2025
 """
 
-import asyncio
 import json
 import logging
 import os
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 

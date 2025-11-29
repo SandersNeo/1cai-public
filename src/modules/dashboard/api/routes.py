@@ -1,6 +1,7 @@
 """
-Dashboard API Routes
-FastAPI endpoints for all dashboard types
+API маршруты для дашбордов.
+
+Содержит эндпоинты для всех типов дашбордов (Executive, PM, Developer, Team Lead, BA, Owner).
 """
 from typing import Any, Dict
 
@@ -34,10 +35,18 @@ owner_service = OwnerService()
 async def get_executive_dashboard(
     db_pool: asyncpg.Pool = Depends(get_db_pool),
 ) -> Dict[str, Any]:
-    """
-    Executive Dashboard Data
+    """Получает данные для исполнительного дашборда.
 
-    Returns high-level KPIs and business metrics
+    Возвращает высокоуровневые KPI и бизнес-метрики.
+
+    Args:
+        db_pool: Пул соединений с БД.
+
+    Returns:
+        Dict[str, Any]: Данные дашборда.
+
+    Raises:
+        HTTPException: В случае внутренней ошибки сервера (500).
     """
     try:
         async with db_pool.acquire() as conn:
@@ -55,10 +64,15 @@ async def get_executive_dashboard(
 async def get_pm_dashboard(
     db_pool: asyncpg.Pool = Depends(get_db_pool),
 ) -> Dict[str, Any]:
-    """
-    PM Dashboard Data
+    """Получает данные для дашборда менеджера проектов.
 
-    Returns projects, timeline, team workload
+    Возвращает проекты, таймлайн и загрузку команды.
+
+    Args:
+        db_pool: Пул соединений с БД.
+
+    Returns:
+        Dict[str, Any]: Данные дашборда.
     """
     try:
         async with db_pool.acquire() as conn:
@@ -74,10 +88,12 @@ async def get_pm_dashboard(
 
 @router.get("/developer")
 async def get_developer_dashboard() -> Dict[str, Any]:
-    """
-    Developer Dashboard Data
+    """Получает данные для дашборда разработчика.
 
-    Returns assigned tasks, code reviews, build status
+    Возвращает назначенные задачи, код-ревью и статус сборки.
+
+    Returns:
+        Dict[str, Any]: Данные дашборда.
     """
     try:
         return await developer_service.get_dashboard()
@@ -94,10 +110,15 @@ async def get_developer_dashboard() -> Dict[str, Any]:
 async def get_team_lead_dashboard(
     db_pool: asyncpg.Pool = Depends(get_db_pool),
 ) -> Dict[str, Any]:
-    """
-    Team Lead Dashboard
+    """Получает данные для дашборда тимлида.
 
-    Shows team performance, code quality, velocity, technical debt
+    Показывает производительность команды, качество кода, velocity и технический долг.
+
+    Args:
+        db_pool: Пул соединений с БД.
+
+    Returns:
+        Dict[str, Any]: Данные дашборда.
     """
     try:
         async with db_pool.acquire() as conn:
@@ -115,10 +136,15 @@ async def get_team_lead_dashboard(
 async def get_ba_dashboard(
     db_pool: asyncpg.Pool = Depends(get_db_pool),
 ) -> Dict[str, Any]:
-    """
-    Business Analyst Dashboard
+    """Получает данные для дашборда бизнес-аналитика.
 
-    Shows requirements, traceability, gap analysis, process diagrams
+    Показывает требования, матрицу трассируемости, gap-анализ и диаграммы процессов.
+
+    Args:
+        db_pool: Пул соединений с БД.
+
+    Returns:
+        Dict[str, Any]: Данные дашборда.
     """
     try:
         async with db_pool.acquire() as conn:
@@ -136,10 +162,15 @@ async def get_ba_dashboard(
 async def get_owner_dashboard(
     db_pool: asyncpg.Pool = Depends(get_db_pool),
 ) -> Dict[str, Any]:
-    """
-    Owner Dashboard
+    """Получает данные для дашборда владельца.
 
-    Returns simple business metrics in plain language
+    Возвращает простые бизнес-метрики на понятном языке.
+
+    Args:
+        db_pool: Пул соединений с БД.
+
+    Returns:
+        Dict[str, Any]: Данные дашборда.
     """
     try:
         async with db_pool.acquire() as conn:

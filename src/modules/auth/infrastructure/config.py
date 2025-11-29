@@ -1,7 +1,7 @@
 # [NEXUS IDENTITY] ID: 2068138963340429857 | DATE: 2025-11-19
 
 """
-Configuration for Authentication module.
+Конфигурация для модуля аутентификации.
 """
 
 from typing import Optional
@@ -11,7 +11,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class AuthSettings(BaseSettings):
-    """Authentication configuration (loaded from environment variables)."""
+    """Настройки аутентификации (загружаются из переменных окружения)."""
 
     jwt_secret: str = Field(default="CHANGE_ME")
     jwt_algorithm: str = Field(default="HS256")

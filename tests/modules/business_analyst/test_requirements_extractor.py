@@ -10,9 +10,6 @@ from src.modules.business_analyst.domain.models import (
     Priority,
     RequirementExtractionResult,
 )
-from src.modules.business_analyst.domain.exceptions import (
-    RequirementExtractionError,
-)
 
 
 @pytest.fixture

@@ -17,9 +17,7 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import subprocess
-from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Dict, List, Optional

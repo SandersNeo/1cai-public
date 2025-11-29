@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import sys
 from unittest.mock import MagicMock, patch
 
 from fastapi.testclient import TestClient
@@ -14,7 +13,7 @@ async def verify_api_security():
     try:
         # 1. Security Manager
         print("Checking SecurityManager...")
-        from src.security.advanced_security import SecurityManager, SecurityLevel, ThreatType
+        from src.security.advanced_security import SecurityManager
         
         sec_manager = SecurityManager()
         

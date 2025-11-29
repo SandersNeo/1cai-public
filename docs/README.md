@@ -89,6 +89,7 @@
 | Задача | Документация |
 |--------|--------------|
 | **🎯 Быстрый старт** | [Quick Start](./01-getting-started/START_HERE.md) |
+| **⚠️ Системные правила** | [System Prompt](./SYSTEM_PROMPT.md) |
 | **🏗️ Архитектура** | [Architecture Overview](./02-architecture/ARCHITECTURE_OVERVIEW.md) |
 | **🛠️ Технологический стек** | [Technology Stack](./02-architecture/TECHNOLOGY_STACK.md) |
 | **🤖 AI Агенты** | [AI Agents](./03-ai-agents/README.md) |
@@ -109,6 +110,7 @@
 ```
 docs/
 ├── README.md                       ← Вы здесь
+├── SYSTEM_PROMPT.md                ← ⚠️ СИСТЕМНЫЕ ПРАВИЛА (System Rules)
 │
 ├── 01-getting-started/             🚀 Быстрый старт
 │   ├── START_HERE.md               ← Начать здесь!

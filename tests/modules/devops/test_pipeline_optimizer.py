@@ -11,7 +11,6 @@ from src.modules.devops.domain.models import (
     PipelineConfig,
     PipelineMetrics,
     PipelineStage,
-    OptimizationEffort,
 )
 
 

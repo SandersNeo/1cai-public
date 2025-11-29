@@ -2,6 +2,7 @@
 Request Logging Middleware
 """
 import time
+from typing import Any
 
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -14,7 +15,7 @@ logger = StructuredLogger(__name__).logger
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
     """Middleware for request logging"""
 
-    def __init__(self, app):
+    def __init__(self, app: Any) -> None:
         super().__init__(app)
         self.request_stats = {
             "total_requests": 0,
@@ -24,7 +25,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             "service_calls": {},
         }
 
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(self, request: Request, call_next: Any) -> Any:
         start_time = time.time()
 
         # Log incoming request

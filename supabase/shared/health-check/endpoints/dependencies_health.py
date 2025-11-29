@@ -12,7 +12,7 @@ import time
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 import asyncpg
@@ -420,7 +420,7 @@ DEFAULT_DEPENDENCIES_CONFIG = {
 }
 
 if __name__ == "__main__":
-    import os
+    pass
 
     # Пример использования
     async def main():

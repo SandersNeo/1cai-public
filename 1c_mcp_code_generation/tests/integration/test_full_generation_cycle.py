@@ -8,16 +8,10 @@
 """
 
 import asyncio
-import tempfile
-from pathlib import Path
-from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from src.core.engine import CodeGenerationEngine
-from src.core.validator import CodeValidator
 from src.prompts.context import GenerationContext
-from src.templates.processor import CodeGenerationResult
 
 
 @pytest.mark.integration

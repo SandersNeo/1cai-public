@@ -45,7 +45,7 @@ class TraceabilityService:
         """Build risk register"""
         try:
             from src.ai.agents.traceability_with_graph import TraceabilityWithGraph
-            from src.ai.code_graph import InMemoryCodeGraphBackend
+            from src.ai.code_analysis.graph import InMemoryCodeGraphBackend
 
             backend = InMemoryCodeGraphBackend()
             traceability = TraceabilityWithGraph(backend)
@@ -62,7 +62,7 @@ class TraceabilityService:
         """Build full traceability report"""
         try:
             from src.ai.agents.traceability_with_graph import TraceabilityWithGraph
-            from src.ai.code_graph import InMemoryCodeGraphBackend
+            from src.ai.code_analysis.graph import InMemoryCodeGraphBackend
 
             backend = InMemoryCodeGraphBackend()
             traceability = TraceabilityWithGraph(backend)

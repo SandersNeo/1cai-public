@@ -2,7 +2,7 @@
 Analyze pylint results and categorize issues by type
 """
 import json
-from collections import Counter, defaultdict
+from collections import Counter
 
 # Read pylint results
 with open('pylint_final_check.json', 'r', encoding='utf-8-sig') as f:

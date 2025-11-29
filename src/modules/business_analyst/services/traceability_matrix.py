@@ -28,7 +28,7 @@ class TraceabilityMatrixGenerator:
     - Gap identification
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize traceability matrix generator"""
 
     async def generate_matrix(

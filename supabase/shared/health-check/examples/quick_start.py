@@ -7,14 +7,12 @@ Health Check System - Quick Start Example
 
 import asyncio
 import time
-from typing import Any, Dict
 
 
 # Вариант 1: FastAPI интеграция
 def create_fastapi_example():
     """Создание FastAPI приложения с health checks"""
     
-    from fastapi import FastAPI
     from health_check import setup_health_checks_for_service
 
     # Создание FastAPI приложения
@@ -47,7 +45,7 @@ def create_fastapi_example():
 def create_flask_example():
     """Создание Flask приложения с health checks"""
     
-    from flask import Flask, jsonify
+    from flask import jsonify
     from health_check import setup_health_checks_for_service
 
     # Создание Flask приложения

@@ -3,7 +3,7 @@ from typing import Any, Dict
 
 from src.ai.nl_to_cypher import get_nl_to_cypher_converter
 from src.ai.strategies.base import AIStrategy
-from src.api.dependencies import get_neo4j_client
+from src.db.neo4j_client import get_neo4j_client
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

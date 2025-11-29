@@ -1,6 +1,7 @@
 """
-Executive Dashboard Service
-Business logic for executive-level KPIs and metrics
+Сервис исполнительного дашборда.
+
+Бизнес-логика для KPI и метрик уровня руководства.
 """
 import random
 from datetime import datetime, timedelta
@@ -15,20 +16,19 @@ logger = StructuredLogger(__name__).logger
 
 
 class ExecutiveService:
-    """Executive dashboard business logic"""
+    """Бизнес-логика исполнительного дашборда."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.health_calculator = HealthCalculator()
 
     async def get_dashboard(self, conn: asyncpg.Connection) -> Dict[str, Any]:
-        """
-        Get executive dashboard data
+        """Получает данные для исполнительного дашборда.
 
         Args:
-            conn: Database connection
+            conn: Подключение к БД.
 
         Returns:
-            Executive dashboard data dictionary
+            Dict[str, Any]: Словарь с данными дашборда.
         """
         # Calculate REAL health score
         health_score = await self.health_calculator.calculate_health_score(conn)

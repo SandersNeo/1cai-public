@@ -1,3 +1,4 @@
+from typing import Any, Dict
 from fastapi import APIRouter, HTTPException, Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -25,7 +26,7 @@ def get_documentation_service() -> DocumentationService:
     description="Автоматическая генерация документации для указанного кода",
 )
 @limiter.limit("5/minute")
-async def generate_documentation(request: Request, doc_request: DocumentationRequest, timeout: float = 60.0):
+async def generate_documentation(request: Request, doc_request: DocumentationRequest, timeout: float = 60.0) -> DocumentationResponse:
     """Generate documentation with validation and timeout handling."""
     try:
         service = get_documentation_service()
@@ -47,7 +48,7 @@ async def generate_documentation(request: Request, doc_request: DocumentationReq
 
 
 @router.get("/health", summary="Проверка состояния сервиса")
-async def health_check():
+async def health_check() -> Dict[str, Any]:
     """Health check for documentation generation service."""
     return {
         "status": "healthy",

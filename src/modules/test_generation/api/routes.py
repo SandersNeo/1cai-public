@@ -3,6 +3,8 @@ Test Generation API Routes
 """
 from datetime import datetime
 
+from typing import Any, Dict
+
 from fastapi import APIRouter, HTTPException, Request
 
 from src.infrastructure.logging.structured_logging import StructuredLogger
@@ -30,7 +32,7 @@ generator_service = TestGeneratorService()
     description="Automatically generate tests for the provided code",
 )
 @limiter.limit("10/minute")
-async def generate_tests(request: Request, request_data: TestGenerationRequest):
+async def generate_tests(request: Request, request_data: TestGenerationRequest) -> TestGenerationResponse:
     """
     Generate tests with input validation
     """
@@ -97,7 +99,7 @@ async def generate_tests(request: Request, request_data: TestGenerationRequest):
 
 
 @router.get("/health", summary="Check service status")
-async def health_check():
+async def health_check() -> Dict[str, Any]:
     """Check Test Generation service availability"""
     openai_analyzer = get_openai_analyzer()
     ai_enabled = getattr(openai_analyzer, "enabled", False)

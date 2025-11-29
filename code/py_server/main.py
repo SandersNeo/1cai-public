@@ -12,10 +12,9 @@
 
 import logging
 import os
-from typing import Any, Dict
 
 import uvicorn
-from fastapi import Depends, FastAPI, Request
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 

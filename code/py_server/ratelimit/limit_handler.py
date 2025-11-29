@@ -19,9 +19,9 @@ import time
 import uuid
 import weakref
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
 
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
@@ -487,7 +487,6 @@ class CircuitBreaker:
 
 class CircuitBreakerOpenException(Exception):
     """Исключение при разомкнутом circuit breaker"""
-    pass
 
 
 class RateLimitHandler:

@@ -5,8 +5,7 @@ Kubernetes Health Probes Configuration
 Настройка Liveness, Readiness и Startup probes
 """
 
-import json
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional
 

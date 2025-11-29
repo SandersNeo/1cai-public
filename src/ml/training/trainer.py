@@ -15,11 +15,11 @@ import numpy as np
 import optuna
 import pandas as pd
 
-# Celery для background задач
-from celery import Celery
-from celery import current_app as celery_app
-from celery.result import AsyncResult
-from celery.schedules import crontab
+# Celery dependency removed in favor of NATS (Event-Driven Architecture)
+# from celery import Celery
+# from celery import current_app as celery_app
+# from celery.result import AsyncResult
+# from celery.schedules import crontab
 from sklearn.feature_selection import SelectKBest, f_classif, f_regression
 
 # ML библиотеки
@@ -184,11 +184,11 @@ class ModelTrainer:
         self,
         mlflow_manager: Optional[MLFlowManager] = None,
         metrics_collector: Optional[MetricsCollector] = None,
-        celery_app: Optional[Celery] = None,
+        # celery_app: Optional[Celery] = None,  # Removed
     ):
         self.mlflow_manager = mlflow_manager or MLFlowManager()
         self.metrics_collector = metrics_collector or MetricsCollector()
-        self.celery_app = celery_app
+        # self.celery_app = celery_app  # Removed
         self.preprocessor = DataPreprocessor()
         self.active_jobs = {}
         self.logger = logging.getLogger(f"{__name__}.ModelTrainer")
@@ -218,22 +218,9 @@ class ModelTrainer:
 
         self.active_jobs[job_id] = job
 
-        # Запуск Celery задачи
-        if self.celery_app:
-            task = self._train_model_task.delay(
-                job_id=job_id,
-                model_name=model_name,
-                model_type=model_type,
-                features=features,
-                target=target,
-                training_data=training_data.to_dict("records"),
-                training_type=training_type.value,
-                hyperparameters=hyperparameters,
-                preprocessing_config=preprocessing_config,
-            )
-            job.celery_task_id = task.id
-
-            logger.info("Создан Celery task для обучения", extra={"task_id": task.id})
+        # Celery task creation removed
+        # if self.celery_app:
+        #     ...
 
         return job_id
 
@@ -246,19 +233,9 @@ class ModelTrainer:
         job = self.active_jobs[job_id]
 
         # Обновляем статус из Celery если доступно
-        if hasattr(job, "celery_task_id") and self.celery_app:
-            task = AsyncResult(job.celery_task_id, app=self.celery_app)
-
-            if task.ready():
-                if task.successful():
-                    job.status = TrainingStatus.COMPLETED
-                    job.end_time = datetime.utcnow()
-                    job.metrics = task.result
-                else:
-                    job.status = TrainingStatus.FAILED
-                    job.error_message = str(task.info)
-            elif task.state == "PROGRESS":
-                job.status = TrainingStatus.RUNNING
+        # Celery status check removed
+        # if hasattr(job, "celery_task_id") and self.celery_app:
+        #     ...
 
         return job
 
@@ -553,64 +530,6 @@ class ModelTrainer:
 
         return ensemble
 
-    def schedule_continuous_training(self, cron_schedule: str = "0 2 * * *"):
-        """Планирование непрерывного обучения через Celery"""
-
-        if not self.celery_app:
-            raise ValueError("Celery не инициализирован")
-
-        @self.celery_app.on_after_configure.connect
-        def setup_periodic_tasks(sender, **kwargs):
-            """Настройка периодических задач"""
-
-            sender.add_periodic_task(
-                crontab(hour=2, minute=0),  # Ежедневно в 2:00
-                self._retrain_all_models_task.s(),
-                name="retrain_all_models",
-            )
-
-            sender.add_periodic_task(
-                crontab(hour=6, minute=0),  # Каждые 6 часов
-                self._update_feature_store_task.s(),
-                name="update_feature_store",
-            )
-
-    @celery_app.task
-    def _train_model_task(self, job_id: str, **kwargs):
-        """Celery task для обучения модели"""
-
-        training_data = pd.DataFrame(kwargs["training_data"])
-
-        result = self.train_model(
-            model_name=kwargs["model_name"],
-            model_type=kwargs["model_type"],
-            features=kwargs["features"],
-            target=kwargs["target"],
-            training_data=training_data,
-            hyperparameters=kwargs.get("hyperparameters"),
-            preprocessing_config=kwargs.get("preprocessing_config"),
-            experiment_name=f"{kwargs['model_name']}_training",
-        )
-
-        return result
-
-    @celery_app.task
-    def _retrain_all_models_task(self):
-        """Переобучение всех моделей"""
-
-        self.logger.info("Запуск переобучения всех моделей")
-
-        # Здесь можно добавить логику переобучения всех моделей
-        # на основе новых данных
-
-        return {"status": "completed", "models_retrained": 0}
-
-    @celery_app.task
-    def _update_feature_store_task(self):
-        """Обновление Feature Store"""
-
-        self.logger.info("Обновление Feature Store")
-
-        # Обновление фичей для новых данных
-
-        return {"status": "completed", "features_updated": 0}
+    # Celery tasks removed
+    # def schedule_continuous_training(self, cron_schedule: str = "0 2 * * *"):
+    #     ...

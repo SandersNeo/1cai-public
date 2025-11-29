@@ -11,13 +11,12 @@
 Обеспечивает генерацию кода 1С с использованием LLM и шаблонов.
 """
 
-import asyncio
 import json
 import logging
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 # Импорт внутренних модулей
 from .llm.client import LLMClient

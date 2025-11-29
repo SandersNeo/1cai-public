@@ -1,6 +1,7 @@
 """
-Developer Dashboard Service
-Business logic for developer-specific metrics
+Сервис дашборда разработчика.
+
+Бизнес-логика для метрик, специфичных для разработчиков.
 """
 from datetime import datetime, timedelta
 from typing import Any, Dict
@@ -11,14 +12,13 @@ logger = StructuredLogger(__name__).logger
 
 
 class DeveloperService:
-    """Developer dashboard business logic"""
+    """Бизнес-логика дашборда разработчика."""
 
     async def get_dashboard(self) -> Dict[str, Any]:
-        """
-        Get developer dashboard data
+        """Получает данные для дашборда разработчика.
 
         Returns:
-            Developer dashboard data dictionary
+            Dict[str, Any]: Словарь с данными дашборда.
         """
         # Assigned tasks (mock)
         assigned_tasks = [

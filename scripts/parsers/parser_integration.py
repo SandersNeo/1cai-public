@@ -17,17 +17,15 @@ Parser Integration Module
 import asyncio
 import json
 import logging
-import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional
+from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 try:
-    from scripts.parsers.bsl_ast_parser import (BSLASTParser,
-                                                BSLLanguageServerClient)
+    from scripts.parsers.bsl_ast_parser import BSLASTParser
     from scripts.parsers.optimized_xml_parser import OptimizedXMLParser
     from src.services.configuration_knowledge_base import get_knowledge_base
 except ImportError as e:

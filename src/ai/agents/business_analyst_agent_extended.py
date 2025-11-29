@@ -798,7 +798,7 @@ class BusinessAnalystAgentExtended:
                 from src.ai.agents.process_modelling_with_graph import (
                     ProcessModellerWithGraph,
                 )
-                from src.ai.code_graph import InMemoryCodeGraphBackend
+                from src.ai.code_analysis.graph import InMemoryCodeGraphBackend
 
                 backend = InMemoryCodeGraphBackend()
                 process_modeller = ProcessModellerWithGraph(backend)
@@ -864,7 +864,7 @@ class BusinessAnalystAgentExtended:
                 from src.ai.agents.process_modelling_with_graph import (
                     ProcessModellerWithGraph,
                 )
-                from src.ai.code_graph import InMemoryCodeGraphBackend
+                from src.ai.code_analysis.graph import InMemoryCodeGraphBackend
 
                 backend = InMemoryCodeGraphBackend()
                 process_modeller = ProcessModellerWithGraph(backend)
@@ -922,7 +922,7 @@ class BusinessAnalystAgentExtended:
             from src.ai.agents.process_modelling_with_graph import (
                 ProcessModellerWithGraph,
             )
-            from src.ai.code_graph import InMemoryCodeGraphBackend
+            from src.ai.code_analysis.graph import InMemoryCodeGraphBackend
 
             backend = InMemoryCodeGraphBackend()
             process_modeller = ProcessModellerWithGraph(backend)
@@ -972,7 +972,7 @@ class BusinessAnalystAgentExtended:
         if use_graph:
             try:
                 from src.ai.agents.analytics_kpi_with_graph import KPIGeneratorWithGraph
-                from src.ai.code_graph import InMemoryCodeGraphBackend
+                from src.ai.code_analysis.graph import InMemoryCodeGraphBackend
 
                 backend = InMemoryCodeGraphBackend()
                 kpi_generator = KPIGeneratorWithGraph(backend)
@@ -1056,7 +1056,7 @@ class BusinessAnalystAgentExtended:
         if use_graph:
             try:
                 from src.ai.agents.traceability_with_graph import TraceabilityWithGraph
-                from src.ai.code_graph import InMemoryCodeGraphBackend
+                from src.ai.code_analysis.graph import InMemoryCodeGraphBackend
 
                 # Инициализировать backend (можно заменить на Neo4j в будущем)
                 backend = InMemoryCodeGraphBackend()
@@ -1152,7 +1152,7 @@ class BusinessAnalystAgentExtended:
                 from src.ai.agents.integrations_with_graph import (
                     IntegrationSyncWithGraph,
                 )
-                from src.ai.code_graph import InMemoryCodeGraphBackend
+                from src.ai.code_analysis.graph import InMemoryCodeGraphBackend
 
                 backend = InMemoryCodeGraphBackend()
                 IntegrationSyncWithGraph(backend)
@@ -1198,7 +1198,7 @@ class BusinessAnalystAgentExtended:
                 from src.ai.agents.integrations_with_graph import (
                     IntegrationSyncWithGraph,
                 )
-                from src.ai.code_graph import InMemoryCodeGraphBackend
+                from src.ai.code_analysis.graph import InMemoryCodeGraphBackend
 
                 backend = InMemoryCodeGraphBackend()
                 integration_sync = IntegrationSyncWithGraph(backend)
@@ -1254,7 +1254,7 @@ class BusinessAnalystAgentExtended:
                 from src.ai.agents.integrations_with_graph import (
                     IntegrationSyncWithGraph,
                 )
-                from src.ai.code_graph import InMemoryCodeGraphBackend
+                from src.ai.code_analysis.graph import InMemoryCodeGraphBackend
 
                 backend = InMemoryCodeGraphBackend()
                 integration_sync = IntegrationSyncWithGraph(backend)
@@ -1303,7 +1303,7 @@ class BusinessAnalystAgentExtended:
                 from src.ai.agents.integrations_with_graph import (
                     IntegrationSyncWithGraph,
                 )
-                from src.ai.code_graph import InMemoryCodeGraphBackend
+                from src.ai.code_analysis.graph import InMemoryCodeGraphBackend
 
                 backend = InMemoryCodeGraphBackend()
                 integration_sync = IntegrationSyncWithGraph(backend)
@@ -1351,7 +1351,7 @@ class BusinessAnalystAgentExtended:
                 from src.ai.agents.integrations_with_graph import (
                     IntegrationSyncWithGraph,
                 )
-                from src.ai.code_graph import InMemoryCodeGraphBackend
+                from src.ai.code_analysis.graph import InMemoryCodeGraphBackend
 
                 backend = InMemoryCodeGraphBackend()
                 integration_sync = IntegrationSyncWithGraph(backend)
@@ -1405,7 +1405,7 @@ class BusinessAnalystAgentExtended:
                 from src.ai.agents.enablement_with_graph import (
                     EnablementGeneratorWithGraph,
                 )
-                from src.ai.code_graph import InMemoryCodeGraphBackend
+                from src.ai.code_analysis.graph import InMemoryCodeGraphBackend
 
                 backend = InMemoryCodeGraphBackend()
                 enablement_generator = EnablementGeneratorWithGraph(backend)
@@ -1478,7 +1478,7 @@ class BusinessAnalystAgentExtended:
                 from src.ai.agents.enablement_with_graph import (
                     EnablementGeneratorWithGraph,
                 )
-                from src.ai.code_graph import InMemoryCodeGraphBackend
+                from src.ai.code_analysis.graph import InMemoryCodeGraphBackend
 
                 backend = InMemoryCodeGraphBackend()
                 enablement_generator = EnablementGeneratorWithGraph(backend)
@@ -1534,7 +1534,7 @@ class BusinessAnalystAgentExtended:
                 from src.ai.agents.enablement_with_graph import (
                     EnablementGeneratorWithGraph,
                 )
-                from src.ai.code_graph import InMemoryCodeGraphBackend
+                from src.ai.code_analysis.graph import InMemoryCodeGraphBackend
 
                 backend = InMemoryCodeGraphBackend()
                 enablement_generator = EnablementGeneratorWithGraph(backend)
@@ -1588,7 +1588,7 @@ class BusinessAnalystAgentExtended:
                 from src.ai.agents.enablement_with_graph import (
                     EnablementGeneratorWithGraph,
                 )
-                from src.ai.code_graph import InMemoryCodeGraphBackend
+                from src.ai.code_analysis.graph import InMemoryCodeGraphBackend
 
                 backend = InMemoryCodeGraphBackend()
                 enablement_generator = EnablementGeneratorWithGraph(backend)

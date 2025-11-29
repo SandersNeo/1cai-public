@@ -17,9 +17,9 @@ import logging
 import statistics
 import threading
 import time
-from collections import defaultdict, deque
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from collections import defaultdict
+from dataclasses import dataclass
+from typing import Any, Dict, List, Tuple
 
 
 @dataclass
@@ -104,7 +104,6 @@ class BaseRateLimitAlgorithm:
     
     def _reset_impl(self):
         """Внутренняя реализация сброса"""
-        pass
     
     def get_metrics(self) -> Dict[str, Any]:
         """Получить метрики алгоритма"""
@@ -671,7 +670,6 @@ def rate_limit(algorithm_name: str, manager: RateLimitManager, key_func=None):
 
 class RateLimitExceeded(Exception):
     """Исключение при превышении лимита запросов"""
-    pass
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: 1C AI Assistant EDT Plugin
 Bundle-SymbolicName: com.1cai.edt;singleton:=true
-Bundle-Version: 1.0.0.202511260637
+Bundle-Version: 1.0.0.202511290512
 Bundle-Activator: com.1cai.edt.Activator
 Bundle-Vendor: Enterprise 1C AI Team
 Require-Bundle: org.eclipse.ui,org.eclipse.core.runtime,org.eclipse.swt,

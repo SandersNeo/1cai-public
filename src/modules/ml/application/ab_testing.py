@@ -164,7 +164,7 @@ class ABTestSession(Base):
 class ABTestingDatabase:
     """БД для A/B тестов"""
 
-    def __init__(self, database_url: str):
+    def __init__(self, database_url: str) -> None:
         self.engine = create_engine(database_url)
         self.SessionLocal = sessionmaker(
             autocommit=False, autoflush=False, bind=self.engine)
@@ -209,7 +209,7 @@ class ABTestingDatabase:
         finally:
             session.close()
 
-    def update_test_metrics(self, test_id: str, result: ABTestResult):
+    def update_test_metrics(self, test_id: str, result: ABTestResult) -> None:
         """Обновление метрик теста"""
         session = self.SessionLocal()
         try:
@@ -233,7 +233,7 @@ class ABTestingDatabase:
         finally:
             session.close()
 
-    def log_test_session(self, test_id: str, session_data: Dict):
+    def log_test_session(self, test_id: str, session_data: Dict[str, Any]) -> None:
         """Логирование сессии теста"""
         session = self.SessionLocal()
         try:
@@ -286,7 +286,7 @@ class ABTestManager:
         database_url: str,
         mlflow_manager: Optional[MLFlowManager] = None,
         metrics_collector: Optional[MetricsCollector] = None,
-    ):
+    ) -> None:
         self.db = ABTestingDatabase(database_url)
         self.mlflow_manager = mlflow_manager or MLFlowManager()
         self.metrics_collector = metrics_collector or MetricsCollector()
@@ -354,7 +354,7 @@ class ABTestManager:
         actual_value: Optional[float] = None,
         user_feedback: Optional[float] = None,
         response_time: Optional[float] = None,
-    ):
+    ) -> None:
         """Логирование результата предсказания"""
 
         session = self.db.SessionLocal()
@@ -471,7 +471,7 @@ class ABTestManager:
 
         return min(max(power, 0.0), 1.0)
 
-    def _log_test_results_to_mlflow(self, test_id: str, result: ABTestResult):
+    def _log_test_results_to_mlflow(self, test_id: str, result: ABTestResult) -> None:
         """Логирование результатов в MLflow"""
 
         try:
@@ -525,7 +525,7 @@ class ABTestManager:
 
         return True, "Тест продолжается"
 
-    def promote_winning_model(self, test_id: str):
+    def promote_winning_model(self, test_id: str) -> MLPredictor:
         """Продвижение выигрышной модели в продакшен"""
 
         result = self.analyze_test_results(test_id)

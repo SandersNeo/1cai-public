@@ -5,7 +5,6 @@ import asyncio
 from datetime import datetime
 from typing import Any, Dict, List
 
-from src.ai.agents.code_review.bsl_parser import BSLParser
 from src.infrastructure.logging.structured_logging import StructuredLogger
 from src.services.openai_code_analyzer import get_openai_analyzer
 
@@ -18,7 +17,9 @@ class BSLTestGenerator:
     async def generate(self, code: str, include_edge_cases: bool = True, timeout: float = 30.0) -> List[Dict[str, Any]]:
         """Generate tests for BSL code"""
         try:
-            return await asyncio.wait_for(self._generate_internal(code, include_edge_cases), timeout=timeout)
+            return await asyncio.wait_for(
+                self._generate_internal(code, include_edge_cases), timeout=timeout
+            )
         except asyncio.TimeoutError:
             logger.warning(
                 "Timeout in BSL test generation",
@@ -36,6 +37,7 @@ class BSLTestGenerator:
     async def _generate_internal(self, code: str, include_edge_cases: bool) -> List[Dict[str, Any]]:
         """Internal generation logic"""
         tests = []
+        from src.ai.agents.code_review.bsl_parser import BSLParser
         parser = BSLParser()
 
         try:
@@ -87,7 +89,9 @@ class BSLTestGenerator:
         try:
             openai_analyzer = get_openai_analyzer()
             if getattr(openai_analyzer, "enabled", False):
-                ai_test_cases = await openai_analyzer.generate_test_cases(code=func["code"], function_name=func["name"])
+                ai_test_cases = await openai_analyzer.generate_test_cases(
+                    code=func["code"], function_name=func["name"]
+                )
                 if ai_test_cases:
                     for ai_case in ai_test_cases:
                         test_cases.append(

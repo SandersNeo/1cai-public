@@ -194,7 +194,6 @@ async def main():
     results = {}
     results["postgres_saver"] = test_postgres_saver()
     
-    import asyncio
     results["asyncpg"] = await test_asyncpg()
     results["psycopg2"] = test_psycopg2()
     

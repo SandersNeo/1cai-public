@@ -26,38 +26,24 @@ Comprehensive Test Suite для системы Rate Limiting
 """
 
 import asyncio
-import concurrent.futures
-import hashlib
-import json
-import math
 import os
-import pickle
 import random
-import re
 import sys
 import threading
 import time
-import warnings
-from collections import OrderedDict, defaultdict
 from contextlib import contextmanager
-from datetime import datetime, timedelta
-from functools import wraps
 from queue import Empty, Queue
-from typing import Any, Callable, Dict, List, Optional, Union
-from unittest.mock import MagicMock, Mock, patch
+from typing import Any, Dict, Union
+from unittest.mock import Mock
 
 # Добавляем путь для импортов
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pytest
-import redis
-import uvicorn
 from fastapi import FastAPI, Request
-from fastapi.middleware.base import BaseHTTPMiddleware
 from fastapi.testclient import TestClient
 
 # Import configuration
-from config import Environment, config
 
 # =============================================================================
 # FIXTURES И UTILITIES

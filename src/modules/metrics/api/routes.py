@@ -2,7 +2,7 @@
 Metrics API Routes
 """
 from datetime import datetime
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from slowapi import Limiter
@@ -24,7 +24,7 @@ def get_metrics_service() -> MetricsService:
 
 
 @router.get("/health", summary="Check API health")
-async def health_check():
+async def health_check() -> Dict[str, Any]:
     """Check Metrics API health"""
     return {
         "status": "healthy",
@@ -38,7 +38,7 @@ async def health_check():
 async def collect_metrics(
     request: MetricCollectionRequest,
     service: MetricsService = Depends(get_metrics_service),
-):
+) -> Dict[str, Any]:
     """
     Collect metrics from services
     """
@@ -56,7 +56,7 @@ async def get_metrics(
     hours_back: int = 24,
     limit: int = 1000,
     service: MetricsService = Depends(get_metrics_service),
-):
+) -> List[Dict[str, Any]]:
     """
     Get metrics with filtering
     """
@@ -77,7 +77,7 @@ async def get_performance_metrics(
     service_name: str,
     hours_back: int = 1,
     service: MetricsService = Depends(get_metrics_service),
-):
+) -> Dict[str, Any]:
     """
     Get performance metrics for service
     """
@@ -91,7 +91,7 @@ async def get_performance_metrics(
 @router.get("/dashboard", summary="Dashboard overview")
 async def get_dashboard_overview(
     service: MetricsService = Depends(get_metrics_service),
-):
+) -> Dict[str, Any]:
     """
     Get dashboard overview
     """
@@ -105,7 +105,7 @@ async def get_dashboard_overview(
 @router.get("/alerts", summary="Get active alerts")
 async def get_alerts(
     service: MetricsService = Depends(get_metrics_service),
-):
+) -> List[Dict[str, Any]]:
     """
     Get active alerts
     """
@@ -120,7 +120,7 @@ async def get_alerts(
 async def clear_old_metrics(
     days_back: int = 30,
     service: MetricsService = Depends(get_metrics_service),
-):
+) -> Dict[str, Any]:
     """
     Clear old metrics
     """
@@ -135,7 +135,7 @@ async def clear_old_metrics(
 @router.get("/stats", summary="Get stats")
 async def get_stats(
     service: MetricsService = Depends(get_metrics_service),
-):
+) -> Dict[str, Any]:
     """
     Get general stats
     """

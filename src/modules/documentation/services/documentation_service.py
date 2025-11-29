@@ -11,7 +11,7 @@ logger = StructuredLogger(__name__).logger
 class DocumentationService:
     """Service for generating documentation from code."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.generator = get_documentation_generator()
 
     async def generate(

@@ -2,7 +2,6 @@
 
 """Основной MCP-сервер, который проксирует запросы в 1С."""
 
-import asyncio
 import contextvars
 import logging
 from contextlib import asynccontextmanager

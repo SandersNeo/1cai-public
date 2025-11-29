@@ -1,7 +1,7 @@
 # [NEXUS IDENTITY] ID: 2068138963340429857 | DATE: 2025-11-19
 
 """
-Application service for Authentication module.
+Сервис приложения для модуля аутентификации.
 """
 
 import json
@@ -42,7 +42,7 @@ DEFAULT_DEMO_USERS = [
 
 
 class AuthService:
-    """Service for authenticating users and issuing JWT tokens."""
+    """Сервис для аутентификации пользователей и выдачи JWT токенов."""
 
     def __init__(self, settings: AuthSettings):
         self.settings = settings
@@ -125,6 +125,15 @@ class AuthService:
         return token_map
 
     def authenticate_user(self, username: str, password: str) -> Optional[UserCredentials]:
+        """Аутентифицирует пользователя по имени и паролю.
+
+        Args:
+            username: Имя пользователя.
+            password: Пароль (plain text).
+
+        Returns:
+            Optional[UserCredentials]: Объект пользователя если успех, иначе None.
+        """
         user = self._users.get(username)
         if not user:
             return None
@@ -133,8 +142,14 @@ class AuthService:
         return user
 
     def create_access_token(self, user: UserCredentials, expires_delta: Optional[timedelta] = None) -> str:
-        """
-        Create JWT access token with best practices
+        """Создает JWT токен доступа (access token).
+
+        Args:
+            user: Объект пользователя.
+            expires_delta: Время жизни токена (опционально).
+
+        Returns:
+            str: Закодированный JWT токен.
         """
         if expires_delta is None:
             expires_delta = timedelta(minutes=self.settings.access_token_expire_minutes)
@@ -159,8 +174,13 @@ class AuthService:
         return token
 
     def create_refresh_token(self, user: UserCredentials) -> str:
-        """
-        Create refresh token for token renewal
+        """Создает токен обновления (refresh token).
+
+        Args:
+            user: Объект пользователя.
+
+        Returns:
+            str: Закодированный JWT токен.
         """
         expires_delta = timedelta(days=7)  # Refresh tokens last 7 days
         now = datetime.now(timezone.utc)
@@ -179,8 +199,17 @@ class AuthService:
         return token
 
     def decode_token(self, token: str, token_type: str = "access") -> CurrentUser:
-        """
-        Decode and validate JWT token with best practices
+        """Декодирует и валидирует JWT токен.
+
+        Args:
+            token: JWT токен.
+            token_type: Ожидаемый тип токена (access/refresh).
+
+        Returns:
+            CurrentUser: Объект пользователя из токена.
+
+        Raises:
+            HTTPException: Если токен невалиден, истек или имеет неверный тип.
         """
         try:
             payload = jwt.decode(
@@ -257,6 +286,14 @@ class AuthService:
         )
 
     def authenticate_service_token(self, token: str) -> Optional[CurrentUser]:
+        """Аутентифицирует сервисный токен.
+
+        Args:
+            token: Сервисный токен (API Key).
+
+        Returns:
+            Optional[CurrentUser]: Объект сервисного пользователя если токен валиден.
+        """
         if not token:
             return None
         principal = self._service_tokens.get(token)

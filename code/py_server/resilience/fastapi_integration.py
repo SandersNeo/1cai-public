@@ -12,7 +12,7 @@ import logging
 import time
 from contextlib import asynccontextmanager
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List
 
 try:
     from fastapi import Depends, FastAPI, HTTPException, Request, Response
@@ -37,15 +37,13 @@ except ImportError:
     class Response:
         def __init__(self): pass
 
-from . import (CircuitBreakerConfig, DegradationLevel, RetryPolicyConfig,
-               get_circuit_breaker_manager, get_fallback_strategy_manager,
-               get_graceful_degradation_manager, get_retry_policy_manager)
-from .circuit_breaker import CircuitBreaker, CircuitBreakerOpenError
+from . import (CircuitBreakerConfig, DegradationLevel, get_circuit_breaker_manager,
+               get_fallback_strategy_manager, get_graceful_degradation_manager,
+               get_retry_policy_manager)
+from .circuit_breaker import CircuitBreakerOpenError
 from .config import (ServiceType, get_circuit_breaker_config,
                      get_retry_policy_config)
-from .fallback_strategies import FallbackStrategyManager, ServiceContext
-from .graceful_degradation import GracefulDegradationManager
-from .retry_policy import RetryPolicy
+from .fallback_strategies import ServiceContext
 
 logger = logging.getLogger("resilience.fastapi")
 

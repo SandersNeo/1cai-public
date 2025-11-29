@@ -6,9 +6,7 @@ Cleanup script for Enterprise 1C AI Development Stack
 Удаляет устаревшие, дублирующиеся и ненужные файлы
 """
 
-import os
 from pathlib import Path
-from typing import List
 
 # Файлы для удаления
 FILES_TO_DELETE = [

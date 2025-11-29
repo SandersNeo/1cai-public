@@ -11,9 +11,9 @@ import json
 import logging
 import re
 import statistics
-from collections import Counter, defaultdict
+from collections import Counter
 from dataclasses import asdict, dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 
 @dataclass

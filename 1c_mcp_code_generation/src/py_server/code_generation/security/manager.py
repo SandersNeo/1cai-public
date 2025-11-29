@@ -10,13 +10,11 @@ Security Manager для 1C AI MCP Code Generation
 Дата: 30.10.2025
 """
 
-import hashlib
-import json
 import logging
 import re
 from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 

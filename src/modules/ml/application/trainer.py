@@ -76,7 +76,7 @@ class TrainingJob:
 class DataPreprocessor:
     """Предобработка данных для обучения"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.scalers = {}
         self.encoders = {}
         self.feature_selectors = {}
@@ -180,7 +180,7 @@ class ModelTrainer:
         mlflow_manager: Optional[MLFlowManager] = None,
         metrics_collector: Optional[MetricsCollector] = None,
         celery_app: Optional[Celery] = None,
-    ):
+    ) -> None:
         self.mlflow_manager = mlflow_manager or MLFlowManager()
         self.metrics_collector = metrics_collector or MetricsCollector()
         self.celery_app = celery_app
@@ -549,7 +549,7 @@ class ModelTrainer:
             raise ValueError("Celery не инициализирован")
 
         @self.celery_app.on_after_configure.connect
-        def setup_periodic_tasks(sender, **kwargs):
+        def setup_periodic_tasks(sender: Any, **kwargs: Any) -> None:
             """Настройка периодических задач"""
 
             sender.add_periodic_task(
@@ -565,7 +565,7 @@ class ModelTrainer:
             )
 
     @celery_app.task
-    def _train_model_task(self, job_id: str, **kwargs):
+    def _train_model_task(self, job_id: str, **kwargs: Any) -> Dict[str, Any]:
         """Celery task для обучения модели"""
 
         training_data = pd.DataFrame(kwargs["training_data"])
@@ -584,7 +584,7 @@ class ModelTrainer:
         return result
 
     @celery_app.task
-    def _retrain_all_models_task(self):
+    def _retrain_all_models_task(self) -> Dict[str, Any]:
         """Переобучение всех моделей"""
 
         self.logger.info("Запуск переобучения всех моделей")
@@ -595,7 +595,7 @@ class ModelTrainer:
         return {"status": "completed", "models_retrained": 0}
 
     @celery_app.task
-    def _update_feature_store_task(self):
+    def _update_feature_store_task(self) -> Dict[str, Any]:
         """Обновление Feature Store"""
 
         self.logger.info("Обновление Feature Store")

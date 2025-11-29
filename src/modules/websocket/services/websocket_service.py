@@ -14,7 +14,7 @@ logger = StructuredLogger(__name__).logger
 class WebSocketService:
     """Service for WebSocket operations."""
 
-    async def handle_connection(self, websocket: WebSocket, user_id: str):
+    async def handle_connection(self, websocket: WebSocket, user_id: str) -> None:
         """Handle WebSocket connection lifecycle."""
         # Input validation
         if not user_id or len(user_id) > 200:

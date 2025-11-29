@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from src.ai.orchestrator import orchestrator
+
 from src.api.auth import get_current_user
 from src.utils.structured_logging import StructuredLogger
 
@@ -22,10 +22,8 @@ class CouncilQueryRequest(BaseModel):
     """Request for council query"""
 
     query: str = Field(..., description="User query")
-    context: Optional[Dict[str, Any]] = Field(
-        default=None, description="Optional context")
-    council_config: Optional[Dict[str, Any]] = Field(
-        default=None, description="Optional council configuration")
+    context: Optional[Dict[str, Any]] = Field(default=None, description="Optional context")
+    council_config: Optional[Dict[str, Any]] = Field(default=None, description="Optional council configuration")
 
 
 class CouncilQueryResponse(BaseModel):
@@ -68,7 +66,9 @@ async def query_with_council(request: CouncilQueryRequest, current_user: Dict = 
             f"Council query from user {current_user.get('username')}", extra={"query_length": len(request.query)}
         )
 
-        result = await orchestrator.process_query_with_council(
+        from src.ai.orchestrator import get_orchestrator
+
+        result = await get_orchestrator().process_query_with_council(
             query=request.query, context=request.context, council_config=request.council_config
         )
 
@@ -113,7 +113,9 @@ async def council_health():
 
     Returns status of council orchestrator.
     """
-    if orchestrator.council is None:
+    from src.ai.orchestrator import get_orchestrator
+
+    if get_orchestrator().council is None:
         return {"status": "unavailable", "message": "Council orchestrator not initialized"}
 
     return {"status": "healthy", "message": "Council orchestrator ready"}

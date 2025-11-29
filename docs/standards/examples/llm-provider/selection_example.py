@@ -11,8 +11,7 @@
 
 import asyncio
 
-from src.ai.llm_provider_abstraction import (LLMProviderAbstraction,
-                                             ModelProfile)
+from src.ai.llm_provider_abstraction import LLMProviderAbstraction
 
 
 async def llm_provider_selection_example():

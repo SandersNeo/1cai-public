@@ -13,19 +13,16 @@
 - Health checks для всех компонентов
 """
 
-import asyncio
 import functools
 import json
 import logging
 import threading
 import time
-import weakref
 from collections import defaultdict, deque
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)

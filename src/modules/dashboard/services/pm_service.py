@@ -1,6 +1,7 @@
 """
-PM Dashboard Service
-Business logic for project management metrics
+Сервис дашборда менеджера проектов (PM).
+
+Бизнес-логика для метрик управления проектами.
 """
 from datetime import datetime, timedelta
 from typing import Any, Dict
@@ -13,17 +14,16 @@ logger = StructuredLogger(__name__).logger
 
 
 class PMService:
-    """PM dashboard business logic"""
+    """Бизнес-логика дашборда PM."""
 
     async def get_dashboard(self, conn: asyncpg.Connection) -> Dict[str, Any]:
-        """
-        Get PM dashboard data
+        """Получает данные для дашборда PM.
 
         Args:
-            conn: Database connection
+            conn: Подключение к БД.
 
         Returns:
-            PM dashboard data dictionary
+            Dict[str, Any]: Словарь с данными дашборда.
         """
         # Projects summary
         projects_summary = {

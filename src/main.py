@@ -108,7 +108,7 @@ logger = structured_logger.logger
 
 # MCP Server (for Cursor/VSCode integration) - optional
 try:
-    from src.ai.mcp_server import app as mcp_app
+    from src.ai.mcp.server import app as mcp_app
 
     MCP_AVAILABLE = True
 except (ImportError, Exception) as e:

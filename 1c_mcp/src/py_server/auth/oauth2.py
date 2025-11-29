@@ -10,7 +10,6 @@ import secrets
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Dict, Optional, Tuple
-from urllib.parse import urlencode
 
 logger = logging.getLogger(__name__)
 

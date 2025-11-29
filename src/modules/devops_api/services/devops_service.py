@@ -1,9 +1,11 @@
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from src.ai.agents.devops_agent_extended import DevOpsAgentExtended
-from src.ai.self_evolving_ai import SelfEvolvingAI
 from src.utils.structured_logging import StructuredLogger
+
+if TYPE_CHECKING:
+    from src.ai.agents.devops_agent_extended import DevOpsAgentExtended
+    from src.ai.self_evolving_ai import SelfEvolvingAI
 
 logger = StructuredLogger(__name__).logger
 
@@ -12,11 +14,12 @@ class DevOpsService:
     """Service for DevOps operations."""
 
     def __init__(self):
-        self._agent: Optional[DevOpsAgentExtended] = None
+        self._agent: Optional["DevOpsAgentExtended"] = None
 
     @property
-    def agent(self) -> DevOpsAgentExtended:
+    def agent(self) -> "DevOpsAgentExtended":
         if self._agent is None:
+            from src.ai.agents.devops_agent_extended import DevOpsAgentExtended
             self._agent = DevOpsAgentExtended()
         return self._agent
 
@@ -65,11 +68,12 @@ class AIEvolutionService:
     """Service for Self-Evolving AI operations."""
 
     def __init__(self):
-        self._ai: Optional[SelfEvolvingAI] = None
+        self._ai: Optional["SelfEvolvingAI"] = None
 
     @property
-    def ai(self) -> SelfEvolvingAI:
+    def ai(self) -> "SelfEvolvingAI":
         if self._ai is None:
+            from src.ai.self_evolving_ai import SelfEvolvingAI
             self._ai = SelfEvolvingAI(llm_provider=None)
         return self._ai
 

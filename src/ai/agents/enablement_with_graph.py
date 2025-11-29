@@ -14,7 +14,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from src.ai.code_graph import CodeGraphBackend, NodeKind
+from src.ai.code_analysis.graph import CodeGraphBackend, NodeKind
 
 logger = logging.getLogger(__name__)
 

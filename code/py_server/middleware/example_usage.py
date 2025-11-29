@@ -15,7 +15,7 @@ import asyncio
 import logging
 
 # Импорт иерархии исключений
-from errors.base import McpError, ServiceUnavailableError
+from errors.base import ServiceUnavailableError
 from errors.mcp import McpToolNotFoundError
 from errors.transport import TransportError
 from errors.validation import ValidationError
@@ -23,9 +23,8 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 # Импорт middleware
-from middleware import (ErrorResponse, Language, create_error_middleware,
-                        get_correlation_id, log_with_correlation,
-                        trace_operation)
+from middleware import (ErrorResponse, create_error_middleware, get_correlation_id,
+                        log_with_correlation, trace_operation)
 
 # Настройка логирования
 logging.basicConfig(

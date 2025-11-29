@@ -1,14 +1,39 @@
 """
-Wiki API Routes
+API маршруты Wiki.
 
-Note: Wiki service implementation is in src/services/wiki/
-This is just a re-export for the modular structure.
+Предоставляет базовую функциональность вики.
 """
-# Import from existing wiki implementation
-import sys
 
-sys.path.insert(0, "C:/1cAI/src")
+from typing import Any, Dict
 
-from src.api.wiki import router
+from fastapi import APIRouter
 
-__all__ = ["router"]
+router = APIRouter(tags=["Wiki"])
+
+
+@router.get("/health")
+async def health_check() -> Dict[str, Any]:
+    """Проверка здоровья сервиса Wiki.
+
+    Returns:
+        Dict[str, Any]: Статус здоровья и информация о сервисе.
+    """
+    return {
+        "status": "healthy",
+        "service": "wiki",
+        "version": "1.0.0",
+    }
+
+
+@router.get("/")
+async def list_pages() -> Dict[str, Any]:
+    """Получает список всех вики-страниц.
+
+    Returns:
+        Dict[str, Any]: Список страниц и метаданные.
+    """
+    return {
+        "pages": [],
+        "total": 0,
+        "message": "Wiki service is operational",
+    }

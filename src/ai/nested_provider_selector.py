@@ -9,45 +9,23 @@ Inspired by Hope architecture (unbounded in-context learning).
 
 import hashlib
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
 
 from src.ai.llm_provider_abstraction import (
     LLMProviderAbstraction,
     ModelProfile,
     QueryType,
 )
-from src.ml.continual_learning.cms import ContinuumMemorySystem
-from src.ml.continual_learning.memory_level import MemoryLevel
-from src.ml.continual_learning.meta_optimizer import SelfReferencialOptimizer
 from src.utils.structured_logging import StructuredLogger
+
+if TYPE_CHECKING:
+    from src.ml.continual_learning.cms import ContinuumMemorySystem
+    from src.ml.continual_learning.meta_optimizer import SelfReferencialOptimizer
 
 logger = StructuredLogger(__name__).logger
 
 
-class QueryMemoryLevel(MemoryLevel):
-    """Memory level for query history"""
-
-    def encode(self, data: Any, context: Dict):
-        """Encode query as simple hash-based embedding"""
-        self.stats.total_encodes += 1
-
-        # Simple encoding: hash query text to vector
-        if isinstance(data, str):
-            query_hash = hashlib.sha256(data.encode()).digest()
-            # Convert to float vector
-            embedding = [float(b) / 255.0 for b in query_hash[:32]]
-        elif isinstance(data, dict):
-            # Hash query text from dict
-            query_text = data.get("query", str(data))
-            query_hash = hashlib.sha256(query_text.encode()).digest()
-            embedding = [float(b) / 255.0 for b in query_hash[:32]]
-        else:
-            # Fallback: random
-            embedding = [0.5] * 32
-
-        import numpy as np
-
-        return np.array(embedding, dtype="float32")
+# QueryMemoryLevel moved to _create_query_cms to avoid circular/heavy imports
 
 
 class NestedProviderSelector:
@@ -98,8 +76,38 @@ class NestedProviderSelector:
 
         logger.info("Created NestedProviderSelector with 4-level query memory")
 
-    def _create_query_cms(self) -> ContinuumMemorySystem:
+    def _create_query_cms(self) -> "ContinuumMemorySystem":
         """Create CMS for query history"""
+        # Lazy import
+        from src.ml.continual_learning.cms import ContinuumMemorySystem
+        from src.ml.continual_learning.memory_level import MemoryLevel
+        
+        # Local definition of QueryMemoryLevel to avoid top-level dependency
+        class QueryMemoryLevel(MemoryLevel):
+            """Memory level for query history"""
+        
+            def encode(self, data: Any, context: Dict):
+                """Encode query as simple hash-based embedding"""
+                self.stats.total_encodes += 1
+        
+                # Simple encoding: hash query text to vector
+                if isinstance(data, str):
+                    query_hash = hashlib.sha256(data.encode()).digest()
+                    # Convert to float vector
+                    embedding = [float(b) / 255.0 for b in query_hash[:32]]
+                elif isinstance(data, dict):
+                    # Hash query text from dict
+                    query_text = data.get("query", str(data))
+                    query_hash = hashlib.sha256(query_text.encode()).digest()
+                    embedding = [float(b) / 255.0 for b in query_hash[:32]]
+                else:
+                    # Fallback: random
+                    embedding = [0.5] * 32
+        
+                import numpy as np
+        
+                return np.array(embedding, dtype="float32")
+
         levels = [
             ("immediate", 1, 0.01),  # Last 10 queries
             ("session", 10, 0.001),  # Current session

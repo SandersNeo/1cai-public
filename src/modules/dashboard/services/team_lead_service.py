@@ -1,6 +1,7 @@
 """
-Team Lead Dashboard Service
-Business logic for team performance and code quality metrics
+Сервис дашборда тимлида.
+
+Бизнес-логика для метрик производительности команды и качества кода.
 """
 from typing import Any, Dict
 
@@ -12,17 +13,16 @@ logger = StructuredLogger(__name__).logger
 
 
 class TeamLeadService:
-    """Team Lead dashboard business logic"""
+    """Бизнес-логика дашборда тимлида."""
 
     async def get_dashboard(self, conn: asyncpg.Connection) -> Dict[str, Any]:
-        """
-        Get team lead dashboard data
+        """Получает данные для дашборда тимлида.
 
         Args:
-            conn: Database connection
+            conn: Подключение к БД.
 
         Returns:
-            Team Lead dashboard data dictionary
+            Dict[str, Any]: Словарь с данными дашборда.
         """
         try:
             # Get tenant (for now, first one)
@@ -297,7 +297,7 @@ class TeamLeadService:
             return self._get_demo_dashboard()
 
     def _get_demo_dashboard(self) -> Dict[str, Any]:
-        """Demo data for team lead dashboard"""
+        """Возвращает демонстрационные данные для дашборда тимлида."""
         return {
             "team_metrics": {
                 "velocity": 75,

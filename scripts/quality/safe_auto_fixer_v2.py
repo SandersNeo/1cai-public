@@ -20,7 +20,6 @@ Target: Fix ~1500 issues safely
 import subprocess
 from pathlib import Path
 import re
-import json
 
 
 class SafeAutoFixer:
