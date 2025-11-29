@@ -36,6 +36,12 @@ function App() {
           {/* Integrations page */}
           <Route path="/integrations" element={<IntegrationsPage />} />
 
+          {/* New Agent Routes */}
+          <Route path="/scenarios" element={<ScenarioListPage />} />
+          <Route path="/scenarios/:id" element={<ScenarioDetailPage />} />
+          <Route path="/technical-writer" element={<DocGenerationPage />} />
+          <Route path="/security" element={<SecurityScanPage />} />
+
           {/* Placeholder routes (will be implemented) */}
           <Route
             path="/customers"

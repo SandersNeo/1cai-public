@@ -94,6 +94,7 @@ from src.modules.tenant_management.api.routes import router as tenant_router
 from src.modules.test_generation.api.routes import router as test_generation_router
 from src.modules.websocket.api.routes import router as websocket_router
 from src.modules.wiki.api.routes import router as wiki_router
+from src.modules.ml.api.routes import router as ml_router
 from src.services.health_checker import get_health_checker
 from src.utils.error_handling import register_error_handlers
 
@@ -587,6 +588,7 @@ routers = [
     ("scenario_hub", scenario_hub_router),
     ("technical_writer", technical_writer_router),
     ("security", security_router),
+    ("ml", ml_router),
 ]
 
 # Try to import and add revolutionary router

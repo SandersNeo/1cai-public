@@ -19,6 +19,26 @@
 ## 📰 Последние обновления
 
 <details open>
+<summary><strong>🎉 2025-11-30: Frontend Integration & Full Stack Completion</strong></summary>
+
+**Завершена интеграция фронтенда для новых AI-агентов.**
+Теперь управление агентами доступно через веб-интерфейс `frontend-portal`.
+
+**Ключевые изменения:**
+- 🖥️ **Frontend Portal**:
+    - **Scenario Hub**: Управление сценариями, запуск и просмотр результатов (`/scenarios`).
+    - **Technical Writer**: Генерация документации и диаграмм через UI (`/technical-writer`).
+    - **Security Officer**: Запуск сканирования и дашборд уязвимостей (`/security`).
+- 🔌 **API Integration**:
+    - Реализованы TypeScript-клиенты для всех новых сервисов.
+    - Настроен CORS и безопасное взаимодействие с Backend API.
+
+**Результат:**
+Полный цикл взаимодействия с системой: от Backend-логики до пользовательского интерфейса.
+
+</details>
+
+<details>
 <summary><strong>🎉 2025-11-30: Deep Agent Analysis & Architecture 2.0</strong></summary>
 
 **Завершена масштабная модернизация AI-агентов.**
@@ -170,8 +190,8 @@ graph TD
 | 2 | Business Analyst | `/api/v1/ba_sessions` | ✅ 92% | AI Агенты |
 | 3 | QA Engineer | `/api/v1/test_generation` | ✅ 90% | AI Агенты |
 | 4 | Architect | `/api/v1/graph` | ✅ 90% | AI Агенты |
-| 5 | Security Officer | `/api/v1/security` | ✅ Beta | AI Агенты |
-| 6 | Technical Writer | `/api/v1/technical_writer` | ✅ Beta | AI Агенты |
+| 5 | Security Officer | `/api/v1/security` | ✅ Ready | AI Агенты |
+| 6 | Technical Writer | `/api/v1/technical_writer` | ✅ Ready | AI Агенты |
 | 7 | Tech Log Analyzer | `/api/v1/tech_log` | ✅ Beta | AI Агенты |
 | 8 | RAS Monitor | `/api/v1/ras_monitor` | ✅ Beta | AI Агенты |
 | 9 | SQL Optimizer | `/api/v1/sql_optimizer` | ✅ Beta | AI Агенты |
@@ -200,10 +220,10 @@ graph TD
 | 32 | Auth | `/api/v1/auth` | ✅ Ready | Infrastructure |
 | 33 | Risk Management | `/api/v1/risk` | ✅ Ready | Infrastructure |
 | 34 | Revolutionary | `/api/v1/revolutionary` | ✅ Ready | Infrastructure |
-| 35 | Scenario Hub | `/api/v1/scenario_hub` | ✅ Beta | Infrastructure |
+| 35 | Scenario Hub | `/api/v1/scenario_hub` | ✅ Ready | Infrastructure |
 | 36 | GitHub Integration | `/api/v1/github` | ✅ Ready | Integrations |
-| 37 | ML Models | planned | ⚠️ Dev | Integrations |
-| 38 | Project Manager | `/api/v1/project_manager` | ✅ Beta | Integrations |
+| 37 | ML Models | `/api/v1/ml` | ✅ Ready | Integrations |
+| 38 | Project Manager | `/api/v1/project_manager` | ✅ Ready | Integrations |
 | 39 | Shared Memory | internal | ✅ Ready | Infrastructure |
 
 **Легенда:**

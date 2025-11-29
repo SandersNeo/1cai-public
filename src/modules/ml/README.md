@@ -1,20 +1,34 @@
 # ML Module
 
-# ML Module
-
 ## Overview
 
 Machine Learning Continuous Improvement API - metrics collection, model training, A/B testing.
 
 ## Status
 
-⚠️ **Partial Refactoring**: Domain models extracted. Services remain in original file due to complexity (978 lines, multiple interdependent services).
+✅ **Refactored**: Clean Architecture implementation.
+- **Domain**: `domain/models.py`
+- **Services**: `services/` (Metrics, Training, ABTest, MLFlow)
+- **API**: `api/routes.py`
 
 ## Architecture
 
-- **Domain Layer**: ✅ `domain/models.py` - Complete Pydantic models
-- **Services Layer**: ⚠️ Remains in `src/api/ml.py` (MetricsCollector, ModelTrainer, ABTestManager, MLFlowManager)
-- **API Layer**: ⚠️ Remains in `src/api/ml.py` (30+ endpoints)
+The module follows Clean Architecture principles:
+
+```
+src/modules/ml/
+├── domain/
+│   └── models.py          # Pydantic models
+├── services/
+│   ├── metrics_service.py # Metrics collection facade
+│   ├── training_service.py# Model training facade
+│   ├── ab_test_service.py # A/B testing facade
+│   └── mlflow_service.py  # MLflow integration facade
+├── api/
+│   ├── routes.py          # FastAPI endpoints
+│   └── dependencies.py    # Dependency injection
+└── tests/                 # Tests
+```
 
 ## Features
 
@@ -38,15 +52,3 @@ Machine Learning Continuous Improvement API - metrics collection, model training
 from src.modules.ml import router
 app.include_router(router)
 ```
-
-## Migration Plan
-
-Future refactoring will extract to dedicated service files:
-
-1. `services/metrics_service.py` - MetricsCollector
-2. `services/training_service.py` - ModelTrainer
-3. `services/ab_test_service.py` - ABTestManager
-4. `services/mlflow_service.py` - MLFlowManager
-5. `api/routes.py` - All FastAPI routes
-
-**Reason for Partial Migration**: The ML module has 978 lines with complex interdependencies between 4 major services and 30+ endpoints. Full extraction requires careful dependency management and testing.
