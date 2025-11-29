@@ -81,6 +81,10 @@ from src.modules.gateway.api.routes import router as gateway_router
 from src.modules.github_integration.api.routes import router as github_router
 from src.modules.graph_api.api.routes import router as graph_router
 from src.modules.knowledge_base.api.routes import router as knowledge_base_router
+from src.modules.project_manager.api.routes import router as project_manager_router
+from src.modules.scenario_hub.api.routes import router as scenario_hub_router
+from src.modules.technical_writer.api.routes import router as technical_writer_router
+from src.modules.security.api.routes import router as security_router
 
 # Marketplace & Analytics
 from src.modules.marketplace.api.routes import router as marketplace_router
@@ -579,6 +583,10 @@ routers = [
     ("ba_sessions", ba_sessions_router),
     ("admin_dashboard", admin_dashboard_router),
     ("assistants", assistants_router),
+    ("project_manager", project_manager_router),
+    ("scenario_hub", scenario_hub_router),
+    ("technical_writer", technical_writer_router),
+    ("security", security_router),
 ]
 
 # Try to import and add revolutionary router

@@ -50,6 +50,12 @@ class EventType(str, Enum):
     AI_AGENT_FAILED = "ai.agent.failed"
     AI_AGENT_EVOLVED = "ai.agent.evolved"
 
+    # Agent Domain Events
+    RISK_DETECTED = "agent.pm.risk_detected"
+    VULNERABILITY_FOUND = "agent.security.vulnerability_found"
+    DOC_REQUESTED = "agent.tw.doc_requested"
+    DOC_GENERATED = "agent.tw.doc_generated"
+
     # System Events
     SYSTEM_HEALTH_CHECK = "system.health.check"
     SYSTEM_ERROR = "system.error"

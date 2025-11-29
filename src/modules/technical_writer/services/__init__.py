@@ -12,10 +12,14 @@ from src.modules.technical_writer.services.release_notes_generator import (
 from src.modules.technical_writer.services.user_guide_generator import (
     UserGuideGenerator,
 )
+from src.modules.technical_writer.services.ast_doc_generator import ASTUserGuideGenerator
+from src.modules.technical_writer.services.mermaid_generator import MermaidGenerator
 
 __all__ = [
     "APIDocGenerator",
     "UserGuideGenerator",
     "ReleaseNotesGenerator",
     "CodeDocGenerator",
+    "ASTUserGuideGenerator",
+    "MermaidGenerator",
 ]

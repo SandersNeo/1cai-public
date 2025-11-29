@@ -21,6 +21,9 @@ class VulnerabilityType(str, Enum):
     INSECURE_DESERIALIZATION = "insecure_deserialization"
     XXE = "xxe"
     SSRF = "ssrf"
+    CODE_INJECTION = "code_injection"
+    INSECURE_PROTOCOL = "insecure_protocol"
+    DESERIALIZATION = "deserialization"
 
 
 class Severity(str, Enum):

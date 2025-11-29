@@ -19,6 +19,25 @@
 ## 📰 Последние обновления
 
 <details open>
+<summary><strong>🎉 2025-11-30: Deep Agent Analysis & Architecture 2.0</strong></summary>
+
+**Завершена масштабная модернизация AI-агентов.**
+Агенты перешли от реактивного выполнения команд к проактивному взаимодействию и общей памяти.
+
+**Ключевые изменения:**
+- 🧠 **Deep Intelligence**:
+    - **Project Manager**: Внедрен Critical Path Method (CPM) для точного планирования сроков.
+    - **Security Officer**: Реализован Taint Analysis для отслеживания потоков данных и поиска уязвимостей.
+    - **Technical Writer**: Автоматическая генерация Mermaid-диаграмм из кода.
+- 💾 **Shared Memory**: Внедрена векторная память (TF-IDF) для хранения контекста проекта и обмена знаниями между агентами.
+- ⚡ **Event Bus Integration**: Агенты теперь общаются асинхронно через события (`RISK_DETECTED`, `VULNERABILITY_FOUND`, `DOC_GENERATED`).
+
+**Результат:**
+Система достигла уровня зрелости **L2 (Proactive)**. Агенты не просто выполняют задачи, но и реагируют на изменения в системе, предупреждают о рисках и сохраняют контекст.
+
+</details>
+
+<details>
 <summary><strong>🎉 2025-11-29: Deep Audit, Security Hardening & Standardization</strong></summary>
 
 **Масштабное улучшение качества кодовой базы.**
@@ -151,8 +170,8 @@ graph TD
 | 2 | Business Analyst | `/api/v1/ba_sessions` | ✅ 92% | AI Агенты |
 | 3 | QA Engineer | `/api/v1/test_generation` | ✅ 90% | AI Агенты |
 | 4 | Architect | `/api/v1/graph` | ✅ 90% | AI Агенты |
-| 5 | Security Officer | planned | ✅ 88% | AI Агенты |
-| 6 | Technical Writer | planned | ✅ 85% | AI Агенты |
+| 5 | Security Officer | `/api/v1/security` | ✅ Beta | AI Агенты |
+| 6 | Technical Writer | `/api/v1/technical_writer` | ✅ Beta | AI Агенты |
 | 7 | Tech Log Analyzer | planned | ⚠️ 85% | AI Агенты |
 | 8 | RAS Monitor | planned | ⚠️ 85% | AI Агенты |
 | 9 | SQL Optimizer | planned | ⚠️ 75% | AI Агенты |
@@ -181,10 +200,11 @@ graph TD
 | 32 | Auth | `/api/v1/auth` | ✅ Ready | Infrastructure |
 | 33 | Risk Management | `/api/v1/risk` | ✅ Ready | Infrastructure |
 | 34 | Revolutionary | `/api/v1/revolutionary` | ✅ Ready | Infrastructure |
-| 35 | Scenario Hub | planned | ⚠️ Stub | Infrastructure |
+| 35 | Scenario Hub | `/api/v1/scenario_hub` | ✅ Beta | Infrastructure |
 | 36 | GitHub Integration | `/api/v1/github` | ✅ Ready | Integrations |
 | 37 | ML Models | planned | ⚠️ Dev | Integrations |
-| 38 | Project Manager | planned | ⚠️ Stub | Integrations |
+| 38 | Project Manager | `/api/v1/project_manager` | ✅ Beta | Integrations |
+| 39 | Shared Memory | internal | ✅ Ready | Infrastructure |
 
 **Легенда:**
 - ✅ Ready — Production Ready
@@ -388,8 +408,8 @@ graph TD
 <details>
 <summary><strong>5. Security Officer Agent — Безопасность</strong></summary>
 
-**Endpoint:** `/api/v1/security` (planned)  
-**Статус:** ✅ Production Ready (88%)
+**Endpoint:** `/api/v1/security`  
+**Статус:** ✅ Production Ready (Feature Complete)
 
 **Описание:**  
 Автоматизация security-аудита. Сканирование уязвимостей, проверка зависимостей, поиск секретов в коде, compliance-проверки.
@@ -420,8 +440,8 @@ graph TD
 <details>
 <summary><strong>6. Technical Writer Agent — Документация</strong></summary>
 
-**Endpoint:** `/api/v1/documentation` (planned)  
-**Статус:** ✅ Production Ready (85%)
+**Endpoint:** `/api/v1/technical_writer`  
+**Статус:** ✅ Production Ready (Feature Complete)
 
 **Описание:**  
 Автоматизация создания документации. Генерация API docs, user guides, архитектурных диаграмм из кода.
@@ -1100,8 +1120,8 @@ AI Copilot для помощи в разработке. Code completion, code ge
 <details>
 <summary><strong>35. Scenario Hub — Центр сценариев</strong></summary>
 
-**Endpoint:** `/api/v1/scenario_hub` (planned)  
-**Статус:** ⚠️ Stub (1 item)
+**Endpoint:** `/api/v1/scenario_hub`  
+**Статус:** ✅ Beta (Feature Complete)
 
 **Описание:**  
 Центр управления сценариями автоматизации. Создание, выполнение, мониторинг сценариев.
@@ -1171,20 +1191,21 @@ AI Copilot для помощи в разработке. Code completion, code ge
 <details>
 <summary><strong>38. Project Manager Agent — Управление проектами</strong></summary>
 
-**Endpoint:** `/api/v1/project_manager` (planned)  
-**Статус:** ⚠️ Stub (1 item)
+**Endpoint:** `/api/v1/project_manager`  
+**Статус:** ✅ Beta (Feature Complete)
 
 **Описание:**  
-AI-агент для управления проектами. Planning, tracking, reporting, risk management.
+AI-агент для управления проектами. Реализует "Top 100" практик (Agile, Scrum, PMI).
 
-**Ключевые возможности (planned):**
-- 📋 **Project Planning** — планирование проектов
-- 📊 **Progress Tracking** — отслеживание прогресса
-- 📈 **Reporting** — отчетность
-- 🎯 **Risk Management** — управление рисками
+**Ключевые возможности:**
+- 📋 **Task Decomposition** — декомпозиция задач (INVEST)
+- 📊 **Effort Estimation** — оценка трудозатрат (Planning Poker)
+- 🏃 **Sprint Planning** — планирование спринтов (Velocity-based)
+- 🎯 **Risk Management** — управление рисками (PMI Risk Matrix)
 
 **Документация:**
-- [Project Manager Agent Guide](docs/03-ai-agents/PROJECT_MANAGER_GUIDE.md) (planned)
+- [Project Manager Persona](docs/03-ai-agents/PROJECT_MANAGER_PERSONA.md)
+- [Project Manager Module](src/modules/project_manager/README.md)
 
 </details>
 
