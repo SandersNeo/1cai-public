@@ -10,28 +10,6 @@
 
 Это запустит:
 
-- 📦 Docker инфраструктуру (PostgreSQL, Redis, Qdrant, Neo4j)
-- 🐍 Backend (FastAPI на порту 8000)
-- ⚛️ Frontend (Vite на порту 3001)
-
-### Запустить отдельные компоненты
-
-**Backend:**
-
-```powershell
-.\start-backend.ps1
-```
-
-**Frontend:**
-
-```powershell
-.\start-frontend.ps1
-```
-
-### Остановить всё
-
-```powershell
-.\stop-all.ps1
 ```
 
 ---
