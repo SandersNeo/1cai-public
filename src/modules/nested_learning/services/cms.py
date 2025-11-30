@@ -15,9 +15,9 @@ import numpy as np
 
 from src.utils.structured_logging import StructuredLogger
 
-from .memory_level import MemoryLevel, MemoryLevelConfig
-from .types import CMSStats, MemoryKey, SurpriseScore
-from .vector_index import VectorIndex
+from src.modules.nested_learning.services.memory_level import MemoryLevel, MemoryLevelConfig
+from src.modules.nested_learning.domain.types import CMSStats, MemoryKey, SurpriseScore, MemoryEntry
+from src.modules.nested_learning.infrastructure.vector_index import VectorIndex
 
 logger = StructuredLogger(__name__).logger
 
@@ -25,20 +25,6 @@ logger = StructuredLogger(__name__).logger
 class ContinuumMemorySystem:
     """
     Continuum Memory System - Multi-level memory with different temporal scales
-
-    Key concepts from Nested Learning:
-    - Multiple levels with different update frequencies
-    - Surprise-based selective updates
-    - Weighted combination of levels
-    - Self-referential optimization
-
-    Example:
-        >>> cms = ContinuumMemorySystem([
-        ...     ("fast", 1, 0.001),
-        ...     ("slow", 100, 0.0001)
-        ... ])
-        >>> embedding = cms.encode_multi_level("data", {})
-        >>> cms.update_level("fast", "key1", "data", surprise=0.8)
     """
 
     def __init__(self, levels: List[Tuple[str, int, float]], embedding_dim: int = 768):
@@ -96,7 +82,7 @@ class ContinuumMemorySystem:
         Reload vectors from persistent storage into in-memory index.
         Crucial for 'Strike 2' persistence to work across restarts.
         """
-        from .memory_level import RedisMemoryLevel
+        from src.modules.nested_learning.services.memory_level import RedisMemoryLevel
 
         for name, level in self.levels.items():
             if isinstance(level, RedisMemoryLevel) and self.redis_connected:
@@ -104,23 +90,23 @@ class ContinuumMemorySystem:
                     # Scan for keys in this level
                     pattern = f"cms:level:{name}:*"
                     keys = self.redis_client.keys(pattern)
-                    
+
                     count = 0
                     for full_key in keys:
                         # full_key is like "cms:level:session:abc..."
                         # we need just "abc..."
                         key = full_key.split(":")[-1]
-                        
+
                         # Get embedding from level
                         emb = level.get(key)
                         if emb is not None:
                             # Add to index
                             self.index.add(key, emb, metadata={"level": name})
                             count += 1
-                            
+
                     if count > 0:
                         logger.info(f"Reloaded {count} items from Redis for level '{name}'")
-                        
+
                 except Exception as e:
                     logger.error(f"Failed to reload level '{name}' from Redis: {e}")
 
@@ -128,7 +114,7 @@ class ContinuumMemorySystem:
         """
         Create memory level with appropriate persistence backend
         """
-        from .memory_level import RedisMemoryLevel, ChromaMemoryLevel
+        from src.modules.nested_learning.services.memory_level import RedisMemoryLevel, ChromaMemoryLevel
 
         # Determine storage type based on level name
         if config.name in ["session", "daily"] and self.redis_connected:
@@ -144,12 +130,6 @@ class ContinuumMemorySystem:
     def store(self, level_name: str, key: MemoryKey, data: Any, embedding: Optional[np.ndarray] = None):
         """
         Store data at specific level
-
-        Args:
-            level_name: Name of level to store at
-            key: Unique key for data
-            data: Data to store
-            embedding: Pre-computed embedding (optional)
         """
         level = self.levels.get(level_name)
         if level is None:
@@ -161,7 +141,13 @@ class ContinuumMemorySystem:
 
         # Store in level
         level.memory[key] = embedding
-        level.metadata[key] = {"data": data, "step": self.global_step, "timestamp": time.time()}
+        level.metadata[key] = MemoryEntry(
+            key=key,
+            data=data,
+            surprise=surprise if "surprise" in locals() else 0.0,
+            step=self.global_step,
+            timestamp=time.time(),
+        )
 
         # Add to vector index
         self.index.add(key, embedding, metadata={"level": level_name})
@@ -180,8 +166,7 @@ class ContinuumMemorySystem:
         query_emb = level.encode(query, {})
 
         # Search in index
-        results = self.index.search(
-            query_emb, k=k, filter_fn=lambda meta: meta.get("level") == level_name)
+        results = self.index.search(query_emb, k=k, filter_fn=lambda meta: meta.get("level") == level_name)
 
         # Return with data
         output = []
@@ -189,7 +174,7 @@ class ContinuumMemorySystem:
             # Use get_metadata() method instead of direct dict access
             meta = level.get_metadata(key)
             if meta:
-                data = meta.data if hasattr(meta, 'data') else meta.get('data')
+                data = meta.data if hasattr(meta, "data") else meta.get("data")
                 output.append((key, sim, data))
 
         return output
@@ -213,12 +198,6 @@ class ContinuumMemorySystem:
     def update_level(self, level_name: str, key: MemoryKey, data: Any, surprise: SurpriseScore):
         """
         Update specific level with new data
-
-        Args:
-            level_name: Level to update
-            key: Data key
-            data: New data
-            surprise: Surprise score (0-1)
         """
         level = self.levels.get(level_name)
         if level is None:
@@ -230,17 +209,6 @@ class ContinuumMemorySystem:
     def encode_multi_level(self, data: Any, context: Dict, weights: Optional[Dict[str, float]] = None) -> np.ndarray:
         """
         Encode using weighted combination of all levels
-
-        This is the key insight from Nested Learning:
-        combine multiple temporal scales with context-aware weighting
-
-        Args:
-            data: Data to encode
-            context: Context for weighting
-            weights: Optional manual weights per level
-
-        Returns:
-            Combined embedding
         """
         if weights is None:
             weights = self._compute_weights(context)
@@ -268,14 +236,6 @@ class ContinuumMemorySystem:
     def _compute_weights(self, context: Dict) -> Dict[str, float]:
         """
         Compute level weights based on context
-
-        Override in subclasses for custom weighting logic
-
-        Args:
-            context: Context dictionary
-
-        Returns:
-            Dict mapping level_name -> weight
         """
         # Default: equal weights
         n = len(self.levels)
@@ -290,9 +250,6 @@ class ContinuumMemorySystem:
     def get_stats(self) -> CMSStats:
         """
         Get statistics for all levels
-
-        Returns:
-            Statistics object
         """
         level_stats = {name: level.get_stats() for name, level in self.levels.items()}
 

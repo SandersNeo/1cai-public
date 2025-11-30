@@ -3,10 +3,6 @@ Memory Level - Single level in Continuum Memory System
 
 Implements a single temporal scale in the Nested Learning paradigm.
 Each level has its own update frequency and learning rate.
-
-Based on:
-- Nested Learning paper (NeurIPS 2025)
-- Hope architecture (self-modifying recurrent)
 """
 
 import time
@@ -16,8 +12,7 @@ from typing import Any, Dict, Optional
 import numpy as np
 
 from src.utils.structured_logging import StructuredLogger
-
-from .types import LevelStats, MemoryEntry, MemoryKey, SurpriseScore
+from src.modules.nested_learning.domain.types import LevelStats, MemoryEntry, MemoryKey, SurpriseScore
 
 logger = StructuredLogger(__name__).logger
 
@@ -55,16 +50,6 @@ class MemoryLevel:
     - Selective updates based on surprise
     - Statistics tracking
     - Capacity management with eviction
-
-    Example:
-        >>> config = MemoryLevelConfig(
-        ...     name="fast",
-        ...     update_freq=1,
-        ...     learning_rate=0.001
-        ... )
-        >>> level = MemoryLevel(config)
-        >>> embedding = level.encode("some data", {})
-        >>> level.update("key1", "some data", surprise=0.8)
     """
 
     def __init__(self, config: MemoryLevelConfig):
@@ -99,16 +84,6 @@ class MemoryLevel:
     def encode(self, data: Any, context: Dict) -> np.ndarray:
         """
         Encode data at this level's temporal scale
-
-        This is a placeholder - subclasses should override with
-        actual encoding logic (e.g., using neural networks).
-
-        Args:
-            data: Input data to encode
-            context: Additional context (age, type, etc.)
-
-        Returns:
-            Embedding vector
         """
         self.stats.total_encodes += 1
 
@@ -119,17 +94,6 @@ class MemoryLevel:
     def should_update(self, surprise: SurpriseScore) -> bool:
         """
         Determine if this level should update based on surprise
-
-        Key insight from Nested Learning:
-        - Only update when surprise exceeds threshold
-        - Respect update frequency
-        - Never update if frozen
-
-        Args:
-            surprise: Surprise score (0-1)
-
-        Returns:
-            True if should update
         """
         if self.config.frozen:
             return False
@@ -144,11 +108,6 @@ class MemoryLevel:
     def update(self, key: MemoryKey, data: Any, surprise: SurpriseScore):
         """
         Update memory at this level
-
-        Args:
-            key: Memory key
-            data: New data
-            surprise: Surprise score (0-1)
         """
         if not self.should_update(surprise):
             return
@@ -182,37 +141,16 @@ class MemoryLevel:
         )
 
     def get(self, key: MemoryKey) -> Optional[np.ndarray]:
-        """
-        Get embedding by key
-
-        Args:
-            key: Memory key
-
-        Returns:
-            Embedding vector or None if not found
-        """
+        """Get embedding by key"""
         self.stats.total_retrievals += 1
         return self.memory.get(key)
 
     def get_metadata(self, key: MemoryKey) -> Optional[MemoryEntry]:
-        """
-        Get metadata by key
-
-        Args:
-            key: Memory key
-
-        Returns:
-            Memory entry or None if not found
-        """
+        """Get metadata by key"""
         return self.metadata.get(key)
 
     def get_stats(self) -> LevelStats:
-        """
-        Get level statistics
-
-        Returns:
-            Statistics object
-        """
+        """Get level statistics"""
         self.stats.memory_size = len(self.memory)
         return self.stats
 
@@ -408,4 +346,3 @@ class ChromaMemoryLevel(MemoryLevel):
 
     def __len__(self) -> int:
         return self.client.count(self.collection_name)
-

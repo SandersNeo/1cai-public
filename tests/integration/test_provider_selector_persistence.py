@@ -16,8 +16,11 @@ import sys
 # Добавляем корень проекта в путь поиска модулей
 sys.path.append(os.getcwd())
 
-from src.ai.nested_provider_selector import NestedProviderSelector, QueryType
-from src.ai.llm_provider_abstraction import LLMProviderAbstraction, ModelProfile
+from src.ai.llm_provider_abstraction import LLMProviderAbstraction, ModelProfile, QueryType
+from src.modules.nested_learning.services.provider_selector import NestedProviderSelector
+from src.modules.nested_learning.services.cms import ContinuumMemorySystem
+from src.modules.nested_learning.services.memory_level import RedisMemoryLevel
+from src.services.storage.redis_client import RedisClient
 
 
 # Мок базовой абстракции

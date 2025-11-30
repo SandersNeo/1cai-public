@@ -100,14 +100,13 @@ class NestedProviderSelector:
         elif surprise > 0.4:
             self.query_memory.update_level("immediate", query_id, feedback_data, surprise)
             self.query_memory.update_level("session", query_id, feedback_data, surprise)
-        else:
             self.query_memory.update_level("immediate", query_id, feedback_data, surprise)
 
         self.query_memory.step()
 
     def _create_query_cms(self):
         # Lazy import to avoid circular dependency if any
-        from src.ml.continual_learning.cms import ContinuumMemorySystem
+        from src.modules.nested_learning.services.cms import ContinuumMemorySystem
 
         levels = [
             ("immediate", 1, 0.01),

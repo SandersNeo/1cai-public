@@ -13,7 +13,7 @@ import numpy as np
 
 from src.utils.structured_logging import StructuredLogger
 
-from .types import SurpriseScore
+from src.modules.nested_learning.domain.types import SurpriseScore
 
 logger = StructuredLogger(__name__).logger
 

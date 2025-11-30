@@ -32,12 +32,6 @@ class VectorIndex:
 
     Provides fast nearest neighbor search for embeddings.
     Falls back to simple numpy implementation if FAISS not available.
-
-    Example:
-        >>> index = VectorIndex(dimension=768)
-        >>> embedding = np.random.rand(768)
-        >>> index.add("key1", embedding, metadata={"level": "fast"})
-        >>> results = index.search(embedding, k=5)
     """
 
     def __init__(self, dimension: int, index_type: str = "flat"):

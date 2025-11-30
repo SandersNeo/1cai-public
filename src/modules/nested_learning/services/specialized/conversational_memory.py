@@ -11,8 +11,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
-from src.ml.continual_learning.cms import ContinuumMemorySystem
-from src.ml.continual_learning.memory_level import MemoryLevel, MemoryLevelConfig
+from src.modules.nested_learning.services.cms import ContinuumMemorySystem
+from src.modules.nested_learning.services.memory_level import MemoryLevel, MemoryLevelConfig
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger

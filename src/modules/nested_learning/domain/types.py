@@ -1,7 +1,5 @@
 """
-Type definitions for Continual Learning module
-
-Provides type hints and data structures for Nested Learning components.
+Type definitions for Nested Learning module
 """
 
 import time
