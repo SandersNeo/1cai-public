@@ -41,3 +41,10 @@ repos:
         pass_filenames: false
         always_run: true
         stages: [commit]
+
+  - repo: https://github.com/bia-technologies/precommit4onec
+    rev: v1.1.0
+    hooks:
+      - id: bsl-language-server
+        args: [--configuration, .bsl-language-server.json]
+      - id: onescript-syntax-check

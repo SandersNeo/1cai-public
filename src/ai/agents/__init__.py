@@ -14,7 +14,7 @@ from src.ai.agents.onec_server_optimizer import OneCServerOptimizer
 from src.ai.agents.performance_analyzer import PerformanceAnalyzer
 from src.ai.agents.project_manager_agent import ProjectManagerAgent
 from src.ai.agents.qa_engineer_agent import QAEngineerAgent
-from src.ai.agents.ras_monitor import RASMonitor
+from src.integrations.onec.ras_monitor import RASMonitor
 
 # New agents
 from src.ai.agents.security_agent import SecurityAgent
