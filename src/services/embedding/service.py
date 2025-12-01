@@ -40,6 +40,11 @@ class EmbeddingService:
                 logger.warning(
                     f"Failed to initialize Nested Learning: {e}", exc_info=True)
 
+    @property
+    def model(self):
+        """Expose the underlying model for tests"""
+        return self.model_manager.get_model()
+
     def encode(
         self,
         text: Union[str, List[str]],
@@ -53,6 +58,21 @@ class EmbeddingService:
                 return self._nested.encode(text, context={}).tolist()
             except Exception as e:
                 logger.warning("Nested encoding failed, falling back to standard: %s", e)
+
+        if text is None:
+            return []
+        
+        if isinstance(text, list):
+            # Filter None values and empty strings
+            text = [t for t in text if t and isinstance(t, str) and t.strip()]
+            if not text:
+                return []
+            # Truncate list if too long
+            if len(text) > 1000:
+                text = text[:1000]
+            
+            # Truncate items if too long
+            text = [t[:100000] for t in text]
 
         if not text:
             return [] if isinstance(text, list) else []
@@ -185,7 +205,7 @@ class EmbeddingService:
         # Simple preprocessing
         clean_code = "\n".join(
             [line.strip() for line in code.split("\n")
-                        if line.strip() and not line.startswith("//")]
+                        if line.strip() and not line.strip().startswith("//")]
         )
         return self.encode(clean_code[:5000])
 

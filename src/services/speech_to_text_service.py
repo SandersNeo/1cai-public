@@ -19,6 +19,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from src.config import settings
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -52,7 +53,7 @@ class SpeechToTextService:
             language: Язык распознавания (ru, en)
         """
         self.provider = provider
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        self.api_key = api_key or settings.openai_api_key
         self.model = model
         self.language = language
 
@@ -85,7 +86,7 @@ class SpeechToTextService:
             import whisper
 
             # Загружаем модель (base, small, medium, large)
-            model_size = os.getenv("WHISPER_MODEL_SIZE", "base")
+            model_size = settings.whisper_model_size
             self.whisper_model = whisper.load_model(model_size)
             logger.info("Local Whisper initialized", extra={"model_size": model_size})
 
@@ -100,7 +101,7 @@ class SpeechToTextService:
         try:
             from vosk import Model
 
-            model_path = os.getenv("VOSK_MODEL_PATH", "models/vosk-model-ru")
+            model_path = settings.vosk_model_path
 
             if not os.path.exists(model_path):
                 raise ValueError(f"Vosk model not found at {model_path}")
@@ -617,11 +618,11 @@ def get_stt_service() -> SpeechToTextService:
 
     if _stt_service is None:
         # Определяем провайдера из env
-        provider_str = os.getenv("STT_PROVIDER", "openai_whisper")
+        provider_str = settings.stt_provider
         provider = STTProvider(provider_str)
 
         _stt_service = SpeechToTextService(
-            provider=provider, language=os.getenv("STT_LANGUAGE", "ru")
+            provider=provider, language=settings.stt_language
         )
 
     return _stt_service

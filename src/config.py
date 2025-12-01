@@ -338,6 +338,69 @@ class Settings(BaseSettings):
     user_rate_limit_per_minute: int = Field(default=60, validation_alias="USER_RATE_LIMIT_PER_MINUTE")
     user_rate_limit_window_seconds: int = Field(default=60, validation_alias="USER_RATE_LIMIT_WINDOW_SECONDS")
 
+    # --- DB Pool Configuration ---
+    db_pool_min_size: int = Field(default=5, validation_alias="DB_POOL_MIN_SIZE")
+    db_pool_max_size: int = Field(default=20, validation_alias="DB_POOL_MAX_SIZE")
+    db_pool_max_queries: int = Field(default=50000, validation_alias="DB_POOL_MAX_QUERIES")
+    db_pool_max_inactive_lifetime: int = Field(default=300, validation_alias="DB_POOL_MAX_INACTIVE_LIFETIME")
+    db_command_timeout: int = Field(default=60, validation_alias="DB_COMMAND_TIMEOUT")
+    db_connect_timeout: int = Field(default=30, validation_alias="DB_CONNECT_TIMEOUT")
+
+    # --- Redis Configuration ---
+    redis_host: str = Field(default="localhost", validation_alias="REDIS_HOST")
+    redis_port: int = Field(default=6379, validation_alias="REDIS_PORT")
+    redis_db: int = Field(default=0, validation_alias="REDIS_DB")
+    redis_password: Optional[str] = Field(default=None, validation_alias="REDIS_PASSWORD")
+
+    # --- Telegram Configuration ---
+    telegram_bot_token: Optional[str] = Field(default=None, validation_alias="TELEGRAM_BOT_TOKEN")
+    telegram_admin_ids: str = Field(default="", validation_alias="TELEGRAM_ADMIN_IDS")  # Comma separated
+    telegram_rate_limit_min: int = Field(default=10, validation_alias="TELEGRAM_RATE_LIMIT_MIN")
+    telegram_rate_limit_day: int = Field(default=100, validation_alias="TELEGRAM_RATE_LIMIT_DAY")
+    telegram_premium_ids: str = Field(default="", validation_alias="TELEGRAM_PREMIUM_IDS")  # Comma separated
+    telegram_enable_codegen: bool = Field(default=True, validation_alias="TELEGRAM_ENABLE_CODEGEN")
+    telegram_enable_deps: bool = Field(default=True, validation_alias="TELEGRAM_ENABLE_DEPS")
+    telegram_enable_search: bool = Field(default=True, validation_alias="TELEGRAM_ENABLE_SEARCH")
+    telegram_webhook_url: Optional[str] = Field(default=None, validation_alias="TELEGRAM_WEBHOOK_URL")
+    telegram_webhook_path: str = Field(default="/telegram/webhook", validation_alias="TELEGRAM_WEBHOOK_PATH")
+    telegram_webhook_port: int = Field(default=8443, validation_alias="TELEGRAM_WEBHOOK_PORT")
+    telegram_http_timeout: float = Field(default=10.0, validation_alias="TELEGRAM_HTTP_TIMEOUT")
+
+    # --- Speech-to-Text Configuration ---
+    stt_provider: str = Field(default="openai_whisper", validation_alias="STT_PROVIDER")
+    stt_language: str = Field(default="ru", validation_alias="STT_LANGUAGE")
+    whisper_model_size: str = Field(default="base", validation_alias="WHISPER_MODEL_SIZE")
+    vosk_model_path: str = Field(default="models/vosk-model-ru", validation_alias="VOSK_MODEL_PATH")
+
+    # --- OAuth Configuration ---
+    oauth_encryption_key: Optional[str] = Field(default=None, validation_alias="OAUTH_ENCRYPTION_KEY")
+    github_client_id: Optional[str] = Field(default=None, validation_alias="GITHUB_CLIENT_ID")
+    github_client_secret: Optional[str] = Field(default=None, validation_alias="GITHUB_CLIENT_SECRET")
+    github_redirect_uri: Optional[str] = Field(default=None, validation_alias="GITHUB_REDIRECT_URI")
+    gitlab_client_id: Optional[str] = Field(default=None, validation_alias="GITLAB_CLIENT_ID")
+    gitlab_client_secret: Optional[str] = Field(default=None, validation_alias="GITLAB_CLIENT_SECRET")
+    gitlab_redirect_uri: Optional[str] = Field(default=None, validation_alias="GITLAB_REDIRECT_URI")
+    jira_client_id: Optional[str] = Field(default=None, validation_alias="JIRA_CLIENT_ID")
+    jira_client_secret: Optional[str] = Field(default=None, validation_alias="JIRA_CLIENT_SECRET")
+    jira_redirect_uri: Optional[str] = Field(default=None, validation_alias="JIRA_REDIRECT_URI")
+
+    # --- Wiki Configuration ---
+    wiki_attachments_bucket: str = Field(default="wiki-attachments", validation_alias="WIKI_ATTACHMENTS_BUCKET")
+    s3_endpoint_public: Optional[str] = Field(default=None, validation_alias="S3_ENDPOINT_PUBLIC")
+
+    # --- OCR Configuration ---
+    ocr_provider: str = Field(default="deepseek", validation_alias="OCR_PROVIDER")
+
+    # --- Embedding Configuration ---
+    embedding_gpu_cb_threshold: int = Field(default=5, validation_alias="EMBEDDING_GPU_CB_THRESHOLD")
+    embedding_gpu_cb_timeout: int = Field(default=60, validation_alias="EMBEDDING_GPU_CB_TIMEOUT")
+    embedding_cpu_cb_threshold: int = Field(default=5, validation_alias="EMBEDDING_CPU_CB_THRESHOLD")
+    embedding_cpu_cb_timeout: int = Field(default=60, validation_alias="EMBEDDING_CPU_CB_TIMEOUT")
+
+    # --- ITS Library Configuration ---
+    its_username: str = Field(default="its_rrpk", validation_alias="ITS_USERNAME")
+    its_password: str = Field(default="RRPK_2022", validation_alias="ITS_PASSWORD")
+
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", case_sensitive=False, extra="ignore")
 

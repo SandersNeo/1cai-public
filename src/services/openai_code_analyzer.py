@@ -17,16 +17,7 @@ from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
 
-# Динамический импорт settings для избежания циклических зависимостей
-try:
-    from src.config import settings
-except ImportError:
-    # Fallback для тестирования
-    class MockSettings:
-        openai_api_key = os.getenv("OPENAI_API_KEY", "")
-
-    settings = MockSettings()
-
+from src.config import settings
 
 _OPENAI_ANALYZER: Optional["OpenAICodeAnalyzer"] = None
 
@@ -53,15 +44,7 @@ class OpenAICodeAnalyzer:
     """Сервис для AI анализа кода через OpenAI"""
 
     def __init__(self):
-        # Получаем настройки из config или env
-        try:
-            from src.config import settings as config_settings
-
-            self.api_key = getattr(
-                config_settings, "openai_api_key", os.getenv("OPENAI_API_KEY", "")
-            )
-        except (ImportError, AttributeError, Exception):
-            self.api_key = os.getenv("OPENAI_API_KEY", "")
+        self.api_key = settings.openai_api_key
 
         self.base_url = "https://api.openai.com/v1"
         self.model = "gpt-4-turbo-preview"
@@ -110,9 +93,7 @@ class OpenAICodeAnalyzer:
             language = "bsl"
 
         if not self.enabled:
-            logger.debug(
-                "OpenAI недоступен, пропускаем AI анализ", extra={"language": language}
-            )
+            logger.debug("OpenAI недоступен, пропускаем AI анализ", extra={"language": language})
             return []
 
         try:
@@ -143,9 +124,7 @@ class OpenAICodeAnalyzer:
             )
             return []  # Возвращаем пустой список при ошибке
 
-    def _build_analysis_prompt(
-        self, code: str, language: str, context: Optional[Dict[str, Any]] = None
-    ) -> str:
+    def _build_analysis_prompt(self, code: str, language: str, context: Optional[Dict[str, Any]] = None) -> str:
         """Построение промпта для анализа кода 1С"""
 
         system_prompt = self._get_system_prompt_1c(language)
@@ -283,9 +262,7 @@ class OpenAICodeAnalyzer:
                         ],
                         "temperature": 0.3,  # Низкая температура для более детерминированных ответов
                         "max_tokens": 3000,  # Достаточно для детального анализа
-                        "response_format": {
-                            "type": "json_object"
-                        },  # Требуем JSON формат
+                        "response_format": {"type": "json_object"},  # Требуем JSON формат
                     }
 
                     response = await client.post(
@@ -341,9 +318,7 @@ class OpenAICodeAnalyzer:
                         "HTTP error при запросе к OpenAI",
                         extra={
                             "status_code": e.response.status_code,
-                            "response_text": (
-                                e.response.text[:500] if e.response.text else None
-                            ),
+                            "response_text": (e.response.text[:500] if e.response.text else None),
                             "attempt": attempt + 1,
                             "max_retries": max_retries,
                         },
@@ -471,9 +446,7 @@ class OpenAICodeAnalyzer:
 
         return suggestions
 
-    def _normalize_suggestion(
-        self, suggestion: Dict[str, Any], code: str, index: int
-    ) -> Optional[Dict[str, Any]]:
+    def _normalize_suggestion(self, suggestion: Dict[str, Any], code: str, index: int) -> Optional[Dict[str, Any]]:
         """Нормализация предложения из AI"""
 
         try:
@@ -486,12 +459,8 @@ class OpenAICodeAnalyzer:
                 "id": f"ai-{int(datetime.now().timestamp() * 1000)}-{index}",
                 "type": suggestion.get("type", "info"),
                 "severity": suggestion.get("severity", "medium"),
-                "message": suggestion.get(
-                    "message", suggestion.get("description", "")[:100]
-                ),
-                "description": suggestion.get(
-                    "description", suggestion.get("message", "")
-                ),
+                "message": suggestion.get("message", suggestion.get("description", "")[:100]),
+                "description": suggestion.get("description", suggestion.get("message", "")),
                 "suggestion": suggestion.get("suggestion"),
                 "code": suggestion.get("code"),
                 "position": {
@@ -502,9 +471,7 @@ class OpenAICodeAnalyzer:
                 },
                 "category": suggestion.get("category", "best-practice"),
                 "autoFixable": suggestion.get("autoFixable", False),
-                "confidence": min(
-                    1.0, max(0.0, float(suggestion.get("confidence", 0.7)))
-                ),
+                "confidence": min(1.0, max(0.0, float(suggestion.get("confidence", 0.7)))),
             }
 
             # Валидация значений
@@ -543,9 +510,7 @@ class OpenAICodeAnalyzer:
             )
             return None
 
-    async def generate_test_cases(
-        self, code: str, function_name: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
+    async def generate_test_cases(self, code: str, function_name: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         Генерация тест-кейсов через OpenAI
 
@@ -585,9 +550,7 @@ class OpenAICodeAnalyzer:
             )
             return []
 
-    def _build_test_generation_prompt(
-        self, code: str, function_name: Optional[str] = None
-    ) -> Dict[str, str]:
+    def _build_test_generation_prompt(self, code: str, function_name: Optional[str] = None) -> Dict[str, str]:
         """Построение промпта для генерации тест-кейсов"""
 
         system_prompt = """Ты - эксперт по тестированию кода на языке 1С (BSL).

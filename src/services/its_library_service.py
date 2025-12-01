@@ -20,6 +20,7 @@ from urllib.parse import urljoin
 
 import httpx
 from bs4 import BeautifulSoup
+from src.config import settings
 
 from src.utils.structured_logging import StructuredLogger
 
@@ -794,7 +795,7 @@ def get_its_service(username: str = None, password: str = None) -> ITSLibrarySer
     Returns:
         Экземпляр ITSLibraryService
     """
-    username = username or os.getenv("ITS_USERNAME", "its_rrpk")
-    password = password or os.getenv("ITS_PASSWORD", "RRPK_2022")
+    username = username or settings.its_username
+    password = password or settings.its_password
 
     return ITSLibraryService(username, password)

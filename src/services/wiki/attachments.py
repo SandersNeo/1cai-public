@@ -3,8 +3,8 @@ Wiki Attachment Storage
 Handles file uploads to S3-compatible storage (MinIO/AWS)
 """
 
-import os
 from typing import Optional
+from src.config import settings
 
 import boto3
 from botocore.exceptions import ClientError
@@ -20,13 +20,13 @@ class WikiAttachmentStorage:
     """
 
     def __init__(self):
-        self.bucket_name = os.getenv("WIKI_ATTACHMENTS_BUCKET", "wiki-attachments")
+        self.bucket_name = settings.wiki_attachments_bucket
         self.s3_client = self._init_client()
 
     def _init_client(self):
-        endpoint = os.getenv("S3_ENDPOINT")
-        access_key = os.getenv("S3_ACCESS_KEY")
-        secret_key = os.getenv("S3_SECRET_KEY")
+        endpoint = settings.s3_endpoint
+        access_key = settings.s3_access_key
+        secret_key = settings.s3_secret_key
 
         if not endpoint or not access_key:
             logger.warning("S3 configuration missing. Attachments will fail.")
@@ -39,9 +39,7 @@ class WikiAttachmentStorage:
             aws_secret_access_key=secret_key,
         )
 
-    async def upload_file(
-        self, file_content: bytes, filename: str, content_type: str
-    ) -> Optional[str]:
+    async def upload_file(self, file_content: bytes, filename: str, content_type: str) -> Optional[str]:
         """
         Upload file to S3 and return public URL.
         """
@@ -58,7 +56,7 @@ class WikiAttachmentStorage:
 
             # Construct URL (assuming public read or presigned)
             # For MVP we assume endpoint + bucket + key
-            endpoint = os.getenv("S3_ENDPOINT_PUBLIC", os.getenv("S3_ENDPOINT"))
+            endpoint = settings.s3_endpoint_public or settings.s3_endpoint
             return f"{endpoint}/{self.bucket_name}/{filename}"
 
         except ClientError as e:

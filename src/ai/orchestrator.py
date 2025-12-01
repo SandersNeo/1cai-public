@@ -231,7 +231,16 @@ class AIOrchestrator:
             service = intent.preferred_services[0]
             strategy = self._get_strategy(service, context)
             if strategy:
-                return await strategy.execute(query, context)
+                try:
+                    return await strategy.execute(query, context)
+                except Exception as e:
+                    logger.error(f"Service {service} failed: {e}")
+                    return {
+                        "error": str(e),
+                        "detailed_results": {
+                            service: {"error": str(e)}
+                        }
+                    }
 
         # Parallel execution
         tasks = []

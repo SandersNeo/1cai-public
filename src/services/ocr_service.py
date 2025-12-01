@@ -8,12 +8,12 @@ Refactored: Non-blocking execution for CPU/GPU intensive tasks
 
 import asyncio
 import os
-import tempfile
 from concurrent.futures import ThreadPoolExecutor
+from src.config import settings
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 from src.utils.structured_logging import StructuredLogger
 
@@ -402,6 +402,46 @@ class OCRService:
             logger.error("AI parsing error: %s", e)
             return {}
 
+    def get_supported_formats(self) -> List[str]:
+        """Get list of supported file formats"""
+        return [".png", ".jpg", ".jpeg", ".tiff", ".bmp", ".pdf"]
+
+    async def is_supported_format(self, filename: str) -> bool:
+        """Check if file format is supported"""
+        ext = os.path.splitext(filename)[1].lower()
+        return ext in self.get_supported_formats()
+
+    def estimate_processing_time(self, image_path: str) -> float:
+        """Estimate processing time in seconds"""
+        try:
+            file_size = os.path.getsize(image_path)
+            # Rough estimate: 1 sec per 100KB
+            return max(1.0, file_size / (100 * 1024))
+        except OSError:
+            return 5.0
+
+    async def process_from_bytes(
+        self,
+        file_content: bytes,
+        filename: str = "image.png",
+        document_type: DocumentType = DocumentType.AUTO,
+        **kwargs,
+    ) -> OCRResult:
+        """Process image from bytes"""
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(filename)[1]) as tmp:
+            tmp.write(file_content)
+            tmp_path = tmp.name
+
+        try:
+            return await self.process_image(tmp_path, document_type, **kwargs)
+        finally:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+
     def __del__(self):
         self._executor.shutdown(wait=False)
 
@@ -418,7 +458,7 @@ def get_ocr_service(
     global _ocr_service
     if _ocr_service is None or provider is not None:
         if provider is None:
-            provider_str = os.getenv("OCR_PROVIDER", "deepseek")
+            provider_str = settings.ocr_provider
             provider = OCRProvider(provider_str)
         _ocr_service = OCRService(provider, enable_ai_parsing, enable_fallback)
     return _ocr_service

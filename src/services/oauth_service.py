@@ -16,11 +16,12 @@ OAuth Service для 1C AI Stack
 """
 
 import logging
-import os
 import secrets
 from datetime import datetime, timedelta
 from typing import Dict, Optional
 from urllib.parse import urlencode
+
+from src.config import settings
 
 import asyncpg
 import httpx
@@ -35,10 +36,10 @@ class OAuthService:
     def __init__(self):
         """Инициализация OAuth сервиса"""
         # Ключ шифрования токенов
-        encryption_key = os.getenv("OAUTH_ENCRYPTION_KEY")
+        encryption_key = settings.oauth_encryption_key
         if not encryption_key:
             raise ValueError(
-                "OAUTH_ENCRYPTION_KEY не установлен в переменных окружения")
+                "OAUTH_ENCRYPTION_KEY не установлен в конфигурации")
 
         self.fernet = Fernet(encryption_key.encode())
 
@@ -49,9 +50,9 @@ class OAuthService:
                 "auth_url": "https://github.com/login/oauth/authorize",
                 "token_url": "https://github.com/login/oauth/access_token",
                 "user_url": "https://api.github.com/user",
-                "client_id": os.getenv("GITHUB_CLIENT_ID"),
-                "client_secret": os.getenv("GITHUB_CLIENT_SECRET"),
-                "redirect_uri": os.getenv("GITHUB_REDIRECT_URI"),
+                "client_id": settings.github_client_id,
+                "client_secret": settings.github_client_secret,
+                "redirect_uri": settings.github_redirect_uri,
                 "scope": "repo read:user",
             },
             "gitlab": {
@@ -59,9 +60,9 @@ class OAuthService:
                 "auth_url": "https://gitlab.com/oauth/authorize",
                 "token_url": "https://gitlab.com/oauth/token",
                 "user_url": "https://gitlab.com/api/v4/user",
-                "client_id": os.getenv("GITLAB_CLIENT_ID"),
-                "client_secret": os.getenv("GITLAB_CLIENT_SECRET"),
-                "redirect_uri": os.getenv("GITLAB_REDIRECT_URI"),
+                "client_id": settings.gitlab_client_id,
+                "client_secret": settings.gitlab_client_secret,
+                "redirect_uri": settings.gitlab_redirect_uri,
                 "scope": "api read_user",
             },
             "jira": {
@@ -69,9 +70,9 @@ class OAuthService:
                 "auth_url": "https://auth.atlassian.com/authorize",
                 "token_url": "https://auth.atlassian.com/oauth/token",
                 "user_url": "https://api.atlassian.com/me",
-                "client_id": os.getenv("JIRA_CLIENT_ID"),
-                "client_secret": os.getenv("JIRA_CLIENT_SECRET"),
-                "redirect_uri": os.getenv("JIRA_REDIRECT_URI"),
+                "client_id": settings.jira_client_id,
+                "client_secret": settings.jira_client_secret,
+                "redirect_uri": settings.jira_redirect_uri,
                 "scope": "read:jira-work write:jira-work offline_access",
                 "audience": "api.atlassian.com",
             },

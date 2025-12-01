@@ -316,3 +316,17 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "system: marks tests as system/e2e tests")
     config.addinivalue_line("markers", "performance: marks tests as performance tests")
     config.addinivalue_line("markers", "security: marks tests as security tests")
+
+
+@pytest.fixture
+def sample_image_path(tmp_path):
+    """Create a dummy image file for testing"""
+    p = tmp_path / "test_image.png"
+    # Create a minimal valid PNG file
+    # 1x1 pixel black image
+    content = (
+        b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89"
+        b"\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82"
+    )
+    p.write_bytes(content)
+    return str(p)

@@ -1,7 +1,8 @@
-import os
 import time
 from threading import Lock
 from typing import Any, Dict
+
+from src.config import settings
 
 from src.utils.circuit_breaker import CircuitBreaker
 
@@ -29,13 +30,13 @@ class ResourceManager:
         self._performance_lock = Lock()
 
         self._gpu_circuit_breaker = CircuitBreaker(
-            failure_threshold=int(os.getenv("EMBEDDING_GPU_CB_THRESHOLD", "5")),
-            recovery_timeout=int(os.getenv("EMBEDDING_GPU_CB_TIMEOUT", "60")),
+            failure_threshold=settings.embedding_gpu_cb_threshold,
+            recovery_timeout=settings.embedding_gpu_cb_timeout,
             expected_exception=Exception,
         )
         self._cpu_circuit_breaker = CircuitBreaker(
-            failure_threshold=int(os.getenv("EMBEDDING_CPU_CB_THRESHOLD", "5")),
-            recovery_timeout=int(os.getenv("EMBEDDING_CPU_CB_TIMEOUT", "60")),
+            failure_threshold=settings.embedding_cpu_cb_threshold,
+            recovery_timeout=settings.embedding_cpu_cb_timeout,
             expected_exception=Exception,
         )
 
@@ -66,9 +67,7 @@ class ResourceManager:
             if perf["request_count"] == 0:
                 perf["avg_time"] = time_per_item
             else:
-                perf["avg_time"] = (
-                    alpha * time_per_item + (1 - alpha) * perf["avg_time"]
-                )
+                perf["avg_time"] = alpha * time_per_item + (1 - alpha) * perf["avg_time"]
             perf["request_count"] += 1
             perf["last_update"] = time.time()
 

@@ -12,6 +12,7 @@ import os
 from typing import Any, Dict, List, Optional, Union
 
 import redis
+from src.config import settings
 from src.utils.structured_logging import StructuredLogger
 
 logger = StructuredLogger(__name__).logger
@@ -37,10 +38,10 @@ class RedisClient:
             db: Redis DB index
             password: Redis password
         """
-        self.host = host or os.getenv("REDIS_HOST", "localhost")
-        self.port = int(port or os.getenv("REDIS_PORT", 6379))
-        self.db = int(db or os.getenv("REDIS_DB", 0))
-        self.password = password or os.getenv("REDIS_PASSWORD")
+        self.host = host or settings.redis_host
+        self.port = int(port or settings.redis_port)
+        self.db = int(db or settings.redis_db)
+        self.password = password or settings.redis_password
 
         self._client: Optional[redis.Redis] = None
         self.namespace = "nested_learning"

@@ -16,6 +16,7 @@ from contextlib import asynccontextmanager
 from typing import Optional
 
 import asyncpg
+from src.config import settings
 
 from src.infrastructure.logging.structured_logging import StructuredLogger
 
@@ -25,13 +26,13 @@ logger = StructuredLogger(__name__).logger
 _pool: Optional[asyncpg.Pool] = None
 
 # Pool configuration (best practices from top companies)
-DEFAULT_MIN_SIZE = int(os.getenv("DB_POOL_MIN_SIZE", "5"))
-DEFAULT_MAX_SIZE = int(os.getenv("DB_POOL_MAX_SIZE", "20"))
-DEFAULT_MAX_QUERIES = int(os.getenv("DB_POOL_MAX_QUERIES", "50000"))
-DEFAULT_MAX_INACTIVE_CONNECTION_LIFETIME = int(
-    os.getenv("DB_POOL_MAX_INACTIVE_LIFETIME", "300"))
-DEFAULT_COMMAND_TIMEOUT = int(os.getenv("DB_COMMAND_TIMEOUT", "60"))
-DEFAULT_CONNECT_TIMEOUT = int(os.getenv("DB_CONNECT_TIMEOUT", "30"))
+# Pool configuration (best practices from top companies)
+DEFAULT_MIN_SIZE = settings.db_pool_min_size
+DEFAULT_MAX_SIZE = settings.db_pool_max_size
+DEFAULT_MAX_QUERIES = settings.db_pool_max_queries
+DEFAULT_MAX_INACTIVE_CONNECTION_LIFETIME = settings.db_pool_max_inactive_lifetime
+DEFAULT_COMMAND_TIMEOUT = settings.db_command_timeout
+DEFAULT_CONNECT_TIMEOUT = settings.db_connect_timeout
 
 
 async def create_pool(max_retries: int = 1, retry_delay: int = 1) -> Optional[asyncpg.Pool]:
@@ -54,10 +55,7 @@ async def create_pool(max_retries: int = 1, retry_delay: int = 1) -> Optional[as
     global _pool
 
     if _pool is None:
-        database_url = os.getenv(
-            "DATABASE_URL",
-            "postgresql://postgres:postgres@localhost:5432/enterprise_1c_ai",
-        )
+        database_url = settings.database_url
 
         logger.info("Creating database pool with optimal configuration...")
 
