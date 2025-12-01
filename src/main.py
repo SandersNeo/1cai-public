@@ -58,6 +58,7 @@ from src.middleware.metrics_middleware import MetricsMiddleware
 # Middleware
 from src.middleware.security_headers import SecurityHeadersMiddleware
 from src.middleware.user_rate_limit import UserRateLimitMiddleware
+from src.middleware.ai_security_middleware import AISecurityMiddleware
 from src.modules.admin_dashboard.api.routes import router as admin_dashboard_router
 
 # NEW: Analytics Router
@@ -421,12 +422,14 @@ app.add_middleware(
 # Security Headers (CRITICAL!)
 app.add_middleware(SecurityHeadersMiddleware)
 
+# AI Security Layer (Rule of Two)
+app.add_middleware(AISecurityMiddleware)
+
 # Compression
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # Metrics
 app.add_middleware(MetricsMiddleware)
-
 # JWT User Context Middleware with error handling
 try:
     auth_service = get_auth_service()
