@@ -300,6 +300,43 @@ class Settings(BaseSettings):
         default=False, description="Enable multi-level code completion", validation_alias="USE_NESTED_COMPLETION"
     )
 
+    # --- Infrastructure ---
+    otlp_endpoint: Optional[str] = Field(default=None, description="OpenTelemetry Endpoint", validation_alias="OTLP_ENDPOINT")
+    enable_legacy_api_redirect: bool = Field(default=True, description="Enable redirect from /api/ to /api/v1/", validation_alias="ENABLE_LEGACY_API_REDIRECT")
+
+    # --- Databases (Fallback/Direct) ---
+    postgres_host: str = Field(default="localhost", validation_alias="POSTGRES_HOST")
+    postgres_port: int = Field(default=5432, validation_alias="POSTGRES_PORT")
+    postgres_db: str = Field(default="knowledge_base", validation_alias="POSTGRES_DB")
+    postgres_user: str = Field(default="admin", validation_alias="POSTGRES_USER")
+    postgres_password: Optional[str] = Field(default=None, validation_alias="POSTGRES_PASSWORD")
+
+    neo4j_uri: str = Field(default="bolt://localhost:7687", validation_alias="NEO4J_URI")
+    neo4j_user: str = Field(default="neo4j", validation_alias="NEO4J_USER")
+    neo4j_password: str = Field(default="password", validation_alias="NEO4J_PASSWORD")
+
+    qdrant_host: str = Field(default="localhost", validation_alias="QDRANT_HOST")
+    qdrant_port: int = Field(default=6333, validation_alias="QDRANT_PORT")
+
+    es_url: str = Field(default="http://localhost:9200", validation_alias="ES_URL")
+
+    # --- S3 / Minio ---
+    aws_s3_bucket: Optional[str] = Field(default=None, validation_alias="AWS_S3_BUCKET")
+    minio_default_bucket: Optional[str] = Field(default=None, validation_alias="MINIO_DEFAULT_BUCKET") # Fallback
+    aws_s3_region: Optional[str] = Field(default=None, validation_alias="AWS_S3_REGION")
+    aws_s3_endpoint: Optional[str] = Field(default=None, validation_alias="AWS_S3_ENDPOINT")
+    minio_endpoint: Optional[str] = Field(default=None, validation_alias="MINIO_ENDPOINT") # Fallback
+    aws_access_key_id: Optional[str] = Field(default=None, validation_alias="AWS_ACCESS_KEY_ID")
+    minio_root_user: Optional[str] = Field(default=None, validation_alias="MINIO_ROOT_USER") # Fallback
+    aws_secret_access_key: Optional[str] = Field(default=None, validation_alias="AWS_SECRET_ACCESS_KEY")
+    minio_root_password: Optional[str] = Field(default=None, validation_alias="MINIO_ROOT_PASSWORD") # Fallback
+    aws_s3_create_bucket: bool = Field(default=True, validation_alias="AWS_S3_CREATE_BUCKET")
+
+    # --- Marketplace & Rate Limits ---
+    marketplace_cache_refresh_minutes: int = Field(default=15, validation_alias="MARKETPLACE_CACHE_REFRESH_MINUTES")
+    user_rate_limit_per_minute: int = Field(default=60, validation_alias="USER_RATE_LIMIT_PER_MINUTE")
+    user_rate_limit_window_seconds: int = Field(default=60, validation_alias="USER_RATE_LIMIT_WINDOW_SECONDS")
+
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", case_sensitive=False, extra="ignore")
 

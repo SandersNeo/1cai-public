@@ -16,6 +16,7 @@ from datetime import datetime
 from typing import Dict
 
 from src.utils.structured_logging import StructuredLogger
+from src.config import settings
 
 logger = StructuredLogger(__name__).logger
 
@@ -169,14 +170,14 @@ class HealthChecker:
                     f"PostgreSQLSaver check failed, using direct connection: {e}")
 
             # Fallback to direct connection
-            db_url = os.getenv("DATABASE_URL")
+            db_url = settings.database_url
             if not db_url:
                 # Try individual env variables
-                host = os.getenv("POSTGRES_HOST", "localhost")
-                port = int(os.getenv("POSTGRES_PORT", "5432"))
-                database = os.getenv("POSTGRES_DB", "knowledge_base")
-                user = os.getenv("POSTGRES_USER", "admin")
-                password = os.getenv("POSTGRES_PASSWORD")
+                host = settings.postgres_host
+                port = settings.postgres_port
+                database = settings.postgres_db
+                user = settings.postgres_user
+                password = settings.postgres_password
 
                 if not password:
                     logger.warning(
@@ -191,7 +192,7 @@ class HealthChecker:
                 port = parsed.port or 5432
                 database = parsed.path.lstrip("/") or "knowledge_base"
                 user = parsed.username or "admin"
-                password = parsed.password or os.getenv("POSTGRES_PASSWORD")
+                password = parsed.password or settings.postgres_password
 
                 if not password:
                     logger.warning("PostgreSQL password not provided in DATABASE_URL")
@@ -260,7 +261,9 @@ class HealthChecker:
         try:
             import redis.asyncio as aioredis
 
-            redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+            import redis.asyncio as aioredis
+
+            redis_url = settings.redis_url
             client = aioredis.from_url(redis_url, socket_connect_timeout=5)
 
             # Ping
@@ -290,9 +293,11 @@ class HealthChecker:
         try:
             from neo4j import AsyncGraphDatabase
 
-            neo4j_uri = os.getenv("NEO4J_URI", "bolt://localhost:7687")
-            neo4j_user = os.getenv("NEO4J_USER", "neo4j")
-            neo4j_pass = os.getenv("NEO4J_PASSWORD", "password")
+            from neo4j import AsyncGraphDatabase
+
+            neo4j_uri = settings.neo4j_uri
+            neo4j_user = settings.neo4j_user
+            neo4j_pass = settings.neo4j_password
 
             driver = AsyncGraphDatabase.driver(neo4j_uri, auth=(neo4j_user, neo4j_pass))
 
@@ -322,8 +327,8 @@ class HealthChecker:
             from qdrant_client import QdrantClient
 
             client = QdrantClient(
-                host=os.getenv("QDRANT_HOST", "localhost"),
-                port=int(os.getenv("QDRANT_PORT", "6333")),
+                host=settings.qdrant_host,
+                port=settings.qdrant_port,
                 timeout=5,
             )
 
@@ -345,7 +350,7 @@ class HealthChecker:
         try:
             from elasticsearch import AsyncElasticsearch
 
-            es = AsyncElasticsearch([os.getenv("ES_URL", "http://localhost:9200")])
+            es = AsyncElasticsearch([settings.es_url])
 
             # Cluster health
             health = await es.cluster.health()
@@ -373,7 +378,7 @@ class HealthChecker:
         try:
             import httpx
 
-            api_key = os.getenv("OPENAI_API_KEY")
+            api_key = settings.openai_api_key
 
             if not api_key or api_key == "test":
                 return {"status": "disabled", "message": "API key not configured"}

@@ -222,15 +222,14 @@ async def lifespan(app: FastAPI):
         # Marketplace repository with error handling
         if pool:
             try:
-                bucket = os.getenv("AWS_S3_BUCKET") or os.getenv(
-                    "MINIO_DEFAULT_BUCKET", "")
+                bucket = settings.aws_s3_bucket or settings.minio_default_bucket or ""
                 storage_config = {
                     "bucket": bucket,
-                    "region": os.getenv("AWS_S3_REGION", ""),
-                    "endpoint": os.getenv("AWS_S3_ENDPOINT") or os.getenv("MINIO_ENDPOINT"),
-                    "access_key": os.getenv("AWS_ACCESS_KEY_ID") or os.getenv("MINIO_ROOT_USER"),
-                    "secret_key": os.getenv("AWS_SECRET_ACCESS_KEY") or os.getenv("MINIO_ROOT_PASSWORD"),
-                    "create_bucket": os.getenv("AWS_S3_CREATE_BUCKET", "true").lower() not in {"0", "false", "no"},
+                    "region": settings.aws_s3_region or "",
+                    "endpoint": settings.aws_s3_endpoint or settings.minio_endpoint,
+                    "access_key": settings.aws_access_key_id or settings.minio_root_user,
+                    "secret_key": settings.aws_secret_access_key or settings.minio_root_password,
+                    "create_bucket": settings.aws_s3_create_bucket,
                 }
 
                 marketplace_repo = MarketplaceRepository(
@@ -256,8 +255,7 @@ async def lifespan(app: FastAPI):
         # Scheduler with error handling
         if marketplace_repo:
             try:
-                cache_refresh_minutes = int(
-                    os.getenv("MARKETPLACE_CACHE_REFRESH_MINUTES", "15"))
+                cache_refresh_minutes = settings.marketplace_cache_refresh_minutes
                 scheduler = AsyncIOScheduler()
                 scheduler.add_job(
                     marketplace_repo.refresh_cached_views,
@@ -280,9 +278,8 @@ async def lifespan(app: FastAPI):
         # User rate limit middleware (only if Redis available)
         if redis_client:
             try:
-                user_rate_limit = int(os.getenv("USER_RATE_LIMIT_PER_MINUTE", "60"))
-                user_rate_window = int(
-                    os.getenv("USER_RATE_LIMIT_WINDOW_SECONDS", "60"))
+                user_rate_limit = settings.user_rate_limit_per_minute
+                user_rate_window = settings.user_rate_limit_window_seconds
                 try:
                     auth_service = get_auth_service()
                 except Exception as auth_err:
@@ -399,13 +396,10 @@ except Exception as e:
     logger.warning("Failed to register error handlers: %s", e)
 
 # CORS (Best Practice: Use environment variables, not hardcoded origins)
-cors_origins_env = os.getenv(
-    "CORS_ORIGINS", "http://localhost:3000,http://localhost:5173")
-cors_origins = [origin.strip()
-                             for origin in cors_origins_env.split(",") if origin.strip()]
+cors_origins = settings.get_cors_origins()
 
 # Security: In production, never use ["*"] for origins
-if os.getenv("ENVIRONMENT") == "development" and "*" in cors_origins_env:
+if settings.environment == "development" and "*" in cors_origins:
     logger.warning(
         "CORS allows all origins in development mode. Restrict in production!")
 
@@ -438,8 +432,7 @@ except Exception as e:
     logger.warning("Failed to add JWT middleware: %s", e)
 
 
-LEGACY_API_REDIRECT_ENABLED = os.getenv(
-    "ENABLE_LEGACY_API_REDIRECT", "true").lower() in {"1", "true", "yes"}
+LEGACY_API_REDIRECT_ENABLED = settings.enable_legacy_api_redirect
 LEGACY_API_PREFIX = "/api/"
 VERSIONED_API_PREFIX = "/api/v1"
 
@@ -568,39 +561,6 @@ routers = [
     ("bpmn", bpmn_router),
     # Auth & Admin
     ("auth", auth_router),
-    ("oauth", oauth_router),
-    ("admin_roles", admin_roles_router),
-    ("admin_audit", admin_audit_router),
-    ("code_approval", code_approval_router),
-    # Infrastructure
-    ("orchestrator", orchestrator_router),
-    ("wiki", wiki_router),
-    ("devops", devops_router),
-    ("analytics", analytics_router),
-    ("council", council_router),
-    # Previously Unused Modules - Now Active
-    ("gateway", gateway_router),
-    ("graph", graph_router),
-    ("github", github_router),
-    ("knowledge_base", knowledge_base_router),
-    ("metrics", metrics_router),
-    ("risk", risk_router),
-    ("tenants", tenant_router),
-    ("ba_sessions", ba_sessions_router),
-    ("admin_dashboard", admin_dashboard_router),
-    ("assistants", assistants_router),
-    ("project_manager", project_manager_router),
-    ("scenario_hub", scenario_hub_router),
-    ("technical_writer", technical_writer_router),
-    ("security", security_router),
-    ("sql_optimizer", sql_optimizer_router),
-    ("code_analyzers", code_analyzers_router),
-    ("ml", ml_router),
-]
-
-# Try to import and add revolutionary router
-try:
-    from src.modules.revolutionary.api.routes import router as revolutionary_router
     routers.append(("revolutionary", revolutionary_router))
     logger.info("Revolutionary Components router loaded successfully")
 except ImportError as e:
