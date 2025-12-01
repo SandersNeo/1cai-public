@@ -370,9 +370,9 @@ graph LR
         Action[🛠️ Action]
         
         subgraph Mem ["Memory Systems"]
-            STM[Short-Term (Redis)]
-            LTM[Long-Term (Vector)]
-            Sem[Semantic (Graph)]
+            STM["Short-Term (Redis)"]
+            LTM["Long-Term (Vector)"]
+            Sem["Semantic (Graph)"]
         end
     end
 
