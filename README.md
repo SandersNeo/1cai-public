@@ -301,6 +301,145 @@ graph TD
 4.  **⚡ Nervous System**: Шина событий (NATS) и Граф знаний (Neo4j). Обеспечивает асинхронную связь и понимание зависимостей.
 5.  **💾 Data Layer**: Полиглотное хранилище. PostgreSQL (метаданные), VectorDB (память), Redis (кэш), Neo4j (связи).
 
+<details>
+<summary><strong>🧅 1. Clean Architecture (Onion)</strong></summary>
+
+Мы строго следуем принципам Чистой Архитектуры. Зависимости направлены внутрь, к домену.
+
+```mermaid
+graph TD
+    subgraph Infrastructure ["Infrastructure (External)"]
+        DB[(Database)]
+        API[API Controllers]
+        UI[Web/Desktop UI]
+    end
+
+    subgraph Adapters ["Interface Adapters"]
+        RepoImpl[Repository Impl]
+        Presenters[Presenters]
+        Gateways[Gateways]
+    end
+
+    subgraph App ["Application (Use Cases)"]
+        Services[Services]
+        Interactors[Interactors]
+        Ports[Input/Output Ports]
+    end
+
+    subgraph Domain ["Domain (Enterprise Rules)"]
+        Entities[Entities]
+        VO[Value Objects]
+        Exceptions[Domain Exceptions]
+    end
+
+    Infrastructure --> Adapters
+    Adapters --> App
+    App --> Domain
+
+    style Domain fill:#f9f,stroke:#333,stroke-width:4px
+    style App fill:#bbf,stroke:#333,stroke-width:2px
+    style Adapters fill:#dfd,stroke:#333,stroke-width:2px
+    style Infrastructure fill:#eee,stroke:#333,stroke-width:2px
+```
+
+**Слои:**
+1.  **Domain**: Чистая бизнес-логика. Никаких зависимостей от фреймворков или БД. (`src/modules/*/domain`)
+2.  **Application**: Сценарии использования. Оркестрирует поток данных. (`src/modules/*/services`)
+3.  **Adapters**: Преобразование данных. Реализация репозиториев, API роутеры. (`src/modules/*/infrastructure`)
+4.  **Infrastructure**: Внешние инструменты. FastAPI, PostgreSQL, Redis.
+
+</details>
+
+<details>
+<summary><strong>🧠 2. Cognitive Architecture (Agent Brain)</strong></summary>
+
+Модель того, как "думает" каждый AI-агент в системе.
+
+```mermaid
+graph LR
+    subgraph World ["External World"]
+        User[User Input]
+        Env[Environment]
+    end
+
+    subgraph Agent ["AI Agent"]
+        direction TB
+        Perception[👀 Perception]
+        Memory[💾 Memory]
+        Planning[🤔 Planning]
+        Action[🛠️ Action]
+        
+        subgraph Mem ["Memory Systems"]
+            STM[Short-Term (Redis)]
+            LTM[Long-Term (Vector)]
+            Sem[Semantic (Graph)]
+        end
+    end
+
+    User --> Perception
+    Env --> Perception
+    
+    Perception --> Memory
+    Memory <--> Mem
+    Memory --> Planning
+    
+    Planning --> Action
+    Action --> Env
+    Action --> User
+
+    style Agent fill:#f9f9f9,stroke:#333,stroke-width:2px
+    style Planning fill:#ff9,stroke:#333,stroke-width:2px
+    style Memory fill:#9f9,stroke:#333,stroke-width:2px
+```
+
+**Цикл работы агента:**
+1.  **Perception**: Получение задачи от пользователя или события от системы.
+2.  **Memory**: Извлечение контекста. "Делал ли я это раньше?" (VectorDB), "Как это связано?" (Graph).
+3.  **Planning**: Построение плана действий (CoT, ReAct). Выбор инструментов.
+4.  **Action**: Выполнение действия (написание кода, запуск теста, запрос к API).
+
+</details>
+
+<details>
+<summary><strong>🛡️ 3. Security Architecture (Rule of Two)</strong></summary>
+
+Механизм защиты от ошибок AI. Ни одно критическое изменение не попадает в продакшн без верификации.
+
+```mermaid
+sequenceDiagram
+    participant User as 👤 User
+    participant Bot as 🤖 AI Agent (Author)
+    participant Verifier as 👮 Verifier Agent
+    participant System as ⚙️ System
+
+    User->>Bot: Поставь задачу (напр. "Оптимизируй SQL")
+    Bot->>Bot: Анализ и генерация решения
+    Bot->>System: Предложить изменение (DRAFT)
+    
+    par Verification
+        System->>Verifier: Запрос на проверку
+        Verifier->>Verifier: Static Analysis (Sonar)
+        Verifier->>Verifier: Security Scan (Taint)
+    end
+    
+    alt Approved
+        Verifier->>System: ✅ Approve
+        System->>User: Готово к деплою. Подтвердить?
+        User->>System: Да, деплой!
+        System->>System: Apply Change
+    else Rejected
+        Verifier->>Bot: ❌ Reject (Reason)
+        Bot->>Bot: Исправление ошибок...
+    end
+```
+
+**Принцип двух ключей:**
+1.  **Author (Bot)**: Генерирует контент. Может ошибаться.
+2.  **Verifier (Bot/User)**: Проверяет контент. Имеет право вето.
+3.  **Execution**: Происходит только при наличии двух "ключей" (Author + Verifier).
+
+</details>
+
 ---
 
 
