@@ -18,6 +18,61 @@
 
 ---
 
+<h3 align="center">🗺️ Interactive Project Map</h3>
+
+<table align="center">
+  <tr>
+    <td valign="top" width="50%" rowspan="2">
+      <h3>🧠 AI BRAIN (Core)</h3>
+      <p><b>The Intelligence Center</b></p>
+      <p>Orchestrator, 8 Specialized Agents, and Nested Learning Memory Systems.</p>
+      <br>
+      <p>
+        <a href="docs/06-features/AI_AGENTS_GUIDE.md">🤖 Agents Guide</a> • 
+        <a href="src/ai/orchestrator.py">⚙️ Source Code</a> •
+        <a href="docs/nested_learning/README.md">🧠 Nested Learning</a>
+      </p>
+    </td>
+    <td valign="top" width="25%">
+      <h3>🏗️ Architecture</h3>
+      <p>Clean Architecture & Unified Change Graph</p>
+      <a href="docs/architecture/01-high-level-design.md">📐 High-Level Design</a>
+    </td>
+    <td valign="top" width="25%">
+      <h3>🛡️ Security</h3>
+      <p>Rule of Two, Taint Analysis & Audit</p>
+      <a href="docs/03-ai-agents/SECURITY_AGENT_GUIDE.md">🔐 Security Guide</a>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" colspan="2">
+      <h3>⚡ Nervous System (Event Bus)</h3>
+      <p><b>NATS Streaming & Async Events</b></p>
+      <p>Real-time communication between Agents, Services, and Clients.</p>
+      <a href="docs/06-features/NETWORK_RESILIENCE_IMPLEMENTATION.md">📡 Network Docs</a>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <h3>🖥️ Clients & UI</h3>
+      <p><b>Desktop</b> (C#/.NET) & <b>Web</b> (React)</p>
+      <a href="external/everywhere/README.md">🖥️ Desktop</a> • <a href="frontend/README.md">🌐 Web Portal</a>
+    </td>
+    <td valign="top">
+      <h3>⚙️ Core Services</h3>
+      <p>Wiki, Analytics, Marketplace</p>
+      <a href="docs/06-features/README.md">📚 Features</a>
+    </td>
+    <td valign="top">
+      <h3>🚀 DevOps</h3>
+      <p>CI/CD, Docker, K8s</p>
+      <a href="docs/ops/devops_platform.md">☁️ Ops Guide</a>
+    </td>
+  </tr>
+</table>
+
+---
+
 ## ⚡ Почему 1C AI Stack?
 
 | 🐢 Традиционная 1С-разработка | 🚀 С 1C AI Stack |
