@@ -16,6 +16,7 @@ import uuid
 from contextvars import ContextVar
 from datetime import datetime
 from typing import Dict, Optional
+from src.config import settings
 
 from pythonjsonlogger import jsonlogger
 
@@ -46,7 +47,7 @@ class StructuredLogger:
         if self.logger.handlers:
             return
 
-        log_level_name = os.getenv("LOG_LEVEL", "INFO").upper()
+        log_level_name = settings.log_level.upper()
         handler_level = getattr(logging, log_level_name, logging.INFO)
 
         formatter = jsonlogger.JsonFormatter(
@@ -59,7 +60,7 @@ class StructuredLogger:
         console_handler.setLevel(handler_level)
         self.logger.addHandler(console_handler)
 
-        log_dir = os.getenv("LOG_DIR", "logs")
+        log_dir = settings.log_dir
         os.makedirs(log_dir, exist_ok=True)
 
         log_file = os.path.join(log_dir, "app.json.log")

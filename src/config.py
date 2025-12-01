@@ -254,8 +254,9 @@ class Settings(BaseSettings):
         default=30, description="Время жизни access token в минутах")
 
     # Путь к логам
-    log_dir: str = Field(default="./logs", description="Директория для логов")
-    log_file: str = Field(default="app.log", description="Имя файла лога")
+    log_dir: str = Field(default="./logs", description="Директория для логов", validation_alias="LOG_DIR")
+    log_file: str = Field(default="app.log", description="Имя файла лога", validation_alias="LOG_FILE")
+    log_level: str = Field(default="INFO", description="Уровень логирования", validation_alias="LOG_LEVEL")
 
     # Режим разработки (для development можно разрешить небезопасные настройки)
     environment: str = Field(default="production",
