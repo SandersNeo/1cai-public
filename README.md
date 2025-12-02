@@ -18,54 +18,20 @@
 
 ---
 
-### 🧭 Навигатор по проекту
+### 🧭 Навигатор по задачам
 
-<table width="100%">
-  <tr>
-    <td width="50%" valign="top">
-      <h3 align="center">👨‍💻 Разработчик</h3>
-      <p align="center"><i>"Хочу писать код быстрее и без багов"</i></p>
-      <ul>
-        <li>⚡ <a href="docs/QUICK_START.md"><b>Быстрый старт</b></a> — установка за 5 минут</li>
-        <li>🤖 <a href="docs/06-features/AI_AGENTS_GUIDE.md"><b>Гид по Агентам</b></a> — как использовать AI</li>
-        <li>🔌 <a href="docs/06-features/MCP_SERVER_GUIDE.md"><b>Настройка IDE</b></a> — VS Code, EDT, Cursor</li>
-        <li>🛠️ <a href="src/ai/orchestrator.py"><b>Исходный код</b></a> — ядро системы</li>
-      </ul>
-    </td>
-    <td width="50%" valign="top">
-      <h3 align="center">🏗️ Архитектор</h3>
-      <p align="center"><i>"Строю надежную и масштабируемую систему"</i></p>
-      <ul>
-        <li>📐 <a href="docs/architecture/01-high-level-design.md"><b>High-Level Design</b></a> — общая картина</li>
-        <li>🕸️ <a href="docs/architecture/02-knowledge-graph.md"><b>Unified Change Graph</b></a> — граф знаний</li>
-        <li>🧠 <a href="docs/nested_learning/README.md"><b>Nested Learning</b></a> — архитектура памяти</li>
-        <li>🛡️ <a href="docs/03-ai-agents/SECURITY_AGENT_GUIDE.md"><b>Безопасность</b></a> — стандарты защиты</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <h3 align="center">🚀 DevOps Инженер</h3>
-      <p align="center"><i>"Автоматизирую поставку и мониторинг"</i></p>
-      <ul>
-        <li>☁️ <a href="docs/ops/devops_platform.md"><b>DevOps Платформа</b></a> — Docker, K8s</li>
-        <li>🔄 <a href="docs/ops/ci_cd_integration.md"><b>CI/CD Пайплайны</b></a> — GitHub/GitLab</li>
-        <li>📊 <a href="docs/06-features/NETWORK_RESILIENCE_IMPLEMENTATION.md"><b>Мониторинг</b></a> — NATS, Logs</li>
-        <li>🐳 <a href="docker-compose.yml"><b>Docker Compose</b></a> — конфигурация</li>
-      </ul>
-    </td>
-    <td width="50%" valign="top">
-      <h3 align="center">💼 Аналитик / Manager</h3>
-      <p align="center"><i>"Управляю требованиями и процессами"</i></p>
-      <ul>
-        <li>📚 <a href="docs/06-features/README.md"><b>Все возможности</b></a> — обзор фич</li>
-        <li>🌐 <a href="frontend/README.md"><b>Веб-портал</b></a> — управление через браузер</li>
-        <li>📝 <a href="docs/nested_learning/README.md"><b>Сценарии</b></a> — обучение системы</li>
-        <li>📈 <a href="docs/06-features/MARKETPLACE_ANALYTICS.md"><b>Аналитика</b></a> — метрики использования</li>
-      </ul>
-    </td>
-  </tr>
-</table>
+Что вы хотите сделать прямо сейчас?
+
+| Я хочу... | Решение |
+| :--- | :--- |
+| 🚀 **Быстро запустить** платформу и попробовать | [**⚡ Быстрый старт**](docs/QUICK_START.md) _(5 мин)_ |
+| 🔌 **Подключить AI** к Конфигуратору / EDT | [**🔌 Настройка MCP**](docs/06-features/MCP_SERVER_GUIDE.md) |
+| ✍️ **Сгенерировать код** или тесты | [**🤖 Гид по Агентам**](docs/06-features/AI_AGENTS_GUIDE.md) |
+| 🏗️ **Разобраться** как это устроено внутри | [**📐 Архитектура**](docs/architecture/01-high-level-design.md) |
+| ☁️ **Развернуть** DevOps конвейер | [**🔄 CI/CD Гайд**](docs/ops/ci_cd_integration.md) |
+| 🛡️ **Проверить безопасность** кода | [**🔐 Security Agent**](docs/03-ai-agents/SECURITY_AGENT_GUIDE.md) |
+| 🧠 **Научить AI** специфике моего проекта | [**🎓 Nested Learning**](docs/nested_learning/README.md) |
+| 🌐 **Управлять** агентами через браузер | [**🖥️ Веб-портал**](frontend/README.md) |
 
 ---
 
