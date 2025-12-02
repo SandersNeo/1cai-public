@@ -1,41 +1,41 @@
 # 🧠 Nested Learning Documentation
 
-Welcome to the documentation for the **Nested Learning** module of the 1C AI Stack. This module implements a revolutionary approach to AI memory and continuous learning, inspired by the "Matryoshka" principle.
+Добро пожаловать в документацию модуля **Nested Learning** платформы 1C AI Stack. Этот модуль реализует революционный подход к памяти AI и непрерывному обучению, вдохновленный принципом "Матрешки".
 
-## 📚 Contents
+## 📚 Содержание
 
 ### 1. [User Guide](user_guide.md)
-How to use Nested Learning features in your daily work:
-- Adaptive LLM Selection
-- Context-Aware Code Completion
-- Scenario Optimization
+Как использовать возможности Nested Learning в повседневной работе:
+- Адаптивный выбор LLM (Adaptive LLM Selection)
+- Контекстно-осознанное автодополнение кода (Context-Aware Code Completion)
+- Оптимизация сценариев (Scenario Optimization)
 
 ### 2. [API Documentation](api_documentation.md)
-Technical details for integrating with Nested Learning services:
+Технические детали для интеграции с сервисами Nested Learning:
 - `EmbeddingService`
 - `ContinuumMemorySystem`
 - `TemporalGNN`
 
 ### 3. [Performance Benchmarks](performance_benchmarks.md)
-Metrics and results demonstrating the efficiency of the system:
-- Embedding Retention Rates
-- Query Latency
-- Cost Reduction
+Метрики и результаты, демонстрирующие эффективность системы:
+- Коэффициенты удержания эмбеддингов (Embedding Retention Rates)
+- Задержка запросов (Query Latency)
+- Снижение затрат (Cost Reduction)
 
 ### 4. [Monitoring Dashboards](monitoring_dashboards.md)
-Guide to monitoring the health and performance of Nested Learning components using Grafana and Prometheus.
+Руководство по мониторингу здоровья и производительности компонентов Nested Learning с использованием Grafana и Prometheus.
 
 ### 5. [Implementation Plan](implementation_plan.md)
-The roadmap and phases of the Nested Learning implementation.
+Дорожная карта и фазы реализации Nested Learning.
 
 ### 6. [Deployment Checklist](deployment_checklist.md)
-Steps to deploy and verify the Nested Learning module in production.
+Шаги для развертывания и верификации модуля Nested Learning в продакшене.
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Быстрый старт
 
-To enable Nested Learning features, ensure the following feature flags are set in your `.env`:
+Чтобы включить функции Nested Learning, убедитесь, что следующие feature flags установлены в вашем `.env`:
 
 ```bash
 USE_NESTED_LEARNING=true
@@ -43,4 +43,4 @@ USE_ADAPTIVE_SELECTION=true
 USE_TEMPORAL_GNN=true
 ```
 
-See the [User Guide](user_guide.md) for more configuration options.
+См. [User Guide](user_guide.md) для дополнительных опций конфигурации.

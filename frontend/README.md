@@ -1,8 +1,8 @@
 # 🌐 1C AI Stack - Frontend Portal
 
-The modern web interface for the 1C AI Stack platform. Built with React, TypeScript, and Vite.
+Современный веб-интерфейс для платформы 1C AI Stack. Разработан на React, TypeScript и Vite.
 
-## 🛠️ Tech Stack
+## 🛠️ Технологический стек
 
 - **Framework:** React 18.2
 - **Language:** TypeScript 5.3
@@ -11,67 +11,67 @@ The modern web interface for the 1C AI Stack platform. Built with React, TypeScr
 - **State Management:** Zustand + TanStack Query
 - **Charts:** Recharts
 
-## ✨ Key Features
+## ✨ Ключевые возможности
 
 ### 1. 🎭 Scenario Hub (`/scenarios`)
-Manage and execute automation scenarios.
-- Visual scenario builder
-- Real-time execution logs
-- Success rate analytics
+Управление и запуск сценариев автоматизации.
+- Визуальный конструктор сценариев
+- Логи выполнения в реальном времени
+- Аналитика успешности запусков
 
 ### 2. 📝 Technical Writer (`/technical-writer`)
-Generate documentation from your 1C code.
-- API Documentation generator
-- Mermaid diagram preview
-- Export to Markdown/PDF
+Генерация документации из кода 1С.
+- Генератор API документации
+- Предпросмотр Mermaid диаграмм
+- Экспорт в Markdown/PDF
 
 ### 3. 🛡️ Security Dashboard (`/security`)
-Monitor the security posture of your 1C configuration.
-- Vulnerability scan results
-- Dependency audit
-- Compliance reports
+Мониторинг безопасности конфигурации 1С.
+- Результаты сканирования уязвимостей
+- Аудит зависимостей
+- Отчеты о соответствии стандартам (Compliance)
 
 ### 4. 📊 Analytics Dashboard (`/dashboard`)
-Comprehensive view of your development process.
-- CI/CD metrics
-- Code quality trends
-- Team velocity
+Комплексный обзор процесса разработки.
+- CI/CD метрики
+- Тренды качества кода
+- Скорость команды (Velocity)
 
-## 🚀 Getting Started
+## 🚀 Начало работы
 
-### Prerequisites
+### Требования
 - Node.js 18+
-- npm or yarn
+- npm или yarn
 
-### Installation
+### Установка
 
 ```bash
-# 1. Install dependencies
+# 1. Установка зависимостей
 npm install
 
-# 2. Start development server
+# 2. Запуск сервера разработки
 npm run dev
 ```
 
-The application will be available at `http://localhost:3000`.
+Приложение будет доступно по адресу `http://localhost:3000`.
 
-### Configuration
+### Конфигурация
 
-Create a `.env` file in the root directory:
+Создайте файл `.env` в корневой директории:
 
 ```env
 VITE_API_URL=http://localhost:8000/api/v1
 VITE_WS_URL=ws://localhost:8000/api/v1/ws
 ```
 
-## 🏗️ Project Structure
+## 🏗️ Структура проекта
 
 ```
 src/
-├── components/     # Reusable UI components
-├── features/       # Feature-based modules (dashboard, scenarios, etc.)
-├── hooks/          # Custom React hooks
-├── services/       # API clients
-├── stores/         # Global state (Zustand)
-└── types/          # TypeScript definitions
+├── components/     # Переиспользуемые UI компоненты
+├── features/       # Модули по фичам (dashboard, scenarios, etc.)
+├── hooks/          # Кастомные React хуки
+├── services/       # API клиенты
+├── stores/         # Глобальный стейт (Zustand)
+└── types/          # TypeScript определения
 ```
