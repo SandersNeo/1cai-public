@@ -18,58 +18,69 @@
 
 ---
 
-<h3 align="center">🗺️ Interactive Project Map</h3>
+### 🧭 Навигатор по проекту
 
-<table align="center">
-  <tr>
-    <td valign="top" width="50%" rowspan="2">
-      <h3>🧠 AI BRAIN (Core)</h3>
-      <p><b>The Intelligence Center</b></p>
-      <p>Orchestrator, 8 Specialized Agents, and Nested Learning Memory Systems.</p>
-      <br>
-      <p>
-        <a href="docs/06-features/AI_AGENTS_GUIDE.md">🤖 Agents Guide</a> • 
-        <a href="src/ai/orchestrator.py">⚙️ Source Code</a> •
-        <a href="docs/nested_learning/README.md">🧠 Nested Learning</a>
-      </p>
-    </td>
-    <td valign="top" width="25%">
-      <h3>🏗️ Architecture</h3>
-      <p>Clean Architecture & Unified Change Graph</p>
-      <a href="docs/architecture/01-high-level-design.md">📐 High-Level Design</a>
-    </td>
-    <td valign="top" width="25%">
-      <h3>🛡️ Security</h3>
-      <p>Rule of Two, Taint Analysis & Audit</p>
-      <a href="docs/03-ai-agents/SECURITY_AGENT_GUIDE.md">🔐 Security Guide</a>
-    </td>
-  </tr>
-  <tr>
-    <td valign="top" colspan="2">
-      <h3>⚡ Nervous System (Event Bus)</h3>
-      <p><b>NATS Streaming & Async Events</b></p>
-      <p>Real-time communication between Agents, Services, and Clients.</p>
-      <a href="docs/06-features/NETWORK_RESILIENCE_IMPLEMENTATION.md">📡 Network Docs</a>
-    </td>
-  </tr>
-  <tr>
-    <td valign="top">
-      <h3>🖥️ Clients & UI</h3>
-      <p><b>Desktop</b> (C#/.NET) & <b>Web</b> (React)</p>
-      <a href="external/everywhere/README.md">🖥️ Desktop</a> • <a href="frontend/README.md">🌐 Web Portal</a>
-    </td>
-    <td valign="top">
-      <h3>⚙️ Core Services</h3>
-      <p>Wiki, Analytics, Marketplace</p>
-      <a href="docs/06-features/README.md">📚 Features</a>
-    </td>
-    <td valign="top">
-      <h3>🚀 DevOps</h3>
-      <p>CI/CD, Docker, K8s</p>
-      <a href="docs/ops/devops_platform.md">☁️ Ops Guide</a>
-    </td>
-  </tr>
-</table>
+Выберите вашу роль, чтобы найти нужную документацию:
+
+```mermaid
+graph TD
+    %% Стилизация
+    classDef role fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000;
+    classDef action fill:#f3e5f5,stroke:#4a148c,stroke-width:1px,color:#000;
+    classDef main fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000;
+
+    Root(("🚀 1C AI Stack")):::main
+
+    subgraph Roles ["Кто вы?"]
+        direction TB
+        Dev[👨‍💻 Разработчик]:::role
+        Arch[🏗️ Архитектор]:::role
+        Ops[🚀 DevOps]:::role
+        Analyst[💼 Аналитик]:::role
+    end
+
+    Root --> Dev
+    Root --> Arch
+    Root --> Ops
+    Root --> Analyst
+
+    %% Пути Разработчика
+    Dev --> QuickStart["⚡ Быстрый старт"]:::action
+    Dev --> Agents["🤖 Гид по Агентам"]:::action
+    Dev --> IDE["🔌 Настройка IDE"]:::action
+
+    %% Пути Архитектора
+    Arch --> Architecture["📐 Архитектура"]:::action
+    Arch --> Graph["🕸️ Граф Знаний"]:::action
+    Arch --> Security["🛡️ Безопасность"]:::action
+
+    %% Пути DevOps
+    Ops --> Deploy["☁️ Развертывание"]:::action
+    Ops --> CI_CD["🔄 CI/CD"]:::action
+    Ops --> Monitor["📊 Мониторинг"]:::action
+
+    %% Пути Аналитика
+    Analyst --> Features["📚 Возможности"]:::action
+    Analyst --> Web["🌐 Веб-портал"]:::action
+    Analyst --> Scenarios["📝 Сценарии"]:::action
+
+    %% Интерактивные ссылки
+    click QuickStart href "docs/QUICK_START.md" "Перейти к быстрому старту"
+    click Agents href "docs/06-features/AI_AGENTS_GUIDE.md" "Изучить агентов"
+    click IDE href "docs/06-features/MCP_SERVER_GUIDE.md" "Настроить IDE"
+    
+    click Architecture href "docs/architecture/01-high-level-design.md" "Изучить архитектуру"
+    click Graph href "docs/architecture/02-knowledge-graph.md" "О графе знаний"
+    click Security href "docs/03-ai-agents/SECURITY_AGENT_GUIDE.md" "Безопасность"
+    
+    click Deploy href "docs/ops/devops_platform.md" "Гайд по DevOps"
+    click CI_CD href "docs/ops/ci_cd_integration.md" "Настройка CI/CD"
+    click Monitor href "docs/06-features/NETWORK_RESILIENCE_IMPLEMENTATION.md" "Мониторинг"
+    
+    click Features href "docs/06-features/README.md" "Все возможности"
+    click Web href "frontend/README.md" "Веб-интерфейс"
+    click Scenarios href "docs/nested_learning/README.md" "Сценарии обучения"
+```
 
 ---
 
