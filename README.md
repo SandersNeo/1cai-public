@@ -20,67 +20,52 @@
 
 ### 🧭 Навигатор по проекту
 
-Выберите вашу роль, чтобы найти нужную документацию:
-
-```mermaid
-graph TD
-    %% Стилизация
-    classDef role fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000;
-    classDef action fill:#f3e5f5,stroke:#4a148c,stroke-width:1px,color:#000;
-    classDef main fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000;
-
-    Root(("🚀 1C AI Stack")):::main
-
-    subgraph Roles ["Кто вы?"]
-        direction TB
-        Dev[👨‍💻 Разработчик]:::role
-        Arch[🏗️ Архитектор]:::role
-        Ops[🚀 DevOps]:::role
-        Analyst[💼 Аналитик]:::role
-    end
-
-    Root --> Dev
-    Root --> Arch
-    Root --> Ops
-    Root --> Analyst
-
-    %% Пути Разработчика
-    Dev --> QuickStart["⚡ Быстрый старт"]:::action
-    Dev --> Agents["🤖 Гид по Агентам"]:::action
-    Dev --> IDE["🔌 Настройка IDE"]:::action
-
-    %% Пути Архитектора
-    Arch --> Architecture["📐 Архитектура"]:::action
-    Arch --> Graph["🕸️ Граф Знаний"]:::action
-    Arch --> Security["🛡️ Безопасность"]:::action
-
-    %% Пути DevOps
-    Ops --> Deploy["☁️ Развертывание"]:::action
-    Ops --> CI_CD["🔄 CI/CD"]:::action
-    Ops --> Monitor["📊 Мониторинг"]:::action
-
-    %% Пути Аналитика
-    Analyst --> Features["📚 Возможности"]:::action
-    Analyst --> Web["🌐 Веб-портал"]:::action
-    Analyst --> Scenarios["📝 Сценарии"]:::action
-
-    %% Интерактивные ссылки
-    click QuickStart href "docs/QUICK_START.md" "Перейти к быстрому старту"
-    click Agents href "docs/06-features/AI_AGENTS_GUIDE.md" "Изучить агентов"
-    click IDE href "docs/06-features/MCP_SERVER_GUIDE.md" "Настроить IDE"
-    
-    click Architecture href "docs/architecture/01-high-level-design.md" "Изучить архитектуру"
-    click Graph href "docs/architecture/02-knowledge-graph.md" "О графе знаний"
-    click Security href "docs/03-ai-agents/SECURITY_AGENT_GUIDE.md" "Безопасность"
-    
-    click Deploy href "docs/ops/devops_platform.md" "Гайд по DevOps"
-    click CI_CD href "docs/ops/ci_cd_integration.md" "Настройка CI/CD"
-    click Monitor href "docs/06-features/NETWORK_RESILIENCE_IMPLEMENTATION.md" "Мониторинг"
-    
-    click Features href "docs/06-features/README.md" "Все возможности"
-    click Web href "frontend/README.md" "Веб-интерфейс"
-    click Scenarios href "docs/nested_learning/README.md" "Сценарии обучения"
-```
+<table width="100%">
+  <tr>
+    <td width="50%" valign="top">
+      <h3 align="center">👨‍💻 Разработчик</h3>
+      <p align="center"><i>"Хочу писать код быстрее и без багов"</i></p>
+      <ul>
+        <li>⚡ <a href="docs/QUICK_START.md"><b>Быстрый старт</b></a> — установка за 5 минут</li>
+        <li>🤖 <a href="docs/06-features/AI_AGENTS_GUIDE.md"><b>Гид по Агентам</b></a> — как использовать AI</li>
+        <li>🔌 <a href="docs/06-features/MCP_SERVER_GUIDE.md"><b>Настройка IDE</b></a> — VS Code, EDT, Cursor</li>
+        <li>🛠️ <a href="src/ai/orchestrator.py"><b>Исходный код</b></a> — ядро системы</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h3 align="center">🏗️ Архитектор</h3>
+      <p align="center"><i>"Строю надежную и масштабируемую систему"</i></p>
+      <ul>
+        <li>📐 <a href="docs/architecture/01-high-level-design.md"><b>High-Level Design</b></a> — общая картина</li>
+        <li>🕸️ <a href="docs/architecture/02-knowledge-graph.md"><b>Unified Change Graph</b></a> — граф знаний</li>
+        <li>🧠 <a href="docs/nested_learning/README.md"><b>Nested Learning</b></a> — архитектура памяти</li>
+        <li>🛡️ <a href="docs/03-ai-agents/SECURITY_AGENT_GUIDE.md"><b>Безопасность</b></a> — стандарты защиты</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3 align="center">🚀 DevOps Инженер</h3>
+      <p align="center"><i>"Автоматизирую поставку и мониторинг"</i></p>
+      <ul>
+        <li>☁️ <a href="docs/ops/devops_platform.md"><b>DevOps Платформа</b></a> — Docker, K8s</li>
+        <li>🔄 <a href="docs/ops/ci_cd_integration.md"><b>CI/CD Пайплайны</b></a> — GitHub/GitLab</li>
+        <li>📊 <a href="docs/06-features/NETWORK_RESILIENCE_IMPLEMENTATION.md"><b>Мониторинг</b></a> — NATS, Logs</li>
+        <li>🐳 <a href="docker-compose.yml"><b>Docker Compose</b></a> — конфигурация</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h3 align="center">💼 Аналитик / Manager</h3>
+      <p align="center"><i>"Управляю требованиями и процессами"</i></p>
+      <ul>
+        <li>📚 <a href="docs/06-features/README.md"><b>Все возможности</b></a> — обзор фич</li>
+        <li>🌐 <a href="frontend/README.md"><b>Веб-портал</b></a> — управление через браузер</li>
+        <li>📝 <a href="docs/nested_learning/README.md"><b>Сценарии</b></a> — обучение системы</li>
+        <li>📈 <a href="docs/06-features/MARKETPLACE_ANALYTICS.md"><b>Аналитика</b></a> — метрики использования</li>
+      </ul>
+    </td>
+  </tr>
+</table>
 
 ---
 
