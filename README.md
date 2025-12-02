@@ -548,6 +548,8 @@ sequenceDiagram
 | 38 | Project Manager | `/api/v1/project_manager` | ✅ Ready | Integrations |
 | 39 | Shared Memory | internal | ✅ Ready | Infrastructure |
 | 40 | Performance | internal | ✅ Ready | Core Features |
+| 41 | Cognitive Memory (GAM) | internal | ✅ Ready | Core Features |
+| 42 | Self-Evolution (Strike 3) | `/api/v1/ai/evolve` | ✅ Ready | Core Features |
 
 **Легенда:**
 - ✅ Ready — Production Ready
