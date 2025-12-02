@@ -699,9 +699,9 @@ graph LR
         Compiler[Context Compiler]
         
         subgraph Store ["Memory Store"]
-            Episodic[Episodic (Events)]
-            Semantic[Semantic (Facts)]
-            Procedural[Procedural (Skills)]
+            Episodic["Episodic (Events)"]
+            Semantic["Semantic (Facts)"]
+            Procedural["Procedural (Skills)"]
         end
     end
     
