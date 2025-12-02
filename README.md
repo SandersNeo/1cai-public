@@ -285,10 +285,10 @@
 graph LR
     subgraph IDE ["🛠️ Ваше рабочее место"]
         direction TB
-        Conf[Конфигуратор]
-        EDT[1C:EDT / Eclipse]
-        VSCode[VS Code / Cursor]
-        Everywhere[Everywhere Client (Desktop)]
+        Conf["Конфигуратор"]
+        EDT["1C:EDT / Eclipse"]
+        VSCode["VS Code / Cursor"]
+        Everywhere["Everywhere Client (Desktop)"]
         
         Conf -.->|Копипаст / Плагин| Everywhere
         EDT -->|MCP Plugin| MCP
@@ -297,19 +297,19 @@ graph LR
 
     subgraph Bridge ["🌉 Шина интеграции (The Bridge)"]
         direction TB
-        MCP[**MCP Server** (Model Context Protocol)]
-        gRPC[gRPC Stream]
-        WS[WebSocket (Real-time)]
+        MCP["**MCP Server** (Model Context Protocol)"]
+        gRPC["gRPC Stream"]
+        WS["WebSocket (Real-time)"]
     end
 
     subgraph AIStack ["🤖 1C AI Stack (Core)"]
         direction TB
-        Orchestrator[**AI Orchestrator**]
+        Orchestrator["**AI Orchestrator**"]
         
         subgraph Knowledge ["🧠 Глубокое понимание"]
-            Graph[**Unified Change Graph** (Neo4j)]
-            Vector[**Vector Memory** (Qdrant)]
-            CodeDNA[**Code DNA** (Evolution)]
+            Graph["**Unified Change Graph** (Neo4j)"]
+            Vector["**Vector Memory** (Qdrant)"]
+            CodeDNA["**Code DNA** (Evolution)"]
         end
     end
 
@@ -343,21 +343,21 @@ graph LR
 ```mermaid
 graph TD
     subgraph Clients ["👥 Clients & Entry Points"]
-        IDE_Plugins[IDE Plugins (MCP)]
-        Everywhere[Everywhere Client (gRPC)]
-        Web_Dash[Web Dashboard (React)]
-        CI_CD[CI/CD Pipelines (GitHub Actions)]
+        IDE_Plugins["IDE Plugins (MCP)"]
+        Everywhere["Everywhere Client (gRPC)"]
+        Web_Dash["Web Dashboard (React)"]
+        CI_CD["CI/CD Pipelines (GitHub Actions)"]
     end
 
     subgraph Gateway ["🚪 Gateway Layer"]
-        APIGW[API Gateway / Load Balancer]
-        MCPServer[**MCP Server**]
-        Auth[Auth Service (JWT/OAuth)]
+        APIGW["API Gateway / Load Balancer"]
+        MCPServer["**MCP Server**"]
+        Auth["Auth Service (JWT/OAuth)"]
     end
 
     subgraph Brain ["🧠 AI Core (The Brain)"]
         direction TB
-        Orch[**AI Orchestrator**]
+        Orch["**AI Orchestrator**"]
         
         subgraph Agents ["Specialized Agents"]
             Dev[Developer]
@@ -367,22 +367,22 @@ graph TD
         end
         
         subgraph Revolution ["🚀 Revolutionary Components"]
-            SelfHeal[Self-Healing Engine]
-            Evol[Self-Evolution (MAB)]
-            DNA[Code DNA Engine]
+            SelfHeal["Self-Healing Engine"]
+            Evol["Self-Evolution (MAB)"]
+            DNA["Code DNA Engine"]
         end
     end
 
     subgraph Memory ["💾 Cognitive Memory (Nested Learning)"]
         direction TB
-        Short[Short-Term (Redis)]
-        Long[Long-Term (Qdrant)]
-        Graph[Knowledge Graph (Neo4j)]
-        Models[Model Registry (MLFlow)]
+        Short["Short-Term (Redis)"]
+        Long["Long-Term (Qdrant)"]
+        Graph["Knowledge Graph (Neo4j)"]
+        Models["Model Registry (MLFlow)"]
     end
 
     subgraph Bus ["⚡ Event Bus (Nervous System)"]
-        NATS[NATS JetStream]
+        NATS["NATS JetStream"]
     end
 
     %% Connections
