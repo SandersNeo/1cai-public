@@ -273,166 +273,142 @@
 
 ## 🏗️ Архитектура Платформы
 
-<details open>
-<summary><strong>👀 Вид для 1С-разработчика (Integration View)</strong></summary>
+### 🧩 Архитектура Платформы
 
-Как **1C AI Stack** встраивается в вашу повседневную работу.
+Мы переосмыслили подход к интеграции AI в 1С. Вместо устаревших внешних обработок мы используем **Model Context Protocol (MCP)** и нативные клиенты.
+
+#### 👀 Вид для 1С-разработчика (Integration View)
+
+Вы работаете в привычной среде (**Configurator**, **EDT**, **VS Code**), а AI Stack бесшовно дополняет её через **MCP**.
 
 ```mermaid
 graph LR
-    subgraph OneC ["🪐 Экосистема 1С:Предприятие"]
+    subgraph IDE ["🛠️ Ваше рабочее место"]
         direction TB
-        Dev["Разработчик 1С"]
-        Designer["Конфигуратор / EDT"]
-        Client["1C:Предприятие (Клиент)"]
-        Server["Кластер серверов 1С"]
+        Conf[Конфигуратор]
+        EDT[1C:EDT / Eclipse]
+        VSCode[VS Code / Cursor]
+        Everywhere[Everywhere Client (Desktop)]
         
-        Dev -->|Кодит в| Designer
-        Designer -.->|Обновляет| Server
-        Client <-->|Работает с| Server
+        Conf -.->|Копипаст / Плагин| Everywhere
+        EDT -->|MCP Plugin| MCP
+        VSCode -->|Native MCP| MCP
     end
 
-    subgraph Bridge ["🌉 Шина интеграции"]
+    subgraph Bridge ["🌉 Шина интеграции (The Bridge)"]
         direction TB
-        ExtProc["Внешняя обработка (EPF)"]
-        HTTP["HTTP Сервис (JSON)"]
-        OData["OData Standard"]
-        RAS["RAS Protocol"]
+        MCP[**MCP Server** (Model Context Protocol)]
+        gRPC[gRPC Stream]
+        WS[WebSocket (Real-time)]
     end
 
-    subgraph AIStack ["🤖 1C AI Stack (Backend)"]
+    subgraph AIStack ["🤖 1C AI Stack (Core)"]
         direction TB
-        API["API Gateway"]
+        Orchestrator[**AI Orchestrator**]
         
-        subgraph Brain ["Мозг системы"]
-            Agents["AI Агенты"]
-            Gen["Генераторы кода"]
-        end
-        
-        subgraph Memory ["Память"]
-            Vector["Векторная база (RAG)"]
-            Graph["Граф метаданных (Neo4j)"]
+        subgraph Knowledge ["🧠 Глубокое понимание"]
+            Graph[**Unified Change Graph** (Neo4j)]
+            Vector[**Vector Memory** (Qdrant)]
+            CodeDNA[**Code DNA** (Evolution)]
         end
     end
 
-    %% Взаимодействие
-    Client -->|1. Вопрос через EPF| ExtProc
-    ExtProc -->|2. POST запрос| API
+    %% Потоки данных
+    IDE <==>|1. Контекст + Запрос| Bridge
+    Bridge <==>|2. Маршрутизация| Orchestrator
+    Orchestrator <-->|3. Анализ связей| Graph
+    Orchestrator <-->|4. Поиск похожих| Vector
+    Orchestrator <-->|5. Проверка DNA| CodeDNA
     
-    API -->|3. Маршрутизация| Agents
-    Agents <-->|4. Поиск контекста| Memory
-    
-    %% Активные действия
-    Agents -.->|5. Чтение данных| OData
-    Agents -.->|6. Управление кластером| RAS
-    
-    OData -.-> Server
-    RAS -.-> Server
-    
-    %% Ответ
-    Agents -->|7. Готовый код/Ответ| API
-    API -->|8. JSON| ExtProc
-    ExtProc -->|9. Результат| Client
-    
-    style OneC fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    Orchestrator ==>|6. Умный ответ| Bridge
+    Bridge ==>|7. Код / Решение| IDE
+
+    style IDE fill:#fff4e6,stroke:#d79b00,stroke-width:2px
     style AIStack fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
-    style Bridge fill:#f9f9f9,stroke:#666,stroke-width:2px,stroke-dasharray: 5 5
+    style Bridge fill:#f0f0f0,stroke:#333,stroke-width:2px,stroke-dasharray: 5 5
+    style MCP fill:#d4edda,stroke:#28a745,stroke-width:2px
 ```
 
-**Что это значит:**
-1.  **Вы работаете как обычно**: В Конфигураторе или EDT.
-2.  **AI живет рядом**: Вы общаетесь с ним через **Внешнюю обработку (EPF)** прямо в режиме Предприятия или через плагин.
-3.  **Умная связь**: AI Stack ходит в 1С через стандартные протоколы (**OData**, **RAS**), чтобы читать метаданные и понимать контекст вашей задачи.
-4.  **Никакой магии**: Это просто мощный веб-сервис, который "понимает" структуру 1С.
+**Ключевые отличия:**
+1.  **MCP Server**: Единый стандарт для всех IDE. Вы подключаете AI как "инструмент", а не как "чат-бота".
+2.  **Everywhere Client**: Нативное Desktop-приложение (Windows/Mac/Linux), которое "видит" ваш экран и буфер обмена, работая поверх Конфигуратора.
+3.  **Unified Change Graph**: AI не просто "угадывает" код, он **знает** структуру метаданных, зависимости и последствия изменений благодаря графу в Neo4j.
 
-</details>
+---
 
-<details>
-<summary><strong>🏗️ Вид для Архитектора (System View)</strong></summary>
+#### 🏗️ Вид для Архитектора (System View)
 
-Внутреннее устройство платформы (Microservices & Data Flow).
+Глубокое погружение в микросервисную архитектуру, Nested Learning и Event-Driven взаимодействие.
 
 ```mermaid
 graph TD
-    subgraph Users ["👥 Users & Entry Points"]
-        Dev[Developer]
-        Manager[Manager]
-        Admin[Administrator]
-        
-        IDE[IDE Plugins]
-        Web[Web Dashboard]
-        Desktop[Desktop Client]
-        
-        Dev --> IDE
-        Manager --> Web
-        Admin --> Web
-        Dev --> Desktop
+    subgraph Clients ["👥 Clients & Entry Points"]
+        IDE_Plugins[IDE Plugins (MCP)]
+        Everywhere[Everywhere Client (gRPC)]
+        Web_Dash[Web Dashboard (React)]
+        CI_CD[CI/CD Pipelines (GitHub Actions)]
     end
 
-    subgraph Gateway ["🚪 API Gateway Layer"]
-        API[API Gateway / Load Balancer]
-        Auth[Auth Service]
-        Rate[Rate Limiter]
-        
-        IDE --> API
-        Web --> API
-        Desktop --> API
+    subgraph Gateway ["🚪 Gateway Layer"]
+        APIGW[API Gateway / Load Balancer]
+        MCPServer[**MCP Server**]
+        Auth[Auth Service (JWT/OAuth)]
     end
 
     subgraph Brain ["🧠 AI Core (The Brain)"]
         direction TB
-        DevAgent[DevOps Agent]
-        BAAgent[Business Analyst]
-        QAAgent[QA Engineer]
-        ArchAgent[Architect]
-        SecAgent[Security Officer]
-        TechWriter[Technical Writer]
+        Orch[**AI Orchestrator**]
         
-        API --> DevAgent
-        API --> BAAgent
-        API --> QAAgent
-        API --> ArchAgent
+        subgraph Agents ["Specialized Agents"]
+            Dev[Developer]
+            Arch[Architect]
+            QA[QA Engineer]
+            BA[Business Analyst]
+        end
+        
+        subgraph Revolution ["🚀 Revolutionary Components"]
+            SelfHeal[Self-Healing Engine]
+            Evol[Self-Evolution (MAB)]
+            DNA[Code DNA Engine]
+        end
     end
 
-    subgraph Body ["⚙️ Core Services (The Body)"]
+    subgraph Memory ["💾 Cognitive Memory (Nested Learning)"]
         direction TB
-        Dash[Dashboard]
-        Analytics[Analytics]
-        KB[Knowledge Base]
-        Wiki[Enterprise Wiki]
-        Market[Marketplace]
-        
-        API --> Dash
-        API --> Analytics
-        API --> KB
+        Short[Short-Term (Redis)]
+        Long[Long-Term (Qdrant)]
+        Graph[Knowledge Graph (Neo4j)]
+        Models[Model Registry (MLFlow)]
     end
 
-    subgraph Nervous ["⚡ Nervous System (Bus & Graph)"]
-        Bus[Event Bus / Kafka]
-        Graph[Unified Change Graph]
-        
-        DevAgent <--> Bus
-        BAAgent <--> Bus
-        QAAgent <--> Bus
-        
-        DevAgent <--> Graph
-        ArchAgent <--> Graph
+    subgraph Bus ["⚡ Event Bus (Nervous System)"]
+        NATS[NATS JetStream]
     end
 
-    subgraph Data ["💾 Data Layer"]
-        Postgres[(PostgreSQL)]
-        VectorDB[(Vector DB)]
-        Neo4j[(Neo4j Graph)]
-        Redis[(Redis Cache)]
-        
-        Body --> Postgres
-        Brain --> VectorDB
-        Graph --> Neo4j
-        Gateway --> Redis
-    end
+    %% Connections
+    Clients --> APIGW
+    Clients --> MCPServer
+    
+    APIGW --> Orch
+    MCPServer --> Orch
+    
+    Orch --> Agents
+    Orch <--> Revolution
+    
+    Agents <--> Memory
+    Revolution <--> Memory
+    
+    Agents <--> NATS
+    Revolution <--> NATS
+    
+    %% Data Flow
+    Graph -.->|Metadata| Agents
+    Long -.->|RAG| Agents
+    
+    style Revolution fill:#ffe6f2,stroke:#d63384,stroke-width:2px
+    style Memory fill:#e2e3e5,stroke:#383d41,stroke-width:2px
+    style Brain fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
 ```
-
-</details>
 
 ### 🧩 Компоненты архитектуры
 
