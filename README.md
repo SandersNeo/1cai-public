@@ -328,6 +328,54 @@ graph LR
 
 ---
 
+#### 🚀 4. Unified Intelligence Architecture (v3.0)
+
+Архитектура "Живого Мозга", объединяющая пользователя, среду и ИИ в единый цикл обучения.
+
+```mermaid
+graph TD
+    subgraph UserSpace ["👤 User Space (Unified Portal)"]
+        Dashboard["📊 Dashboard"]
+        VSCode["💻 VS Code (Embedded)"]
+        NocoBase["✅ Tasks (Embedded)"]
+        Browser["🌐 Browser (Context)"]
+    end
+
+    subgraph FeedbackLoop ["🔄 RLTF Engine (Feedback Loop)"]
+        Collector["👀 Context Collector"]
+        Trainer["🎓 Online Trainer"]
+        Predictor["🔮 Action Predictor"]
+        Models["🧠 AI Models"]
+    end
+
+    subgraph Backend ["⚙️ Backend Services"]
+        Orchestrator["🤖 AI Orchestrator"]
+        Git["📦 Git Service"]
+        Docker["🐳 Docker Service"]
+    end
+
+    %% Flow
+    UserSpace -->|1. User Action (Click, Type)| Collector
+    Collector -->|2. Raw Events| Trainer
+    Trainer -->|3. Update Weights| Models
+    Models -->|4. Predict Next Action| Predictor
+    Predictor -->|5. Suggestion (Toast)| UserSpace
+    
+    VSCode <-->|6. Code Sync| Git
+    Dashboard <-->|7. Status| Docker
+    
+    style UserSpace fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
+    style FeedbackLoop fill:#ffe6f2,stroke:#d63384,stroke-width:2px
+    style Backend fill:#f0f0f0,stroke:#333,stroke-width:2px
+```
+
+**Как это работает:**
+1.  **User Space**: Вы работаете в Портале. Система "видит" ваши действия.
+2.  **Feedback Loop**: Каждое действие (успешный коммит, закрытая задача) обучает модель.
+3.  **Prediction**: Система предугадывает ваши потребности (например, предлагает создать Pull Request после серии коммитов).
+
+---
+
 #### 🏗️ Вид для Архитектора (System View)
 
 Глубокое погружение в микросервисную архитектуру, Nested Learning и Event-Driven взаимодействие.
