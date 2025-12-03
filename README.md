@@ -328,7 +328,7 @@ graph LR
 
 ---
 
-#### 🚀 4. Unified Intelligence Architecture (v3.0)
+#### 🚀 1. Unified Intelligence Architecture (v3.0)
 
 Архитектура "Живого Мозга", объединяющая пользователя, среду и ИИ в единый цикл обучения.
 
@@ -355,14 +355,14 @@ graph TD
     end
 
     %% Flow
-    UserSpace -->|1. User Action (Click, Type)| Collector
-    Collector -->|2. Raw Events| Trainer
-    Trainer -->|3. Update Weights| Models
-    Models -->|4. Predict Next Action| Predictor
-    Predictor -->|5. Suggestion (Toast)| UserSpace
+    UserSpace -->|"1. User Action (Click, Type)"| Collector
+    Collector -->|"2. Raw Events"| Trainer
+    Trainer -->|"3. Update Weights"| Models
+    Models -->|"4. Predict Next Action"| Predictor
+    Predictor -->|"5. Suggestion (Toast)"| UserSpace
     
-    VSCode <-->|6. Code Sync| Git
-    Dashboard <-->|7. Status| Docker
+    VSCode <-->|"6. Code Sync"| Git
+    Dashboard <-->|"7. Status"| Docker
     
     style UserSpace fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
     style FeedbackLoop fill:#ffe6f2,stroke:#d63384,stroke-width:2px
@@ -697,7 +697,7 @@ sequenceDiagram
 Мы не просто используем LLM, мы создали архитектуру, которая понимает контекст 1С.
 
 <details>
-<summary><strong>🚀 8. Unified Intelligence (v3.0)</strong></summary>
+<summary><strong>🚀 1. Unified Intelligence (v3.0)</strong></summary>
 
 **Мы совершили квантовый скачок. Платформа превратилась в Единую Интеллектуальную ОС.**
 Больше никаких разрозненных инструментов. Только **Single Pane of Glass**.
@@ -727,7 +727,7 @@ sequenceDiagram
 </details>
 
 <details>
-<summary><strong>🪆 1. Nested Learning Architecture</strong></summary>
+<summary><strong>🪆 2. Nested Learning Architecture</strong></summary>
 
 Уникальная система обучения, вдохновленная принципом матрешки. Позволяет агентам учиться на разных уровнях абстракции без "катастрофического забывания".
 
@@ -746,7 +746,7 @@ sequenceDiagram
 </details>
 
 <details>
-<summary><strong>🕸️ 2. Graph-Based Dependency Analysis</strong></summary>
+<summary><strong>🕸️ 3. Graph-Based Dependency Analysis</strong></summary>
 
 В отличие от текстового поиска, мы строим полный граф зависимостей конфигурации 1С.
 
@@ -760,7 +760,7 @@ sequenceDiagram
 </details>
 
 <details>
-<summary><strong>🔄 3. Self-Referential Optimization (Strike 3)</strong></summary>
+<summary><strong>🔄 4. Self-Referential Optimization (Strike 3)</strong></summary>
 
 Система, которая оптимизирует сама себя.
 
@@ -774,7 +774,7 @@ sequenceDiagram
 </details>
 
 <details>
-<summary><strong>🧬 4. Self-Evolution Architecture (Phases 1-3)</strong></summary>
+<summary><strong>🧬 5. Self-Evolution Architecture (Phases 1-3)</strong></summary>
 
 Система, способная к самостоятельному улучшению и адаптации.
 
@@ -818,7 +818,7 @@ graph TD
 </details>
 
 <details>
-<summary><strong>🧠 5. Cognitive Memory (GAM)</strong></summary>
+<summary><strong>🧠 6. Cognitive Memory (GAM)</strong></summary>
 
 Человекоподобная память для долгосрочного контекста и обучения.
 
@@ -853,7 +853,7 @@ graph LR
 </details>
 
 <details>
-<summary><strong>🔮 6. Predictive Modeling & Code DNA</strong></summary>
+<summary><strong>🔮 7. Predictive Modeling & Code DNA</strong></summary>
 
 Система не просто реагирует, а предсказывает потребности.
 
@@ -869,7 +869,7 @@ graph LR
 </details>
 
 <details>
-<summary><strong>🧪 7. ML Infrastructure & A/B Testing</strong></summary>
+<summary><strong>🧪 8. ML Infrastructure & A/B Testing</strong></summary>
 
 Полный цикл экспериментов для ML-моделей (`src/ml/ab_testing`).
 
