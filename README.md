@@ -59,6 +59,36 @@
 
 ## 📰 Последние обновления
 
+<details open>
+<summary><strong>🎉 2025-12-04: The "Unified Intelligence" Update (v3.0)</strong></summary>
+
+**Мы совершили квантовый скачок. Платформа превратилась в Единую Интеллектуальную ОС.**
+Больше никаких разрозненных инструментов. Только **Single Pane of Glass**.
+
+### 1. 🚀 Unified Workspace (Единое Окно)
+Мы объединили **VS Code**, **NocoBase**, **Portainer** и **Gitea** в один бесшовный портал.
+Вы пишете код, управляете задачами и следите за серверами, не переключая вкладки.
+
+![Unified Dashboard](/C:/Users/chg/.gemini/antigravity/brain/b983adba-d464-4519-894e-88dde95e0949/portal_dashboard_v3_1764772503827.png)
+
+### 2. 🧠 RLTF (Reinforcement Learning from Task Feedback)
+Система перешла от "выполнения команд" к **самообучению**.
+*   **Feedback Loop:** Каждое ваше действие (Save, Commit, Run) — это сигнал для обучения.
+*   **Action Prediction:** ИИ предугадывает ваш следующий шаг (например, предлагает "Commit" после успешного теста).
+*   **Context Awareness:** "Глаза" системы видят, что происходит в браузере в реальном времени.
+
+### 3. 🔍 Global Search (Brain Index)
+Мгновенный поиск по всему:
+*   📦 **Код** (Git)
+*   ✅ **Задачи** (NocoBase)
+*   📄 **Документация** (Wiki)
+
+![Global Search](/C:/Users/chg/.gemini/antigravity/brain/b983adba-d464-4519-894e-88dde95e0949/portal_global_search_1764772646040.png)
+
+**Итог:** Это больше не набор скриптов. Это **Secure Enterprise OS**, которая думает вместе с вами.
+
+</details>
+
 <details>
 <summary><strong>🎉 2025-12-01: Global Polish & Final Release</strong></summary>
 
@@ -527,48 +557,49 @@ sequenceDiagram
 
 | # | Модуль | Endpoint | Статус | Категория |
 |---|--------|----------|--------|-----------|
-| 1 | DevOps Agent | `/api/v1/devops` | ✅ 95% | AI Агенты |
-| 2 | Business Analyst | `/api/v1/ba_sessions` | ✅ 92% | AI Агенты |
-| 3 | QA Engineer | `/api/v1/test_generation` | ✅ 90% | AI Агенты |
-| 4 | Architect | `/api/v1/graph` | ✅ 90% | AI Агенты |
-| 5 | Security Officer | `/api/v1/security` | ✅ Ready | AI Агенты |
-| 6 | Technical Writer | `/api/v1/technical_writer` | ✅ Ready | AI Агенты |
-| 7 | Tech Log Analyzer | `/api/v1/tech_log` | ✅ Beta | AI Агенты |
-| 8 | RAS Monitor | `/api/v1/ras_monitor` | ✅ Ready | AI Агенты |
-| 9 | SQL Optimizer | `/api/v1/sql_optimizer` | ✅ Ready | AI Агенты |
-| 10 | DevOps API | `/api/v1/devops` | ✅ Ready | API Endpoints |
-| 11 | BPMN API | `/api/v1/bpmn` | ✅ Ready | API Endpoints |
-| 12 | Graph API | `/api/v1/graph` | ✅ Ready | API Endpoints |
-| 13 | BA Sessions API | `/api/v1/ba_sessions` | ✅ Ready | API Endpoints |
-| 14 | Code Approval API | `/api/v1/code_approval` | ✅ Ready | API Endpoints |
-| 15 | WebSocket API | `/api/v1/websocket` | ✅ Ready | API Endpoints |
-| 16 | Gateway API | `/api/v1/gateway` | ✅ Ready | API Endpoints |
-| 17 | Metrics API | `/api/v1/metrics` | ✅ Ready | API Endpoints |
-| 18 | Tenant Management | `/api/v1/tenants` | ✅ Ready | API Endpoints |
-| 19 | Billing Webhooks | `/api/v1/billing/webhooks` | ✅ Ready | API Endpoints |
-| 20 | Dashboard | `/api/v1/dashboard` | ✅ Ready | Core Features |
-| 21 | Admin Dashboard | `/api/v1/admin_dashboard` | ✅ Ready | Core Features |
-| 22 | Analytics | `/api/v1/analytics` | ✅ Ready | Core Features |
-| 23 | AI Assistants | `/api/v1/assistants` | ✅ Ready | Core Features |
-| 24 | Copilot | `/api/v1/copilot` | ✅ Ready | Core Features |
-| 25 | Knowledge Base | `/api/v1/knowledge_base` | ✅ Ready | Core Features |
-| 26 | Marketplace | `/api/v1/marketplace` | ✅ Ready | Core Features |
-| 27 | Enterprise Wiki | `/api/v1/wiki` | ✅ Ready | Core Features |
-| 28 | Code Analyzers | `/api/v1/code_analyzers` | ✅ Ready | Code Analysis |
-| 29 | Code Review | `/api/v1/code_review` | ✅ Ready | Code Analysis |
-| 30 | Test Generation | `/api/v1/test_generation` | ✅ Ready | Code Analysis |
-| 31 | Doc Generator | internal | ✅ Ready | Code Analysis |
-| 32 | Auth | `/api/v1/auth` | ✅ Ready | Infrastructure |
-| 33 | Risk Management | `/api/v1/risk` | ✅ Ready | Infrastructure |
-| 34 | Revolutionary | `/api/v1/revolutionary` | ✅ Ready | Infrastructure |
-| 35 | Scenario Hub | `/api/v1/scenario_hub` | ✅ Ready | Infrastructure |
-| 36 | GitHub Integration | `/api/v1/github` | ✅ Ready | Integrations |
-| 37 | ML Models | `/api/v1/ml` | ✅ Ready | Integrations |
-| 38 | Project Manager | `/api/v1/project_manager` | ✅ Ready | Integrations |
-| 39 | Shared Memory | internal | ✅ Ready | Infrastructure |
-| 40 | Performance | internal | ✅ Ready | Core Features |
-| 41 | Cognitive Memory (GAM) | internal | ✅ Ready | Core Features |
-| 42 | Self-Evolution (Strike 3) | `/api/v1/ai/evolve` | ✅ Ready | Core Features |
+| 1 | Developer Agent | `/api/v1/developer` | ✅ Ready | AI Агенты |
+| 2 | DevOps Agent | `/api/v1/devops` | ✅ 95% | AI Агенты |
+| 3 | Business Analyst | `/api/v1/ba_sessions` | ✅ 92% | AI Агенты |
+| 4 | QA Engineer | `/api/v1/test_generation` | ✅ 90% | AI Агенты |
+| 5 | Architect | `/api/v1/graph` | ✅ 90% | AI Агенты |
+| 6 | Security Officer | `/api/v1/security` | ✅ Ready | AI Агенты |
+| 7 | Technical Writer | `/api/v1/technical_writer` | ✅ Ready | AI Агенты |
+| 8 | Tech Log Analyzer | `/api/v1/tech_log` | ✅ Beta | AI Агенты |
+| 9 | RAS Monitor | `/api/v1/ras_monitor` | ✅ Ready | AI Агенты |
+| 10 | SQL Optimizer | `/api/v1/sql_optimizer` | ✅ Ready | AI Агенты |
+| 11 | DevOps API | `/api/v1/devops` | ✅ Ready | API Endpoints |
+| 12 | BPMN API | `/api/v1/bpmn` | ✅ Ready | API Endpoints |
+| 13 | Graph API | `/api/v1/graph` | ✅ Ready | API Endpoints |
+| 14 | BA Sessions API | `/api/v1/ba_sessions` | ✅ Ready | API Endpoints |
+| 15 | Code Approval API | `/api/v1/code_approval` | ✅ Ready | API Endpoints |
+| 16 | WebSocket API | `/api/v1/websocket` | ✅ Ready | API Endpoints |
+| 17 | Gateway API | `/api/v1/gateway` | ✅ Ready | API Endpoints |
+| 18 | Metrics API | `/api/v1/metrics` | ✅ Ready | API Endpoints |
+| 19 | Tenant Management | `/api/v1/tenants` | ✅ Ready | API Endpoints |
+| 20 | Billing Webhooks | `/api/v1/billing/webhooks` | ✅ Ready | API Endpoints |
+| 21 | Dashboard | `/api/v1/dashboard` | ✅ Ready | Core Features |
+| 22 | Admin Dashboard | `/api/v1/admin_dashboard` | ✅ Ready | Core Features |
+| 23 | Analytics | `/api/v1/analytics` | ✅ Ready | Core Features |
+| 24 | AI Assistants | `/api/v1/assistants` | ✅ Ready | Core Features |
+| 25 | Copilot | `/api/v1/copilot` | ✅ Ready | Core Features |
+| 26 | Knowledge Base | `/api/v1/knowledge_base` | ✅ Ready | Core Features |
+| 27 | Marketplace | `/api/v1/marketplace` | ✅ Ready | Core Features |
+| 28 | Enterprise Wiki | `/api/v1/wiki` | ✅ Ready | Core Features |
+| 29 | Code Analyzers | `/api/v1/code_analyzers` | ✅ Ready | Code Analysis |
+| 30 | Code Review | `/api/v1/code_review` | ✅ Ready | Code Analysis |
+| 31 | Test Generation | `/api/v1/test_generation` | ✅ Ready | Code Analysis |
+| 32 | Doc Generator | internal | ✅ Ready | Code Analysis |
+| 33 | Auth | `/api/v1/auth` | ✅ Ready | Infrastructure |
+| 34 | Risk Management | `/api/v1/risk` | ✅ Ready | Infrastructure |
+| 35 | Revolutionary | `/api/v1/revolutionary` | ✅ Ready | Infrastructure |
+| 36 | Scenario Hub | `/api/v1/scenario_hub` | ✅ Ready | Infrastructure |
+| 37 | GitHub Integration | `/api/v1/github` | ✅ Ready | Integrations |
+| 38 | ML Models | `/api/v1/ml` | ✅ Ready | Integrations |
+| 39 | Project Manager | `/api/v1/project_manager` | ✅ Ready | Integrations |
+| 40 | Shared Memory | internal | ✅ Ready | Infrastructure |
+| 41 | Performance | internal | ✅ Ready | Core Features |
+| 42 | Cognitive Memory (GAM) | internal | ✅ Ready | Core Features |
+| 43 | Self-Evolution (Strike 3) | `/api/v1/ai/evolve` | ✅ Ready | Core Features |
 
 **Легенда:**
 - ✅ Ready — Production Ready

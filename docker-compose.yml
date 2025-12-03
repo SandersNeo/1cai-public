@@ -1,239 +1,310 @@
 version: '3.8'
 
-# ═══════════════════════════════════════════════════════════════════════════
-# Enterprise 1C AI Development Stack
-# Stage 0: Basic Infrastructure
-# ═══════════════════════════════════════════════════════════════════════════
-#
-# ✅ MVP READY - этот файл содержит минимальный набор для работы
-#
-# 💡 TIP: Для еще более простого запуска используйте docker-compose.mvp.yml
-#         (только PostgreSQL + Redis, без Nginx)
-#
-# Включено:
-#   ✅ PostgreSQL - основная БД (ОБЯЗАТЕЛЬНО)
-#   ✅ Redis - кэш и очереди (ОБЯЗАТЕЛЬНО)
-#   🟡 Nginx - reverse proxy (ОПЦИОНАЛЬНО для dev)
-#   🟡 PgAdmin - управление БД (ОПЦИОНАЛЬНО, только для dev)
-#
-# Дополнительные компоненты в других файлах:
-#   docker-compose.stage1.yml - Neo4j, Qdrant, Elasticsearch, Ollama
-#   docker-compose.mvp.yml - минимальная версия (только PostgreSQL + Redis)
-#
-# Запуск:
-#   docker-compose up -d                    # Запустить PostgreSQL + Redis + Nginx
-#   docker-compose up -d postgres redis     # Только БД (минимум для работы)
-#   docker-compose --profile dev up -d      # Включить PgAdmin
-#
-# ═══════════════════════════════════════════════════════════════════════════
-
 services:
-  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  # PostgreSQL - Основная база данных ✅ ОБЯЗАТЕЛЬНО
-  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # --- Foundation: Database ---
   postgres:
     image: postgres:15-alpine
     container_name: 1c-ai-postgres
     environment:
-      POSTGRES_DB: knowledge_base
       POSTGRES_USER: admin
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD: change_me_in_prod
+      POSTGRES_DB: enterprise_os
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./db/init:/docker-entrypoint-initdb.d
     networks:
-      - 1c-ai-network
-    restart: unless-stopped
+      - enterprise-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin"]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready -U admin -d enterprise_os"]
+      interval: 5s
       timeout: 5s
       retries: 5
 
-  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  # Redis - Кэш, очереди, rate limiting ✅ ОБЯЗАТЕЛЬНО
-  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # --- Foundation: Cache (Added for NocoBase) ---
   redis:
-    image: redis:7-alpine
+    image: redis:alpine
     container_name: 1c-ai-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
     networks:
-      - 1c-ai-network
-    restart: unless-stopped
-    command: redis-server --appendonly yes
+      - enterprise-net
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
+      interval: 5s
+      timeout: 5s
       retries: 5
 
-  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  # Nginx - Reverse proxy 🟡 ОПЦИОНАЛЬНО (можно отключить для dev)
-  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  nginx:
-    image: nginx:alpine
-    container_name: 1c-ai-nginx
+  # --- Foundation: Identity (IAM) ---
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: 1c-ai-keycloak
+    command: start-dev
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/enterprise_os
+      KC_DB_USERNAME: admin
+      KC_DB_PASSWORD: change_me_in_prod
+      KC_DB_SCHEMA: keycloak
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - enterprise-net
+
+  # --- Foundation: Event Bus ---
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 1c-ai-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: change_me_in_prod
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI
+    networks:
+      - enterprise-net
+
+  # --- Core App: Business Workspace (NocoBase) ---
+  nocobase:
+    image: nocobase/nocobase:latest
+    container_name: 1c-ai-nocobase
+    environment:
+      DB_DIALECT: postgres
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: admin
+      DB_PASSWORD: change_me_in_prod
+      DB_DATABASE: enterprise_os
+      DB_SCHEMA: nocobase
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      APP_KEY: secure-app-key-change-me
+    ports:
+      - "13000:13000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - enterprise-net
+
+  # --- Core App: Developer Workspace (VS Code Server) ---
+  vscode:
+    image: lscr.io/linuxserver/code-server:latest
+    container_name: 1c-ai-vscode
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: Etc/UTC
+      PASSWORD: password # Simple password for now, will integrate Keycloak later
+      DEFAULT_WORKSPACE: /config/workspace
+    volumes:
+      - vscode_config:/config
+      - c:/1cAI:/config/workspace # Mount host project for editing
+    ports:
+      - "8000:8443"
+    networks:
+      - enterprise-net
+
+  # --- Core App: Operations Workspace (Portainer) ---
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: 1c-ai-portainer
+    command: -H unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    ports:
+      - "9000:9000"
+    networks:
+      - enterprise-net
+
+  # --- Data Flow: Git Server (Gitea) ---
+  gitea:
+    image: gitea/gitea:1.21
+    container_name: 1c-ai-gitea
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__database__DB_TYPE=postgres
+      - GITEA__database__HOST=postgres:5432
+      - GITEA__database__NAME=gitea
+      - GITEA__database__USER=admin
+      - GITEA__database__PASSWD=change_me_in_prod
+    restart: always
+    networks:
+      - enterprise-net
+    volumes:
+      - gitea_data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3000:3000"
+      - "222:22"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # --- Core App: Unified Shell (Portal) ---
+  portal:
+    build: ./src/web/portal-shell
+    container_name: 1c-ai-portal
     ports:
       - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
     networks:
-      - 1c-ai-network
+      - enterprise-net
     depends_on:
-      - postgres
-      - redis
-    restart: unless-stopped
+      - nocobase
+      - vscode
+      - portainer
+      - gitea
 
-  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  # PgAdmin - Управление PostgreSQL 🟡 ОПЦИОНАЛЬНО (только для dev)
-  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: 1c-ai-pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@1c-ai.local}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
-    ports:
-      - "5050:80"
-    networks:
-      - 1c-ai-network
-    depends_on:
-      - postgres
-    profiles:
-      - dev
-
-  migrations:
-    image: python:3.11-slim
-    container_name: 1c-ai-migrations
-    working_dir: /app
-    command: ["python", "scripts/run_migrations.py"]
-    environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql://admin:${POSTGRES_PASSWORD:-changeme}@postgres:5432/knowledge_base}
-    volumes:
-      - ./:/app
-    depends_on:
-      - postgres
-    restart: "no"
-    profiles:
-      - migrations
-
-  smoke-api:
+  # --- Collaboration: Real-time Engine ---
+  collab-service:
     build:
       context: .
-    command: uvicorn src.main:app --host 0.0.0.0 --port 8080
+      dockerfile: src/collab/Dockerfile
+    container_name: 1c-ai-collab
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./src/collab:/app/src/collab
+    networks:
+      - enterprise-net
+    restart: unless-stopped
+
+  # --- Data Flow: 1C Sync Agent ---
+  git-sync:
+    image: python:3.11-slim
+    container_name: 1c-ai-git-sync
+    working_dir: /app
+    volumes:
+      - c:/1cAI:/app # Mount source code
+      - git_sync_data:/data
+    command: sh -c "pip install pydantic && python -u src/modules/git_sync/service.py"
     environment:
-      - IGNORE_PY_VERSION_CHECK=1
-    ports:
-      - "8080"
+      - GIT_SERVER_URL=http://gitea:3000
+      - GIT_USER=1c-sync-bot
+      - GIT_PASSWORD=bot-password
+      - RABBITMQ_HOST=rabbitmq
+      - PYTHONPATH=/app
     networks:
-      - smoke-net
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-
-  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  # NATS - Event-Driven Architecture для революционных компонентов ⭐ NEW
-  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  nats:
-    image: nats:2.10-alpine
-    container_name: 1c-ai-nats
-    ports:
-      - "4222:4222"  # Client connections
-      - "8222:8222"  # HTTP monitoring
-      - "6222:6222"  # Cluster routing
-    command:
-      - "-js"  # Enable JetStream
-      - "-m"   # Enable monitoring
-      - "8222"
-    volumes:
-      - nats_data:/data
-      - nats_js_data:/data/jetstream
-    networks:
-      - 1c-ai-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8222/healthz"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    profiles:
-      - revolutionary
-
-  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  # Prometheus - Мониторинг революционных компонентов ⭐ NEW
-  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: 1c-ai-prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./monitoring/prometheus:/etc/prometheus
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-    networks:
-      - 1c-ai-network
+      - enterprise-net
     depends_on:
-      - postgres
-      - redis
-    restart: unless-stopped
-    profiles:
-      - revolutionary
-      - monitoring
+      - gitea
+      - rabbitmq
 
-  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  # Grafana - Визуализация метрик ⭐ NEW
-  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  grafana:
-    image: grafana/grafana:latest
-    container_name: 1c-ai-grafana
+  # --- Security: Observability (Wazuh) ---
+  wazuh:
+    image: wazuh/wazuh-manager:4.7.2
+    container_name: 1c-ai-wazuh
+    hostname: wazuh-manager
+    restart: always
     ports:
-      - "3001:3000"
+      - "1514:1514"
+      - "55000:55000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
-      - GF_USERS_ALLOW_SIGN_UP=false
+      - INDEXER_URL=https://wazuh-indexer:9200
+      - INDEXER_USERNAME=admin
+      - INDEXER_PASSWORD=SecretPassword1!
     volumes:
-      - grafana_data:/var/lib/grafana
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
-      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+      - wazuh_certificates:/wazuh-config-mount/etc/certs
+      - ./config/wazuh_manager/filebeat.yml:/etc/filebeat/filebeat.yml
     networks:
-      - 1c-ai-network
+      enterprise-net:
+        ipv4_address: 172.20.0.11
     depends_on:
-      - prometheus
-    restart: unless-stopped
-    profiles:
-      - revolutionary
-      - monitoring
+      - wazuh-indexer
+
+  wazuh-dashboard:
+    image: wazuh/wazuh-dashboard:4.7.2
+    container_name: 1c-ai-wazuh-dashboard
+    hostname: wazuh-dashboard
+    restart: always
+    ports:
+      - "443:5601"
+    environment:
+      - INDEXER_URL=https://wazuh-indexer:9200
+      - INDEXER_USERNAME=admin
+      - INDEXER_PASSWORD=SecretPassword1!
+      - WAZUH_API_URL=https://wazuh:55000
+    volumes:
+      - wazuh_certificates:/usr/share/wazuh-dashboard/certs
+    depends_on:
+      - wazuh-indexer
+      - wazuh
+    networks:
+      enterprise-net:
+        ipv4_address: 172.20.0.12
+
+  wazuh-indexer:
+    image: wazuh/wazuh-indexer:4.7.2
+    container_name: 1c-ai-wazuh-indexer
+    hostname: wazuh-indexer
+    restart: always
+    ports:
+      - "9200:9200"
+    environment:
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.type=single-node"
+    volumes:
+      - wazuh_indexer_data:/var/lib/wazuh-indexer
+      - wazuh_certificates:/usr/share/wazuh-indexer/config/certs
+      - ./config/wazuh_indexer/opensearch.yml:/usr/share/wazuh-indexer/opensearch.yml
+    networks:
+      enterprise-net:
+        ipv4_address: 172.20.0.10
+        aliases:
+          - wazuh.indexer
+    depends_on:
+      fix-wazuh-permissions:
+        condition: service_completed_successfully
+
+
+
+  fix-wazuh-permissions:
+    image: busybox
+    container_name: 1c-ai-fix-wazuh-permissions
+    command: sh -c "chown -R 1000:1000 /certificates && chmod -R 750 /certificates"
+    volumes:
+      - wazuh_certificates:/certificates
+
+    networks:
+      - enterprise-net
+
+  # --- Security: Policy Enforcement (OPA) ---
+  opa:
+    image: openpolicyagent/opa:latest
+    container_name: 1c-ai-opa
+    ports:
+      - "8181:8181"
+    command:
+      - "run"
+      - "--server"
+      - "--addr=0.0.0.0:8181"
+      - "--log-level=debug"
+      - "/policies"
+    volumes:
+      - ./config/opa/policies:/policies
+
+    networks:
+      enterprise-net:
+        ipv4_address: 172.20.0.2
 
 volumes:
+  wazuh_indexer_data:
+  wazuh_certificates:
   postgres_data:
-    name: 1c-ai-postgres-data
-  redis_data:
-    name: 1c-ai-redis-data
-  nats_data:
-    name: 1c-ai-nats-data
-  nats_js_data:
-    name: 1c-ai-nats-js-data
-  prometheus_data:
-    name: 1c-ai-prometheus-data
-  grafana_data:
-    name: 1c-ai-grafana-data
+  portainer_data:
+  vscode_config:
+  gitea_data:
+  git_sync_data:
 
 networks:
-  1c-ai-network:
-    name: 1c-ai-network
+  enterprise-net:
     driver: bridge
-  smoke-net:
-    name: smoke-net
-    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

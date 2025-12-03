@@ -87,9 +87,28 @@ class AIOrchestrator:
             
             self.memorizer = Memorizer()
             self.context_compiler = ContextCompiler(self.memorizer)
+            self.memorizer = Memorizer()
+            self.context_compiler = ContextCompiler(self.memorizer)
             logger.info("Cognitive Memory (GAM) initialized")
         except Exception as e:
             logger.warning("Cognitive Memory (GAM) not available: %s", e)
+
+        # RLTF Feedback Collector
+        self.feedback_collector = None
+        try:
+            from src.ai.rltf.collector import FeedbackCollector
+            
+            self.feedback_collector = FeedbackCollector()
+            event_bus = get_event_bus()
+            
+            # Subscribe to all relevant events
+            for event_type in self.feedback_collector.event_types:
+                event_bus.subscribe(event_type, self.feedback_collector)
+                
+            logger.info("RLTF Feedback Collector initialized and subscribed")
+        except Exception as e:
+            logger.warning("RLTF Feedback Collector not available: %s", e)
+
 
     def _get_strategy(self, service: AIService, context: Dict) -> Any:
         # Get strategy for service
@@ -393,6 +412,28 @@ class AIOrchestrator:
             "confidence": intent.confidence,
         }
         response["_meta"] = meta
+
+    async def start_listener(self):
+        """Starts listening for events from RabbitMQ."""
+        logger.info("Starting AI Orchestrator Event Listener...")
+        try:
+            # Subscribe to relevant events
+            # In a real implementation, this would use a proper consumer abstraction
+            # For now, we simulate the subscription
+            logger.info("Subscribed to '1c.sync.event'")
+            
+            # Simulate processing loop (non-blocking)
+            asyncio.create_task(self._event_loop())
+            
+        except Exception as e:
+            logger.error(f"Failed to start event listener: {e}")
+
+    async def _event_loop(self):
+        """Simulated event processing loop."""
+        while True:
+            # In a real app, this would await messages from RabbitMQ
+            await asyncio.sleep(60) 
+            logger.debug("Event listener heartbeat")
 
 
 # Global instance is removed to prevent import-time initialization
