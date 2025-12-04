@@ -77,7 +77,7 @@
 
 ## 🎥 Видео-презентация
 
-[![Смотреть презентацию](https://img.youtube.com/vi/TMFUE1dvYks/maxresdefault.jpg)](https://youtu.be/TMFUE1dvYks)
+[![Смотреть презентацию](https://img.youtube.com/vi/s14cFAWNRvU/maxresdefault.jpg)](https://youtu.be/s14cFAWNRvU)
 
 > **Нажмите на картинку, чтобы посмотреть видео-презентацию проекта (YouTube).**
 
