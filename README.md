@@ -44,17 +44,17 @@
 
 ---
 
-## ⚡ Почему 1C AI Stack?
+## ⚡ Почему Secure Enterprise OS?
 
-| 🐢 Традиционная 1С-разработка | 🚀 С 1C AI Stack |
+| 🐢 Традиционная 1С-разработка | 🚀 С Secure Enterprise OS (v4.0) |
 |-------------------------------|------------------|
-| Ручной Code Review (часы) | **AI Review за секунды** + авто-фикс |
-| "Где документация?" | **Авто-генерация** Wiki и диаграмм из кода |
-| Тесты пишутся "когда-нибудь" | **Генерация тестов** (Vanessa/YAxUnit) одной кнопкой |
-| Поиск зависимостей в голове | **Граф знаний** (Neo4j) и семантический поиск |
-| Ручной деплой | **GitOps + K8s** пайплайны из коробки |
+| Линейные скрипты и обработки | **LangGraph Agents**: Циклическое мышление (Plan-Act-Reflect) |
+| "Забыл контекст через 5 минут" | **Cognitive Memory**: Помнит всё (Postgres 17 + pgvector) |
+| Синхронные вызовы (тормоза) | **Nervous System (NATS)**: Асинхронная реакция за миллисекунды |
+| Ручной Code Review | **AI Review + Security Guard**: Правило "Двух Ключей" |
+| Разрозненные инструменты | **Single Pane of Glass**: VS Code, NocoBase, Portainer в одном окне |
 
-> 📊 **В цифрах:** 38 модулей | 160 стандартов | 8 AI-агентов | 100% Python/BSL | Clean Architecture
+> 📊 **В цифрах:** 40+ модулей | 160 стандартов | 8 AI-агентов | 100% Python/BSL | Clean Architecture
 
 ---
 
@@ -312,114 +312,90 @@
 
 ## 🏗️ Архитектура Платформы
 
-### 🧩 Архитектура Платформы
+### 🧩 Архитектура Платформы (v4.0)
 
-Мы переосмыслили подход к интеграции AI в 1С. Вместо устаревших внешних обработок мы используем **Model Context Protocol (MCP)** и нативные клиенты.
+Мы переосмыслили подход к интеграции AI в 1С. Вместо простых скриптов мы используем **LangGraph** для оркестрации и **NATS** для реактивности.
 
-#### 👀 Вид для 1С-разработчика (Integration View)
+#### 👀 System View (v4.0)
 
-Вы работаете в привычной среде (**Configurator**, **EDT**, **VS Code**), а AI Stack бесшовно дополняет её через **MCP**.
-
-```mermaid
-graph LR
-    subgraph IDE ["🛠️ Ваше рабочее место"]
-        direction TB
-        Conf["Конфигуратор"]
-        EDT["1C:EDT / Eclipse"]
-        VSCode["VS Code / Cursor"]
-        Everywhere["Everywhere Client (Desktop)"]
-        
-        Conf -.->|Копипаст / Плагин| Everywhere
-        EDT -->|MCP Plugin| MCP
-        VSCode -->|Native MCP| MCP
-    end
-
-    subgraph Bridge ["🌉 Шина интеграции (The Bridge)"]
-        direction TB
-        MCP["**MCP Server** (Model Context Protocol)"]
-        gRPC["gRPC Stream"]
-        WS["WebSocket (Real-time)"]
-    end
-
-    subgraph AIStack ["🤖 1C AI Stack (Core)"]
-        direction TB
-        Orchestrator["**AI Orchestrator**"]
-        
-        subgraph Knowledge ["🧠 Глубокое понимание"]
-            Graph["**Unified Change Graph** (Neo4j)"]
-            Vector["**Vector Memory** (Qdrant)"]
-            CodeDNA["**Code DNA** (Evolution)"]
-        end
-    end
-
-    %% Потоки данных
-    IDE <==>|1. Контекст + Запрос| Bridge
-    Bridge <==>|2. Маршрутизация| Orchestrator
-    Orchestrator <-->|3. Анализ связей| Graph
-    Orchestrator <-->|4. Поиск похожих| Vector
-    Orchestrator <-->|5. Проверка DNA| CodeDNA
-    
-    Orchestrator ==>|6. Умный ответ| Bridge
-    Bridge ==>|7. Код / Решение| IDE
-
-    style IDE fill:#fff4e6,stroke:#d79b00,stroke-width:2px
-    style AIStack fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
-    style Bridge fill:#f0f0f0,stroke:#333,stroke-width:2px,stroke-dasharray: 5 5
-    style MCP fill:#d4edda,stroke:#28a745,stroke-width:2px
-```
-
-**Ключевые отличия:**
-1.  **MCP Server**: Единый стандарт для всех IDE. Вы подключаете AI как "инструмент", а не как "чат-бота".
-2.  **Everywhere Client**: Нативное Desktop-приложение (Windows/Mac/Linux), которое "видит" ваш экран и буфер обмена, работая поверх Конфигуратора.
-3.  **Unified Change Graph**: AI не просто "угадывает" код, он **знает** структуру метаданных, зависимости и последствия изменений благодаря графу в Neo4j.
-
----
-
-#### 🚀 1. Unified Intelligence Architecture (v3.0)
-
-Архитектура "Живого Мозга", объединяющая пользователя, среду и ИИ в единый цикл обучения.
+Мы используем **Modular Monolith** с четким разделением на "Мозг", "Память" и "Тело".
 
 ```mermaid
 graph TD
-    subgraph UserSpace ["👤 User Space (Unified Portal)"]
-        Dashboard["📊 Dashboard"]
-        VSCode["💻 VS Code (Embedded)"]
-        NocoBase["✅ Tasks (Embedded)"]
-        Browser["🌐 Browser (Context)"]
+    subgraph Brain ["🧠 The Brain (AI Core)"]
+        Orchestrator["**LangGraph Orchestrator**"]
+        Planner["Planner Node"]
+        Executor["Executor Node"]
+        Reflector["Reflector Node"]
     end
 
-    subgraph FeedbackLoop ["🔄 RLTF Engine (Feedback Loop)"]
-        Collector["👀 Context Collector"]
-        Trainer["🎓 Online Trainer"]
-        Predictor["🔮 Action Predictor"]
-        Models["🧠 AI Models"]
+    subgraph Memory ["🐘 Cognitive Memory"]
+        Postgres[(**Postgres 17**)]
+        Vector[(pgvector)]
+        Graph[(Neo4j - Code Graph)]
     end
 
-    subgraph Backend ["⚙️ Backend Services"]
-        Orchestrator["🤖 AI Orchestrator"]
-        Git["📦 Git Service"]
-        Docker["🐳 Docker Service"]
+    subgraph Nervous ["📡 Nervous System"]
+        NATS["**NATS JetStream**"]
     end
 
-    %% Flow
-    UserSpace -->|"1. User Action (Click, Type)"| Collector
-    Collector -->|"2. Raw Events"| Trainer
-    Trainer -->|"3. Update Weights"| Models
-    Models -->|"4. Predict Next Action"| Predictor
-    Predictor -->|"5. Suggestion (Toast)"| UserSpace
-    
-    VSCode <-->|"6. Code Sync"| Git
-    Dashboard <-->|"7. Status"| Docker
-    
-    style UserSpace fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
-    style FeedbackLoop fill:#ffe6f2,stroke:#d63384,stroke-width:2px
-    style Backend fill:#f0f0f0,stroke:#333,stroke-width:2px
+    subgraph Body ["🛠️ The Body (Services)"]
+        Git["Git Automation"]
+        Docker["Docker Control"]
+        OneC["1C Integration (OData/RAS)"]
+        Wazuh["Security Monitor"]
+    end
+
+    subgraph Users ["👥 User Interfaces"]
+        Portal["Unified Portal"]
+        IDE["VS Code / EDT (MCP)"]
+    end
+
+    Users <--> NATS
+    NATS <--> Orchestrator
+    Orchestrator <--> Memory
+    Orchestrator <--> Body
+    Body --> NATS
+```
+
+**Ключевые компоненты:**
+1.  **LangGraph Orchestrator**: Центральный мозг. Управляет состоянием агентов и циклами мышления.
+2.  **NATS JetStream**: Нервная система. Обеспечивает мгновенную реакцию на события.
+3.  **Cognitive Memory**: Единое хранилище знаний (векторы, графы, история) на базе Postgres 17.
+
+---
+
+#### 🚀 1. The Brain & Nervous System (v4.0)
+
+Архитектура "Живого Организма", где каждый агент обладает памятью и способностью к самообучению.
+
+```mermaid
+graph TD
+    subgraph Brain ["🧠 The Brain (LangGraph)"]
+        Planner["Planner"]
+        Executor["Executor"]
+        Reflector["Reflector"]
+    end
+
+    subgraph Memory ["🐘 Cognitive Memory"]
+        Episodic["Episodic (History)"]
+        Semantic["Semantic (Vectors)"]
+        Procedural["Procedural (Tools)"]
+    end
+
+    subgraph Nervous ["📡 Nervous System (NATS)"]
+        Events["Event Stream"]
+    end
+
+    Brain <--> Memory
+    Brain <--> Nervous
 ```
 
 **Как это работает:**
-1.  **User Space**: Вы работаете в Портале. Система "видит" ваши действия.
-2.  **Feedback Loop**: Каждое действие (успешный коммит, закрытая задача) обучает модель.
-3.  **Prediction**: Система предугадывает ваши потребности (например, предлагает создать Pull Request после серии коммитов).
+1.  **Plan**: Агент строит план действий (Planner).
+2.  **Act**: Агент выполняет шаг (Executor).
+3.  **Reflect**: Агент оценивает результат и корректирует план (Reflector).
+4.  **Remember**: Успешные паттерны сохраняются в долговременную память.
 
 ---
 
@@ -647,95 +623,32 @@ sequenceDiagram
 ---
 
 
-<details>
-<summary><strong>📊 Сводная таблица модулей (нажмите, чтобы развернуть)</strong></summary>
+## 🏆 Стандарты Secure Enterprise OS
 
-| # | Модуль | Endpoint | Статус | Категория |
-|---|--------|----------|--------|-----------|
-| 1 | Developer Agent | `/api/v1/developer` | ✅ Ready | AI Агенты |
-| 2 | DevOps Agent | `/api/v1/devops` | ✅ 95% | AI Агенты |
-| 3 | Business Analyst | `/api/v1/ba_sessions` | ✅ 92% | AI Агенты |
-| 4 | QA Engineer | `/api/v1/test_generation` | ✅ 90% | AI Агенты |
-| 5 | Architect | `/api/v1/graph` | ✅ 90% | AI Агенты |
-| 6 | Security Officer | `/api/v1/security` | ✅ Ready | AI Агенты |
-| 7 | Technical Writer | `/api/v1/technical_writer` | ✅ Ready | AI Агенты |
-| 8 | Tech Log Analyzer | `/api/v1/tech_log` | ✅ Beta | AI Агенты |
-| 9 | RAS Monitor | `/api/v1/ras_monitor` | ✅ Ready | AI Агенты |
-| 10 | SQL Optimizer | `/api/v1/sql_optimizer` | ✅ Ready | AI Агенты |
-| 11 | DevOps API | `/api/v1/devops` | ✅ Ready | API Endpoints |
-| 12 | BPMN API | `/api/v1/bpmn` | ✅ Ready | API Endpoints |
-| 13 | Graph API | `/api/v1/graph` | ✅ Ready | API Endpoints |
-| 14 | BA Sessions API | `/api/v1/ba_sessions` | ✅ Ready | API Endpoints |
-| 15 | Code Approval API | `/api/v1/code_approval` | ✅ Ready | API Endpoints |
-| 16 | WebSocket API | `/api/v1/websocket` | ✅ Ready | API Endpoints |
-| 17 | Gateway API | `/api/v1/gateway` | ✅ Ready | API Endpoints |
-| 18 | Metrics API | `/api/v1/metrics` | ✅ Ready | API Endpoints |
-| 19 | Tenant Management | `/api/v1/tenants` | ✅ Ready | API Endpoints |
-| 20 | Billing Webhooks | `/api/v1/billing/webhooks` | ✅ Ready | API Endpoints |
-| 21 | Dashboard | `/api/v1/dashboard` | ✅ Ready | Core Features |
-| 22 | Admin Dashboard | `/api/v1/admin_dashboard` | ✅ Ready | Core Features |
-| 23 | Analytics | `/api/v1/analytics` | ✅ Ready | Core Features |
-| 24 | AI Assistants | `/api/v1/assistants` | ✅ Ready | Core Features |
-| 25 | Copilot | `/api/v1/copilot` | ✅ Ready | Core Features |
-| 26 | Knowledge Base | `/api/v1/knowledge_base` | ✅ Ready | Core Features |
-| 27 | Marketplace | `/api/v1/marketplace` | ✅ Ready | Core Features |
-| 28 | Enterprise Wiki | `/api/v1/wiki` | ✅ Ready | Core Features |
-| 29 | Code Analyzers | `/api/v1/code_analyzers` | ✅ Ready | Code Analysis |
-| 30 | Code Review | `/api/v1/code_review` | ✅ Ready | Code Analysis |
-| 31 | Test Generation | `/api/v1/test_generation` | ✅ Ready | Code Analysis |
-| 32 | Doc Generator | internal | ✅ Ready | Code Analysis |
-| 33 | Auth | `/api/v1/auth` | ✅ Ready | Infrastructure |
-| 34 | Risk Management | `/api/v1/risk` | ✅ Ready | Infrastructure |
-| 35 | Revolutionary | `/api/v1/revolutionary` | ✅ Ready | Infrastructure |
-| 36 | Scenario Hub | `/api/v1/scenario_hub` | ✅ Ready | Infrastructure |
-| 37 | GitHub Integration | `/api/v1/github` | ✅ Ready | Integrations |
-| 38 | ML Models | `/api/v1/ml` | ✅ Ready | Integrations |
-| 39 | Project Manager | `/api/v1/project_manager` | ✅ Ready | Integrations |
-| 40 | Shared Memory | internal | ✅ Ready | Infrastructure |
-| 41 | Performance | internal | ✅ Ready | Core Features |
-| 42 | Cognitive Memory (GAM) | internal | ✅ Ready | Core Features |
-| 43 | Self-Evolution (Strike 3) | `/api/v1/ai/evolve` | ✅ Ready | Core Features |
+Мы предоставляем формализованные стандарты для безопасной AI-разработки на 1C:Предприятие:
 
-**Легенда:**
-- ✅ Ready — Production Ready
-- ⚠️ Dev — In Development
-- ⚠️ Stub — Stub implementation (needs completion)
-- planned — API endpoint planned
-
-</details>
-
----
-
-## 🏆 Стандарты платформы
-
-1C AI Stack предоставляет формализованные стандарты для AI-ассистированной разработки на 1C:Предприятие:
-
-- ✅ **160 формализованных спецификаций** покрывают все аспекты платформы
-- ✅ **Открытые стандарты** с JSON Schema для валидации
-- ✅ **100% уникальность** для BSL-specific компонентов
-- ✅ **Производственная готовность** — все стандарты проверены в реальных проектах
+- ✅ **160 формализованных спецификаций** (BSL, Metadata, UI).
+- ✅ **Rule of Two** — ни один коммит AI не попадает в master без верификации.
+- ✅ **Security First** — OPA-политики и Wazuh-мониторинг из коробки.
+- ✅ **Clean Architecture** — строгая изоляция слоев (Domain, Use Cases, Infra).
 
 📚 **Полная информация:**
-- [`docs/DE_FACTO_STANDARD.md`](docs/DE_FACTO_STANDARD.md) — раздел про стандарты платформы
-- [`docs/architecture/STANDARDS_INDEX.md`](docs/architecture/STANDARDS_INDEX.md) — каталог всех 160 стандартов
-- [`docs/standards/index.md`](docs/standards/index.md) — Standards Hub (центральная точка входа)
+- [`docs/DE_FACTO_STANDARD.md`](docs/DE_FACTO_STANDARD.md) — стандарты разработки
+- [`docs/architecture/STANDARDS_INDEX.md`](docs/architecture/STANDARDS_INDEX.md) — каталог спецификаций
+- [`docs/standards/index.md`](docs/standards/index.md) — Standards Hub
 
 ---
 
-## 🌟 Ключевые особенности
+## 🌟 Ключевые особенности (v4.0)
 
-- ✅ **BSL-First AI Platform** — 100% уникальность для 1С:Предприятие
-- ✅ **Nested Learning Integration** — Google Nested Learning для continual learning без catastrophic forgetting
-- ✅ **Desktop-First Experience** — нативный клиент с context awareness
-- ✅ **Clean Architecture** — 35+ модулей, ~28K строк кода
-- ✅ **8 AI Agents** ⭐ — Architect, Business Analyst, Developer, QA, DevOps, Technical Writer, Security, Project Manager
-- ✅ **Revolutionary AI Components** ⭐ — Self-Evolving AI, Self-Healing Code, Distributed Agents, Code DNA
-- ✅ **API Versioning** ⭐ — v1 (stable) + v2 (enhanced with batch operations)
-- ✅ **Tiered Rate Limiting** ⭐ — Free/Pro/Enterprise tiers с Prometheus metrics
-- ✅ **Unified Change Graph** — автоматическое построение графа из BSL кода с Temporal GNN
-- ✅ **Enterprise Wiki** — headless CMS с версионированием
-- ✅ **gRPC Integration** — связь Desktop ↔ Backend
-- ✅ **160 формализованных спецификаций** платформы
+- ✅ **Autonomous Agents** — Агенты на базе LangGraph с циклами Plan-Act-Reflect.
+- ✅ **Cognitive Memory** — Postgres 17 + pgvector для хранения контекста годами.
+- ✅ **Nervous System** — NATS JetStream для мгновенной реакции на события.
+- ✅ **Rule of Two** — Принудительная верификация кода вторым агентом или человеком.
+- ✅ **Unified Change Graph** — Понимание зависимостей 1С через Neo4j.
+- ✅ **Self-Healing** — Автоматическое исправление ошибок в коде и тестах.
+- ✅ **Secure-by-Design** — Встроенный IAM, JWT, mTLS и OPA.
+- ✅ **160 формализованных спецификаций** — Стандарты качества кода 1С.
 
 ---
 
