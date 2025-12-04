@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # --- Foundation: Database ---
   postgres:
-    image: postgres:15-alpine
+    image: pgvector/pgvector:pg17
     container_name: 1c-ai-postgres
     environment:
       POSTGRES_USER: admin
@@ -11,6 +11,8 @@ services:
       POSTGRES_DB: enterprise_os
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     networks:
       - enterprise-net
     healthcheck:
@@ -52,7 +54,7 @@ services:
     networks:
       - enterprise-net
 
-  # --- Foundation: Event Bus ---
+  # --- Foundation: Event Bus (Legacy) ---
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: 1c-ai-rabbitmq
@@ -62,6 +64,17 @@ services:
     ports:
       - "5672:5672"   # AMQP
       - "15672:15672" # Management UI
+    networks:
+      - enterprise-net
+
+  # --- Foundation: Event Bus (Modern) ---
+  nats:
+    image: nats:2.10-alpine
+    container_name: 1c-ai-nats
+    ports:
+      - "4222:4222" # Client
+      - "8222:8222" # HTTP Monitoring
+    command: "-js -m 8222" # Enable JetStream & Monitoring
     networks:
       - enterprise-net
 

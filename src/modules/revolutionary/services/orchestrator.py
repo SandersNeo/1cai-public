@@ -34,18 +34,20 @@ class RevolutionaryOrchestrator:
         if self._initialized:
             return
 
-        # Initialize Event Bus
+        # Initialize Event Bus (NATS Priority)
         if self.use_event_driven:
             try:
-                from importlib import import_module
-                module = import_module("src.infrastructure.event_bus")
-                EventBus = getattr(module, "EventBus")
+                # Try NATS first (Production)
+                from src.infrastructure.event_bus_nats import NATSEventBus
+                self.components["event_bus"] = NATSEventBus()
+                await self.components["event_bus"].start()
+                print("Initialized NATSEventBus")
+            except (ImportError, Exception) as e:
+                print(f"Failed to initialize NATS, falling back to Memory: {e}")
+                # Fallback to Memory (Dev/Test)
+                from src.infrastructure.event_bus import EventBus
                 self.components["event_bus"] = EventBus()
-                await self.components["event_bus"].connect()
-            except ImportError:
-                print("Event Bus module not found")
-            except Exception as e:
-                print(f"Failed to initialize Event Bus: {e}")
+                await self.components["event_bus"].start()
 
         # Initialize Self-Evolving AI
         if self.use_self_evolving:

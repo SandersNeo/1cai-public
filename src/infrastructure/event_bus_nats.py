@@ -15,6 +15,7 @@ Event Bus NATS Integration - Production-ready Event-Driven
 - "Distributed Systems" (2024): NATS превосходит Kafka для event-driven
 """
 
+import os
 import asyncio
 import json
 import logging
@@ -48,7 +49,7 @@ class NATSEventBus(EventBus):
 
     def __init__(
         self,
-        nats_url: str = "nats://localhost:4222",
+        nats_url: str = os.getenv("NATS_URL", "nats://nats:4222"),
         stream_name: str = "events",
         enable_jetstream: bool = True,
     ):
@@ -89,8 +90,14 @@ class NATSEventBus(EventBus):
     async def stop(self) -> None:
         """Остановка NATS Event Bus"""
         # Отписка от всех подписок
-        for sub in self._subscriptions:
-            await sub.unsubscribe()
+        for sub_task in self._subscriptions:
+            try:
+                # sub_task is an asyncio.Task that returns the subscription
+                if isinstance(sub_task, asyncio.Task):
+                    sub = await sub_task
+                    await sub.unsubscribe()
+            except Exception as e:
+                logger.warning(f"Error unsubscribing: {e}")
         self._subscriptions.clear()
 
         # Закрытие соединения
